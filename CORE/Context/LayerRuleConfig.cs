@@ -1,4 +1,4 @@
-﻿namespace RefactorScope.CORE.Context
+﻿namespace RefactorScope.Core.Context
 {
     public class LayerRuleConfig
     {

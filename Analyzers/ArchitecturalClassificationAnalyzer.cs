@@ -2,6 +2,7 @@
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
 using RefactorScope.Infrastructure;
+using RefactorScope.Core.Structure;
 
 namespace RefactorScope.Analyzers
 {
@@ -38,6 +39,23 @@ namespace RefactorScope.Analyzers
                     context.Config.LayerRules
                 );
 
+                var folder = StructuralAlignmentEvaluator.ExtractFolder(
+                    tipo.DeclaredInFile
+                );
+
+                var namespaceAlignment =
+                    StructuralAlignmentEvaluator.EvaluateNamespaceAlignment(
+                        folder,
+                        tipo.Namespace
+                    );
+
+                var structuralStatus =
+                    StructuralAlignmentEvaluator.EvaluateStructuralStatus(
+                        folder,
+                        tipo.Namespace,
+                        layer
+                    );
+
                 var status = DetectStatus(usage);
                 var removal = DetectRemovalCandidate(status);
 
@@ -45,7 +63,10 @@ namespace RefactorScope.Analyzers
                 {
                     TypeName = tipo.Name,
                     Namespace = tipo.Namespace,
+                    Folder = folder,
                     Layer = layer,
+                    NamespaceAlignment = namespaceAlignment,
+                    StructuralStatus = structuralStatus,
                     Status = status,
                     RemovalCandidate = removal,
                     UsageCount = usage

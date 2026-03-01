@@ -1,6 +1,6 @@
 ==========================================
 ARQUIVO: IAnalysisResult.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IAnalysisResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IAnalysisResult.cs
 ==========================================
 namespace RefactorScope.Core.Abstractions
 {
@@ -16,7 +16,7 @@ namespace RefactorScope.Core.Abstractions
 
 ==========================================
 ARQUIVO: IAnalyzer.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IAnalyzer.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IAnalyzer.cs
 ==========================================
 using RefactorScope.Core.Context;
 
@@ -45,7 +45,7 @@ namespace RefactorScope.Core.Abstractions
 
 ==========================================
 ARQUIVO: IExporter.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IExporter.cs
 ==========================================
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Orchestration;
@@ -82,7 +82,7 @@ namespace RefactorScope.Core.Abstractions
 
 ==========================================
 ARQUIVO: IParserCodigo.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IParserCodigo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IParserCodigo.cs
 ==========================================
 using RefactorScope.Core.Model;
 
@@ -110,10 +110,24 @@ namespace RefactorScope.Core.Abstractions
 
 
 ==========================================
-ARQUIVO: RefactorScopeConfig.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Configuration\RefactorScopeConfig.cs
+ARQUIVO: DumpStrategyConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\DumpStrategyConfig.cs
 ==========================================
-using RefactorScope.CORE.Context;
+namespace RefactorScope.Core.Configuration
+{
+    public class DumpStrategyConfig
+    {
+        public string Mode { get; set; } = "global";
+        public string SplitBy { get; set; } = "layer";
+    }
+}
+
+
+==========================================
+ARQUIVO: RefactorScopeConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\RefactorScopeConfig.cs
+==========================================
+using RefactorScope.Core.Context;
 
 namespace RefactorScope.Core.Configuration
 {
@@ -161,13 +175,19 @@ namespace RefactorScope.Core.Configuration
         public Dictionary<string, LayerRuleConfig>? LayerRules { get; set; }
 
         public string OutputPath { get; set; } = "refactorscope-output";
+
+        /// <summary>
+        /// Config do strategy para exportação do dump otimizado para IA.
+        /// </summary>
+
+        public DumpStrategyConfig DumpStrategy { get; set; } = new();
     }
 }
 
 
 ==========================================
 ARQUIVO: AnalysisContext.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Context\AnalysisContext.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Context\AnalysisContext.cs
 ==========================================
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Model;
@@ -209,9 +229,9 @@ namespace RefactorScope.Core.Context
 
 ==========================================
 ARQUIVO: LayerRuleConfig.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Context\LayerRuleConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Context\LayerRuleConfig.cs
 ==========================================
-namespace RefactorScope.CORE.Context
+namespace RefactorScope.Core.Context
 {
     public class LayerRuleConfig
     {
@@ -224,7 +244,7 @@ namespace RefactorScope.CORE.Context
 
 ==========================================
 ARQUIVO: ArquivoInfo.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\ArquivoInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ArquivoInfo.cs
 ==========================================
 using System.Reflection;
 
@@ -272,7 +292,7 @@ namespace RefactorScope.Core.Model
 
 ==========================================
 ARQUIVO: ModeloEstrutural.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\ModeloEstrutural.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ModeloEstrutural.cs
 ==========================================
 namespace RefactorScope.Core.Model
 {
@@ -318,7 +338,7 @@ namespace RefactorScope.Core.Model
 
 ==========================================
 ARQUIVO: ReferenciaInfo.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\ReferenciaInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ReferenciaInfo.cs
 ==========================================
 namespace RefactorScope.Core.Model
 {
@@ -348,7 +368,7 @@ namespace RefactorScope.Core.Model
 
 ==========================================
 ARQUIVO: TipoInfo.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\TipoInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\TipoInfo.cs
 ==========================================
 namespace RefactorScope.Core.Model
 {
@@ -408,7 +428,7 @@ namespace RefactorScope.Core.Model
 
 ==========================================
 ARQUIVO: AnalysisOrchestrator.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Orchestration\AnalysisOrchestrator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs
 ==========================================
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
@@ -466,7 +486,7 @@ namespace RefactorScope.Core.Orchestration
 
 ==========================================
 ARQUIVO: ConsolidatedReport.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Orchestration\ConsolidatedReport.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestration\ConsolidatedReport.cs
 ==========================================
 using RefactorScope.Core.Abstractions;
 
@@ -507,8 +527,34 @@ namespace RefactorScope.Core.Orchestration
 
 
 ==========================================
+ARQUIVO: ArchitecturalClassificationItem.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ArchitecturalClassificationItem.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Core.Results
+{
+    public class ArchitecturalClassificationItem
+    {
+        public string TypeName { get; init; } = string.Empty;
+        public string Namespace { get; init; } = string.Empty;
+        public string Folder { get; init; } = string.Empty;
+        public string Layer { get; init; } = string.Empty;
+        public string NamespaceAlignment { get; init; } = string.Empty;
+        public string StructuralStatus { get; init; } = string.Empty;
+        public string Status { get; init; } = string.Empty;
+        public string RemovalCandidate { get; init; } = string.Empty;
+        public int UsageCount { get; init; }
+    }
+}
+
+
+
+==========================================
 ARQUIVO: ArchitecturalClassificationResult.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\ArchitecturalClassificationResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ArchitecturalClassificationResult.cs
 ==========================================
 using RefactorScope.Core.Abstractions;
 
@@ -527,21 +573,13 @@ namespace RefactorScope.Core.Results
         }
     }
 
-    public class ArchitecturalClassificationItem
-    {
-        public string TypeName { get; init; } = string.Empty;
-        public string Namespace { get; init; } = string.Empty;
-        public string Layer { get; init; } = string.Empty;
-        public string Status { get; init; } = string.Empty;
-        public string RemovalCandidate { get; init; } = string.Empty;
-        public int UsageCount { get; init; }
-    }
+
 }
 
 
 ==========================================
 ARQUIVO: CoreIsolationResult.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\CoreIsolationResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\CoreIsolationResult.cs
 ==========================================
 using RefactorScope.Core.Abstractions;
 
@@ -564,7 +602,7 @@ namespace RefactorScope.Core.Results
 
 ==========================================
 ARQUIVO: EntryPointHeuristicResult.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\EntryPointHeuristicResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\EntryPointHeuristicResult.cs
 ==========================================
 using RefactorScope.Core.Abstractions;
 
@@ -584,7 +622,7 @@ namespace RefactorScope.Core.Results
 
 ==========================================
 ARQUIVO: ZombieResult.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\ZombieResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ZombieResult.cs
 ==========================================
 using RefactorScope.Core.Abstractions;
 
@@ -603,6 +641,63 @@ namespace RefactorScope.Core.Results
         public ZombieResult(IReadOnlyList<string> zombieTypes)
         {
             ZombieTypes = zombieTypes;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralAlignmentEvaluator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Structure\StructuralAlignmentEvaluator.cs
+==========================================
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Structure
+{
+    public static class StructuralAlignmentEvaluator
+    {
+        public static string ExtractFolder(string declaredInFile)
+        {
+            if (string.IsNullOrWhiteSpace(declaredInFile))
+                return "Root";
+
+            var parts = declaredInFile
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            // Ignorar pasta raiz do projeto analisador (ex: AvaliaRoteiro)
+            // e capturar a primeira pasta do domínio real (ex: Scriptome)
+
+            if (parts.Length >= 2)
+                return parts[1];
+
+            return parts[0];
+        }
+
+        public static string EvaluateNamespaceAlignment(string folder, string ns)
+        {
+            if (string.IsNullOrWhiteSpace(ns))
+                return "SemNamespace";
+
+            return ns.Contains(folder, StringComparison.OrdinalIgnoreCase)
+                ? "Alinhado"
+                : "Desalinhado";
+        }
+
+        public static string EvaluateStructuralStatus(
+            string folder,
+            string ns,
+            string layer)
+        {
+            var namespaceAligned = EvaluateNamespaceAlignment(folder, ns);
+
+            if (namespaceAligned == "Desalinhado")
+                return "DriftLogico";
+
+            if (!ns.Contains(layer, StringComparison.OrdinalIgnoreCase))
+                return "DriftArquitetural";
+
+            return "Coerente";
         }
     }
 }

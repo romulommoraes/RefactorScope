@@ -1,13 +1,18 @@
 {
   "rootPath": "C:\\Users\\romul\\source\\repos\\Scriptome",
+
   "outputPath": "refactorscope-output",
+
   "include": [],
   "exclude": [],
 
   "analyzers": {
     "zombie": true,
-    "architecture": true
+    "architecture": true,
+    "coreIsolation": true,
+    "entrypoints": true
   },
+
   "layerRules": {
     "UI": {
       "nameStartsWith": [ "Aba" ]
@@ -22,6 +27,13 @@
 
   "parser": "CSharpRegex",
 
-  "exporters": []
+  "exporters": [
+    "dumpAnalysis",
+    "dumpIA"
+  ],
 
+  "dumpStrategy": {
+    "mode": "segmented",
+    "splitBy": "topFolder"
+  }
 }

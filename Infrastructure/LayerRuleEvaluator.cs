@@ -1,5 +1,5 @@
 ﻿using RefactorScope.Core.Model;
-using RefactorScope.CORE.Context;
+using RefactorScope.Core.Context;
 
 namespace RefactorScope.Infrastructure
 {

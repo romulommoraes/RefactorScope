@@ -62,16 +62,13 @@ try
     new DumpIaExporter()
 };
 
-    Directory.CreateDirectory(config.OutputPath);
+    var strategy = DumpStrategyResolver.Resolve(config);
 
-    foreach (var exporter in exporters)
-    {
-        exporter.Export(
-            context,
-            report,
-            config.OutputPath
-        );
-    }
+    strategy.Execute(
+        context,
+        report,
+        exporters
+    );
 
     TerminalRenderer.Success("Dumps gerados com sucesso");
 
@@ -100,7 +97,14 @@ try
             foreach (var item in arch.Items.OrderBy(x => x.UsageCount))
             {
                 Console.WriteLine(
-                    $" - {item.TypeName} | Layer: {item.Layer} | Status: {item.Status} | Remove: {item.RemovalCandidate}"
+                    $" - {item.TypeName} " +
+                    $"| Folder: {item.Folder} " +
+                    $"| Namespace: {item.Namespace} " +
+                    $"| Layer: {item.Layer} " +
+                    $"| Align: {item.NamespaceAlignment} " +
+                    $"| Structural: {item.StructuralStatus} " +
+                    $"| Status: {item.Status} " +
+                    $"| Remove: {item.RemovalCandidate}"
                 );
             }
         }

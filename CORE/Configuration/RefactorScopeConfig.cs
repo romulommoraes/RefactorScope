@@ -1,4 +1,4 @@
-﻿using RefactorScope.CORE.Context;
+﻿using RefactorScope.Core.Context;
 
 namespace RefactorScope.Core.Configuration
 {
@@ -46,5 +46,11 @@ namespace RefactorScope.Core.Configuration
         public Dictionary<string, LayerRuleConfig>? LayerRules { get; set; }
 
         public string OutputPath { get; set; } = "refactorscope-output";
+
+        /// <summary>
+        /// Config do strategy para exportação do dump otimizado para IA.
+        /// </summary>
+
+        public DumpStrategyConfig DumpStrategy { get; set; } = new();
     }
 }

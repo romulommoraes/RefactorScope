@@ -1,22 +1,38 @@
-⚙️ Configuração (refactorscope.json)
+📄 README.md — RefactorScope
+🧬 RefactorScope
 
-O RefactorScope é controlado por um arquivo de configuração chamado:
+RefactorScope é uma ferramenta de análise estrutural para projetos .NET que permite:
+
+Detectar código morto
+
+Classificar arquitetura
+
+Identificar isolamento indevido do Core
+
+Mapear entry points
+
+Produzir dumps estruturais para refatoração ou IA
+
+Seu objetivo é atuar como um scanner arquitetural evolutivo, apoiando:
+
+✔ refatorações incrementais
+✔ migração via strangler
+✔ auditoria estrutural
+✔ geração de insumos para IA
+
+🚀 Como executar
+
+Crie um arquivo:
 
 refactorscope.json
 
-Ele deve estar no mesmo diretório do executável (bin/...).
+no diretório do executável.
 
-Este arquivo define:
+Depois execute:
 
-Escopo da análise
-
-Analisadores ativos
-
-Regras arquiteturais
-
-Estratégia de exportação
-
-🧩 Exemplo Completo
+RefactorScope.exe
+⚙️ Configuração
+Exemplo completo
 {
   "rootPath": "C:\\Repos\\MeuProjeto",
 
@@ -34,7 +50,7 @@ Estratégia de exportação
 
   "layerRules": {
     "UI": {
-      "nameStartsWith": [ "Aba", "Tela" ]
+      "nameStartsWith": [ "Aba" ]
     },
     "Core": {
       "namespaceContains": [ "Nucleo", "Limbic" ]
@@ -52,121 +68,27 @@ Estratégia de exportação
   ],
 
   "dumpStrategy": {
-    "mode": "global",
+    "mode": "segmented",
     "splitBy": "layer"
   }
 }
-🔍 Propriedades
-rootPath
+🧭 Dump Strategy
 
-Define o caminho do projeto que será analisado.
+Define como os resultados serão organizados.
 
-"rootPath": "C:\\Repos\\MeuProjeto"
-outputPath
-
-Define onde os dumps serão salvos.
-
-"outputPath": "refactorscope-output"
-
-A pasta será criada automaticamente se não existir.
-
-include / exclude
-
-Permitem restringir o escopo da análise.
-
-Exemplo:
-
-"include": [ "Nucleo", "Infra" ],
-"exclude": [ "Tests", "bin", "obj" ]
-analyzers
-
-Ativa ou desativa analisadores.
-
-Analyzer	Função
-zombie	Detecta código morto
-architecture	Classifica camadas
-coreIsolation	Detecta Core isolado
-entrypoints	Detecta pontos de entrada
-
-Exemplo:
-
-"analyzers": {
-  "zombie": true,
-  "architecture": true
-}
-layerRules
-
-Define as camadas arquiteturais do sistema.
-
-Essas regras são usadas por:
-
-Classificação arquitetural
-
-Segmentação de dump
-
-Análise de isolamento
-
-Exemplo:
-
-"layerRules": {
-  "UI": {
-    "nameStartsWith": [ "Aba" ]
-  },
-  "Core": {
-    "namespaceContains": [ "Nucleo", "Limbic" ]
-  },
-  "Infra": {
-    "nameEquals": [ "Program" ]
-  }
-}
-
-Critérios disponíveis:
-
-Regra	Descrição
-nameStartsWith	Nome começa com
-namespaceContains	Namespace contém
-nameEquals	Nome exato
-parser
-
-Define o parser usado.
-
-Atualmente disponível:
-
-"parser": "CSharpRegex"
-exporters
-
-Define quais dumps serão gerados.
-
-Exporter	Descrição
-dumpAnalysis	Resultado estrutural
-dumpIA	Dump completo com código
-
-Exemplo:
-
-"exporters": [
-  "dumpAnalysis",
-  "dumpIA"
-]
-🧠 Estratégia de Dump
-
-Controla como os resultados são organizados.
-
-"dumpStrategy": {
-  "mode": "global",
-  "splitBy": "layer"
-}
-mode
-Valor	Comportamento
-global	Um dump único do sistema
-segmented	Divide o dump em partes
-splitBy
+🔹 Mode
+Valor	Descrição
+global	Snapshot único
+segmented	Dump dividido
+🔹 SplitBy
 
 Usado quando mode = segmented
 
-Valor	Organização
-layer	Baseado em layerRules
-namespace	Por namespace
-topFolder	Por pasta raiz
+Valor	Descrição
+layer	Baseado nas LayerRules
+namespace	Agrupado por namespace
+topFolder	Agrupado por pasta raiz
+file	Dump extremo por arquivo
 📂 Exemplos
 Dump Global
 "dumpStrategy": {
@@ -190,13 +112,67 @@ refactorscope-output/
  ├── Core/
  ├── UI/
  └── Infra/
-🧭 Recomendação
 
-Para refatorações arquiteturais:
+Ideal para:
 
-mode: segmented
-splitBy: layer
+✔ strangler
+✔ refatoração incremental
+✔ CI
 
-Para análise global:
+Dump Segmentado por Namespace
+"dumpStrategy": {
+  "mode": "segmented",
+  "splitBy": "namespace"
+}
 
-mode: global
+Saída:
+
+refactorscope-output/
+ ├── Scriptome.Nucleo/
+ ├── Scriptome.Limbic/
+ └── Scriptome.Infra/
+🔍 Analyzers disponíveis
+Analyzer	Função
+zombie	Detecta tipos não referenciados
+architecture	Classifica camadas
+coreIsolation	Detecta Core isolado
+entrypoints	Detecta pontos de entrada
+🧠 Layer Rules
+
+Permitem mapear arquitetura sem hardcode.
+
+Critérios:
+
+Regra	Significado
+nameStartsWith	Nome começa com
+namespaceContains	Namespace contém
+nameEquals	Nome exato
+📦 Exporters
+Exporter	Função
+dumpAnalysis	Resultado estrutural
+dumpIA	Dump completo com código
+🧬 Objetivo arquitetural
+
+RefactorScope não é apenas um scanner.
+
+Ele funciona como:
+
+um sistema de detecção de anomalias estruturais em código vivo
+
+Permitindo:
+
+✔ evolução segura
+✔ análise incremental
+✔ suporte à reengenharia
+
+🔬 Roadmap
+
+Segmentação por namespace ✔
+
+Segmentação por layer ✔
+
+Segmentação por pasta (em breve)
+
+Namespace Hygiene (proposto)
+
+Dependency Drift Detection (futuro)
