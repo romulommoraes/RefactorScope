@@ -1,9 +1,10 @@
-﻿using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
-using RefactorScope.Parsers.CSharpRegex;
-using RefactorScope.Analyzers;
-using RefactorScope.Infrastructure;
+﻿using RefactorScope.Analyzers;
 using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Exporters;
+using RefactorScope.Infrastructure;
+using RefactorScope.Parsers.CSharpRegex;
 
 Console.WriteLine();
 
@@ -52,6 +53,27 @@ try
     );
 
     TerminalRenderer.Success("Análise concluída");
+
+    TerminalRenderer.Step("Gerando dumps...");
+
+    var exporters = new List<IExporter>
+{
+    new DumpAnaliseExporter(),
+    new DumpIaExporter()
+};
+
+    Directory.CreateDirectory(config.OutputPath);
+
+    foreach (var exporter in exporters)
+    {
+        exporter.Export(
+            context,
+            report,
+            config.OutputPath
+        );
+    }
+
+    TerminalRenderer.Success("Dumps gerados com sucesso");
 
     // Seção de resultados
     TerminalRenderer.Section("Resultados");

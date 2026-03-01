@@ -1,0 +1,112 @@
+==========================================
+ARQUIVO: DumpAnaliseExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\DumpAnaliseExporter.cs
+==========================================
+using System.Text.Json;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Exporters
+{
+    /// <summary>
+    /// Exporta os resultados consolidados da análise.
+    /// </summary>
+    public class DumpAnaliseExporter : IExporter
+    {
+        public string Name => "dumpAnalysis";
+
+        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)
+        {
+            var zombies = report.Results
+                .OfType<ZombieResult>()
+                .FirstOrDefault()?.ZombieTypes;
+
+            var isolated = report.Results
+                .OfType<CoreIsolationResult>()
+                .FirstOrDefault()?.IsolatedCoreTypes;
+
+            var entry = report.Results
+                .OfType<EntryPointHeuristicResult>()
+                .FirstOrDefault()?.EntryPoints;
+
+            var output = new
+            {
+                Zombies = zombies,
+                CoreIsolado = isolated,
+                EntryPoints = entry
+            };
+
+            var json = JsonSerializer.Serialize(
+                output,
+                new JsonSerializerOptions { WriteIndented = true });
+
+            var path = Path.Combine(outputPath, "RefactorScope_Analysis.json");
+
+            File.WriteAllText(path, json);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: DumpIaExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\DumpIaExporter.cs
+==========================================
+using System.Text.Json;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+
+namespace RefactorScope.Exporters
+{
+    /// <summary>
+    /// Exporta dump estrutural otimizado para IA.
+    /// Inclui código fonte completo das classes.
+    /// </summary>
+    public class DumpIaExporter : IExporter
+    {
+        public string Name => "dumpIA";
+
+        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)
+        {
+            var root = context.Config.RootPath;
+
+            var tipos = context.Model.Tipos.Select(t =>
+            {
+                var fullPath = Path.Combine(root, t.DeclaredInFile);
+
+                string code = "";
+
+                if (File.Exists(fullPath))
+                    code = File.ReadAllText(fullPath);
+
+                return new
+                {
+                    t.Name,
+                    t.Namespace,
+                    File = t.DeclaredInFile,
+                    Code = code
+                };
+            });
+
+            var output = new
+            {
+                RootPath = root,
+                Tipos = tipos,
+                Referencias = context.Model.Referencias
+            };
+
+            var json = JsonSerializer.Serialize(
+                output,
+                new JsonSerializerOptions { WriteIndented = true });
+
+            var path = Path.Combine(outputPath, "RefactorScope_DumpIA.json");
+
+            File.WriteAllText(path, json);
+        }
+    }
+}
+
+

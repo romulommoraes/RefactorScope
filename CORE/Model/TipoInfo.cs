@@ -30,6 +30,13 @@
         /// </summary>
         public IReadOnlyList<ReferenciaInfo> References { get; }
 
+        /// <summary>
+        /// Caminho completo do arquivo onde o tipo está definido.
+        /// Necessário para geração do Dump IA.
+        /// </summary>
+
+        public string FilePath { get; set; } = string.Empty;
+
         public TipoInfo(
             string name,
             string @namespace,

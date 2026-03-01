@@ -2,18 +2,20 @@
 ARQUIVO: Program.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs
 ==========================================
+using RefactorScope.Analyzers;
+using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Orchestration;
-using RefactorScope.Parsers.CSharpRegex;
-using RefactorScope.Analyzers;
+using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
-using RefactorScope.Core.Abstractions;
+using RefactorScope.Parsers.CSharpRegex;
 
-Console.WriteLine("RefactorScope 1.0 - Running...\n");
+Console.WriteLine();
 
 try
 {
     var config = ConfigLoader.Load();
+    ConfigValidator.Validate(config);
 
     if (!Directory.Exists(config.RootPath))
     {
@@ -21,8 +23,20 @@ try
         return;
     }
 
+    // Header visual
+    TerminalRenderer.ShowHeader(config.RootPath);
+
+    // Parse
     IParserCodigo parser = new CSharpRegexParser();
-    var model = parser.Parse(config.RootPath);
+
+    var model = TerminalRenderer.WithSpinner(
+        "Parsing código...",
+        () => parser.Parse(config.RootPath)
+    );
+
+    TerminalRenderer.Success("Parsing concluído");
+
+
 
     var context = new AnalysisContext(config, model);
 
@@ -36,19 +50,53 @@ try
 
     var orchestrator = new AnalysisOrchestrator(analyzers);
 
-    var report = orchestrator.Execute(context);
+    // Execução
+    var report = TerminalRenderer.WithSpinner(
+        "Executando analisadores...",
+        () => orchestrator.Execute(context)
+    );
 
-    Console.WriteLine("Execution finished.\n");
+    TerminalRenderer.Success("Análise concluída");
+
+    TerminalRenderer.Step("Gerando dumps...");
+
+    var exporters = new List<IExporter>
+{
+    new DumpAnaliseExporter(),
+    new DumpIaExporter()
+};
+
+    Directory.CreateDirectory(config.OutputPath);
+
+    foreach (var exporter in exporters)
+    {
+        exporter.Export(
+            context,
+            report,
+            config.OutputPath
+        );
+    }
+
+    TerminalRenderer.Success("Dumps gerados com sucesso");
+
+    // Seção de resultados
+    TerminalRenderer.Section("Resultados");
+
+    int zombieCount = 0;
+    int isolatedCount = 0;
+    int entryCount = 0;
 
     foreach (var result in report.Results)
     {
         if (result is RefactorScope.Core.Results.ZombieResult zombie)
         {
-            Console.WriteLine("Zombie Types Found:");
+            zombieCount = zombie.ZombieTypes.Count;
 
+            Console.WriteLine("\nZombie Types Found:");
             foreach (var z in zombie.ZombieTypes)
                 Console.WriteLine($" - {z}");
         }
+
         if (result is RefactorScope.Core.Results.ArchitecturalClassificationResult arch)
         {
             Console.WriteLine("\nArchitectural Classification:");
@@ -60,15 +108,20 @@ try
                 );
             }
         }
+
         if (result is RefactorScope.Core.Results.EntryPointHeuristicResult ep)
         {
-            Console.WriteLine("\nEntry Points:");
+            entryCount = ep.EntryPoints.Count;
 
+            Console.WriteLine("\nEntry Points:");
             foreach (var e in ep.EntryPoints)
                 Console.WriteLine($" - {e}");
         }
+
         if (result is RefactorScope.Core.Results.CoreIsolationResult iso)
         {
+            isolatedCount = iso.IsolatedCoreTypes.Count;
+
             Console.WriteLine("\nIsolated Core Types:");
 
             if (!iso.IsolatedCoreTypes.Any())
@@ -83,6 +136,13 @@ try
         }
     }
 
+    // Resumo visual
+    TerminalRenderer.Section("Resumo");
+    TerminalRenderer.TableSummary(
+        zombieCount,
+        isolatedCount,
+        entryCount
+    );
 }
 catch (Exception ex)
 {

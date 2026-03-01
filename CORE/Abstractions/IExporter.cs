@@ -1,9 +1,13 @@
-﻿using RefactorScope.Core.Orchestration;
+﻿using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
 
 namespace RefactorScope.Core.Abstractions
 {
     /// <summary>
     /// Define o contrato para exportação de resultados de análise.
+    /// 
+    /// Exportadores não decidem o destino.
+    /// O CLI define o outputPath.
     /// </summary>
     public interface IExporter
     {
@@ -13,10 +17,15 @@ namespace RefactorScope.Core.Abstractions
         string Name { get; }
 
         /// <summary>
-        /// Exporta o relatório consolidado.
+        /// Exporta os resultados da análise.
         /// </summary>
-        /// <param name="report">Relatório consolidado.</param>
-        /// <param name="outputPath">Caminho de saída.</param>
-        void Export(ConsolidatedReport report, string outputPath);
+        /// <param name="context">Contexto da análise</param>
+        /// <param name="report">Relatório consolidado</param>
+        /// <param name="outputPath">Pasta de saída definida pelo CLI</param>
+        void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath
+        );
     }
 }

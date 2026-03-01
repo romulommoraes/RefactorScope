@@ -47,12 +47,16 @@ namespace RefactorScope.Core.Abstractions
 ARQUIVO: IExporter.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IExporter.cs
 ==========================================
+using RefactorScope.Core.Context;
 using RefactorScope.Core.Orchestration;
 
 namespace RefactorScope.Core.Abstractions
 {
     /// <summary>
     /// Define o contrato para exportação de resultados de análise.
+    /// 
+    /// Exportadores não decidem o destino.
+    /// O CLI define o outputPath.
     /// </summary>
     public interface IExporter
     {
@@ -62,11 +66,16 @@ namespace RefactorScope.Core.Abstractions
         string Name { get; }
 
         /// <summary>
-        /// Exporta o relatório consolidado.
+        /// Exporta os resultados da análise.
         /// </summary>
-        /// <param name="report">Relatório consolidado.</param>
-        /// <param name="outputPath">Caminho de saída.</param>
-        void Export(ConsolidatedReport report, string outputPath);
+        /// <param name="context">Contexto da análise</param>
+        /// <param name="report">Relatório consolidado</param>
+        /// <param name="outputPath">Pasta de saída definida pelo CLI</param>
+        void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath
+        );
     }
 }
 
@@ -104,6 +113,8 @@ namespace RefactorScope.Core.Abstractions
 ARQUIVO: RefactorScopeConfig.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Configuration\RefactorScopeConfig.cs
 ==========================================
+using RefactorScope.CORE.Context;
+
 namespace RefactorScope.Core.Configuration
 {
     /// <summary>
@@ -142,6 +153,14 @@ namespace RefactorScope.Core.Configuration
         /// Exportadores ativos.
         /// </summary>
         public List<string> Exporters { get; set; } = new();
+
+        /// <summary>
+        /// Camadas / Modulos do sistema e suas regras de dependência.
+        /// </summary>
+
+        public Dictionary<string, LayerRuleConfig>? LayerRules { get; set; }
+
+        public string OutputPath { get; set; } = "refactorscope-output";
     }
 }
 
@@ -184,6 +203,21 @@ namespace RefactorScope.Core.Context
             Model = model ?? throw new ArgumentNullException(nameof(model));
             ExecutionTime = DateTime.UtcNow;
         }
+    }
+}
+
+
+==========================================
+ARQUIVO: LayerRuleConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Context\LayerRuleConfig.cs
+==========================================
+namespace RefactorScope.CORE.Context
+{
+    public class LayerRuleConfig
+    {
+        public List<string>? NameStartsWith { get; set; }
+        public List<string>? NamespaceContains { get; set; }
+        public List<string>? NameEquals { get; set; }
     }
 }
 
@@ -347,6 +381,13 @@ namespace RefactorScope.Core.Model
         /// Referências feitas por este tipo.
         /// </summary>
         public IReadOnlyList<ReferenciaInfo> References { get; }
+
+        /// <summary>
+        /// Caminho completo do arquivo onde o tipo está definido.
+        /// Necessário para geração do Dump IA.
+        /// </summary>
+
+        public string FilePath { get; set; } = string.Empty;
 
         public TipoInfo(
             string name,

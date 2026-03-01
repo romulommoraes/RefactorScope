@@ -44,5 +44,7 @@ namespace RefactorScope.Core.Configuration
         /// </summary>
 
         public Dictionary<string, LayerRuleConfig>? LayerRules { get; set; }
+
+        public string OutputPath { get; set; } = "refactorscope-output";
     }
 }
