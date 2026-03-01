@@ -10,6 +10,7 @@ Console.WriteLine();
 try
 {
     var config = ConfigLoader.Load();
+    ConfigValidator.Validate(config);
 
     if (!Directory.Exists(config.RootPath))
     {
@@ -21,10 +22,16 @@ try
     TerminalRenderer.ShowHeader(config.RootPath);
 
     // Parse
-    TerminalRenderer.Step("Parsing código...");
     IParserCodigo parser = new CSharpRegexParser();
-    var model = parser.Parse(config.RootPath);
+
+    var model = TerminalRenderer.WithSpinner(
+        "Parsing código...",
+        () => parser.Parse(config.RootPath)
+    );
+
     TerminalRenderer.Success("Parsing concluído");
+
+
 
     var context = new AnalysisContext(config, model);
 
@@ -39,8 +46,11 @@ try
     var orchestrator = new AnalysisOrchestrator(analyzers);
 
     // Execução
-    TerminalRenderer.Step("Executando analisadores...");
-    var report = orchestrator.Execute(context);
+    var report = TerminalRenderer.WithSpinner(
+        "Executando analisadores...",
+        () => orchestrator.Execute(context)
+    );
+
     TerminalRenderer.Success("Análise concluída");
 
     // Seção de resultados

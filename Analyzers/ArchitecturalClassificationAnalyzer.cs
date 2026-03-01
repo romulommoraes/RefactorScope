@@ -1,11 +1,16 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Infrastructure;
 
 namespace RefactorScope.Analyzers
 {
     /// <summary>
-    /// Classifica tipos conforme heurísticas arquiteturais.
+    /// Classifica os tipos do sistema em camadas arquiteturais
+    /// com base em regras configuráveis (layerRules).
+    ///
+    /// NÃO contém heurísticas hardcoded.
+    /// A definição de camadas é externa e fornecida via config.
     /// </summary>
     public class ArchitecturalClassificationAnalyzer : IAnalyzer
     {
@@ -28,8 +33,12 @@ namespace RefactorScope.Analyzers
                     ? usageMap[tipo.Name]
                     : 0;
 
-                var layer = DetectLayer(tipo);
-                var status = DetectStatus(tipo, usage);
+                var layer = LayerRuleEvaluator.ResolveLayer(
+                    tipo,
+                    context.Config.LayerRules
+                );
+
+                var status = DetectStatus(usage);
                 var removal = DetectRemovalCandidate(status);
 
                 items.Add(new ArchitecturalClassificationItem
@@ -46,29 +55,19 @@ namespace RefactorScope.Analyzers
             return new ArchitecturalClassificationResult(items);
         }
 
-        private string DetectLayer(dynamic tipo)
+        /// <summary>
+        /// Define o status estrutural do tipo.
+        /// </summary>
+        private string DetectStatus(int usage)
         {
-            if (tipo.Name == "Program")
-                return "Infra";
-
-            if (tipo.Name.StartsWith("Aba"))
-                return "UI";
-
-            if (tipo.Namespace.Contains("Nucleo") ||
-                tipo.Namespace.Contains("Limbic"))
-                return "Core";
-
-            return "Aplicação";
+            return usage == 0
+                ? "Morto Absoluto"
+                : "Ativo";
         }
 
-        private string DetectStatus(dynamic tipo, int usage)
-        {
-            if (usage == 0)
-                return "Morto Absoluto";
-
-            return "Ativo";
-        }
-
+        /// <summary>
+        /// Determina se o tipo é candidato à remoção.
+        /// </summary>
         private string DetectRemovalCandidate(string status)
         {
             return status switch

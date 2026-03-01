@@ -8,6 +8,17 @@
     "zombie": true,
     "architecture": true
   },
+  "layerRules": {
+    "UI": {
+      "nameStartsWith": [ "Aba" ]
+    },
+    "Core": {
+      "namespaceContains": [ "Nucleo", "Limbic" ]
+    },
+    "Infra": {
+      "nameEquals": [ "Program" ]
+    }
+  },
 
   "parser": "CSharpRegex",
 

@@ -16,3 +16,4 @@ C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\refact
 C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Spectre.Console.dll
 C:\Users\romul\source\repos\RefactorScope\RefactorScope\obj\Debug\net10.0\RefactorScope.csproj.AssemblyReference.cache
 C:\Users\romul\source\repos\RefactorScope\RefactorScope\obj\Debug\net10.0\Refactor.BA425900.Up2Date
+C:\Users\romul\source\repos\RefactorScope\RefactorScope\obj\Debug\net10.0\RefactorScope.sourcelink.json

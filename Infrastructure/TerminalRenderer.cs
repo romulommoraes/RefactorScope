@@ -44,5 +44,17 @@ namespace RefactorScope.Infrastructure
 
             AnsiConsole.Write(table);
         }
+
+        public static T WithSpinner<T>(string message, Func<T> action)
+        {
+            return AnsiConsole.Status()
+                .Start(message, ctx =>
+                {
+                    ctx.Spinner(Spinner.Known.Dots);
+                    ctx.SpinnerStyle(Style.Parse("green"));
+
+                    return action();
+                });
+        }
     }
 }
