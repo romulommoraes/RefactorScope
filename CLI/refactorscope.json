@@ -1,0 +1,14 @@
+{
+  "rootPath": "C:\\Users\\romul\\source\\repos\\Scriptome",
+
+  "include": [],
+  "exclude": [],
+
+  "analyzers": {
+    "zombie": true
+  },
+
+  "parser": "CSharpRegex",
+
+  "exporters": []
+}

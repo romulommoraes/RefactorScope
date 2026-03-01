@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "UfPY+jhu+T4=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\romul\\source\\repos\\RefactorScope\\RefactorScope\\RefactorScope.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\romul\\.nuget\\packages\\spectre.console\\0.54.0\\spectre.console.0.54.0.nupkg.sha512"
+  ],
+  "logs": []
+}

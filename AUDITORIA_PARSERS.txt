@@ -1,0 +1,159 @@
+==========================================
+ARQUIVO: CSharpRegexParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CSharpRegex\CSharpRegexParser.cs
+==========================================
+using System.Text.RegularExpressions;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Parsers.CSharpRegex
+{
+    /// <summary>
+    /// Parser C# baseado em Regex.
+    /// Constrói o Modelo Estrutural sem dependência de AST.
+    /// </summary>
+    public class CSharpRegexParser : IParserCodigo
+    {
+        public string Name => "CSharpRegex";
+
+        private static readonly Regex NamespaceRegex =
+            new(@"namespace\s+([\w\.]+)", RegexOptions.Compiled);
+
+        private static readonly Regex TypeRegex =
+            new(@"\b(class|interface|record|struct)\s+(\w+)",
+                RegexOptions.Compiled);
+
+        public ModeloEstrutural Parse(string rootPath)
+        {
+            var arquivos = new List<ArquivoInfo>();
+            var tipos = new List<TipoInfo>();
+
+            var csFiles = Directory.GetFiles(rootPath, "*.cs", SearchOption.AllDirectories);
+
+            // 1?? Primeiro passo: coletar todos os tipos
+            foreach (var file in csFiles)
+            {
+                var source = File.ReadAllText(file);
+                var relativePath = Path.GetRelativePath(rootPath, file);
+
+                var namespaceMatch = NamespaceRegex.Match(source);
+                var ns = namespaceMatch.Success
+                    ? namespaceMatch.Groups[1].Value
+                    : "Global";
+
+                var typeMatches = TypeRegex.Matches(source);
+
+                foreach (Match match in typeMatches)
+                {
+                    var kind = match.Groups[1].Value;
+                    var typeName = match.Groups[2].Value;
+                    var invalid = new HashSet<string>
+                    {
+                        "public", "private", "internal", "protected",
+                        "class", "interface", "record", "struct",
+                        "static", "void", "string", "int", "bool"
+                    };
+
+                    if (invalid.Contains(typeName))
+                        continue;
+
+                    tipos.Add(new TipoInfo(
+                        typeName,
+                        ns,
+                        kind,
+                        relativePath,
+                        new List<ReferenciaInfo>()));
+                }
+            }
+
+            var tipoNames = tipos.Select(t => t.Name).ToHashSet();
+
+            var referencias = new List<ReferenciaInfo>();
+
+            // 2?? Segundo passo: detectar referências reais
+            foreach (var file in csFiles)
+            {
+                var source = File.ReadAllText(file);
+
+                foreach (var tipo in tipos.Where(t => t.DeclaredInFile ==
+                             Path.GetRelativePath(rootPath, file)))
+                {
+                    foreach (var possibleTarget in tipoNames)
+                    {
+                        if (possibleTarget == tipo.Name)
+                            continue;
+
+                        if (Regex.IsMatch(source, $@"\b{possibleTarget}\b"))
+                        {
+                            var referencia = new ReferenciaInfo(tipo.Name, possibleTarget);
+                            referencias.Add(referencia);
+                        }
+                    }
+                }
+            }
+
+            // Atualizar referências nos tipos
+            foreach (var tipo in tipos)
+            {
+                var refs = referencias
+                    .Where(r => r.FromType == tipo.Name)
+                    .ToList();
+
+                typeof(TipoInfo)
+                    .GetField("<References>k__BackingField",
+                        System.Reflection.BindingFlags.Instance |
+                        System.Reflection.BindingFlags.NonPublic)
+                    ?.SetValue(tipo, refs);
+            }
+
+            // Criar ArquivoInfo
+            foreach (var file in csFiles)
+            {
+                var source = File.ReadAllText(file);
+                var relativePath = Path.GetRelativePath(rootPath, file);
+
+                var namespaceMatch = NamespaceRegex.Match(source);
+                var ns = namespaceMatch.Success
+                    ? namespaceMatch.Groups[1].Value
+                    : "Global";
+
+                var tiposDoArquivo = tipos
+                    .Where(t => t.DeclaredInFile == relativePath)
+                    .ToList();
+
+                arquivos.Add(new ArquivoInfo(
+                    relativePath,
+                    ns,
+                    source,
+                    tiposDoArquivo));
+            }
+
+            return new ModeloEstrutural(
+                rootPath,
+                arquivos,
+                tipos,
+                referencias);
+        }
+
+        private List<ReferenciaInfo> DetectReferences(string source, string fromType)
+        {
+            var refs = new List<ReferenciaInfo>();
+
+            var tokens = Regex.Matches(source, @"\b[A-Z]\w+\b");
+
+            foreach (Match token in tokens)
+            {
+                var toType = token.Value;
+
+                if (toType == fromType)
+                    continue;
+
+                refs.Add(new ReferenciaInfo(fromType, toType));
+            }
+
+            return refs;
+        }
+    }
+}
+
+

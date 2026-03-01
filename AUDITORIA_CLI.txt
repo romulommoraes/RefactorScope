@@ -1,0 +1,92 @@
+==========================================
+ARQUIVO: Program.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Parsers.CSharpRegex;
+using RefactorScope.Analyzers;
+using RefactorScope.Infrastructure;
+using RefactorScope.Core.Abstractions;
+
+Console.WriteLine("RefactorScope 1.0 - Running...\n");
+
+try
+{
+    var config = ConfigLoader.Load();
+
+    if (!Directory.Exists(config.RootPath))
+    {
+        Console.WriteLine($"Invalid rootPath: {config.RootPath}");
+        return;
+    }
+
+    IParserCodigo parser = new CSharpRegexParser();
+    var model = parser.Parse(config.RootPath);
+
+    var context = new AnalysisContext(config, model);
+
+    var analyzers = new List<IAnalyzer>
+    {
+        new ZombieAnalyzer(),
+        new ArchitecturalClassificationAnalyzer(),
+        new EntryPointHeuristicAnalyzer(),
+        new CoreIsolationAnalyzer()
+    };
+
+    var orchestrator = new AnalysisOrchestrator(analyzers);
+
+    var report = orchestrator.Execute(context);
+
+    Console.WriteLine("Execution finished.\n");
+
+    foreach (var result in report.Results)
+    {
+        if (result is RefactorScope.Core.Results.ZombieResult zombie)
+        {
+            Console.WriteLine("Zombie Types Found:");
+
+            foreach (var z in zombie.ZombieTypes)
+                Console.WriteLine($" - {z}");
+        }
+        if (result is RefactorScope.Core.Results.ArchitecturalClassificationResult arch)
+        {
+            Console.WriteLine("\nArchitectural Classification:");
+
+            foreach (var item in arch.Items.OrderBy(x => x.UsageCount))
+            {
+                Console.WriteLine(
+                    $" - {item.TypeName} | Layer: {item.Layer} | Status: {item.Status} | Remove: {item.RemovalCandidate}"
+                );
+            }
+        }
+        if (result is RefactorScope.Core.Results.EntryPointHeuristicResult ep)
+        {
+            Console.WriteLine("\nEntry Points:");
+
+            foreach (var e in ep.EntryPoints)
+                Console.WriteLine($" - {e}");
+        }
+        if (result is RefactorScope.Core.Results.CoreIsolationResult iso)
+        {
+            Console.WriteLine("\nIsolated Core Types:");
+
+            if (!iso.IsolatedCoreTypes.Any())
+            {
+                Console.WriteLine(" - None");
+            }
+            else
+            {
+                foreach (var t in iso.IsolatedCoreTypes)
+                    Console.WriteLine($" - {t}");
+            }
+        }
+    }
+
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
+
+

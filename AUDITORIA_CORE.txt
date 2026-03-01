@@ -1,0 +1,569 @@
+==========================================
+ARQUIVO: IAnalysisResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IAnalysisResult.cs
+==========================================
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Representa o resultado de uma análise estrutural.
+    /// Interface de marcação para permitir agregação polimórfica.
+    /// </summary>
+    public interface IAnalysisResult
+    {
+    }
+}
+
+
+==========================================
+ARQUIVO: IAnalyzer.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IAnalyzer.cs
+==========================================
+using RefactorScope.Core.Context;
+
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Define o contrato de execução para analisadores estruturais.
+    /// Cada analisador deve operar de forma isolada e determinística.
+    /// </summary>
+    public interface IAnalyzer
+    {
+        /// <summary>
+        /// Nome único do analisador (usado na configuração).
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Executa a análise com base no contexto fornecido.
+        /// </summary>
+        /// <param name="context">Contexto de análise contendo modelo estrutural e configuração.</param>
+        /// <returns>Resultado da análise.</returns>
+        IAnalysisResult Analyze(AnalysisContext context);
+    }
+}
+
+
+==========================================
+ARQUIVO: IExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IExporter.cs
+==========================================
+using RefactorScope.Core.Orchestration;
+
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Define o contrato para exportação de resultados de análise.
+    /// </summary>
+    public interface IExporter
+    {
+        /// <summary>
+        /// Nome do exportador (ex: JSON, CSV, DumpIA).
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Exporta o relatório consolidado.
+        /// </summary>
+        /// <param name="report">Relatório consolidado.</param>
+        /// <param name="outputPath">Caminho de saída.</param>
+        void Export(ConsolidatedReport report, string outputPath);
+    }
+}
+
+
+==========================================
+ARQUIVO: IParserCodigo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Abstractions\IParserCodigo.cs
+==========================================
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Define o contrato para parsers de código.
+    /// Converte código fonte em Modelo Estrutural agnóstico.
+    /// </summary>
+    public interface IParserCodigo
+    {
+        /// <summary>
+        /// Nome do parser (ex: CSharpRegex, Roslyn).
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Constrói o modelo estrutural a partir do caminho alvo.
+        /// </summary>
+        /// <param name="rootPath">Raiz do escopo de análise.</param>
+        /// <returns>Modelo estrutural gerado.</returns>
+        ModeloEstrutural Parse(string rootPath);
+    }
+}
+
+
+==========================================
+ARQUIVO: RefactorScopeConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Configuration\RefactorScopeConfig.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Representa a configuração de execução do RefactorScope.
+    /// Define escopo de análise, analisadores ativos e exportações.
+    /// </summary>
+    public class RefactorScopeConfig
+    {
+        /// <summary>
+        /// Caminho raiz do escopo de análise.
+        /// </summary>
+        public string RootPath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Pastas ou arquivos a incluir na análise.
+        /// </summary>
+        public List<string> Include { get; set; } = new();
+
+        /// <summary>
+        /// Pastas ou arquivos a excluir da análise.
+        /// </summary>
+        public List<string> Exclude { get; set; } = new();
+
+        /// <summary>
+        /// Define quais analisadores estão habilitados.
+        /// A chave deve corresponder ao Name do analisador.
+        /// </summary>
+        public Dictionary<string, bool> Analyzers { get; set; } = new();
+
+        /// <summary>
+        /// Nome do parser a ser utilizado.
+        /// </summary>
+        public string Parser { get; set; } = "CSharpRegex";
+
+        /// <summary>
+        /// Exportadores ativos.
+        /// </summary>
+        public List<string> Exporters { get; set; } = new();
+    }
+}
+
+
+==========================================
+ARQUIVO: AnalysisContext.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Context\AnalysisContext.cs
+==========================================
+using RefactorScope.Core.Configuration;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Context
+{
+    /// <summary>
+    /// Representa o contexto de execução compartilhado entre os analisadores.
+    /// Contém o modelo estrutural e a configuração ativa.
+    /// </summary>
+    public class AnalysisContext
+    {
+        /// <summary>
+        /// Configuração da execução.
+        /// </summary>
+        public RefactorScopeConfig Config { get; }
+
+        /// <summary>
+        /// Modelo estrutural gerado pelo parser.
+        /// </summary>
+        public ModeloEstrutural Model { get; }
+
+        /// <summary>
+        /// Timestamp da execução.
+        /// </summary>
+        public DateTime ExecutionTime { get; }
+
+        public AnalysisContext(
+            RefactorScopeConfig config,
+            ModeloEstrutural model)
+        {
+            Config = config ?? throw new ArgumentNullException(nameof(config));
+            Model = model ?? throw new ArgumentNullException(nameof(model));
+            ExecutionTime = DateTime.UtcNow;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArquivoInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\ArquivoInfo.cs
+==========================================
+using System.Reflection;
+
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa um arquivo dentro do escopo analisado.
+    /// </summary>
+    public class ArquivoInfo
+    {
+        /// <summary>
+        /// Caminho relativo ao root analisado.
+        /// </summary>
+        public string RelativePath { get; }
+
+        /// <summary>
+        /// Namespace detectado no arquivo.
+        /// </summary>
+        public string Namespace { get; }
+
+        /// <summary>
+        /// Conteúdo do código fonte.
+        /// </summary>
+        public string SourceCode { get; }
+
+        /// <summary>
+        /// Tipos declarados neste arquivo.
+        /// </summary>
+        public IReadOnlyList<TipoInfo> Tipos { get; }
+
+        public ArquivoInfo(
+            string relativePath,
+            string @namespace,
+            string sourceCode,
+            IReadOnlyList<TipoInfo> tipos)
+        {
+            RelativePath = relativePath;
+            Namespace = @namespace;
+            SourceCode = sourceCode;
+            Tipos = tipos;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ModeloEstrutural.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\ModeloEstrutural.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa o modelo estrutural agnóstico do código analisado.
+    /// </summary>
+    public class ModeloEstrutural
+    {
+        /// <summary>
+        /// Caminho raiz analisado.
+        /// </summary>
+        public string RootPath { get; }
+
+        /// <summary>
+        /// Arquivos encontrados no escopo.
+        /// </summary>
+        public IReadOnlyList<ArquivoInfo> Arquivos { get; }
+
+        /// <summary>
+        /// Todos os tipos detectados.
+        /// </summary>
+        public IReadOnlyList<TipoInfo> Tipos { get; }
+
+        /// <summary>
+        /// Todas as referências detectadas.
+        /// </summary>
+        public IReadOnlyList<ReferenciaInfo> Referencias { get; }
+
+        public ModeloEstrutural(
+            string rootPath,
+            IReadOnlyList<ArquivoInfo> arquivos,
+            IReadOnlyList<TipoInfo> tipos,
+            IReadOnlyList<ReferenciaInfo> referencias)
+        {
+            RootPath = rootPath;
+            Arquivos = arquivos;
+            Tipos = tipos;
+            Referencias = referencias;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ReferenciaInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\ReferenciaInfo.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa uma referência entre tipos.
+    /// </summary>
+    public class ReferenciaInfo
+    {
+        /// <summary>
+        /// Tipo de origem da referência.
+        /// </summary>
+        public string FromType { get; }
+
+        /// <summary>
+        /// Tipo referenciado.
+        /// </summary>
+        public string ToType { get; }
+
+        public ReferenciaInfo(string fromType, string toType)
+        {
+            FromType = fromType;
+            ToType = toType;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: TipoInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Model\TipoInfo.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa um tipo estrutural do código.
+    /// </summary>
+    public class TipoInfo
+    {
+        /// <summary>
+        /// Nome do tipo.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// Namespace do tipo.
+        /// </summary>
+        public string Namespace { get; }
+
+        /// <summary>
+        /// Tipo de declaração (class, interface, record, struct).
+        /// </summary>
+        public string Kind { get; }
+
+        /// <summary>
+        /// Caminho do arquivo onde foi declarado.
+        /// </summary>
+        public string DeclaredInFile { get; }
+
+        /// <summary>
+        /// Referências feitas por este tipo.
+        /// </summary>
+        public IReadOnlyList<ReferenciaInfo> References { get; }
+
+        public TipoInfo(
+            string name,
+            string @namespace,
+            string kind,
+            string declaredInFile,
+            IReadOnlyList<ReferenciaInfo> references)
+        {
+            Name = name;
+            Namespace = @namespace;
+            Kind = kind;
+            DeclaredInFile = declaredInFile;
+            References = references;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: AnalysisOrchestrator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Orchestration\AnalysisOrchestrator.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+
+namespace RefactorScope.Core.Orchestration
+{
+    /// <summary>
+    /// Responsável por executar os analisadores habilitados
+    /// e consolidar seus resultados.
+    /// </summary>
+    public class AnalysisOrchestrator
+    {
+        private readonly IEnumerable<IAnalyzer> _analyzers;
+
+        public AnalysisOrchestrator(IEnumerable<IAnalyzer> analyzers)
+        {
+            _analyzers = analyzers;
+        }
+
+        /// <summary>
+        /// Executa os analisadores ativos conforme configuração.
+        /// </summary>
+        public ConsolidatedReport Execute(AnalysisContext context)
+        {
+            var activeResults = new List<IAnalysisResult>();
+
+            foreach (var analyzer in _analyzers)
+            {
+                if (!IsAnalyzerEnabled(context, analyzer))
+                    continue;
+
+                var result = analyzer.Analyze(context);
+                activeResults.Add(result);
+            }
+
+            return new ConsolidatedReport(
+                activeResults,
+                context.ExecutionTime,
+                context.Config.RootPath);
+        }
+
+        private bool IsAnalyzerEnabled(AnalysisContext context, IAnalyzer analyzer)
+        {
+            if (context.Config.Analyzers == null)
+                return true;
+
+            if (!context.Config.Analyzers.TryGetValue(analyzer.Name, out var enabled))
+                return true;
+
+            return enabled;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ConsolidatedReport.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Orchestration\ConsolidatedReport.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Orchestration
+{
+    /// <summary>
+    /// Representa o relatório consolidado da execução.
+    /// Agrupa os resultados produzidos pelos analisadores.
+    /// </summary>
+    public class ConsolidatedReport
+    {
+        /// <summary>
+        /// Resultados produzidos pelos analisadores.
+        /// </summary>
+        public IReadOnlyCollection<IAnalysisResult> Results { get; }
+
+        /// <summary>
+        /// Timestamp da execução.
+        /// </summary>
+        public DateTime ExecutionTime { get; }
+
+        /// <summary>
+        /// Escopo alvo da análise.
+        /// </summary>
+        public string TargetScope { get; }
+
+        public ConsolidatedReport(
+            IReadOnlyCollection<IAnalysisResult> results,
+            DateTime executionTime,
+            string targetScope)
+        {
+            Results = results;
+            ExecutionTime = executionTime;
+            TargetScope = targetScope;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalClassificationResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\ArchitecturalClassificationResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da classificação arquitetural.
+    /// </summary>
+    public class ArchitecturalClassificationResult : IAnalysisResult
+    {
+        public IReadOnlyList<ArchitecturalClassificationItem> Items { get; }
+
+        public ArchitecturalClassificationResult(IReadOnlyList<ArchitecturalClassificationItem> items)
+        {
+            Items = items;
+        }
+    }
+
+    public class ArchitecturalClassificationItem
+    {
+        public string TypeName { get; init; } = string.Empty;
+        public string Namespace { get; init; } = string.Empty;
+        public string Layer { get; init; } = string.Empty;
+        public string Status { get; init; } = string.Empty;
+        public string RemovalCandidate { get; init; } = string.Empty;
+        public int UsageCount { get; init; }
+    }
+}
+
+
+==========================================
+ARQUIVO: CoreIsolationResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\CoreIsolationResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Representa tipos da camada Core isolados estruturalmente.
+    /// </summary>
+    public class CoreIsolationResult : IAnalysisResult
+    {
+        public IReadOnlyList<string> IsolatedCoreTypes { get; }
+
+        public CoreIsolationResult(IReadOnlyList<string> isolatedCoreTypes)
+        {
+            IsolatedCoreTypes = isolatedCoreTypes;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: EntryPointHeuristicResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\EntryPointHeuristicResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    public class EntryPointHeuristicResult : IAnalysisResult
+    {
+        public IReadOnlyList<string> EntryPoints { get; }
+
+        public EntryPointHeuristicResult(IReadOnlyList<string> entryPoints)
+        {
+            EntryPoints = entryPoints;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ZombieResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CORE\Results\ZombieResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da análise de tipos potencialmente não utilizados.
+    /// </summary>
+    public class ZombieResult : IAnalysisResult
+    {
+        /// <summary>
+        /// Tipos que não possuem referências externas.
+        /// </summary>
+        public IReadOnlyList<string> ZombieTypes { get; }
+
+        public ZombieResult(IReadOnlyList<string> zombieTypes)
+        {
+            ZombieTypes = zombieTypes;
+        }
+    }
+}
+
+
