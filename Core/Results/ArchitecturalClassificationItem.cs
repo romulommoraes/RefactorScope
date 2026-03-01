@@ -15,5 +15,7 @@ namespace RefactorScope.Core.Results
         public string Status { get; init; } = string.Empty;
         public string RemovalCandidate { get; init; } = string.Empty;
         public int UsageCount { get; init; }
+
+        public string DeclaredInFile { get; init; }
     }
 }

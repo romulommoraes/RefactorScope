@@ -16,46 +16,43 @@ namespace RefactorScope.Parsers.CSharpRegex
     /// - Construir ArquivoInfo
     /// - Produzir ModeloEstrutural consumido pelos Analyzers
     /// 
-    /// Design:
-    /// - Dois passos:
-    ///     1) Descoberta de Tipos
-    ///     2) Detecção de Referências
+    /// Respeita escopo de análise via Include/Exclude.
     /// </summary>
     public class CSharpRegexParser : IParserCodigo
     {
         public string Name => "CSharpRegex";
 
-        /// <summary>
-        /// Detecta namespace do arquivo.
-        /// </summary>
         private static readonly Regex NamespaceRegex =
             new(@"namespace\s+([\w\.]+)", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Detecta declaração de tipos.
-        /// </summary>
         private static readonly Regex TypeRegex =
             new(@"\b(class|interface|record|struct)\s+(\w+)",
                 RegexOptions.Compiled);
 
-        public ModeloEstrutural Parse(string rootPath)
+        public ModeloEstrutural Parse(
+            string rootPath,
+            IEnumerable<string>? include = null,
+            IEnumerable<string>? exclude = null)
         {
             var arquivos = new List<ArquivoInfo>();
             var tipos = new List<TipoInfo>();
 
-            var csFiles = Directory.GetFiles(rootPath, "*.cs", SearchOption.AllDirectories);
+            var csFiles = Directory
+                .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
+                .Where(f => ShouldInclude(f, rootPath, include, exclude))
+                .ToList();
 
-            // ==================================================
-            // 1️⃣ Primeiro passo: coletar todos os tipos
-            // ==================================================
+            // =========================
+            // 1️⃣ Coletar tipos
+            // =========================
             foreach (var file in csFiles)
             {
                 var source = File.ReadAllText(file);
                 var relativePath = Path.GetRelativePath(rootPath, file);
 
-                var namespaceMatch = NamespaceRegex.Match(source);
-                var ns = namespaceMatch.Success
-                    ? namespaceMatch.Groups[1].Value
+                var nsMatch = NamespaceRegex.Match(source);
+                var ns = nsMatch.Success
+                    ? nsMatch.Groups[1].Value
                     : "Global";
 
                 var typeMatches = TypeRegex.Matches(source);
@@ -65,7 +62,6 @@ namespace RefactorScope.Parsers.CSharpRegex
                     var kind = match.Groups[1].Value;
                     var typeName = match.Groups[2].Value;
 
-                    // Filtro contra falsos positivos léxicos
                     var invalid = new HashSet<string>
                     {
                         "public", "private", "internal", "protected",
@@ -81,16 +77,17 @@ namespace RefactorScope.Parsers.CSharpRegex
                         ns,
                         kind,
                         relativePath,
-                        new List<ReferenciaInfo>()));
+                        new List<ReferenciaInfo>()
+                    ));
                 }
             }
 
             var tipoNames = tipos.Select(t => t.Name).ToHashSet();
             var referencias = new List<ReferenciaInfo>();
 
-            // ==================================================
-            // 2️⃣ Segundo passo: detectar referências reais
-            // ==================================================
+            // =========================
+            // 2️⃣ Detectar referências
+            // =========================
             foreach (var file in csFiles)
             {
                 var source = File.ReadAllText(file);
@@ -98,22 +95,22 @@ namespace RefactorScope.Parsers.CSharpRegex
 
                 foreach (var tipo in tipos.Where(t => t.DeclaredInFile == relativePath))
                 {
-                    foreach (var possibleTarget in tipoNames)
+                    foreach (var target in tipoNames)
                     {
-                        if (possibleTarget == tipo.Name)
+                        if (target == tipo.Name)
                             continue;
 
-                        if (Regex.IsMatch(source, $@"\b{possibleTarget}\b"))
+                        if (Regex.IsMatch(source, $@"\b{target}\b"))
                         {
-                            referencias.Add(new ReferenciaInfo(tipo.Name, possibleTarget));
+                            referencias.Add(new ReferenciaInfo(tipo.Name, target));
                         }
                     }
                 }
             }
 
-            // ==================================================
-            // 3️⃣ Atualizar referências nos tipos
-            // ==================================================
+            // =========================
+            // 3️⃣ Atualizar refs
+            // =========================
             foreach (var tipo in tipos)
             {
                 var refs = referencias
@@ -127,17 +124,17 @@ namespace RefactorScope.Parsers.CSharpRegex
                     ?.SetValue(tipo, refs);
             }
 
-            // ==================================================
-            // 4️⃣ Construir ArquivoInfo
-            // ==================================================
+            // =========================
+            // 4️⃣ ArquivoInfo
+            // =========================
             foreach (var file in csFiles)
             {
                 var source = File.ReadAllText(file);
                 var relativePath = Path.GetRelativePath(rootPath, file);
 
-                var namespaceMatch = NamespaceRegex.Match(source);
-                var ns = namespaceMatch.Success
-                    ? namespaceMatch.Groups[1].Value
+                var nsMatch = NamespaceRegex.Match(source);
+                var ns = nsMatch.Success
+                    ? nsMatch.Groups[1].Value
                     : "Global";
 
                 var tiposDoArquivo = tipos
@@ -148,40 +145,37 @@ namespace RefactorScope.Parsers.CSharpRegex
                     relativePath,
                     ns,
                     source,
-                    tiposDoArquivo));
+                    tiposDoArquivo
+                ));
             }
 
-            // ==================================================
-            // 5️⃣ Modelo final
-            // ==================================================
             return new ModeloEstrutural(
                 rootPath,
                 arquivos,
                 tipos,
-                referencias);
+                referencias
+            );
         }
 
         /// <summary>
-        /// Método auxiliar para detecção léxica genérica de referências.
-        /// Atualmente não utilizado no pipeline principal.
-        /// Mantido para evolução futura.
+        /// Aplica filtro Include/Exclude ao arquivo.
         /// </summary>
-        private List<ReferenciaInfo> DetectReferences(string source, string fromType)
+        private bool ShouldInclude(
+            string file,
+            string rootPath,
+            IEnumerable<string>? include,
+            IEnumerable<string>? exclude)
         {
-            var refs = new List<ReferenciaInfo>();
-            var tokens = Regex.Matches(source, @"\b[A-Z]\w+\b");
+            var relative = Path.GetRelativePath(rootPath, file)
+                .Replace("\\", "/");
 
-            foreach (Match token in tokens)
-            {
-                var toType = token.Value;
+            if (exclude != null && exclude.Any(e => relative.StartsWith(e)))
+                return false;
 
-                if (toType == fromType)
-                    continue;
+            if (include == null || !include.Any())
+                return true;
 
-                refs.Add(new ReferenciaInfo(fromType, toType));
-            }
-
-            return refs;
+            return include.Any(i => relative.StartsWith(i));
         }
     }
 }

@@ -45,6 +45,51 @@ namespace RefactorScope.Infrastructure
             AnsiConsole.Write(table);
         }
 
+        public static void ModuleHealth(
+            string module,
+            double score,
+            string zombie,
+            double coupling,
+            double isolation)
+        {
+            var moduleColor = ResolveModuleColor(module);
+            var scoreColor = ResolveScoreColor(score);
+            var zombieColor = zombie.StartsWith("0") ? "green" : "red";
+
+            AnsiConsole.MarkupLine(
+                $"[{moduleColor}]{module,-15}[/] " +
+                $"| Score: [{scoreColor} bold]{score:0.0}[/] " +
+                $"| Zombie: [{zombieColor}]{zombie}[/] " +
+                $"| Coupling: {coupling:0.00} " +
+                $"| Isolation: {isolation:0.00}"
+            );
+        }
+
+        private static string ResolveModuleColor(string module)
+            {
+                return module.ToLower() switch
+                {
+                    "core" => "cyan",
+                    "nucleo" => "cyan",
+                    "limbic" => "magenta",
+                    "fingerprint" => "blue",
+                    "infrastructure" => "yellow",
+                    "infra" => "yellow",
+                    "ui" => "purple",
+                    _ => "white"
+                };
+            }
+
+        private static string ResolveScoreColor(double score)
+        {
+            return score switch
+            {
+                >= 70 => "green",
+                >= 40 => "yellow",
+                _ => "red"
+            };
+        }
+
         public static T WithSpinner<T>(string message, Func<T> action)
         {
             return AnsiConsole.Status()
