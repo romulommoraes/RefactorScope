@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
+using RefactorScope.Core.Scope;
 
 namespace RefactorScope.Parsers.CSharpRegex
 {
@@ -16,7 +17,8 @@ namespace RefactorScope.Parsers.CSharpRegex
     /// - Construir ArquivoInfo
     /// - Produzir ModeloEstrutural consumido pelos Analyzers
     /// 
-    /// Respeita escopo de análise via Include/Exclude.
+    /// O escopo de análise é determinado por ScopeRuleSet,
+    /// garantindo comportamento determinístico entre ambientes.
     /// </summary>
     public class CSharpRegexParser : IParserCodigo
     {
@@ -34,12 +36,14 @@ namespace RefactorScope.Parsers.CSharpRegex
             IEnumerable<string>? include = null,
             IEnumerable<string>? exclude = null)
         {
+            var scope = new ScopeRuleSet(include, exclude);
+
             var arquivos = new List<ArquivoInfo>();
             var tipos = new List<TipoInfo>();
 
             var csFiles = Directory
                 .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
-                .Where(f => ShouldInclude(f, rootPath, include, exclude))
+                .Where(f => scope.IsInScope(rootPath, f))
                 .ToList();
 
             // =========================
@@ -155,27 +159,6 @@ namespace RefactorScope.Parsers.CSharpRegex
                 tipos,
                 referencias
             );
-        }
-
-        /// <summary>
-        /// Aplica filtro Include/Exclude ao arquivo.
-        /// </summary>
-        private bool ShouldInclude(
-            string file,
-            string rootPath,
-            IEnumerable<string>? include,
-            IEnumerable<string>? exclude)
-        {
-            var relative = Path.GetRelativePath(rootPath, file)
-                .Replace("\\", "/");
-
-            if (exclude != null && exclude.Any(e => relative.StartsWith(e)))
-                return false;
-
-            if (include == null || !include.Any())
-                return true;
-
-            return include.Any(i => relative.StartsWith(i));
         }
     }
 }

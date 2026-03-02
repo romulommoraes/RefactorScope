@@ -8,6 +8,7 @@ using RefactorScope.Core.Results;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
 using RefactorScope.Parsers.CSharpRegex;
+using Spectre.Console;
 
 Console.WriteLine();
 
@@ -18,6 +19,8 @@ if (!TryRunAnalysis(context, out var report)) return;
 if (!TryRunExport(config, context, report)) return;
 
 RunVisualization(report);
+ApplyCiExitCode(report);
+
 
 // =====================================================
 // 🔹 BLOCO 1 — CONFIGURAÇÃO
@@ -29,6 +32,10 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
     {
         config = ConfigLoader.Load();
         ConfigValidator.Validate(config);
+        config.FitnessGates = FitnessGateConfigResolver.Resolve(
+            config.FitnessGates,
+            msg => TerminalRenderer.Warn(msg)
+        );
 
         if (!Directory.Exists(config.RootPath))
         {
@@ -83,7 +90,8 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
             new ArchitecturalClassificationAnalyzer(),
             new EntryPointHeuristicAnalyzer(),
             new CoreIsolationAnalyzer(),
-            new CouplingAnalyzer()
+            new CouplingAnalyzer(),
+            new FitnessGateAnalyzer(context.Config.FitnessGates)
         };
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
@@ -125,7 +133,9 @@ static bool TryRunExport(RefactorScopeConfig config, AnalysisContext context, Co
             new DumpAnaliseExporter(),
             new DumpIaExporter(),
             new DatasetExporter(datasetBuilders),
-            new ProjectStructureExporter()
+            new ProjectStructureExporter(),
+            new FitnessGateCsvExporter(),
+            new HtmlDashboardExporter()
         };
 
         var strategy = DumpStrategyResolver.Resolve(config);
@@ -192,5 +202,67 @@ static void RunVisualization(ConsolidatedReport report)
             couplingRate,
             isolationRate
         );
+
+    }
+    RenderFitnessGates(report);
+}
+
+static void RenderFitnessGates(ConsolidatedReport report)
+{
+    var gates = report.Results
+        .OfType<FitnessGateResult>()
+        .FirstOrDefault();
+
+    if (gates == null) return;
+
+    TerminalRenderer.Section("Architecture Fitness Gates");
+
+    foreach (var gate in gates.Gates)
+    {
+        switch (gate.Status)
+        {
+            case GateStatus.Pass:
+                AnsiConsole.MarkupLine($"[green]✔ {gate.GateName}[/]");
+                break;
+
+            case GateStatus.Warn:
+                AnsiConsole.MarkupLine($"[yellow]! {gate.GateName}[/] {gate.Message}");
+                break;
+
+            case GateStatus.Fail:
+                AnsiConsole.MarkupLine($"[red]✖ {gate.GateName}[/] {gate.Message}");
+                break;
+        }
+    }
+
+    if (gates.HasFailure)
+    {
+        AnsiConsole.MarkupLine("[bold red]Arquitetura NÃO pronta para CI/CD[/]");
+    }
+    else
+    {
+        AnsiConsole.MarkupLine("[bold green]Arquitetura pronta para CI/CD[/]");
+    }
+}
+
+static void ApplyCiExitCode(ConsolidatedReport report)
+{
+    var gates = report.Results
+        .OfType<FitnessGateResult>()
+        .FirstOrDefault();
+
+    if (gates == null)
+        return;
+
+    if (gates.HasFailure)
+    {
+        Console.WriteLine();
+        Console.WriteLine("[CI] Fitness Gates falharam.");
+
+        Environment.ExitCode = 1;
+    }
+    else
+    {
+        Environment.ExitCode = 0;
     }
 }

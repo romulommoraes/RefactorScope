@@ -35,5 +35,19 @@
   "dumpStrategy": {
     "mode": "segmented",
     "splitBy": "topFolder"
+  },
+
+  "fitnessGates": {
+    "deadCode": {
+      "warnAbove": 0.10,
+      "failAbove": 0.20
+    },
+    "coupling": {
+      "warnAbove": 3,
+      "failAbove": 5
+    },
+    "coreIsolation": {
+      "failIfAny": true
+    }
   }
 }

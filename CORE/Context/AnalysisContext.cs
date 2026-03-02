@@ -1,4 +1,5 @@
-﻿using RefactorScope.Core.Configuration;
+﻿using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Model;
 
 namespace RefactorScope.Core.Context
@@ -32,5 +33,7 @@ namespace RefactorScope.Core.Context
             Model = model ?? throw new ArgumentNullException(nameof(model));
             ExecutionTime = DateTime.UtcNow;
         }
+
+        public IReadOnlyList<IAnalysisResult> Results { get; set; } = new List<IAnalysisResult>();
     }
 }

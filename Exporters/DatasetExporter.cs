@@ -2,6 +2,7 @@
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Datasets;
+using System.Globalization;
 using System.Text;
 
 namespace RefactorScope.Exporters
@@ -12,7 +13,7 @@ namespace RefactorScope.Exporters
     /// ✔ BI Ready (QuickSight / PowerBI)
     /// ✔ Excel Compatible (UTF8 BOM)
     /// ✔ Trend Persistence (append-only)
-    /// ✔ Funciona com escopo parcial
+    /// ✔ Locale-safe (InvariantCulture)
     ///
     /// Comportamento:
     /// - Datasets normais → sobrescritos
@@ -73,7 +74,7 @@ namespace RefactorScope.Exporters
 
             foreach (var row in builder.Build(context, report))
             {
-                writer.WriteLine(string.Join(",", row));
+                writer.WriteLine(string.Join(",", row.Select(FormatValue)));
             }
         }
 
@@ -100,8 +101,27 @@ namespace RefactorScope.Exporters
 
             foreach (var row in builder.Build(context, report))
             {
-                writer.WriteLine(string.Join(",", row));
+                writer.WriteLine(string.Join(",", row.Select(FormatValue)));
             }
+        }
+
+        // =====================================================
+        // 🔹 FORMATAÇÃO SEGURA PARA CSV
+        // =====================================================
+        private string FormatValue(object? value)
+        {
+            if (value == null)
+                return "";
+
+            return value switch
+            {
+                double d => d.ToString(CultureInfo.InvariantCulture),
+                float f => f.ToString(CultureInfo.InvariantCulture),
+                decimal m => m.ToString(CultureInfo.InvariantCulture),
+                int i => i.ToString(CultureInfo.InvariantCulture),
+                long l => l.ToString(CultureInfo.InvariantCulture),
+                _ => value.ToString() ?? ""
+            };
         }
     }
 }

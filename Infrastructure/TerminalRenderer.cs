@@ -4,6 +4,12 @@ namespace RefactorScope.Infrastructure
 {
     public static class TerminalRenderer
     {
+
+        public static void Warn(string message)
+        {
+            AnsiConsole.MarkupLine($"[yellow][WARN][/]: {message}");
+        }
+
         public static void ShowHeader(string root)
         {
             var panel = new Panel($"[bold yellow]{root}[/]")
