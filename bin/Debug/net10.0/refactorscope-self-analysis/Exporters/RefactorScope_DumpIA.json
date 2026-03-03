@@ -1,0 +1,135 @@
+{
+  "RootPath": "C:\\Users\\romul\\source\\repos\\RefactorScope",
+  "Tipos": [
+    {
+      "Name": "DatasetExporter",
+      "Namespace": "RefactorScope.Exporters",
+      "File": "RefactorScope\\Exporters\\DatasetExporter.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Datasets;\r\nusing System.Globalization;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Exporters\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Exporta datasets anal\u00EDticos em CSV.\r\n    ///\r\n    /// \u2714 BI Ready (QuickSight / PowerBI)\r\n    /// \u2714 Excel Compatible (UTF8 BOM)\r\n    /// \u2714 Trend Persistence (append-only)\r\n    /// \u2714 Locale-safe (InvariantCulture)\r\n    ///\r\n    /// Comportamento:\r\n    /// - Datasets normais \u2192 sobrescritos\r\n    /// - Dataset estrutural de tend\u00EAncia \u2192 hist\u00F3rico incremental\r\n    /// \u003C/summary\u003E\r\n    public class DatasetExporter : IExporter\r\n    {\r\n        public string Name =\u003E \u0022datasets\u0022;\r\n\r\n        private readonly IEnumerable\u003CIAnalyticalDatasetBuilder\u003E _builders;\r\n\r\n        public DatasetExporter(IEnumerable\u003CIAnalyticalDatasetBuilder\u003E builders)\r\n        {\r\n            _builders = builders;\r\n        }\r\n\r\n        public void Export(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report,\r\n            string outputPath)\r\n        {\r\n            var datasetPath = Path.Combine(outputPath, \u0022datasets\u0022);\r\n            Directory.CreateDirectory(datasetPath);\r\n\r\n            var trendPath = Path.Combine(datasetPath, \u0022trend\u0022);\r\n            Directory.CreateDirectory(trendPath);\r\n\r\n            foreach (var builder in _builders)\r\n            {\r\n                if (builder.DatasetName == \u0022dataset_structural_trend\u0022)\r\n                {\r\n                    AppendTrend(builder, context, report, trendPath);\r\n                    continue;\r\n                }\r\n\r\n                ExportStandard(builder, context, report, datasetPath);\r\n            }\r\n        }\r\n\r\n        // =====================================================\r\n        // \uD83D\uDD39 EXPORTA\u00C7\u00C3O PADR\u00C3O\r\n        // =====================================================\r\n        private void ExportStandard(\r\n            IAnalyticalDatasetBuilder builder,\r\n            AnalysisContext context,\r\n            ConsolidatedReport report,\r\n            string datasetPath)\r\n        {\r\n            var file = Path.Combine(datasetPath, $\u0022{builder.DatasetName}.csv\u0022);\r\n\r\n            using var writer = new StreamWriter(\r\n                file,\r\n                false,\r\n                new UTF8Encoding(true) // BOM\r\n            );\r\n\r\n            writer.WriteLine(string.Join(\u0022,\u0022, builder.Headers));\r\n\r\n            foreach (var row in builder.Build(context, report))\r\n            {\r\n                writer.WriteLine(string.Join(\u0022,\u0022, row.Select(FormatValue)));\r\n            }\r\n        }\r\n\r\n        // =====================================================\r\n        // \uD83D\uDD39 EXPORTA\u00C7\u00C3O DE TEND\u00CANCIA (APPEND)\r\n        // =====================================================\r\n        private void AppendTrend(\r\n            IAnalyticalDatasetBuilder builder,\r\n            AnalysisContext context,\r\n            ConsolidatedReport report,\r\n            string trendPath)\r\n        {\r\n            var file = Path.Combine(trendPath, \u0022structural_history.csv\u0022);\r\n            var fileExists = File.Exists(file);\r\n\r\n            using var writer = new StreamWriter(\r\n                file,\r\n                true, // append\r\n                new UTF8Encoding(true)\r\n            );\r\n\r\n            if (!fileExists)\r\n                writer.WriteLine(string.Join(\u0022,\u0022, builder.Headers));\r\n\r\n            foreach (var row in builder.Build(context, report))\r\n            {\r\n                writer.WriteLine(string.Join(\u0022,\u0022, row.Select(FormatValue)));\r\n            }\r\n        }\r\n\r\n        // =====================================================\r\n        // \uD83D\uDD39 FORMATA\u00C7\u00C3O SEGURA PARA CSV\r\n        // =====================================================\r\n        private string FormatValue(object? value)\r\n        {\r\n            if (value == null)\r\n                return \u0022\u0022;\r\n\r\n            return value switch\r\n            {\r\n                double d =\u003E d.ToString(CultureInfo.InvariantCulture),\r\n                float f =\u003E f.ToString(CultureInfo.InvariantCulture),\r\n                decimal m =\u003E m.ToString(CultureInfo.InvariantCulture),\r\n                int i =\u003E i.ToString(CultureInfo.InvariantCulture),\r\n                long l =\u003E l.ToString(CultureInfo.InvariantCulture),\r\n                _ =\u003E value.ToString() ?? \u0022\u0022\r\n            };\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "DumpAnaliseExporter",
+      "Namespace": "RefactorScope.Exporters",
+      "File": "RefactorScope\\Exporters\\DumpAnaliseExporter.cs",
+      "Code": "using System.Text.Json;\r\nusing RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Exporters\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Exporta os resultados consolidados da an\u00E1lise.\r\n    /// \u003C/summary\u003E\r\n    public class DumpAnaliseExporter : IExporter\r\n    {\r\n        public string Name =\u003E \u0022dumpAnalysis\u0022;\r\n\r\n        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)\r\n        {\r\n            var zombies = report.Results\r\n                .OfType\u003CZombieResult\u003E()\r\n                .FirstOrDefault()?.ZombieTypes;\r\n\r\n            var isolated = report.Results\r\n                .OfType\u003CCoreIsolationResult\u003E()\r\n                .FirstOrDefault()?.IsolatedCoreTypes;\r\n\r\n            var entry = report.Results\r\n                .OfType\u003CEntryPointHeuristicResult\u003E()\r\n                .FirstOrDefault()?.EntryPoints;\r\n\r\n            var output = new\r\n            {\r\n                Zombies = zombies,\r\n                CoreIsolado = isolated,\r\n                EntryPoints = entry\r\n            };\r\n\r\n            var json = JsonSerializer.Serialize(\r\n                output,\r\n                new JsonSerializerOptions { WriteIndented = true });\r\n\r\n            var path = Path.Combine(outputPath, \u0022RefactorScope_Analysis.json\u0022);\r\n\r\n            File.WriteAllText(path, json);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "DumpIaExporter",
+      "Namespace": "RefactorScope.Exporters",
+      "File": "RefactorScope\\Exporters\\DumpIaExporter.cs",
+      "Code": "using System.Text.Json;\r\nusing RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\n\r\nnamespace RefactorScope.Exporters\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Exporta dump estrutural otimizado para IA.\r\n    /// Inclui c\u00F3digo fonte completo das classes.\r\n    /// \u003C/summary\u003E\r\n    public class DumpIaExporter : IExporter\r\n    {\r\n        public string Name =\u003E \u0022dumpIA\u0022;\r\n\r\n        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)\r\n        {\r\n            var root = context.Config.RootPath;\r\n\r\n            var tipos = context.Model.Tipos.Select(t =\u003E\r\n            {\r\n                var fullPath = Path.Combine(root, t.DeclaredInFile);\r\n\r\n                string code = \u0022\u0022;\r\n\r\n                if (File.Exists(fullPath))\r\n                    code = File.ReadAllText(fullPath);\r\n\r\n                return new\r\n                {\r\n                    t.Name,\r\n                    t.Namespace,\r\n                    File = t.DeclaredInFile,\r\n                    Code = code\r\n                };\r\n            });\r\n\r\n            var output = new\r\n            {\r\n                RootPath = root,\r\n                Tipos = tipos,\r\n                Referencias = context.Model.Referencias\r\n            };\r\n\r\n            var json = JsonSerializer.Serialize(\r\n                output,\r\n                new JsonSerializerOptions { WriteIndented = true });\r\n\r\n            var path = Path.Combine(outputPath, \u0022RefactorScope_DumpIA.json\u0022);\r\n\r\n            File.WriteAllText(path, json);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "FitnessGateCsvExporter",
+      "Namespace": "RefactorScope.Exporters",
+      "File": "RefactorScope\\Exporters\\FitnessGateCsvExporter.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\nusing System.Globalization;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Exporters\r\n{\r\n    public class FitnessGateCsvExporter : IExporter\r\n    {\r\n        public string Name =\u003E \u0022fitnessGateCsv\u0022;\r\n\r\n        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)\r\n        {\r\n            var gates = report.Results\r\n                .OfType\u003CFitnessGateResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (gates == null) return;\r\n\r\n            var sb = new StringBuilder();\r\n\r\n            sb.AppendLine(\u0022GateName,Status,Message\u0022);\r\n\r\n            foreach (var gate in gates.Gates)\r\n            {\r\n                var name = Escape(gate.GateName);\r\n                var status = Escape(gate.Status.ToString());\r\n                var message = Escape(gate.Message);\r\n\r\n                sb.AppendLine($\u0022{name},{status},{message}\u0022);\r\n            }\r\n\r\n            var path = Path.Combine(outputPath, \u0022dataset_fitness_gates.csv\u0022);\r\n\r\n            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(true));\r\n        }\r\n\r\n        private string Escape(string? value)\r\n        {\r\n            if (string.IsNullOrEmpty(value))\r\n                return \u0022\u0022;\r\n\r\n            if (value.Contains(\u0022,\u0022) || value.Contains(\u0022\\\u0022\u0022))\r\n            {\r\n                value = value.Replace(\u0022\\\u0022\u0022, \u0022\\\u0022\\\u0022\u0022);\r\n                return $\u0022\\\u0022{value}\\\u0022\u0022;\r\n            }\r\n\r\n            return value;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "HtmlDashboardExporter",
+      "Namespace": "RefactorScope.Exporters",
+      "File": "RefactorScope\\Exporters\\HtmlDashboardExporter.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Exporters\r\n{\r\n    public class HtmlDashboardExporter : IExporter\r\n    {\r\n        public string Name =\u003E \u0022html-dashboard\u0022;\r\n\r\n        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)\r\n        {\r\n            var dashboardDir = Path.Combine(outputPath, \u0022dashboard\u0022);\r\n            Directory.CreateDirectory(dashboardDir);\r\n\r\n            var htmlPath = Path.Combine(dashboardDir, \u0022index.html\u0022);\r\n\r\n            File.WriteAllText(htmlPath, HtmlTemplate);\r\n        }\r\n\r\n        private const string HtmlTemplate = @\u0022\r\n\u003C!DOCTYPE html\u003E\r\n\u003Chtml\u003E\r\n\u003Chead\u003E\r\n\u003Cmeta charset=\u0027UTF-8\u0027\u003E\r\n\u003Ctitle\u003ERefactorScope Dashboard\u003C/title\u003E\r\n\u003Cscript src=\u0027https://cdn.jsdelivr.net/npm/chart.js\u0027\u003E\u003C/script\u003E\r\n\u003Cscript src=\u0027https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js\u0027\u003E\u003C/script\u003E\r\n\u003Cstyle\u003E\r\nbody { background:#111; color:#eee; font-family:Arial; }\r\n.container { display:flex; flex-wrap:wrap; }\r\n.card { background:#1b1b1b; margin:20px; padding:20px; border-radius:8px; width:45%; }\r\n\u003C/style\u003E\r\n\u003C/head\u003E\r\n\u003Cbody\u003E\r\n\r\n\u003Ch1\u003ERefactorScope Dashboard\u003C/h1\u003E\r\n\r\n\u003Cdiv class=\u0027container\u0027\u003E\r\n\u003Cdiv class=\u0027card\u0027\u003E\r\n\u003Ccanvas id=\u0027radarChart\u0027\u003E\u003C/canvas\u003E\r\n\u003C/div\u003E\r\n\u003Cdiv class=\u0027card\u0027\u003E\r\n\u003Ccanvas id=\u0027heatChart\u0027\u003E\u003C/canvas\u003E\r\n\u003C/div\u003E\r\n\u003C/div\u003E\r\n\r\n\u003Cscript\u003E\r\nfunction loadCSV(path, callback) {\r\n    Papa.parse(path, {\r\n        download: true,\r\n        header: true,\r\n        complete: results =\u003E callback(results.data)\r\n    });\r\n}\r\n\r\nloadCSV(\u0027../dataset_arch_health.csv\u0027, data =\u003E {\r\n\r\n    const modules = data.map(x =\u003E x.Module);\r\n    const zombies = data.map(x =\u003E parseFloat(x.ZombieRate));\r\n    const isolation = data.map(x =\u003E parseFloat(x.IsolationRate));\r\n\r\n    new Chart(document.getElementById(\u0027radarChart\u0027), {\r\n        type: \u0027radar\u0027,\r\n        data: {\r\n            labels: modules,\r\n            datasets: [\r\n                { label: \u0027Zombie Rate\u0027, data: zombies },\r\n                { label: \u0027Isolation\u0027, data: isolation }\r\n            ]\r\n        }\r\n    });\r\n\r\n    new Chart(document.getElementById(\u0027heatChart\u0027), {\r\n        type: \u0027bar\u0027,\r\n        data: {\r\n            labels: modules,\r\n            datasets: [\r\n                { label: \u0027Zombie Heat\u0027, data: zombies }\r\n            ]\r\n        }\r\n    });\r\n\r\n});\r\n\u003C/script\u003E\r\n\r\n\u003C/body\u003E\r\n\u003C/html\u003E\u0022;\r\n    }\r\n}"
+    },
+    {
+      "Name": "ProjectStructureExporter",
+      "Namespace": "RefactorScope.Exporters",
+      "File": "RefactorScope\\Exporters\\ProjectStructureExporter.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Exporters\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Exporta a \u00E1rvore limpa do projeto.\r\n    /// \u00DAtil como contexto estrutural para IA.\r\n    /// \u003C/summary\u003E\r\n    public class ProjectStructureExporter : IExporter\r\n    {\r\n        public string Name =\u003E \u0022projectTree\u0022;\r\n\r\n        public void Export(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report,\r\n            string outputPath)\r\n        {\r\n            var root = context.Config.RootPath;\r\n            var builder = new StringBuilder();\r\n\r\n            builder.AppendLine(\u0022# Project Structure\u0022);\r\n            builder.AppendLine();\r\n\r\n            WriteDirectory(builder, root, \u0022\u0022, true);\r\n\r\n            var path = Path.Combine(outputPath, \u0022ProjectTree.md\u0022);\r\n\r\n            File.WriteAllText(path, builder.ToString());\r\n        }\r\n\r\n        private void WriteDirectory(StringBuilder builder, string path, string indent, bool isRoot = false)\r\n        {\r\n            var dir = new DirectoryInfo(path);\r\n\r\n            if (!isRoot)\r\n                builder.AppendLine($\u0022{indent}\u251C\u2500\u2500 {dir.Name}\u0022);\r\n\r\n            var subDirs = dir.GetDirectories()\r\n                .Where(d =\u003E !IsIgnored(d.Name))\r\n                .OrderBy(d =\u003E d.Name);\r\n\r\n            foreach (var sub in subDirs)\r\n            {\r\n                WriteDirectory(builder, sub.FullName, indent \u002B \u0022\u2502   \u0022);\r\n            }\r\n        }\r\n\r\n        private bool IsIgnored(string name)\r\n        {\r\n            return name switch\r\n            {\r\n                \u0022bin\u0022 =\u003E true,\r\n                \u0022obj\u0022 =\u003E true,\r\n                \u0022.git\u0022 =\u003E true,\r\n                \u0022.vs\u0022 =\u003E true,\r\n                _ =\u003E false\r\n            };\r\n        }\r\n    }\r\n}"
+    }
+  ],
+  "Referencias": [
+    {
+      "FromType": "DatasetExporter",
+      "ToType": "IExporter"
+    },
+    {
+      "FromType": "DatasetExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "DatasetExporter",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "DatasetExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "DumpAnaliseExporter",
+      "ToType": "IExporter"
+    },
+    {
+      "FromType": "DumpAnaliseExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "DumpAnaliseExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "DumpAnaliseExporter",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "DumpAnaliseExporter",
+      "ToType": "EntryPointHeuristicResult"
+    },
+    {
+      "FromType": "DumpAnaliseExporter",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "DumpIaExporter",
+      "ToType": "IExporter"
+    },
+    {
+      "FromType": "DumpIaExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "DumpIaExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "FitnessGateCsvExporter",
+      "ToType": "IExporter"
+    },
+    {
+      "FromType": "FitnessGateCsvExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "FitnessGateCsvExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "FitnessGateCsvExporter",
+      "ToType": "FitnessGateResult"
+    },
+    {
+      "FromType": "HtmlDashboardExporter",
+      "ToType": "IExporter"
+    },
+    {
+      "FromType": "HtmlDashboardExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "HtmlDashboardExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "ProjectStructureExporter",
+      "ToType": "IExporter"
+    },
+    {
+      "FromType": "ProjectStructureExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "ProjectStructureExporter",
+      "ToType": "ConsolidatedReport"
+    }
+  ]
+}

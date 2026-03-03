@@ -1,4 +1,137 @@
 ==========================================
+ARQUIVO: DatasetExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\DatasetExporter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Datasets;
+using System.Globalization;
+using System.Text;
+
+namespace RefactorScope.Exporters
+{
+    /// <summary>
+    /// Exporta datasets analíticos em CSV.
+    ///
+    /// ? BI Ready (QuickSight / PowerBI)
+    /// ? Excel Compatible (UTF8 BOM)
+    /// ? Trend Persistence (append-only)
+    /// ? Locale-safe (InvariantCulture)
+    ///
+    /// Comportamento:
+    /// - Datasets normais ? sobrescritos
+    /// - Dataset estrutural de tendência ? histórico incremental
+    /// </summary>
+    public class DatasetExporter : IExporter
+    {
+        public string Name => "datasets";
+
+        private readonly IEnumerable<IAnalyticalDatasetBuilder> _builders;
+
+        public DatasetExporter(IEnumerable<IAnalyticalDatasetBuilder> builders)
+        {
+            _builders = builders;
+        }
+
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
+        {
+            var datasetPath = Path.Combine(outputPath, "datasets");
+            Directory.CreateDirectory(datasetPath);
+
+            var trendPath = Path.Combine(datasetPath, "trend");
+            Directory.CreateDirectory(trendPath);
+
+            foreach (var builder in _builders)
+            {
+                if (builder.DatasetName == "dataset_structural_trend")
+                {
+                    AppendTrend(builder, context, report, trendPath);
+                    continue;
+                }
+
+                ExportStandard(builder, context, report, datasetPath);
+            }
+        }
+
+        // =====================================================
+        // ?? EXPORTAÇÃO PADRÃO
+        // =====================================================
+        private void ExportStandard(
+            IAnalyticalDatasetBuilder builder,
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string datasetPath)
+        {
+            var file = Path.Combine(datasetPath, $"{builder.DatasetName}.csv");
+
+            using var writer = new StreamWriter(
+                file,
+                false,
+                new UTF8Encoding(true) // BOM
+            );
+
+            writer.WriteLine(string.Join(",", builder.Headers));
+
+            foreach (var row in builder.Build(context, report))
+            {
+                writer.WriteLine(string.Join(",", row.Select(FormatValue)));
+            }
+        }
+
+        // =====================================================
+        // ?? EXPORTAÇÃO DE TENDÊNCIA (APPEND)
+        // =====================================================
+        private void AppendTrend(
+            IAnalyticalDatasetBuilder builder,
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string trendPath)
+        {
+            var file = Path.Combine(trendPath, "structural_history.csv");
+            var fileExists = File.Exists(file);
+
+            using var writer = new StreamWriter(
+                file,
+                true, // append
+                new UTF8Encoding(true)
+            );
+
+            if (!fileExists)
+                writer.WriteLine(string.Join(",", builder.Headers));
+
+            foreach (var row in builder.Build(context, report))
+            {
+                writer.WriteLine(string.Join(",", row.Select(FormatValue)));
+            }
+        }
+
+        // =====================================================
+        // ?? FORMATAÇÃO SEGURA PARA CSV
+        // =====================================================
+        private string FormatValue(object? value)
+        {
+            if (value == null)
+                return "";
+
+            return value switch
+            {
+                double d => d.ToString(CultureInfo.InvariantCulture),
+                float f => f.ToString(CultureInfo.InvariantCulture),
+                decimal m => m.ToString(CultureInfo.InvariantCulture),
+                int i => i.ToString(CultureInfo.InvariantCulture),
+                long l => l.ToString(CultureInfo.InvariantCulture),
+                _ => value.ToString() ?? ""
+            };
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: DumpAnaliseExporter.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\DumpAnaliseExporter.cs
 ==========================================
@@ -105,6 +238,232 @@ namespace RefactorScope.Exporters
             var path = Path.Combine(outputPath, "RefactorScope_DumpIA.json");
 
             File.WriteAllText(path, json);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateCsvExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\FitnessGateCsvExporter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
+using System.Globalization;
+using System.Text;
+
+namespace RefactorScope.Exporters
+{
+    public class FitnessGateCsvExporter : IExporter
+    {
+        public string Name => "fitnessGateCsv";
+
+        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)
+        {
+            var gates = report.Results
+                .OfType<FitnessGateResult>()
+                .FirstOrDefault();
+
+            if (gates == null) return;
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine("GateName,Status,Message");
+
+            foreach (var gate in gates.Gates)
+            {
+                var name = Escape(gate.GateName);
+                var status = Escape(gate.Status.ToString());
+                var message = Escape(gate.Message);
+
+                sb.AppendLine($"{name},{status},{message}");
+            }
+
+            var path = Path.Combine(outputPath, "dataset_fitness_gates.csv");
+
+            File.WriteAllText(path, sb.ToString(), new UTF8Encoding(true));
+        }
+
+        private string Escape(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            if (value.Contains(",") || value.Contains("\""))
+            {
+                value = value.Replace("\"", "\"\"");
+                return $"\"{value}\"";
+            }
+
+            return value;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: HtmlDashboardExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\HtmlDashboardExporter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Exporters
+{
+    public class HtmlDashboardExporter : IExporter
+    {
+        public string Name => "html-dashboard";
+
+        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)
+        {
+            var dashboardDir = Path.Combine(outputPath, "dashboard");
+            Directory.CreateDirectory(dashboardDir);
+
+            var htmlPath = Path.Combine(dashboardDir, "index.html");
+
+            File.WriteAllText(htmlPath, HtmlTemplate);
+        }
+
+        private const string HtmlTemplate = @"
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='UTF-8'>
+<title>RefactorScope Dashboard</title>
+<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+<style>
+body { background:#111; color:#eee; font-family:Arial; }
+.container { display:flex; flex-wrap:wrap; }
+.card { background:#1b1b1b; margin:20px; padding:20px; border-radius:8px; width:45%; }
+</style>
+</head>
+<body>
+
+<h1>RefactorScope Dashboard</h1>
+
+<div class='container'>
+<div class='card'>
+<canvas id='radarChart'></canvas>
+</div>
+<div class='card'>
+<canvas id='heatChart'></canvas>
+</div>
+</div>
+
+<script>
+function loadCSV(path, callback) {
+    Papa.parse(path, {
+        download: true,
+        header: true,
+        complete: results => callback(results.data)
+    });
+}
+
+loadCSV('../dataset_arch_health.csv', data => {
+
+    const modules = data.map(x => x.Module);
+    const zombies = data.map(x => parseFloat(x.ZombieRate));
+    const isolation = data.map(x => parseFloat(x.IsolationRate));
+
+    new Chart(document.getElementById('radarChart'), {
+        type: 'radar',
+        data: {
+            labels: modules,
+            datasets: [
+                { label: 'Zombie Rate', data: zombies },
+                { label: 'Isolation', data: isolation }
+            ]
+        }
+    });
+
+    new Chart(document.getElementById('heatChart'), {
+        type: 'bar',
+        data: {
+            labels: modules,
+            datasets: [
+                { label: 'Zombie Heat', data: zombies }
+            ]
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>";
+    }
+}
+
+
+==========================================
+ARQUIVO: ProjectStructureExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\ProjectStructureExporter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using System.Text;
+
+namespace RefactorScope.Exporters
+{
+    /// <summary>
+    /// Exporta a árvore limpa do projeto.
+    /// Útil como contexto estrutural para IA.
+    /// </summary>
+    public class ProjectStructureExporter : IExporter
+    {
+        public string Name => "projectTree";
+
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
+        {
+            var root = context.Config.RootPath;
+            var builder = new StringBuilder();
+
+            builder.AppendLine("# Project Structure");
+            builder.AppendLine();
+
+            WriteDirectory(builder, root, "", true);
+
+            var path = Path.Combine(outputPath, "ProjectTree.md");
+
+            File.WriteAllText(path, builder.ToString());
+        }
+
+        private void WriteDirectory(StringBuilder builder, string path, string indent, bool isRoot = false)
+        {
+            var dir = new DirectoryInfo(path);
+
+            if (!isRoot)
+                builder.AppendLine($"{indent}+-- {dir.Name}");
+
+            var subDirs = dir.GetDirectories()
+                .Where(d => !IsIgnored(d.Name))
+                .OrderBy(d => d.Name);
+
+            foreach (var sub in subDirs)
+            {
+                WriteDirectory(builder, sub.FullName, indent + "¦   ");
+            }
+        }
+
+        private bool IsIgnored(string name)
+        {
+            return name switch
+            {
+                "bin" => true,
+                "obj" => true,
+                ".git" => true,
+                ".vs" => true,
+                _ => false
+            };
         }
     }
 }

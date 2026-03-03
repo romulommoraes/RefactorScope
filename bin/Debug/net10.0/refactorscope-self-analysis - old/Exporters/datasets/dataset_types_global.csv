@@ -1,0 +1,7 @@
+﻿Type,Module,Layer,Usage,StructuralStatus,IsZombie,IsIsolated,IsEntryPoint
+DatasetExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+DumpAnaliseExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+DumpIaExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+FitnessGateCsvExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+HtmlDashboardExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+ProjectStructureExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0

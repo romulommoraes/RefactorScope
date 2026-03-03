@@ -54,5 +54,7 @@ namespace RefactorScope.Core.Configuration
         public DumpStrategyConfig DumpStrategy { get; set; } = new();
 
         public FitnessGateConfig FitnessGates { get; set; } = new();
+
+        public ZombieDetectionOptions ZombieDetection { get; set; } = new();
     }
 }

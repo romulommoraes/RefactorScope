@@ -1,4 +1,4 @@
-GateName,Status,Message
-CoreIntegrity,Pass,
-DeadCode,Pass,
+﻿GateName,Status,Message
+CoreIntegrity,Fail,16 tipos Core isolados
+DeadCode,Warn,ZombieRate moderado: 17%
 Coupling,Pass,

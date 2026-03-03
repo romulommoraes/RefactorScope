@@ -14,6 +14,4 @@ namespace RefactorScope.Core.Results
             Items = items;
         }
     }
-
-
 }

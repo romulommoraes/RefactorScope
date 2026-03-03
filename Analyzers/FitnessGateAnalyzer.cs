@@ -7,8 +7,8 @@ namespace RefactorScope.Analyzers
 {
     /// <summary>
     /// Avalia a prontidão arquitetural do sistema com base em Fitness Gates.
-    /// Não cria métricas — apenas interpreta resultados existentes.
-    /// Thresholds são configuráveis via refactorscope.json.
+    /// Interpreta métricas já produzidas pelos analisadores.
+    /// Suporta modelo probabilístico de zombies com fallback legado.
     /// </summary>
     public class FitnessGateAnalyzer : IAnalyzer
     {
@@ -25,20 +25,21 @@ namespace RefactorScope.Analyzers
         {
             var gates = new List<FitnessGateStatus>();
 
-            var zombies = context.GetResult<ZombieResult>();
             var isolated = context.GetResult<CoreIsolationResult>();
             var coupling = context.GetResult<CouplingResult>();
             var architecture = context.GetResult<ArchitecturalClassificationResult>();
+            var zombieBinary = context.GetResult<ZombieResult>();
+            var zombieProb = context.GetResult<ZombieProbabilityResult>();
 
             gates.Add(EvaluateCoreIsolation(isolated));
-            gates.Add(EvaluateDeadCode(zombies, architecture));
+            gates.Add(EvaluateDeadCode(architecture, zombieBinary, zombieProb, context));
             gates.Add(EvaluateCoupling(coupling));
 
             return new FitnessGateResult(gates);
         }
 
         // ==============================
-        // Gates
+        // Core Isolation
         // ==============================
 
         private FitnessGateStatus EvaluateCoreIsolation(CoreIsolationResult? isolated)
@@ -54,17 +55,41 @@ namespace RefactorScope.Analyzers
             return Pass("CoreIntegrity");
         }
 
+        // ==============================
+        // Dead Code (Zombie)
+        // ==============================
+
         private FitnessGateStatus EvaluateDeadCode(
-            ZombieResult? zombies,
-            ArchitecturalClassificationResult? architecture)
+            ArchitecturalClassificationResult? architecture,
+            ZombieResult? zombieBinary,
+            ZombieProbabilityResult? zombieProb,
+            AnalysisContext context)
         {
-            if (zombies == null || architecture == null)
+            if (architecture == null)
                 return Pass("DeadCode");
 
             var total = architecture.Items.Count;
-            if (total == 0) return Pass("DeadCode");
+            if (total == 0)
+                return Pass("DeadCode");
 
-            var rate = zombies.ZombieTypes.Count / (double)total;
+            int zombieCount;
+
+            if (zombieProb != null)
+            {
+                var threshold =
+                    context.Config.ZombieDetection.MinZombieProbabilityThreshold;
+
+                zombieCount = zombieProb
+                    .ConfirmedZombies(threshold)
+                    .Count;
+            }
+            else
+            {
+                // Fallback legado
+                zombieCount = zombieBinary?.ZombieTypes.Count ?? 0;
+            }
+
+            var rate = zombieCount / (double)total;
 
             if (rate > _config.DeadCode.FailAbove)
                 return Fail("DeadCode", $"ZombieRate alto: {rate:0%}");
@@ -75,12 +100,18 @@ namespace RefactorScope.Analyzers
             return Pass("DeadCode");
         }
 
+        // ==============================
+        // Coupling
+        // ==============================
+
         private FitnessGateStatus EvaluateCoupling(CouplingResult? coupling)
         {
             if (coupling == null)
                 return Pass("Coupling");
 
-            var avg = coupling.ModuleFanOut.Values.DefaultIfEmpty(0).Average();
+            var avg = coupling.ModuleFanOut.Values
+                .DefaultIfEmpty(0)
+                .Average();
 
             if (avg > _config.Coupling.FailAbove)
                 return Fail("Coupling", $"FanOut médio alto: {avg:0.0}");

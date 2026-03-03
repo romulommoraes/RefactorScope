@@ -1,0 +1,27 @@
+# Project Structure
+
+│   ├── RefactorScope
+│   │   ├── Analyzers
+│   │   │   ├── Solid
+│   │   │   │   ├── Rules
+│   │   ├── CLI
+│   │   ├── Core
+│   │   │   ├── Abstractions
+│   │   │   ├── Configuration
+│   │   │   ├── Context
+│   │   │   ├── Datasets
+│   │   │   ├── Governance
+│   │   │   ├── Model
+│   │   │   ├── Orchestration
+│   │   │   ├── Reporting
+│   │   │   ├── Results
+│   │   │   ├── Scope
+│   │   │   ├── Structure
+│   │   ├── Execution
+│   │   │   ├── Dump
+│   │   │   │   ├── Segmentation
+│   │   │   │   ├── Strategies
+│   │   ├── Exporters
+│   │   ├── Infrastructure
+│   │   ├── Parsers
+│   │   │   ├── CSharpRegex

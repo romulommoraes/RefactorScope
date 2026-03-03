@@ -1,0 +1,1101 @@
+{
+  "RootPath": "C:\\Users\\romul\\source\\repos\\Scriptome",
+  "Tipos": [
+    {
+      "Name": "EstatisticaForense",
+      "Namespace": "Scriptome.Fingerprint",
+      "File": "AvaliaRoteiro\\Fingerprint\\EstatisticaForense.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint\r\n{\r\n    public static class EstatisticaForense\r\n    {\r\n        public static double DesvioPadrao(IEnumerable\u003Cdouble\u003E valores)\r\n        {\r\n            var lista = valores.ToList();\r\n            if (lista.Count \u003C 2) return 0;\r\n\r\n            double media = lista.Average();\r\n            double somaQuadrados = lista.Sum(d =\u003E Math.Pow(d - media, 2));\r\n            return Math.Sqrt(somaQuadrados / (lista.Count - 1));\r\n        }\r\n\r\n        public static double ZScore(double valor, double media, double desvio)\r\n        {\r\n            if (desvio == 0) return 0;\r\n            return (valor - media) / desvio;\r\n        }\r\n\r\n        public static double DistanciaEuclidiana(double[] v1, double[] v2)\r\n        {\r\n            double soma = 0;\r\n            for (int i = 0; i \u003C v1.Length; i\u002B\u002B)\r\n            {\r\n                soma \u002B= Math.Pow(v1[i] - v2[i], 2);\r\n            }\r\n            return Math.Sqrt(soma);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "MotorDeIdentidade",
+      "Namespace": "Scriptome.Fingerprint",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotorDeIdentidade.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Fingerprint.MotoresEtograma;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// MOTOR DE IDENTIDADE (DOM\u00CDNIO PURO)\r\n    ///\r\n    /// Respons\u00E1vel por:\r\n    /// - Executar classificadores individuais\r\n    /// - Executar Motor Etograma Cartesiano\r\n    /// - Consolidar dados no PerfilPersonagem\r\n    ///\r\n    /// Sem Console.\r\n    /// Sem efeitos colaterais externos.\r\n    /// \u003C/summary\u003E\r\n    public class MotorDeIdentidade\r\n    {\r\n        private readonly IEnumerable\u003CIClassificadorIndividual\u003E _classificadoresIndividuais;\r\n        private readonly IMotorEtogramaCartesiano _motorCartesiano;\r\n\r\n        public MotorDeIdentidade(\r\n            IEnumerable\u003CIClassificadorIndividual\u003E individuais,\r\n            IMotorEtogramaCartesiano motorCartesiano)\r\n        {\r\n            _classificadoresIndividuais =\r\n                individuais ?? throw new ArgumentNullException(nameof(individuais));\r\n\r\n            _motorCartesiano =\r\n                motorCartesiano ?? throw new ArgumentNullException(nameof(motorCartesiano));\r\n        }\r\n\r\n        public void ProcessarElenco(List\u003CPerfilPersonagem\u003E elenco)\r\n        {\r\n            if (elenco == null || !elenco.Any())\r\n                return;\r\n\r\n            // ===============================================================\r\n            // 1. EXECU\u00C7\u00C3O INDIVIDUAL\r\n            // ===============================================================\r\n            foreach (var p in elenco)\r\n            {\r\n                if (p.Etograma == null)\r\n                    p.Etograma = new Etograma();\r\n\r\n                foreach (var classificador in _classificadoresIndividuais)\r\n                {\r\n                    try\r\n                    {\r\n                        classificador.Classificar(p, p.Etograma);\r\n                    }\r\n                    catch\r\n                    {\r\n                        // Dom\u00EDnio n\u00E3o faz logging.\r\n                        // Camada superior decide como tratar.\r\n                        throw;\r\n                    }\r\n                }\r\n            }\r\n\r\n            // ===============================================================\r\n            // 2. MOTOR ET\u00D3GRAMA CARTESIANO\r\n            // ===============================================================\r\n            foreach (var p in elenco)\r\n            {\r\n                try\r\n                {\r\n                    var etogramaCartesiano =\r\n                        _motorCartesiano.GerarEtograma(p);\r\n\r\n                    p.Etograma.ArquetipoNarrativoFinal =\r\n                        etogramaCartesiano.ArquetipoNarrativoFinal;\r\n                }\r\n                catch\r\n                {\r\n                    throw;\r\n                }\r\n            }\r\n\r\n            // ===============================================================\r\n            // 3. SINCRONIZA\u00C7\u00C3O FINAL\r\n            // ===============================================================\r\n            foreach (var p in elenco)\r\n            {\r\n                var e = p.Etograma;\r\n\r\n                p.ArquetipoJung = e.ArquetipoJung;\r\n                p.ArquetipoScriptome =\r\n                    e.ArquetipoNarrativoFinal.ToString();\r\n                p.ArquetipoTermico = e.Termodinamica;\r\n\r\n                p.ScoreReal = e.ScoreReal;\r\n                p.ScoreSimbolico = e.ScoreSimbolico;\r\n                p.ScoreImaginario = e.ScoreImaginario;\r\n\r\n                p.RegistroDominante = e.RegistroDominante;\r\n                p.EstruturaPsiquica = e.EstruturaPsiquica;\r\n\r\n                p.NivelCrueldade = e.NivelCrueldade;\r\n                p.NivelManipulacao = e.NivelManipulacao;\r\n                p.NivelErotizacao = e.NivelErotizacao;\r\n\r\n                p.IndicePerversidade = e.IndicePerversidade;\r\n                p.ClassificacaoPerversidade =\r\n                    e.ClassificacaoPerversidade;\r\n\r\n                e.Processado = true;\r\n\r\n                foreach (var classificador in _classificadoresIndividuais)\r\n                {\r\n                    //Console.WriteLine($\u0022[MOTOR] Executando: {classificador.GetType().Name}\u0022);\r\n                    classificador.Classificar(p, e);\r\n                }\r\n            }\r\n        }\r\n\r\n        public void ProcessarIdentidade(PerfilPersonagem p)\r\n        {\r\n            ProcessarElenco(new List\u003CPerfilPersonagem\u003E { p });\r\n\r\n        }\r\n\r\n\r\n    }\r\n}"
+    },
+    {
+      "Name": "MotorTaxonomia",
+      "Namespace": "Scriptome.Fingerprint",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotorTaxonomia.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// MOTOR DE TAXONOMIA COMPORTAMENTAL (VERS\u00C3O FEN\u00D3TIPO).\r\n    /// Implementa UPGMA (Unweighted Pair Group Method with Arithmetic Mean).\r\n    /// Agrupa personagens por dist\u00E2ncia comportamental consolidada.\r\n    /// \u003C/summary\u003E\r\n    public class MotorTaxonomia\r\n    {\r\n        public string GerarArvoreFilogenetica(List\u003CPerfilPersonagemConsolidado\u003E fenotipos)\r\n        {\r\n            if (fenotipos == null || fenotipos.Count \u003C 2)\r\n                return \u0022Dados insuficientes para filogenia.\u0022;\r\n\r\n            // 1. Construir Vetores Comportamentais Consolidados\r\n            var clusters = fenotipos.Select(f =\u003E new Cluster\r\n            {\r\n                Id = f.Nome,\r\n                Membros = new List\u003Cstring\u003E { f.Nome },\r\n                Vetor = ExtrairGenoma(f)\r\n            }).ToList();\r\n\r\n            var sb = new StringBuilder();\r\n            sb.AppendLine(\u0022=== \u00C1RVORE FILOGEN\u00C9TICA DE COMPORTAMENTO (UPGMA) ===\u0022);\r\n\r\n            int step = 1;\r\n\r\n            // 2. Loop de Agrupamento\r\n            while (clusters.Count \u003E 1)\r\n            {\r\n                var (c1, c2, dist) = EncontrarParMaisProximo(clusters);\r\n\r\n                var novoCluster = new Cluster\r\n                {\r\n                    Id = $\u0022({c1.Id} \u002B {c2.Id})\u0022,\r\n                    Membros = c1.Membros.Concat(c2.Membros).ToList(),\r\n                    Vetor = CalcularMediaVetorial(c1.Vetor, c2.Vetor),\r\n                    Altura = dist / 2.0\r\n                };\r\n\r\n                sb.AppendLine($\u0022Passo {step}: Fundindo {c1.Id} e {c2.Id} (Dist: {dist:F2})\u0022);\r\n\r\n                clusters.Remove(c1);\r\n                clusters.Remove(c2);\r\n                clusters.Add(novoCluster);\r\n\r\n                step\u002B\u002B;\r\n            }\r\n\r\n            sb.AppendLine(\u0022\\n\u003E\u003E\u003E CLADO FINAL (Raiz Comportamental): \u0022 \u002B clusters[0].Id);\r\n\r\n            return sb.ToString();\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Extrai o \u0022DNA comportamental consolidado\u0022.\r\n        /// \u003C/summary\u003E\r\n        private double[] ExtrairGenoma(PerfilPersonagemConsolidado f)\r\n        {\r\n            return new double[]\r\n            {\r\n                f.NivelCrueldade * 1.5,\r\n                f.NivelManipulacao * 1.2,\r\n                f.ScoreReal,\r\n                f.ScoreSimbolico,\r\n                10.0 - f.Afeto,   // Afeto invertido (frieza)\r\n                f.Dominancia\r\n            };\r\n        }\r\n\r\n        private (Cluster, Cluster, double) EncontrarParMaisProximo(List\u003CCluster\u003E clusters)\r\n        {\r\n            Cluster bestA = null;\r\n            Cluster bestB = null;\r\n            double minDist = double.MaxValue;\r\n\r\n            for (int i = 0; i \u003C clusters.Count; i\u002B\u002B)\r\n            {\r\n                for (int j = i \u002B 1; j \u003C clusters.Count; j\u002B\u002B)\r\n                {\r\n                    double d = DistanciaEuclidiana(clusters[i].Vetor, clusters[j].Vetor);\r\n                    if (d \u003C minDist)\r\n                    {\r\n                        minDist = d;\r\n                        bestA = clusters[i];\r\n                        bestB = clusters[j];\r\n                    }\r\n                }\r\n            }\r\n\r\n            return (bestA, bestB, minDist);\r\n        }\r\n\r\n        private double DistanciaEuclidiana(double[] v1, double[] v2)\r\n        {\r\n            double sum = 0;\r\n            for (int i = 0; i \u003C v1.Length; i\u002B\u002B)\r\n                sum \u002B= Math.Pow(v1[i] - v2[i], 2);\r\n\r\n            return Math.Sqrt(sum);\r\n        }\r\n\r\n        private double[] CalcularMediaVetorial(double[] v1, double[] v2)\r\n        {\r\n            var vMedia = new double[v1.Length];\r\n\r\n            for (int i = 0; i \u003C v1.Length; i\u002B\u002B)\r\n                vMedia[i] = (v1[i] \u002B v2[i]) / 2.0;\r\n\r\n            return vMedia;\r\n        }\r\n\r\n        private class Cluster\r\n        {\r\n            public string Id { get; set; }\r\n            public List\u003Cstring\u003E Membros { get; set; }\r\n            public double[] Vetor { get; set; }\r\n            public double Altura { get; set; }\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "Cluster",
+      "Namespace": "Scriptome.Fingerprint",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotorTaxonomia.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// MOTOR DE TAXONOMIA COMPORTAMENTAL (VERS\u00C3O FEN\u00D3TIPO).\r\n    /// Implementa UPGMA (Unweighted Pair Group Method with Arithmetic Mean).\r\n    /// Agrupa personagens por dist\u00E2ncia comportamental consolidada.\r\n    /// \u003C/summary\u003E\r\n    public class MotorTaxonomia\r\n    {\r\n        public string GerarArvoreFilogenetica(List\u003CPerfilPersonagemConsolidado\u003E fenotipos)\r\n        {\r\n            if (fenotipos == null || fenotipos.Count \u003C 2)\r\n                return \u0022Dados insuficientes para filogenia.\u0022;\r\n\r\n            // 1. Construir Vetores Comportamentais Consolidados\r\n            var clusters = fenotipos.Select(f =\u003E new Cluster\r\n            {\r\n                Id = f.Nome,\r\n                Membros = new List\u003Cstring\u003E { f.Nome },\r\n                Vetor = ExtrairGenoma(f)\r\n            }).ToList();\r\n\r\n            var sb = new StringBuilder();\r\n            sb.AppendLine(\u0022=== \u00C1RVORE FILOGEN\u00C9TICA DE COMPORTAMENTO (UPGMA) ===\u0022);\r\n\r\n            int step = 1;\r\n\r\n            // 2. Loop de Agrupamento\r\n            while (clusters.Count \u003E 1)\r\n            {\r\n                var (c1, c2, dist) = EncontrarParMaisProximo(clusters);\r\n\r\n                var novoCluster = new Cluster\r\n                {\r\n                    Id = $\u0022({c1.Id} \u002B {c2.Id})\u0022,\r\n                    Membros = c1.Membros.Concat(c2.Membros).ToList(),\r\n                    Vetor = CalcularMediaVetorial(c1.Vetor, c2.Vetor),\r\n                    Altura = dist / 2.0\r\n                };\r\n\r\n                sb.AppendLine($\u0022Passo {step}: Fundindo {c1.Id} e {c2.Id} (Dist: {dist:F2})\u0022);\r\n\r\n                clusters.Remove(c1);\r\n                clusters.Remove(c2);\r\n                clusters.Add(novoCluster);\r\n\r\n                step\u002B\u002B;\r\n            }\r\n\r\n            sb.AppendLine(\u0022\\n\u003E\u003E\u003E CLADO FINAL (Raiz Comportamental): \u0022 \u002B clusters[0].Id);\r\n\r\n            return sb.ToString();\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Extrai o \u0022DNA comportamental consolidado\u0022.\r\n        /// \u003C/summary\u003E\r\n        private double[] ExtrairGenoma(PerfilPersonagemConsolidado f)\r\n        {\r\n            return new double[]\r\n            {\r\n                f.NivelCrueldade * 1.5,\r\n                f.NivelManipulacao * 1.2,\r\n                f.ScoreReal,\r\n                f.ScoreSimbolico,\r\n                10.0 - f.Afeto,   // Afeto invertido (frieza)\r\n                f.Dominancia\r\n            };\r\n        }\r\n\r\n        private (Cluster, Cluster, double) EncontrarParMaisProximo(List\u003CCluster\u003E clusters)\r\n        {\r\n            Cluster bestA = null;\r\n            Cluster bestB = null;\r\n            double minDist = double.MaxValue;\r\n\r\n            for (int i = 0; i \u003C clusters.Count; i\u002B\u002B)\r\n            {\r\n                for (int j = i \u002B 1; j \u003C clusters.Count; j\u002B\u002B)\r\n                {\r\n                    double d = DistanciaEuclidiana(clusters[i].Vetor, clusters[j].Vetor);\r\n                    if (d \u003C minDist)\r\n                    {\r\n                        minDist = d;\r\n                        bestA = clusters[i];\r\n                        bestB = clusters[j];\r\n                    }\r\n                }\r\n            }\r\n\r\n            return (bestA, bestB, minDist);\r\n        }\r\n\r\n        private double DistanciaEuclidiana(double[] v1, double[] v2)\r\n        {\r\n            double sum = 0;\r\n            for (int i = 0; i \u003C v1.Length; i\u002B\u002B)\r\n                sum \u002B= Math.Pow(v1[i] - v2[i], 2);\r\n\r\n            return Math.Sqrt(sum);\r\n        }\r\n\r\n        private double[] CalcularMediaVetorial(double[] v1, double[] v2)\r\n        {\r\n            var vMedia = new double[v1.Length];\r\n\r\n            for (int i = 0; i \u003C v1.Length; i\u002B\u002B)\r\n                vMedia[i] = (v1[i] \u002B v2[i]) / 2.0;\r\n\r\n            return vMedia;\r\n        }\r\n\r\n        private class Cluster\r\n        {\r\n            public string Id { get; set; }\r\n            public List\u003Cstring\u003E Membros { get; set; }\r\n            public double[] Vetor { get; set; }\r\n            public double Altura { get; set; }\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "InfoArquetipo",
+      "Namespace": "Scriptome.Fingerprint.Dados",
+      "File": "AvaliaRoteiro\\Fingerprint\\Dados\\BibliotecaArquetipos.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing System.Collections.Generic;\r\n\r\nnamespace Scriptome.Fingerprint.Dados\r\n{\r\n    // A Classe de DTO sugerida\r\n    public class InfoArquetipo\r\n    {\r\n        public string Categoria { get; set; }\r\n        public string Descricao { get; set; }\r\n\r\n        public InfoArquetipo(string cat, string desc)\r\n        {\r\n            Categoria = cat;\r\n            Descricao = desc;\r\n        }\r\n    }\r\n\r\n    public static class BibliotecaArquetipos\r\n    {\r\n        // Agora o dicion\u00E1rio retorna um objeto rico, n\u00E3o apenas uma string\r\n        public static readonly Dictionary\u003CArquetipoNarrativo, InfoArquetipo\u003E Detalhes =\r\n            new Dictionary\u003CArquetipoNarrativo, InfoArquetipo\u003E\r\n        {\r\n            // --- PROTAGONISTAS ---\r\n            { ArquetipoNarrativo.AntiHeroi, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Moral amb\u00EDgua e m\u00E9todos question\u00E1veis. C\u00EDnico, realiza o necess\u00E1rio onde o her\u00F3i cl\u00E1ssico falharia.\u0022) },\r\n            { ArquetipoNarrativo.HeroiClassico, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Campe\u00E3o da ordem. Jornada linear de supera\u00E7\u00E3o, motivado por altru\u00EDsmo ou destino.\u0022) },\r\n            { ArquetipoNarrativo.Sobrevivente, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Motiva\u00E7\u00E3o prim\u00E1ria \u00E9 existir. Tenaz e adapt\u00E1vel, sacrifica dignidade mas nunca a vida.\u0022) },\r\n            { ArquetipoNarrativo.Buscador, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Busca uma verdade ou objeto externo. A jornada reflete uma inquieta\u00E7\u00E3o interna.\u0022) },\r\n            { ArquetipoNarrativo.Visionario, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022O Arquiteto. Busca criar algo de valor permanente ou mudar o status quo.\u0022) },\r\n            { ArquetipoNarrativo.Competidor, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Enxerga a vida como desafios a vencer. Obcecado pela supera\u00E7\u00E3o e vit\u00F3ria.\u0022) },\r\n            { ArquetipoNarrativo.BonVivant, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Hedonista. Busca prazer e conforto, fugindo do sofrimento e responsabilidade.\u0022) },\r\n            { ArquetipoNarrativo.Adrenalista, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Viciado no perigo e no est\u00EDmulo qu\u00EDmico do risco. O t\u00E9dio \u00E9 o inimigo.\u0022) },\r\n\r\n            // --- ANTAGONISTAS ---\r\n            { ArquetipoNarrativo.Tirano, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Busca controle absoluto. Impiedoso com dissid\u00EAncia, confunde seu ego com a lei.\u0022) },\r\n            { ArquetipoNarrativo.Psicopata, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Desprovido de empatia. V\u00EA os outros como objetos. Crueldade sem justificativa l\u00F3gica.\u0022) },\r\n            { ArquetipoNarrativo.Sadico, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Encontra prazer ativo na dor alheia. Usa o sofrimento como ferramenta de poder.\u0022) },\r\n            { ArquetipoNarrativo.Predador, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Ca\u00E7ador calculista. Age por instinto ou profissionalismo letal, n\u00E3o por emo\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Rival, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Espelho do her\u00F3i. Compete pelo mesmo objetivo com m\u00E9todos ou motivos opostos.\u0022) },\r\n            { ArquetipoNarrativo.Valentao, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Usa for\u00E7a bruta ou intimida\u00E7\u00E3o. Inseguro, projeta poder para esconder fraqueza.\u0022) },\r\n            { ArquetipoNarrativo.Manipulador, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Enxadrista das sombras. Usa terceiros como pe\u00F5es, explorando fraquezas emocionais.\u0022) },\r\n\r\n            // --- MEDIADORES ---\r\n            { ArquetipoNarrativo.Malandro, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Prioriza lucro e autopreserva\u00E7\u00E3o. Usa charme para contornar regras.\u0022) },\r\n            { ArquetipoNarrativo.Camaleao, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Adapta-se a qualquer ambiente. Sem identidade fixa, reflete o que os outros querem ver.\u0022) },\r\n            { ArquetipoNarrativo.Rebelde, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Iconoclasta. Define-se pela oposi\u00E7\u00E3o \u00E0 autoridade e ao sistema.\u0022) },\r\n            { ArquetipoNarrativo.ForaDaLei, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Vive \u00E0 margem com c\u00F3digo de honra pr\u00F3prio. Rejeita a lei dos homens.\u0022) },\r\n            { ArquetipoNarrativo.Trickster, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Agente do caos. Quebra regras para expor hipocrisia ou por divers\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Enigma, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Motiva\u00E7\u00F5es indecifr\u00E1veis. Age de forma bizarra, mantendo os outros desequilibrados.\u0022) },\r\n            { ArquetipoNarrativo.PivoDoCaos, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Olho da Tempestade. Catalisa eventos destrutivos apenas com sua presen\u00E7a.\u0022) },\r\n\r\n            // --- MENTORES ---\r\n            { ArquetipoNarrativo.Mentor, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Possui conhecimento necess\u00E1rio ao her\u00F3i. Prepara, mas n\u00E3o resolve.\u0022) },\r\n            { ArquetipoNarrativo.Juiz, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022\u00C1rbitro imparcial. Busca a verdade factual e a aplica\u00E7\u00E3o correta das regras.\u0022) },\r\n            { ArquetipoNarrativo.Patriarca, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Autoridade tradicional. Protetor e controlador. Representa a estabilidade.\u0022) },\r\n            { ArquetipoNarrativo.Matriarca, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022For\u00E7a nutridora. Base emocional do grupo. Pode ser sufocante.\u0022) },\r\n            { ArquetipoNarrativo.Cientista, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Decodifica o mundo via l\u00F3gica. Confia em dados, ignorando o irracional.\u0022) },\r\n            { ArquetipoNarrativo.Guru, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022L\u00EDder espiritual. Atrai seguidores pelo carisma e promessa de ilumina\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Idealista, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Devoto de causa maior. Sacrifica pragmatismo por princ\u00EDpios elevados.\u0022) },\r\n            { ArquetipoNarrativo.Soldado, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Leal e disciplinado. Encontra prop\u00F3sito em servir a uma hierarquia.\u0022) },\r\n\r\n            // --- RELACIONAIS ---\r\n            { ArquetipoNarrativo.Martir, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Sacrifica-se pelo bem alheio. Aceita sofrimento como pre\u00E7o necess\u00E1rio.\u0022) },\r\n            { ArquetipoNarrativo.Penitente, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Motivado por culpa. Busca reden\u00E7\u00E3o atrav\u00E9s de servi\u00E7o ou autopuni\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Masoquista, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Define-se pela capacidade de suportar dor. Encontra identidade na resist\u00EAncia.\u0022) },\r\n            { ArquetipoNarrativo.Cuidador, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Encontra sentido em aliviar a dor alheia. Generoso e emp\u00E1tico.\u0022) },\r\n            { ArquetipoNarrativo.Amante, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Guiado pela paix\u00E3o. Busca completude no outro. Devoto ou obsessivo.\u0022) },\r\n            { ArquetipoNarrativo.Sedutor, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Usa desejo como arma. Manipula emo\u00E7\u00F5es rom\u00E2nticas para obter controle.\u0022) },\r\n            { ArquetipoNarrativo.Galante, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Busca holofotes. Vaidoso, precisa ser o centro das aten\u00E7\u00F5es.\u0022) },\r\n            { ArquetipoNarrativo.Diletante, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Eterno amador. Interessa-se por tudo, aprofunda-se em nada.\u0022) },\r\n            { ArquetipoNarrativo.Inocente, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Ing\u00EAnuo e puro. Pode inspirar ou ser presa f\u00E1cil.\u0022) },\r\n\r\n            // --- SOCIAIS ---\r\n            { ArquetipoNarrativo.Conformista, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Seguidor. Encontra seguran\u00E7a na obedi\u00EAncia \u00E0s normas.\u0022) },\r\n            { ArquetipoNarrativo.Solitario, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Prefere autossufici\u00EAncia. Rejeita a sociedade ou \u00E9 rejeitado por ela.\u0022) },\r\n            { ArquetipoNarrativo.Rabugento, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022C\u00EDnico amargo. Usa pessimismo como escudo contra decep\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Excentrico, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Vive fora das normas. Vis\u00E3o bizarra que lhe d\u00E1 perspectiva \u00FAnica.\u0022) },\r\n            { ArquetipoNarrativo.Bufao, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Usa humor para lidar com dor ou dizer verdades proibidas.\u0022) },\r\n            { ArquetipoNarrativo.Figurante, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Sem ag\u00EAncia narrativa. Comp\u00F5e o cen\u00E1rio.\u0022) },\r\n\r\n            { ArquetipoNarrativo.Indefinido, new InfoArquetipo(\u0022N/A\u0022, \u0022Dados insuficientes.\u0022) }\r\n        };\r\n\r\n        // M\u00E9todos auxiliares para o Exportador\r\n        public static string ObterDescricao(ArquetipoNarrativo a) =\u003E\r\n            Detalhes.ContainsKey(a) ? Detalhes[a].Descricao : \u0022-\u0022;\r\n\r\n        public static string ObterCategoria(ArquetipoNarrativo a) =\u003E\r\n            Detalhes.ContainsKey(a) ? Detalhes[a].Categoria : \u0022-\u0022;\r\n    }\r\n}"
+    },
+    {
+      "Name": "BibliotecaArquetipos",
+      "Namespace": "Scriptome.Fingerprint.Dados",
+      "File": "AvaliaRoteiro\\Fingerprint\\Dados\\BibliotecaArquetipos.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing System.Collections.Generic;\r\n\r\nnamespace Scriptome.Fingerprint.Dados\r\n{\r\n    // A Classe de DTO sugerida\r\n    public class InfoArquetipo\r\n    {\r\n        public string Categoria { get; set; }\r\n        public string Descricao { get; set; }\r\n\r\n        public InfoArquetipo(string cat, string desc)\r\n        {\r\n            Categoria = cat;\r\n            Descricao = desc;\r\n        }\r\n    }\r\n\r\n    public static class BibliotecaArquetipos\r\n    {\r\n        // Agora o dicion\u00E1rio retorna um objeto rico, n\u00E3o apenas uma string\r\n        public static readonly Dictionary\u003CArquetipoNarrativo, InfoArquetipo\u003E Detalhes =\r\n            new Dictionary\u003CArquetipoNarrativo, InfoArquetipo\u003E\r\n        {\r\n            // --- PROTAGONISTAS ---\r\n            { ArquetipoNarrativo.AntiHeroi, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Moral amb\u00EDgua e m\u00E9todos question\u00E1veis. C\u00EDnico, realiza o necess\u00E1rio onde o her\u00F3i cl\u00E1ssico falharia.\u0022) },\r\n            { ArquetipoNarrativo.HeroiClassico, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Campe\u00E3o da ordem. Jornada linear de supera\u00E7\u00E3o, motivado por altru\u00EDsmo ou destino.\u0022) },\r\n            { ArquetipoNarrativo.Sobrevivente, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Motiva\u00E7\u00E3o prim\u00E1ria \u00E9 existir. Tenaz e adapt\u00E1vel, sacrifica dignidade mas nunca a vida.\u0022) },\r\n            { ArquetipoNarrativo.Buscador, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Busca uma verdade ou objeto externo. A jornada reflete uma inquieta\u00E7\u00E3o interna.\u0022) },\r\n            { ArquetipoNarrativo.Visionario, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022O Arquiteto. Busca criar algo de valor permanente ou mudar o status quo.\u0022) },\r\n            { ArquetipoNarrativo.Competidor, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Enxerga a vida como desafios a vencer. Obcecado pela supera\u00E7\u00E3o e vit\u00F3ria.\u0022) },\r\n            { ArquetipoNarrativo.BonVivant, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Hedonista. Busca prazer e conforto, fugindo do sofrimento e responsabilidade.\u0022) },\r\n            { ArquetipoNarrativo.Adrenalista, new InfoArquetipo(\u0022PROTAGONISTA\u0022,\r\n              \u0022Viciado no perigo e no est\u00EDmulo qu\u00EDmico do risco. O t\u00E9dio \u00E9 o inimigo.\u0022) },\r\n\r\n            // --- ANTAGONISTAS ---\r\n            { ArquetipoNarrativo.Tirano, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Busca controle absoluto. Impiedoso com dissid\u00EAncia, confunde seu ego com a lei.\u0022) },\r\n            { ArquetipoNarrativo.Psicopata, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Desprovido de empatia. V\u00EA os outros como objetos. Crueldade sem justificativa l\u00F3gica.\u0022) },\r\n            { ArquetipoNarrativo.Sadico, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Encontra prazer ativo na dor alheia. Usa o sofrimento como ferramenta de poder.\u0022) },\r\n            { ArquetipoNarrativo.Predador, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Ca\u00E7ador calculista. Age por instinto ou profissionalismo letal, n\u00E3o por emo\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Rival, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Espelho do her\u00F3i. Compete pelo mesmo objetivo com m\u00E9todos ou motivos opostos.\u0022) },\r\n            { ArquetipoNarrativo.Valentao, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Usa for\u00E7a bruta ou intimida\u00E7\u00E3o. Inseguro, projeta poder para esconder fraqueza.\u0022) },\r\n            { ArquetipoNarrativo.Manipulador, new InfoArquetipo(\u0022ANTAGONISTA\u0022,\r\n              \u0022Enxadrista das sombras. Usa terceiros como pe\u00F5es, explorando fraquezas emocionais.\u0022) },\r\n\r\n            // --- MEDIADORES ---\r\n            { ArquetipoNarrativo.Malandro, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Prioriza lucro e autopreserva\u00E7\u00E3o. Usa charme para contornar regras.\u0022) },\r\n            { ArquetipoNarrativo.Camaleao, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Adapta-se a qualquer ambiente. Sem identidade fixa, reflete o que os outros querem ver.\u0022) },\r\n            { ArquetipoNarrativo.Rebelde, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Iconoclasta. Define-se pela oposi\u00E7\u00E3o \u00E0 autoridade e ao sistema.\u0022) },\r\n            { ArquetipoNarrativo.ForaDaLei, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Vive \u00E0 margem com c\u00F3digo de honra pr\u00F3prio. Rejeita a lei dos homens.\u0022) },\r\n            { ArquetipoNarrativo.Trickster, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Agente do caos. Quebra regras para expor hipocrisia ou por divers\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Enigma, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Motiva\u00E7\u00F5es indecifr\u00E1veis. Age de forma bizarra, mantendo os outros desequilibrados.\u0022) },\r\n            { ArquetipoNarrativo.PivoDoCaos, new InfoArquetipo(\u0022MEDIADOR\u0022,\r\n              \u0022Olho da Tempestade. Catalisa eventos destrutivos apenas com sua presen\u00E7a.\u0022) },\r\n\r\n            // --- MENTORES ---\r\n            { ArquetipoNarrativo.Mentor, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Possui conhecimento necess\u00E1rio ao her\u00F3i. Prepara, mas n\u00E3o resolve.\u0022) },\r\n            { ArquetipoNarrativo.Juiz, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022\u00C1rbitro imparcial. Busca a verdade factual e a aplica\u00E7\u00E3o correta das regras.\u0022) },\r\n            { ArquetipoNarrativo.Patriarca, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Autoridade tradicional. Protetor e controlador. Representa a estabilidade.\u0022) },\r\n            { ArquetipoNarrativo.Matriarca, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022For\u00E7a nutridora. Base emocional do grupo. Pode ser sufocante.\u0022) },\r\n            { ArquetipoNarrativo.Cientista, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Decodifica o mundo via l\u00F3gica. Confia em dados, ignorando o irracional.\u0022) },\r\n            { ArquetipoNarrativo.Guru, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022L\u00EDder espiritual. Atrai seguidores pelo carisma e promessa de ilumina\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Idealista, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Devoto de causa maior. Sacrifica pragmatismo por princ\u00EDpios elevados.\u0022) },\r\n            { ArquetipoNarrativo.Soldado, new InfoArquetipo(\u0022MENTOR\u0022,\r\n              \u0022Leal e disciplinado. Encontra prop\u00F3sito em servir a uma hierarquia.\u0022) },\r\n\r\n            // --- RELACIONAIS ---\r\n            { ArquetipoNarrativo.Martir, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Sacrifica-se pelo bem alheio. Aceita sofrimento como pre\u00E7o necess\u00E1rio.\u0022) },\r\n            { ArquetipoNarrativo.Penitente, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Motivado por culpa. Busca reden\u00E7\u00E3o atrav\u00E9s de servi\u00E7o ou autopuni\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Masoquista, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Define-se pela capacidade de suportar dor. Encontra identidade na resist\u00EAncia.\u0022) },\r\n            { ArquetipoNarrativo.Cuidador, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Encontra sentido em aliviar a dor alheia. Generoso e emp\u00E1tico.\u0022) },\r\n            { ArquetipoNarrativo.Amante, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Guiado pela paix\u00E3o. Busca completude no outro. Devoto ou obsessivo.\u0022) },\r\n            { ArquetipoNarrativo.Sedutor, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Usa desejo como arma. Manipula emo\u00E7\u00F5es rom\u00E2nticas para obter controle.\u0022) },\r\n            { ArquetipoNarrativo.Galante, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Busca holofotes. Vaidoso, precisa ser o centro das aten\u00E7\u00F5es.\u0022) },\r\n            { ArquetipoNarrativo.Diletante, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Eterno amador. Interessa-se por tudo, aprofunda-se em nada.\u0022) },\r\n            { ArquetipoNarrativo.Inocente, new InfoArquetipo(\u0022RELACIONAL\u0022,\r\n              \u0022Ing\u00EAnuo e puro. Pode inspirar ou ser presa f\u00E1cil.\u0022) },\r\n\r\n            // --- SOCIAIS ---\r\n            { ArquetipoNarrativo.Conformista, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Seguidor. Encontra seguran\u00E7a na obedi\u00EAncia \u00E0s normas.\u0022) },\r\n            { ArquetipoNarrativo.Solitario, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Prefere autossufici\u00EAncia. Rejeita a sociedade ou \u00E9 rejeitado por ela.\u0022) },\r\n            { ArquetipoNarrativo.Rabugento, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022C\u00EDnico amargo. Usa pessimismo como escudo contra decep\u00E7\u00E3o.\u0022) },\r\n            { ArquetipoNarrativo.Excentrico, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Vive fora das normas. Vis\u00E3o bizarra que lhe d\u00E1 perspectiva \u00FAnica.\u0022) },\r\n            { ArquetipoNarrativo.Bufao, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Usa humor para lidar com dor ou dizer verdades proibidas.\u0022) },\r\n            { ArquetipoNarrativo.Figurante, new InfoArquetipo(\u0022SOCIAL\u0022,\r\n              \u0022Sem ag\u00EAncia narrativa. Comp\u00F5e o cen\u00E1rio.\u0022) },\r\n\r\n            { ArquetipoNarrativo.Indefinido, new InfoArquetipo(\u0022N/A\u0022, \u0022Dados insuficientes.\u0022) }\r\n        };\r\n\r\n        // M\u00E9todos auxiliares para o Exportador\r\n        public static string ObterDescricao(ArquetipoNarrativo a) =\u003E\r\n            Detalhes.ContainsKey(a) ? Detalhes[a].Descricao : \u0022-\u0022;\r\n\r\n        public static string ObterCategoria(ArquetipoNarrativo a) =\u003E\r\n            Detalhes.ContainsKey(a) ? Detalhes[a].Categoria : \u0022-\u0022;\r\n    }\r\n}"
+    },
+    {
+      "Name": "DivergenceLogger",
+      "Namespace": "Scriptome.Fingerprint.Forense",
+      "File": "AvaliaRoteiro\\Fingerprint\\Forense\\DivergenceLogger.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.Forense\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// \u26A0\uFE0F LOGGER FORENSE\r\n    /// \r\n    /// Usado apenas para valida\u00E7\u00E3o experimental.\r\n    /// N\u00C3O deve ser usado em execu\u00E7\u00E3o produtiva.\r\n    /// \u003C/summary\u003E\r\n    public static class DivergenceLogger\r\n    {\r\n        public static void Avaliar(PerfilPersonagem perfil)\r\n        {\r\n            if (perfil?.IdentidadeRNA == null)\r\n                return;\r\n\r\n            Console.ForegroundColor = ConsoleColor.DarkCyan;\r\n            Console.WriteLine($\u0022\\n[FORENSE RNA CHECK] {perfil.Nome}\u0022);\r\n            Console.ResetColor();\r\n\r\n            LogLinha(\u0022JUNG\u0022, perfil.ArquetipoJung, perfil.IdentidadeRNA.Jung?.Individual);\r\n            LogLinha(\u0022LACAN\u0022, perfil.EstruturaPsiquica, perfil.IdentidadeRNA.Lacan?.EstruturaPsiquica);\r\n            LogLinha(\u0022MBTI\u0022, perfil.Etograma?.TipoMbti, perfil.IdentidadeRNA.Mbti?.Tipo);\r\n            LogLinha(\u0022NARRATIVO\u0022, perfil.ArquetipoScriptome, perfil.IdentidadeRNA.Narrativa?.ArquetipoScriptome);\r\n\r\n            Console.ForegroundColor = ConsoleColor.Yellow;\r\n            Console.WriteLine($\u0022SCORE: {perfil.DivergenceScoreRNA:F2}\u0022);\r\n            Console.ResetColor();\r\n        }\r\n\r\n        private static void LogLinha(string eixo, string? legado, string? rna)\r\n        {\r\n            legado ??= \u0022-\u0022;\r\n            rna ??= \u0022-\u0022;\r\n\r\n            if (string.Equals(legado, rna, StringComparison.OrdinalIgnoreCase))\r\n                Console.ForegroundColor = ConsoleColor.DarkGreen;\r\n            else\r\n                Console.ForegroundColor = ConsoleColor.DarkYellow;\r\n\r\n            Console.WriteLine($\u0022{eixo.PadRight(12)} {legado.PadRight(15)} | {rna}\u0022);\r\n            Console.ResetColor();\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "DivergenceScore",
+      "Namespace": "Scriptome.Fingerprint.Forense",
+      "File": "AvaliaRoteiro\\Fingerprint\\Forense\\DivergenceScore.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.Forense\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// \u26A0\uFE0F M\u00D3DULO FORENSE\r\n    /// \r\n    /// Usado apenas para valida\u00E7\u00E3o cient\u00EDfica do Strangler.\r\n    /// N\u00C3O deve ser utilizado em runtime produtivo.\r\n    /// \u003C/summary\u003E\r\n    public static class DivergenceScore\r\n    {\r\n        public static double Calcular(PerfilPersonagem perfil)\r\n        {\r\n            if (perfil?.IdentidadeRNA == null)\r\n                return 0;\r\n\r\n            double score = 0;\r\n            int total = 0;\r\n\r\n            total\u002B\u002B;\r\n            if (!string.Equals(\r\n                perfil.ArquetipoJung,\r\n                perfil.IdentidadeRNA.Jung?.Individual,\r\n                StringComparison.OrdinalIgnoreCase))\r\n                score\u002B\u002B;\r\n\r\n            total\u002B\u002B;\r\n            if (!string.Equals(\r\n                perfil.EstruturaPsiquica,\r\n                perfil.IdentidadeRNA.Lacan?.EstruturaPsiquica,\r\n                StringComparison.OrdinalIgnoreCase))\r\n                score\u002B\u002B;\r\n\r\n            total\u002B\u002B;\r\n            if (!string.Equals(\r\n                perfil.Etograma?.TipoMbti,\r\n                perfil.IdentidadeRNA.Mbti?.Tipo,\r\n                StringComparison.OrdinalIgnoreCase))\r\n                score\u002B\u002B;\r\n\r\n            total\u002B\u002B;\r\n            if (!string.Equals(\r\n                perfil.ArquetipoScriptome,\r\n                perfil.IdentidadeRNA.Narrativa?.ArquetipoScriptome,\r\n                StringComparison.OrdinalIgnoreCase))\r\n                score\u002B\u002B;\r\n\r\n            return total == 0 ? 0 : score / total;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorBiometrico",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorBiometrico.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise; // Para PerfilPersonagem\r\nusing Scriptome.Fingerprint.Modelos;     // Para Etograma\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IClassificadorBiometrico\r\n    {\r\n        string Nome { get; }\r\n        void Classificar(PerfilPersonagem p, Etograma e);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorColetivo",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorColetivo.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing System.Collections.Generic;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTRATO PARA CLASSIFICADORES COLETIVOS\r\n    /// Executam processamento considerando o elenco inteiro.\r\n    /// \u003C/summary\u003E\r\n    public interface IClassificadorColetivo : IClassificadorBiometrico\r\n    {\r\n        void ClassificarElenco(List\u003CPerfilPersonagem\u003E elenco);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorEtogramaV2",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorEtogramaV2.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IClassificadorEtogramaV2\r\n    {\r\n        string Nome { get; }\r\n\r\n        ParcialEtograma Executar(\r\n            PerfilPersonagem personagem,\r\n            ParcialEtograma acumulado);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorIndividual",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorIndividual.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTRATO PARA CLASSIFICADORES INDIVIDUAIS\r\n    /// Executam processamento personagem a personagem.\r\n    /// \u003C/summary\u003E\r\n    public interface IClassificadorIndividual : IClassificadorBiometrico\r\n    {\r\n        void Classificar(PerfilPersonagem personagem, Etograma etograma);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorJungV2",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorJungV2.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IClassificadorJungV2\r\n    {\r\n        ResultadoJung Classificar(RnaBruto rna);\r\n\r\n        Dictionary\u003CRnaBruto, ResultadoJung\u003E ClassificarElenco(\r\n            IReadOnlyList\u003CRnaBruto\u003E elenco);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorLacanianoV2",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorLacanianoV2.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IClassificadorLacanianoV2\r\n    {\r\n        ResultadoLacaniano Classificar(RnaBruto rna);\r\n\r\n        Dictionary\u003CRnaBruto, ResultadoLacaniano\u003E ClassificarElenco(\r\n            IReadOnlyList\u003CRnaBruto\u003E elenco);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorMBTIV2",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorMBTIV2.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IClassificadorMBTIV2\r\n    {\r\n        ResultadoMBTI Classificar(RnaBruto rna);\r\n\r\n        Dictionary\u003CRnaBruto, ResultadoMBTI\u003E ClassificarElenco(\r\n            IReadOnlyList\u003CRnaBruto\u003E elenco);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IClassificadorNarrativaV2",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IClassificadorNarrativaV2.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IClassificadorNarrativaV2\r\n    {\r\n        ExpressaoNarrativa Classificar(\r\n            RnaBruto rna,\r\n            int quantidadeFalas,\r\n            ExpressaoEnergetica energia,\r\n            ExpressaoPsicodinamica psico\r\n        );\r\n    }\r\n}"
+    },
+    {
+      "Name": "IExtratorEtograma",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IExtratorEtograma.cs",
+      "Code": "using Scriptome.Fingerprint.Dados;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IExtratorEtograma\r\n    {\r\n        VetorEtograma3D Extrair(PerfilPersonagem personagem);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IMotorEtograma",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtograma.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorEtograma\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n        ///\r\n        /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n        /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n        ///\r\n        /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n        /// - MotorEtogramaHeuristico\r\n        /// - MotorEtogramaVetorial (futuro)\r\n        /// - MotorEtogramaProbabilistico (futuro)\r\n        /// \u003C/summary\u003E\r\n        public interface IMotorEtograma\r\n        {\r\n            string Nome { get; }\r\n\r\n            Etograma GerarEtograma(PerfilPersonagem personagem);\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "permite",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtograma.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorEtograma\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n        ///\r\n        /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n        /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n        ///\r\n        /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n        /// - MotorEtogramaHeuristico\r\n        /// - MotorEtogramaVetorial (futuro)\r\n        /// - MotorEtogramaProbabilistico (futuro)\r\n        /// \u003C/summary\u003E\r\n        public interface IMotorEtograma\r\n        {\r\n            string Nome { get; }\r\n\r\n            Etograma GerarEtograma(PerfilPersonagem personagem);\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "IMotorEtograma",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtograma.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorEtograma\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n        ///\r\n        /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n        /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n        ///\r\n        /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n        /// - MotorEtogramaHeuristico\r\n        /// - MotorEtogramaVetorial (futuro)\r\n        /// - MotorEtogramaProbabilistico (futuro)\r\n        /// \u003C/summary\u003E\r\n        public interface IMotorEtograma\r\n        {\r\n            string Nome { get; }\r\n\r\n            Etograma GerarEtograma(PerfilPersonagem personagem);\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "IMotorEtogramaCartesiano",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtogramaCartesiano.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTRATO PARA MOTOR ET\u00D3GRAMA CARTESIANO.\r\n    /// Permite intercambiar estrat\u00E9gias 3D no futuro.\r\n    /// \u003C/summary\u003E\r\n    public interface IMotorEtogramaCartesiano\r\n    {\r\n        Etograma GerarEtograma(PerfilPersonagem personagem);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IMotorIdentidadeRNA",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorIdentidadeRNA.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorIdentidadeRNA\r\n    {\r\n        ResultadoIdentidadeConsolidada Processar(\r\n            RnaBruto rna,\r\n            int quantidadeFalas,\r\n            ExpressaoEnergetica energia,\r\n            ExpressaoPsicodinamica psico);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IMotorIntencional",
+      "Namespace": "Scriptome.Fingerprint.Interfaces",
+      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorIntencional.cs",
+      "Code": "using Scriptome.Fingerprint.MotoresInterpretativos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorIntencional\r\n    {\r\n        ExpressaoIntencional Calcular(PerfilPersonagem personagem);\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "BibliotecaCentroidesEtograma",
+      "Namespace": "Scriptome.Fingerprint.MotoresEtograma",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\BibliotecaCentroidesEtograma.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing System.Collections.Generic;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresEtograma\r\n{\r\n    public static class BibliotecaCentroidesEtograma\r\n    {\r\n        public static Dictionary\u003CArquetipoNarrativo, VetorEtograma3D\u003E Criar()\r\n        {\r\n            return new Dictionary\u003CArquetipoNarrativo, VetorEtograma3D\u003E\r\n            {\r\n                { ArquetipoNarrativo.HeroiClassico, new VetorEtograma3D{ EgoismoAltruismo=0.8, ImpulsoNorma=-0.4, ConcretoAbstrato=-0.2 } },\r\n                { ArquetipoNarrativo.Tirano, new VetorEtograma3D{ EgoismoAltruismo=-0.8, ImpulsoNorma=0.6, ConcretoAbstrato=0.3 } },\r\n                { ArquetipoNarrativo.Cuidador, new VetorEtograma3D{ EgoismoAltruismo=0.9, ImpulsoNorma=-0.2, ConcretoAbstrato=-0.4 } },\r\n                { ArquetipoNarrativo.Malandro, new VetorEtograma3D{ EgoismoAltruismo=-0.3, ImpulsoNorma=0.7, ConcretoAbstrato=-0.5 } },\r\n                { ArquetipoNarrativo.Cientista, new VetorEtograma3D{ EgoismoAltruismo=0.1, ImpulsoNorma=-0.6, ConcretoAbstrato=0.9 } },\r\n                { ArquetipoNarrativo.Mentor, new VetorEtograma3D{ EgoismoAltruismo=0.6, ImpulsoNorma=-0.8, ConcretoAbstrato=0.8 } },\r\n                { ArquetipoNarrativo.Predador, new VetorEtograma3D{ EgoismoAltruismo=-0.9, ImpulsoNorma=0.2, ConcretoAbstrato=0.1 } }\r\n            };\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "BlocoNarrativoFingerprint",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\BlocoNarrativoFingerprint.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA UMA CENA CONTENDO APENAS OS DI\u00C1LOGOS\r\n    /// DO PERSONAGEM ANALISADO.\r\n    ///\r\n    /// A ordem das cenas \u00E9 preservada.\r\n    /// A ordem dos turnos dentro da cena \u00E9 preservada.\r\n    ///\r\n    /// N\u00C3O cont\u00E9m a\u00E7\u00F5es.\r\n    /// N\u00C3O cont\u00E9m falas de outros personagens.\r\n    /// \u003C/summary\u003E\r\n    public sealed record BlocoNarrativoFingerprint(\r\n        int NumeroCena,\r\n        IReadOnlyList\u003CTurnoDialogoFingerprint\u003E Turnos\r\n    );\r\n}"
+    },
+    {
+      "Name": "ContextoIdentidadeFingerprint",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ContextoIdentidadeFingerprint.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTEXTO COMPLETO DE IDENTIDADE PARA O DOM\u00CDNIO FINGERPRINT.\r\n    ///\r\n    /// Fornece dados suficientes para:\r\n    ///\r\n    /// 1) Classificadores Vetoriais (DERIVA-only)\r\n    /// 2) Classificadores H\u00EDbridos (DERIVA \u002B m\u00E9tricas f\u00EDsicas)\r\n    /// 3) Classificadores Narrativos Estruturais\r\n    /// 4) Classificadores Textuais baseados em tokens\r\n    ///\r\n    /// N\u00C3O depende de:\r\n    /// - PerfilPersonagem\r\n    /// - ResultadoBaseLinguistico\r\n    /// - EstatisticasRoteiro\r\n    /// - Fen\u00F3tipo\r\n    ///\r\n    /// \u00C9 um contrato puro de dom\u00EDnio Fingerprint.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ContextoIdentidadeFingerprint(\r\n\r\n        // ==========================\r\n        // DERIVA - VETORES PRIM\u00C1RIOS\r\n        // ==========================\r\n        double Dominancia,\r\n        double Ego,\r\n        double Racionalidade,\r\n        double Ironia,\r\n        double Volicao,\r\n        double Afeto,\r\n        double Erudicao,\r\n        double Sensorium,\r\n\r\n        // ==========================\r\n        // M\u00C9TRICAS F\u00CDSICAS\r\n        // ==========================\r\n        double BurstMedio,\r\n        int QuantidadeFalas,\r\n\r\n        // ==========================\r\n        // CONTEXTO NARRATIVO\r\n        // ==========================\r\n        ContextoNarrativoFingerprint Narrativa\r\n    );\r\n}"
+    },
+    {
+      "Name": "ContextoNarrativo",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ContextoNarrativo.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ContextoNarrativo(\r\n        ResultadoBaseLinguistico Base,\r\n        ExpressaoEnergetica Energia,\r\n        ExpressaoPsicodinamica Psico)\r\n    {\r\n        public bool IroniaAmarga =\u003E\r\n            Base.ScoreIronia \u003E 0.4 \u0026\u0026 Base.ScoreAfeto \u003C -0.1;\r\n\r\n        public bool ViolenciaFria =\u003E\r\n            Energia.NivelCrueldade \u003E 4 \u0026\u0026 Base.ScoreRacionalidade \u003E 0.5;\r\n\r\n        public bool SeducaoFatal =\u003E\r\n            Energia.NivelErotizacao \u003E 5 \u0026\u0026\r\n            Energia.NivelManipulacao \u003E 4;\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ContextoNarrativoFingerprint",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ContextoNarrativoFingerprint.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTEXTO NARRATIVO ESTRUTURADO.\r\n    ///\r\n    /// Cont\u00E9m as cenas ordenadas temporalmente.\r\n    ///\r\n    /// \u00C9 utilizado por:\r\n    /// - Classificadores estruturais\r\n    /// - Classificadores de progress\u00E3o narrativa\r\n    /// - An\u00E1lises de densidade por cena\r\n    /// \u003C/summary\u003E\r\n    public sealed record ContextoNarrativoFingerprint(\r\n        IReadOnlyList\u003CBlocoNarrativoFingerprint\u003E CenasOrdenadas\r\n    );\r\n}"
+    },
+    {
+      "Name": "EstadoIdentidade",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\EstadoIdentidade.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// ESTADO INTERNO MUT\u00C1VEL UTILIZADO\r\n    /// DURANTE O PROCESSAMENTO DOS CLASSIFICADORES.\r\n    ///\r\n    /// N\u00E3o deve vazar para o N\u00FAcleo.\r\n    /// \u003C/summary\u003E\r\n    public sealed class EstadoIdentidade\r\n    {\r\n        public string ArquetipoJung { get; set; }\r\n        public string ArquetipoNarrativo { get; set; }\r\n        public string ArquetipoTermico { get; set; }\r\n\r\n        public double IntensidadeDiscursiva { get; set; }\r\n        public string ClassificacaoIntensidade { get; set; }\r\n\r\n        public double NivelCrueldade { get; set; }\r\n        public double NivelManipulacao { get; set; }\r\n        public double NivelErotizacao { get; set; }\r\n        public double IndicePerversidade { get; set; }\r\n        public string ClassificacaoPerversidade { get; set; }\r\n\r\n        public string RegistroDominante { get; set; }\r\n        public string EstruturaPsiquica { get; set; }\r\n    }\r\n}"
+    },
+    {
+      "Name": "Etograma",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\Etograma.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// O Boletim de Identidade do Personagem.\r\n    /// v4.2: Compat\u00EDvel com Psicodin\u00E2mica tridimensional de Inten\u00E7\u00E3o.\r\n    /// Mant\u00E9m compatibilidade com v4.1.\r\n    /// \u003C/summary\u003E\r\n    public class Etograma\r\n    {\r\n        public bool Processado { get; set; } = false;\r\n\r\n        // --- Camada 1: Psicologia Cl\u00E1ssica ---\r\n        public string ArquetipoJung { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- Camada 2: L\u00F3gica Propriet\u00E1ria ---\r\n        public string ArquetipoScriptome { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- Camada 3: Vetorial Matem\u00E1tica ---\r\n        public string ArquetipoDavm { get; set; } = \u0022Indefinido\u0022;\r\n        public string TipoMbti { get; set; } = \u0022XXXX\u0022;\r\n        public double ConflitoDavm { get; set; }\r\n\r\n        // --- Camada 4: F\u00EDsica Elemental ---\r\n        public string Termodinamica { get; set; } = \u0022Neutro\u0022;\r\n\r\n        // --- Camada 5: B\u00FAssola Moral ---\r\n        public string AlinhamentoMoral { get; set; } = \u0022Neutro\u0022;\r\n\r\n        // --- Camada 6: PSICAN\u00C1LISE LACANIANA (R.S.I.) ---\r\n\r\n        // Intensidade estrutural (0\u201310)\r\n        public double IntensidadeImaginario { get; set; }\r\n        public double IntensidadeSimbolico { get; set; }\r\n        public double IntensidadeReal { get; set; }\r\n\r\n        // Propor\u00E7\u00E3o estrutural (\u224810)\r\n        public double ScoreImaginario { get; set; }\r\n        public double ScoreSimbolico { get; set; }\r\n        public double ScoreReal { get; set; }\r\n\r\n        public string RegistroDominante { get; set; } = \u0022Indefinido\u0022;\r\n        public string EstruturaPsiquica { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- Camada 7: PSICODIN\u00C2MICA ---\r\n\r\n        // INTEN\u00C7\u00C3O TRIDIMENSIONAL (NOVO)\r\n        public double IntencaoCognitiva { get; set; }\r\n        public double IntencaoMotora { get; set; }\r\n        public double IntencaoEmocional { get; set; }\r\n\r\n        // COMPONENTES DA PERVERSIDADE\r\n        public double NivelCrueldade { get; set; }\r\n        public double NivelManipulacao { get; set; }\r\n        public double NivelErotizacao { get; set; }\r\n\r\n        public double IndicePerversidade { get; set; }\r\n        public string ClassificacaoPerversidade { get; set; } = \u0022Neutro\u0022;\r\n\r\n        // --- Camada 8: M\u00E9trica H\u00EDbrida e Intensidade ---\r\n        public double IntensidadeDiscursiva { get; set; }\r\n        public string RegimeDiscursivo { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- CAMADA 9: ENERGIA RELATIVA ---\r\n        public string ClassificacaoIntensidade { get; set; } = \u0022Indefinido\u0022;\r\n        public double IntensidadeZ { get; set; }\r\n\r\n        public string PerfilHibrido { get; set; }\r\n\r\n        // --- CAMADA 10: ARQU\u00C9TIPO NARRATIVO FINAL (NOVO) ---\r\n        // Armazena o veredito final do pipeline de classifica\u00E7\u00E3o\r\n        public ArquetipoNarrativo ArquetipoNarrativoFinal { get; set; } = ArquetipoNarrativo.Indefinido;\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ExpressaoIdentidade",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ExpressaoIdentidade.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// RESULTADO FINAL DA CLASSIFICA\u00C7\u00C3O DE IDENTIDADE.\r\n    ///\r\n    /// \u00C9 o \u00FAnico objeto que o Fingerprint devolve ao N\u00FAcleo.\r\n    /// \u00C9 imut\u00E1vel.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ExpressaoIdentidade(\r\n        string ArquetipoJung,\r\n        string ArquetipoNarrativo,\r\n        string ArquetipoTermico,\r\n        double IntensidadeDiscursiva,\r\n        string ClassificacaoIntensidade,\r\n        string RegistroDominante,\r\n        string EstruturaPsiquica,\r\n        double NivelCrueldade,\r\n        double NivelManipulacao,\r\n        double NivelErotizacao,\r\n        double IndicePerversidade,\r\n        string ClassificacaoPerversidade\r\n    );\r\n}"
+    },
+    {
+      "Name": "ParcialEtograma",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ParcialEtograma.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ParcialEtograma(\r\n        string? ArquetipoJung = null,\r\n        ArquetipoNarrativo? ArquetipoNarrativoFinal = null,\r\n\r\n        double? IntensidadeImaginario = null,\r\n        double? IntensidadeSimbolico = null,\r\n        double? IntensidadeReal = null,\r\n\r\n        double? ScoreImaginario = null,\r\n        double? ScoreSimbolico = null,\r\n        double? ScoreReal = null,\r\n\r\n        string? RegistroDominante = null,\r\n        string? EstruturaPsiquica = null,\r\n\r\n        double? IntensidadeDiscursiva = null,\r\n        string? ClassificacaoIntensidade = null,\r\n        string? Termodinamica = null,\r\n\r\n        double? NivelCrueldade = null,\r\n        double? NivelManipulacao = null,\r\n        double? NivelErotizacao = null,\r\n        double? IndicePerversidade = null,\r\n        string? ClassificacaoPerversidade = null,\r\n\r\n        string? TipoMbti = null,\r\n        string? PerfilHibrido = null\r\n    );\r\n}\r\n"
+    },
+    {
+      "Name": "RegraArquetipo",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\RegraArquetipo.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record RegraArquetipo(\r\n        ArquetipoNarrativo Arquetipo,\r\n        double Peso,\r\n        Func\u003CContextoNarrativo, bool\u003E Condicao\r\n    );\r\n}\r\n"
+    },
+    {
+      "Name": "ResultadoEtograma",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoEtograma.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoEtograma(\r\n        // =========================\r\n        // IDENTIDADE NARRATIVA\r\n        // =========================\r\n        ArquetipoNarrativo ArquetipoNarrativoFinal,\r\n        string ArquetipoJung,\r\n        string CategoriaNarrativa,\r\n\r\n        // =========================\r\n        // PSICODIN\u00C2MICA (RSI)\r\n        // =========================\r\n        double IntensidadeImaginario,\r\n        double IntensidadeSimbolico,\r\n        double IntensidadeReal,\r\n\r\n        double ScoreImaginario,\r\n        double ScoreSimbolico,\r\n        double ScoreReal,\r\n\r\n        string RegistroDominante,\r\n        string EstruturaPsiquica,\r\n\r\n        // =========================\r\n        // ENERG\u00C9TICO / TERMODIN\u00C2MICO\r\n        // =========================\r\n        double IntensidadeDiscursiva,\r\n        string ClassificacaoIntensidade,\r\n        string Termodinamica,\r\n\r\n        // =========================\r\n        // PERVERSIDADE\r\n        // =========================\r\n        double NivelCrueldade,\r\n        double NivelManipulacao,\r\n        double NivelErotizacao,\r\n        double IndicePerversidade,\r\n        string ClassificacaoPerversidade,\r\n\r\n        // =========================\r\n        // COGNITIVO\r\n        // =========================\r\n        string TipoMbti,\r\n        string PerfilHibrido\r\n    );\r\n}\r\n"
+    },
+    {
+      "Name": "ResultadoIdentidadeConsolidada",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoIdentidadeConsolidada.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoIdentidadeConsolidada(\r\n        ResultadoJung Jung,\r\n        ResultadoMBTI Mbti,\r\n        ResultadoLacaniano Lacan,\r\n        ExpressaoNarrativa Narrativa\r\n    );\r\n}"
+    },
+    {
+      "Name": "ResultadoJung",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoJung.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed class ResultadoJung\r\n    {\r\n        public string Individual { get; }\r\n        public string? Coletivo { get; }\r\n\r\n        public ResultadoJung(string individual, string? coletivo = null)\r\n        {\r\n            Individual = individual;\r\n            Coletivo = coletivo;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ResultadoLacaniano",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoLacaniano.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoLacaniano(\r\n        string EstruturaPsiquica,\r\n        string RegistroDominante,\r\n        double IntensidadeReal,\r\n        double IntensidadeSimbolico,\r\n        double IntensidadeImaginario,\r\n        double ScoreReal,\r\n        double ScoreSimbolico,\r\n        double ScoreImaginario\r\n    );\r\n}"
+    },
+    {
+      "Name": "ResultadoMBTI",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoMBTI.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoMBTI(\r\n        string Tipo,\r\n        double? ScoreEI = null,\r\n        double? ScoreSN = null,\r\n        double? ScoreTF = null,\r\n        double? ScoreJP = null\r\n    );\r\n}"
+    },
+    {
+      "Name": "TokenFingerprint",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\TokenFingerprint.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA\u00C7\u00C3O SIMPLIFICADA DE TOKEN PARA O DOM\u00CDNIO FINGERPRINT.\r\n    ///\r\n    /// Objetivo:\r\n    /// - Permitir classificadores textuais e estruturais\r\n    /// - Evitar depend\u00EAncia direta do m\u00F3dulo Lingu\u00EDstico\r\n    /// - Preservar informa\u00E7\u00F5es relevantes para an\u00E1lise discursiva\r\n    ///\r\n    /// N\u00C3O cont\u00E9m:\r\n    /// - POS Tag\r\n    /// - Depend\u00EAncias sint\u00E1ticas\r\n    /// - Estruturas profundas\r\n    ///\r\n    /// Isso \u00E9 responsabilidade do Limbic.\r\n    /// \u003C/summary\u003E\r\n    public sealed record TokenFingerprint(\r\n        string TextoOriginal,\r\n        string Normalizado,\r\n        string Lema,\r\n        bool EhPontuacao,\r\n        bool EstaEmCaixaAlta\r\n    );\r\n}"
+    },
+    {
+      "Name": "TurnoDialogoFingerprint",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\TurnoDialogoFingerprint.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA UM TURNO DE DI\u00C1LOGO DE UM PERSONAGEM.\r\n    ///\r\n    /// Mant\u00E9m:\r\n    /// - Texto original\r\n    /// - Tokens derivados\r\n    /// - Ordem dentro da cena\r\n    ///\r\n    /// O Fingerprint recebe isso j\u00E1 filtrado por personagem.\r\n    /// \u003C/summary\u003E\r\n    public sealed record TurnoDialogoFingerprint(\r\n        int OrdemNoBloco,\r\n        string Texto,\r\n        IReadOnlyList\u003CTokenFingerprint\u003E Tokens\r\n    );\r\n}"
+    },
+    {
+      "Name": "VetorEtograma3D",
+      "Namespace": "Scriptome.Fingerprint.Modelos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\VetorEtograma3D.cs",
+      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a posi\u00E7\u00E3o do personagem no espa\u00E7o Etograma Cartesiano.\r\n    /// X \u2192 Ego\u00EDsmo \u00D7 Altru\u00EDsmo\r\n    /// Y \u2192 Impulso (Id) \u00D7 Norma (Superego)\r\n    /// Z \u2192 Concreto \u00D7 Abstrato\r\n    /// \u003C/summary\u003E\r\n    /// \r\n    public struct VetorEtograma3D\r\n    {\r\n        public double EgoismoAltruismo;\r\n        public double ImpulsoNorma;\r\n        public double ConcretoAbstrato;\r\n\r\n        public double Distancia(VetorEtograma3D outro)\r\n        {\r\n            return System.Math.Sqrt(\r\n                System.Math.Pow(EgoismoAltruismo - outro.EgoismoAltruismo, 2) \u002B\r\n                System.Math.Pow(ImpulsoNorma - outro.ImpulsoNorma, 2) \u002B\r\n                System.Math.Pow(ConcretoAbstrato - outro.ConcretoAbstrato, 2)\r\n            );\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ModuloEtogramaV2",
+      "Namespace": "Scriptome.Fingerprint.Modulos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Modulos\\ModuloEtogramaV2.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.MotoresEtograma;\r\nusing Scriptome.Fingerprint.MotoresInterpretativos;\r\nusing Scriptome.Nucleo.Interfaces;\r\nusing Scriptome.Nucleo.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Nucleo.Modelos.Script;\r\nusing System;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Modulos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// M\u00D3DULO ETOGRAMA V2\r\n    /// \r\n    /// Respons\u00E1vel por:\r\n    /// - Executar MotorEtogramaV2 (RSI \u002B Psicodin\u00E2mica \u002B Narrativa etc.)\r\n    /// - Gerar ResultadoEtograma imut\u00E1vel\r\n    /// - (Opcional) Executar MotorIntencional\r\n    /// \r\n    /// N\u00C3O:\r\n    /// - N\u00E3o muta estado interno do personagem al\u00E9m de anexar Result Objects\r\n    /// - N\u00E3o realiza exporta\u00E7\u00E3o\r\n    /// - N\u00E3o realiza consolida\u00E7\u00E3o fenot\u00EDpica\r\n    /// \r\n    /// Ordem recomendada:\r\n    /// Ap\u00F3s DERIVA / Limbic\r\n    /// Antes de consolida\u00E7\u00E3o final / exporta\u00E7\u00E3o\r\n    /// \u003C/summary\u003E\r\n    public sealed class ModuloEtogramaV2 : IModuloAnalise\r\n    {\r\n        public int Ordem =\u003E 500; // Ajuste conforme seu pipeline\r\n\r\n        private readonly MotorEtogramaV2 _motorEtograma;\r\n\r\n        // \u26A0 OPCIONAL \u2014 Motor interpretativo\r\n        // Deixe injetado mas n\u00E3o obrigat\u00F3rio.\r\n        private readonly IMotorIntencional? _motorIntencional;\r\n\r\n        public ModuloEtogramaV2(\r\n            MotorEtogramaV2 motorEtograma\r\n        // , IMotorIntencional motorIntencional  \u003C-- ATIVAR QUANDO NECESS\u00C1RIO\r\n        )\r\n        {\r\n            _motorEtograma = motorEtograma\r\n                ?? throw new ArgumentNullException(nameof(motorEtograma));\r\n\r\n            // _motorIntencional = motorIntencional;\r\n        }\r\n\r\n        public void Analisar(Roteiro roteiro, EstatisticasRoteiro stats)\r\n        {\r\n            if (stats?.AnalisePersonagens == null ||\r\n                !stats.AnalisePersonagens.Any())\r\n                return;\r\n\r\n            foreach (var personagem in stats.AnalisePersonagens)\r\n            {\r\n                // ===============================\r\n                // 1. ETOGRAMA ESTRUTURAL V2\r\n                // ===============================\r\n\r\n                var resultadoEtograma =\r\n                    _motorEtograma.Gerar(personagem);\r\n\r\n                // IMPORTANTE:\r\n                // Adicione esta propriedade no PerfilPersonagem:\r\n                //\r\n                // public ResultadoEtograma? ResultadoEtograma { get; set; }\r\n                //\r\n                personagem.ResultadoEtograma = resultadoEtograma;\r\n\r\n                // ============================================================\r\n                // 2. INTENCIONALIDADE (OPCIONAL - DESATIVADO POR PADR\u00C3O)\r\n                // ============================================================\r\n                //\r\n                // Para ativar:\r\n                // 1. Injetar IMotorIntencional no construtor\r\n                // 2. Descomentar o bloco abaixo\r\n                // 3. Adicionar propriedade:\r\n                //    public ExpressaoIntencional? Intencionalidade { get; set; }\r\n                //\r\n                /*\r\n                if (_motorIntencional != null)\r\n                {\r\n                    personagem.Intencionalidade =\r\n                        _motorIntencional.Calcular(personagem);\r\n                }\r\n                */\r\n            }\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "MotorIdentidadeRNA",
+      "Namespace": "Scriptome.Fingerprint.Motores",
+      "File": "AvaliaRoteiro\\Fingerprint\\Motores\\MotorDeIdentidadeRNA.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Motores\r\n{\r\n    public sealed class MotorIdentidadeRNA\r\n        : IMotorIdentidadeRNA\r\n    {\r\n        private readonly IClassificadorJungV2 _jung;\r\n        private readonly IClassificadorMBTIV2 _mbti;\r\n        private readonly IClassificadorLacanianoV2 _lacan;\r\n        private readonly IClassificadorNarrativaV2 _narrativa;\r\n\r\n        public MotorIdentidadeRNA(\r\n            IClassificadorJungV2 jung,\r\n            IClassificadorMBTIV2 mbti,\r\n            IClassificadorLacanianoV2 lacan,\r\n            IClassificadorNarrativaV2 narrativa)\r\n        {\r\n            _jung = jung;\r\n            _mbti = mbti;\r\n            _lacan = lacan;\r\n            _narrativa = narrativa;\r\n        }\r\n\r\n        public ResultadoIdentidadeConsolidada Processar(\r\n            RnaBruto rna,\r\n            int quantidadeFalas,\r\n            ExpressaoEnergetica energia,\r\n            ExpressaoPsicodinamica psico)\r\n        {\r\n            var jung = _jung.Classificar(rna);\r\n            var mbti = _mbti.Classificar(rna);\r\n            var lacan = _lacan.Classificar(rna);\r\n            var narrativa = _narrativa.Classificar(\r\n                rna,\r\n                quantidadeFalas,\r\n                energia,\r\n                psico);\r\n\r\n            return new ResultadoIdentidadeConsolidada(\r\n                jung,\r\n                mbti,\r\n                lacan,\r\n                narrativa);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ExtratorEtogramaDeriva6",
+      "Namespace": "Scriptome.Fingerprint.MotoresEtograma",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresEtograma\\ExtratorEtogramaDeriva6.cs",
+      "Code": "using Scriptome.Fingerprint.Dados;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresEtograma\r\n{\r\n    public class ExtratorEtogramaDeriva6 : IExtratorEtograma\r\n    {\r\n        public VetorEtograma3D Extrair(PerfilPersonagem p)\r\n        {\r\n            // ==============================\r\n            // EIXO X \u2014 Ego\u00EDsmo \u00D7 Altru\u00EDsmo\r\n            // ==============================\r\n            double altruismo =\r\n                (p.ScoreAfeto * 0.7) \u002B\r\n                (p.KarmaMoral * 0.3);\r\n\r\n            double egoismo =\r\n                (p.ScoreEgo * 0.5) \u002B\r\n                (p.ScoreDominancia * 0.5);\r\n\r\n            double eixoX = altruismo - egoismo;\r\n\r\n            // ==============================\r\n            // EIXO Y \u2014 Id \u00D7 Superego\r\n            // ==============================\r\n            double id =\r\n                (p.ScoreVolicao \u002B\r\n                 p.ScoreSensorium \u002B\r\n                 p.ScoreDominancia) / 3.0;\r\n\r\n            double superego =\r\n                (p.ScoreRacionalidade \u002B\r\n                 p.ScoreErudicao \u002B\r\n                 p.KarmaOrdem) / 3.0;\r\n\r\n            double eixoY = id - superego;\r\n\r\n            // ==============================\r\n            // EIXO Z \u2014 Concreto \u00D7 Abstrato\r\n            // ==============================\r\n            double abstrato =\r\n                (p.ScoreRacionalidade \u002B\r\n                 p.ScoreErudicao) / 2.0;\r\n\r\n            double concreto = p.ScoreSensorium;\r\n\r\n            double eixoZ = abstrato - concreto;\r\n\r\n            // ==============================\r\n            // NORMALIZA\u00C7\u00C3O (embedding-like)\r\n            // ==============================\r\n            return new VetorEtograma3D\r\n            {\r\n                EgoismoAltruismo = Normalizar(eixoX),\r\n                ImpulsoNorma = Normalizar(eixoY),\r\n                ConcretoAbstrato = Normalizar(eixoZ)\r\n            };\r\n        }\r\n\r\n        private double Normalizar(double v)\r\n        {\r\n            return Math.Tanh(v / 3.0);\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "MotorEtogramaCartesiano3D",
+      "Namespace": "Scriptome.Fingerprint.MotoresEtograma",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresEtograma\\MotorEtogramaCartesiano3D.cs",
+      "Code": "using Scriptome.Fingerprint.Classificadores.Cartesianos;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresEtograma;\r\n\r\npublic class MotorEtogramaCartesiano3D : IMotorEtogramaCartesiano\r\n{\r\n    private readonly IExtratorEtograma _extrator;\r\n    private readonly ClassificadorEtogramaCartesiano _classificador;\r\n\r\n    public string Nome =\u003E \u0022Etograma Cartesiano 3D\u0022;\r\n\r\n    public MotorEtogramaCartesiano3D(\r\n        IExtratorEtograma extrator,\r\n        ClassificadorEtogramaCartesiano classificador)\r\n    {\r\n        _extrator = extrator;\r\n        _classificador = classificador;\r\n    }\r\n\r\n    public Etograma GerarEtograma(PerfilPersonagem p)\r\n    {\r\n        if (p.Etograma == null)\r\n            p.Etograma = new Etograma();\r\n\r\n        var vetor = _extrator.Extrair(p);\r\n        p.VetorEtograma = vetor;\r\n\r\n        p.Etograma.ArquetipoNarrativoFinal =\r\n            _classificador.Inferir(vetor);\r\n\r\n        p.Etograma.Processado = true;\r\n\r\n        return p.Etograma;\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "MotorEtogramaHeuristico",
+      "Namespace": "Scriptome.Fingerprint.MotoresEtograma",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresEtograma\\MotorEtogramaHeuristico.cs",
+      "Code": "using Scriptome.Fingerprint.Classificadores.Narrativa;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresEtograma\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Motor de Etograma baseado no classificador heur\u00EDstico.\r\n    ///\r\n    /// Este \u00E9 o baseline simb\u00F3lico do Scriptome.\r\n    /// N\u00E3o utiliza estat\u00EDstica nem proje\u00E7\u00E3o vetorial.\r\n    /// \u003C/summary\u003E\r\n    public class MotorEtogramaHeuristico : IMotorEtograma\r\n    {\r\n        private readonly ClassificadorScriptome _classificador;\r\n\r\n        public string Nome =\u003E \u0022Etograma Heur\u00EDstico\u0022;\r\n\r\n        public MotorEtogramaHeuristico()\r\n        {\r\n            _classificador = new ClassificadorScriptome();\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Fluxo:\r\n        /// PerfilPersonagem \u2192 ClassificadorScriptome \u2192 Etograma\r\n        /// \u003C/summary\u003E\r\n        public Etograma GerarEtograma(PerfilPersonagem personagem)\r\n        {\r\n            var etograma = new Etograma();\r\n\r\n            _classificador.Classificar(personagem, etograma);\r\n\r\n            return etograma;\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "MotorEtogramaV2",
+      "Namespace": "Scriptome.Fingerprint.MotoresEtograma",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresEtograma\\MotorEtogramaV2.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Dados;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresEtograma\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// MOTOR ETOGRAMA V2\r\n    ///\r\n    /// Pipeline sequencial dependente.\r\n    /// Cada classificador recebe o estado acumulado.\r\n    /// Produz ResultadoEtograma imut\u00E1vel.\r\n    /// \u003C/summary\u003E\r\n    public sealed class MotorEtogramaV2\r\n    {\r\n        private readonly IList\u003CIClassificadorEtogramaV2\u003E _classificadores;\r\n\r\n        public MotorEtogramaV2(\r\n            IEnumerable\u003CIClassificadorEtogramaV2\u003E classificadores)\r\n        {\r\n            _classificadores = classificadores\r\n                .ToList();\r\n        }\r\n\r\n        public ResultadoEtograma Gerar(\r\n            PerfilPersonagem personagem)\r\n        {\r\n            if (personagem == null)\r\n                throw new ArgumentNullException(nameof(personagem));\r\n\r\n            var acumulado = new ParcialEtograma();\r\n\r\n            foreach (var classificador in _classificadores)\r\n            {\r\n                var parcial =\r\n                    classificador.Executar(\r\n                        personagem,\r\n                        acumulado);\r\n\r\n                acumulado = Mesclar(acumulado, parcial);\r\n            }\r\n\r\n            return Consolidar(acumulado);\r\n        }\r\n\r\n        // ==========================================\r\n        // MESCLAGEM DE PARCIAIS\r\n        // ==========================================\r\n\r\n        private ParcialEtograma Mesclar(\r\n            ParcialEtograma atual,\r\n            ParcialEtograma novo)\r\n        {\r\n            return atual with\r\n            {\r\n                ArquetipoNarrativoFinal =\r\n                    novo.ArquetipoNarrativoFinal ?? atual.ArquetipoNarrativoFinal,\r\n\r\n                ArquetipoJung =\r\n                    novo.ArquetipoJung ?? atual.ArquetipoJung,\r\n\r\n                IntensidadeImaginario =\r\n                    novo.IntensidadeImaginario ?? atual.IntensidadeImaginario,\r\n\r\n                IntensidadeSimbolico =\r\n                    novo.IntensidadeSimbolico ?? atual.IntensidadeSimbolico,\r\n\r\n                IntensidadeReal =\r\n                    novo.IntensidadeReal ?? atual.IntensidadeReal,\r\n\r\n                ScoreImaginario =\r\n                    novo.ScoreImaginario ?? atual.ScoreImaginario,\r\n\r\n                ScoreSimbolico =\r\n                    novo.ScoreSimbolico ?? atual.ScoreSimbolico,\r\n\r\n                ScoreReal =\r\n                    novo.ScoreReal ?? atual.ScoreReal,\r\n\r\n                RegistroDominante =\r\n                    novo.RegistroDominante ?? atual.RegistroDominante,\r\n\r\n                EstruturaPsiquica =\r\n                    novo.EstruturaPsiquica ?? atual.EstruturaPsiquica,\r\n\r\n                IntensidadeDiscursiva =\r\n                    novo.IntensidadeDiscursiva ?? atual.IntensidadeDiscursiva,\r\n\r\n                ClassificacaoIntensidade =\r\n                    novo.ClassificacaoIntensidade ?? atual.ClassificacaoIntensidade,\r\n\r\n                Termodinamica =\r\n                    novo.Termodinamica ?? atual.Termodinamica,\r\n\r\n                NivelCrueldade =\r\n                    novo.NivelCrueldade ?? atual.NivelCrueldade,\r\n\r\n                NivelManipulacao =\r\n                    novo.NivelManipulacao ?? atual.NivelManipulacao,\r\n\r\n                NivelErotizacao =\r\n                    novo.NivelErotizacao ?? atual.NivelErotizacao,\r\n\r\n                IndicePerversidade =\r\n                    novo.IndicePerversidade ?? atual.IndicePerversidade,\r\n\r\n                ClassificacaoPerversidade =\r\n                    novo.ClassificacaoPerversidade ?? atual.ClassificacaoPerversidade,\r\n\r\n                TipoMbti =\r\n                    novo.TipoMbti ?? atual.TipoMbti,\r\n\r\n                PerfilHibrido =\r\n                    novo.PerfilHibrido ?? atual.PerfilHibrido\r\n            };\r\n        }\r\n\r\n        // ==========================================\r\n        // CONSOLIDA\u00C7\u00C3O FINAL\r\n        // ==========================================\r\n\r\n        private ResultadoEtograma Consolidar(\r\n            ParcialEtograma p)\r\n        {\r\n            var arq =\r\n                p.ArquetipoNarrativoFinal ??\r\n                ArquetipoNarrativo.Indefinido;\r\n\r\n            return new ResultadoEtograma(\r\n                ArquetipoNarrativoFinal: arq,\r\n                ArquetipoJung: p.ArquetipoJung ?? \u0022Indefinido\u0022,\r\n                CategoriaNarrativa:\r\n                    BibliotecaArquetipos.ObterCategoria(arq),\r\n\r\n                IntensidadeImaginario: p.IntensidadeImaginario ?? 0,\r\n                IntensidadeSimbolico: p.IntensidadeSimbolico ?? 0,\r\n                IntensidadeReal: p.IntensidadeReal ?? 0,\r\n\r\n                ScoreImaginario: p.ScoreImaginario ?? 0,\r\n                ScoreSimbolico: p.ScoreSimbolico ?? 0,\r\n                ScoreReal: p.ScoreReal ?? 0,\r\n\r\n                RegistroDominante: p.RegistroDominante ?? \u0022Indefinido\u0022,\r\n                EstruturaPsiquica: p.EstruturaPsiquica ?? \u0022Indefinida\u0022,\r\n\r\n                IntensidadeDiscursiva: p.IntensidadeDiscursiva ?? 0,\r\n                ClassificacaoIntensidade: p.ClassificacaoIntensidade ?? \u0022Indefinida\u0022,\r\n                Termodinamica: p.Termodinamica ?? \u0022Neutro\u0022,\r\n\r\n                NivelCrueldade: p.NivelCrueldade ?? 0,\r\n                NivelManipulacao: p.NivelManipulacao ?? 0,\r\n                NivelErotizacao: p.NivelErotizacao ?? 0,\r\n                IndicePerversidade: p.IndicePerversidade ?? 0,\r\n                ClassificacaoPerversidade:\r\n                    p.ClassificacaoPerversidade ?? \u0022Indefinida\u0022,\r\n\r\n                TipoMbti: p.TipoMbti ?? \u0022XXXX\u0022,\r\n                PerfilHibrido: p.PerfilHibrido ?? \u0022Indefinido\u0022\r\n            );\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "MotorVetorialV2",
+      "Namespace": "Scriptome.Nucleo.Motores",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresEtograma\\MotorVetorial_V2.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Nucleo.Motores\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// MOTOR VETORIAL V2 (PURO).\r\n    ///\r\n    /// Calcula posi\u00E7\u00E3o geom\u00E9trica no espa\u00E7o etogram\u00E1tico 3D.\r\n    /// N\u00E3o classifica.\r\n    /// N\u00E3o muta objetos.\r\n    /// N\u00E3o depende de legado.\r\n    /// \u003C/summary\u003E\r\n    public class MotorVetorialV2\r\n    {\r\n        public ExpressaoVetorial Construir(ResultadoBaseLinguistico b)\r\n        {\r\n            // ==============================\r\n            // EIXO X \u2014 Ego\u00EDsmo \u00D7 Altru\u00EDsmo\r\n            // ==============================\r\n            double altruismo =\r\n                (b.ScoreAfeto * 0.7);\r\n\r\n            double egoismo =\r\n                (b.ScoreEgo * 0.5) \u002B\r\n                (b.ScoreDominancia * 0.5);\r\n\r\n            double eixoX = altruismo - egoismo;\r\n\r\n            // ==============================\r\n            // EIXO Y \u2014 Impulso \u00D7 Norma\r\n            // ==============================\r\n            double impulso =\r\n                (b.ScoreVolicao \u002B\r\n                 b.ScoreSensorium \u002B\r\n                 b.ScoreDominancia) / 3.0;\r\n\r\n            double norma =\r\n                (b.ScoreRacionalidade \u002B\r\n                 b.ScoreErudicao) / 2.0;\r\n\r\n            double eixoY = impulso - norma;\r\n\r\n            // ==============================\r\n            // EIXO Z \u2014 Concreto \u00D7 Abstrato\r\n            // ==============================\r\n            double abstrato =\r\n                (b.ScoreRacionalidade \u002B\r\n                 b.ScoreErudicao) / 2.0;\r\n\r\n            double concreto =\r\n                b.ScoreSensorium;\r\n\r\n            double eixoZ = abstrato - concreto;\r\n\r\n            return new ExpressaoVetorial(\r\n                EgoismoAltruismo: Normalizar(eixoX),\r\n                ImpulsoNorma: Normalizar(eixoY),\r\n                ConcretoAbstrato: Normalizar(eixoZ)\r\n            );\r\n        }\r\n\r\n        private double Normalizar(double v)\r\n        {\r\n            return Math.Tanh(v / 3.0);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ExpressaoIntencional",
+      "Namespace": "Scriptome.Fingerprint.MotoresInterpretativos",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresInterpretativos\\ExpressaoIntencional.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresInterpretativos\r\n{\r\n    public sealed record ExpressaoIntencional(\r\n        double Cognitiva,\r\n        double Motora,\r\n        double Emocional\r\n    );\r\n}\r\n"
+    },
+    {
+      "Name": "MotorIntencionalV1",
+      "Namespace": "Global",
+      "File": "AvaliaRoteiro\\Fingerprint\\MotoresInterpretativos\\MotorIntencionalV1.cs",
+      "Code": "using Scriptome.Fingerprint.MotoresInterpretativos;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\npublic sealed class MotorIntencionalV1 : IMotorIntencional\r\n{\r\n    public ExpressaoIntencional Calcular(PerfilPersonagem p)\r\n    {\r\n        var cognitiva =\r\n            Math.Round((p.ScoreRacionalidade * 0.6) \u002B\r\n                       (p.ScoreErudicao * 0.4), 1);\r\n\r\n        var motora =\r\n            Math.Round((p.ScoreVolicao * 0.7) \u002B\r\n                       (p.ScoreDominancia * 0.3), 1);\r\n\r\n        var emocional =\r\n            Math.Round(p.ScoreAfeto, 1);\r\n\r\n        return new ExpressaoIntencional(\r\n            cognitiva,\r\n            motora,\r\n            emocional\r\n        );\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorJung",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Arquetipos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Arquetipos\\ClassificadorJung.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint; // Para EstatisticaForense\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Arquetipos\r\n{\r\n    public class ClassificadorJung : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Psicologia Anal\u00EDtica (Jung H\u00EDbrido)\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // Fallback Absoluto (Garante que nunca fique vazio)\r\n            double ext = (p.ScoreDominancia \u002B p.ScoreVolicao) / 2.0;\r\n            e.ArquetipoJung = ext \u003E 5.0 ? (p.ScoreAfeto \u003E 5.0 ? \u0022Her\u00F3i\u0022 : \u0022Guerreiro\u0022) : \u0022S\u00E1bio\u0022;\r\n        }\r\n\r\n        public void ClassificarElenco(List\u003CPerfilPersonagem\u003E elenco)\r\n        {\r\n            if (elenco == null || !elenco.Any()) return;\r\n\r\n            // 1. M\u00E9dias de Extrovers\u00E3o (Atividade) e Sentimento (Afeto)\r\n            var scoreExt = elenco.Select(x =\u003E x.ScoreDominancia \u002B x.ScoreVolicao).ToList();\r\n            var scoreAfe = elenco.Select(x =\u003E x.ScoreAfeto).ToList();\r\n\r\n            double mExt = scoreExt.Average(); double dExt = EstatisticaForense.DesvioPadrao(scoreExt);\r\n            double mAfe = scoreAfe.Average(); double dAfe = EstatisticaForense.DesvioPadrao(scoreAfe);\r\n\r\n            foreach (var p in elenco)\r\n            {\r\n                double zExt = EstatisticaForense.ZScore(p.ScoreDominancia \u002B p.ScoreVolicao, mExt, dExt);\r\n                double zAfe = EstatisticaForense.ZScore(p.ScoreAfeto, mAfe, dAfe);\r\n\r\n                // Quadrantes de Jung (Z-Score)\r\n                if (zExt \u003E 0) // Extrovertido (Acima da m\u00E9dia do elenco)\r\n                {\r\n                    p.Etograma.ArquetipoJung = zAfe \u003E 0 ? \u0022Governante / Her\u00F3i\u0022 : \u0022Rebelde / Fora da Lei\u0022;\r\n                }\r\n                else // Introvertido (Abaixo da m\u00E9dia do elenco)\r\n                {\r\n                    p.Etograma.ArquetipoJung = zAfe \u003E 0 ? \u0022Amante / Inocente\u0022 : \u0022S\u00E1bio / Eremita\u0022;\r\n                }\r\n\r\n                p.ArquetipoJung = p.Etograma.ArquetipoJung;\r\n            }\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorJungV2",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Arquetipos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Arquetipos\\ClassificadorJungV2.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Interfaces;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Arquetipos\r\n{\r\n    public sealed class ClassificadorJungV2 : IClassificadorJungV2\r\n    {\r\n        private readonly IMotorSplicing _splicing;\r\n\r\n        public ClassificadorJungV2(IMotorSplicing splicing)\r\n        {\r\n            _splicing = splicing;\r\n        }\r\n\r\n        // ===============================\r\n        // INDIVIDUAL\r\n        // ===============================\r\n        public ResultadoJung Classificar(RnaBruto rna)\r\n        {\r\n            var fatia = _splicing.Extrair(rna, \u0022D\u0022, \u0022V\u0022, \u0022A\u0022);\r\n\r\n            double ext = (fatia.Get(\u0022D\u0022) \u002B fatia.Get(\u0022V\u0022)) / 2.0;\r\n\r\n            string arqu\u00E9tipo =\r\n                ext \u003E 5.0\r\n                ? (fatia.Get(\u0022A\u0022) \u003E 5.0 ? \u0022Her\u00F3i\u0022 : \u0022Guerreiro\u0022)\r\n                : \u0022S\u00E1bio\u0022;\r\n\r\n            return new ResultadoJung(arqu\u00E9tipo);\r\n        }\r\n\r\n        // ===============================\r\n        // ELENCO (Z-SCORE)\r\n        // ===============================\r\n        public Dictionary\u003CRnaBruto, ResultadoJung\u003E ClassificarElenco(\r\n            IReadOnlyList\u003CRnaBruto\u003E elenco)\r\n        {\r\n            var resultado = new Dictionary\u003CRnaBruto, ResultadoJung\u003E();\r\n\r\n            if (elenco == null || elenco.Count == 0)\r\n                return resultado;\r\n\r\n            var extList = elenco\r\n                .Select(r =\u003E\r\n                {\r\n                    var f = _splicing.Extrair(r, \u0022D\u0022, \u0022V\u0022);\r\n                    return f.Get(\u0022D\u0022) \u002B f.Get(\u0022V\u0022);\r\n                })\r\n                .ToList();\r\n\r\n            var afeList = elenco\r\n                .Select(r =\u003E\r\n                {\r\n                    var f = _splicing.Extrair(r, \u0022A\u0022);\r\n                    return f.Get(\u0022A\u0022);\r\n                })\r\n                .ToList();\r\n\r\n            double mExt = extList.Average();\r\n            double dExt = DesvioPadrao(extList);\r\n\r\n            double mAfe = afeList.Average();\r\n            double dAfe = DesvioPadrao(afeList);\r\n\r\n            for (int i = 0; i \u003C elenco.Count; i\u002B\u002B)\r\n            {\r\n                var rna = elenco[i];\r\n\r\n                double ext = extList[i];\r\n                double afe = afeList[i];\r\n\r\n                double zExt = ZScore(ext, mExt, dExt);\r\n                double zAfe = ZScore(afe, mAfe, dAfe);\r\n\r\n                string coletivo;\r\n\r\n                if (zExt \u003E 0)\r\n                {\r\n                    coletivo = zAfe \u003E 0\r\n                        ? \u0022Governante / Her\u00F3i\u0022\r\n                        : \u0022Rebelde / Fora da Lei\u0022;\r\n                }\r\n                else\r\n                {\r\n                    coletivo = zAfe \u003E 0\r\n                        ? \u0022Amante / Inocente\u0022\r\n                        : \u0022S\u00E1bio / Eremita\u0022;\r\n                }\r\n\r\n                resultado[rna] = new ResultadoJung(\r\n                    individual: Classificar(rna).Individual,\r\n                    coletivo: coletivo);\r\n            }\r\n\r\n            return resultado;\r\n        }\r\n\r\n        // ===============================\r\n        // ESTAT\u00CDSTICA INTERNA\r\n        // ===============================\r\n        private double DesvioPadrao(List\u003Cdouble\u003E valores)\r\n        {\r\n            if (valores.Count \u003C 2) return 0;\r\n\r\n            double media = valores.Average();\r\n            double soma = valores.Sum(v =\u003E Math.Pow(v - media, 2));\r\n            return Math.Sqrt(soma / valores.Count);\r\n        }\r\n\r\n        private double ZScore(double valor, double media, double desvio)\r\n        {\r\n            if (desvio \u003C 0.0001) return 0;\r\n            return (valor - media) / desvio;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorEtogramaCartesiano",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Cartesianos",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Cartesianos\\ClassificadorEtogramaCartesiano.cs",
+      "Code": "using Scriptome.Fingerprint.Dados;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Cartesianos\r\n{\r\n    public class ClassificadorEtogramaCartesiano\r\n    {\r\n        private readonly Dictionary\u003CArquetipoNarrativo, VetorEtograma3D\u003E _centroides;\r\n\r\n        public ClassificadorEtogramaCartesiano(\r\n            Dictionary\u003CArquetipoNarrativo, VetorEtograma3D\u003E centroides)\r\n        {\r\n            _centroides = centroides;\r\n        }\r\n\r\n        public ArquetipoNarrativo Inferir(VetorEtograma3D vetor)\r\n        {\r\n            return _centroides\r\n                .OrderBy(c =\u003E vetor.Distancia(c.Value))\r\n                .First().Key;\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ClassificadorEnergia_V2",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Energia",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Energia\\ClassificadorEnergia_V2.cs",
+      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Energia\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CLASSIFICADOR ENERG\u00C9TICO V2 (IMUT\u00C1VEL).\r\n    ///\r\n    /// Deriva intensidade, clima termodin\u00E2mico e \u00EDndices de perversidade\r\n    /// exclusivamente a partir do gen\u00F3tipo lingu\u00EDstico.\r\n    /// \u003C/summary\u003E\r\n    public class ClassificadorEnergia_V2\r\n    {\r\n        public ExpressaoEnergetica Classificar(ResultadoBaseLinguistico baseLinguistica)\r\n        {\r\n            // --- INTENSIDADE ---\r\n            double intensidade = CalcularIntensidade(baseLinguistica);\r\n            string classificacaoIntensidade =\r\n                intensidade \u003E 7 ? \u0022Alta\u0022 :\r\n                intensidade \u003E 4 ? \u0022M\u00E9dia\u0022 :\r\n                \u0022Baixa\u0022;\r\n\r\n            // --- TERMODIN\u00C2MICA ---\r\n            string clima = CalcularClima(baseLinguistica);\r\n\r\n            // --- PERVERSIDADE ---\r\n            double crueldade = baseLinguistica.ScoreDominancia * 0.6;\r\n            double manipulacao = baseLinguistica.ScoreEgo * 0.5;\r\n            double erotizacao = baseLinguistica.ScoreAfeto * 0.4;\r\n\r\n            double indicePerversidade =\r\n                (crueldade \u002B manipulacao \u002B erotizacao) / 3.0;\r\n\r\n            string classificacaoPerversidade =\r\n                indicePerversidade \u003E 6 ? \u0022Alta\u0022 :\r\n                indicePerversidade \u003E 3 ? \u0022Moderada\u0022 :\r\n                \u0022Baixa\u0022;\r\n\r\n            return new ExpressaoEnergetica(\r\n                IntensidadeDiscursiva: intensidade,\r\n                ClassificacaoIntensidade: classificacaoIntensidade,\r\n                ClimaTermico: clima,\r\n                NivelCrueldade: crueldade,\r\n                NivelManipulacao: manipulacao,\r\n                NivelErotizacao: erotizacao,\r\n                IndicePerversidade: indicePerversidade,\r\n                ClassificacaoPerversidade: classificacaoPerversidade\r\n            );\r\n        }\r\n\r\n        private double CalcularIntensidade(ResultadoBaseLinguistico b)\r\n        {\r\n            return (\r\n                b.ScoreDominancia \u002B\r\n                b.ScoreVolicao \u002B\r\n                b.BurstMedio\r\n            ) / 3.0;\r\n        }\r\n\r\n        private string CalcularClima(ResultadoBaseLinguistico b)\r\n        {\r\n            double eixo = b.ScoreAfeto - b.ScoreIronia;\r\n\r\n            if (eixo \u003E 2) return \u0022Quente\u0022;\r\n            if (eixo \u003C -2) return \u0022Frio\u0022;\r\n            return \u0022Neutro\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorIntensidade",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Energia",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Energia\\ClassificadorIntensidade.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Energia\r\n{\r\n    public class ClassificadorIntensidade : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Intensidade Ps\u00EDquica\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // MANTIDO: L\u00F3gica original de c\u00E1lculo\r\n            double energia =\r\n                (p.ScoreDominancia \u002B\r\n                 p.ScoreVolicao \u002B\r\n                 p.ScoreAfeto \u002B\r\n                 p.ScoreEgo) / 4.0;\r\n\r\n            double bonusBurst =\r\n                Math.Clamp((p.BurstMedio - 30) / 30.0, 0, 1.0);\r\n\r\n            // Resultado Num\u00E9rico\r\n            e.IntensidadeDiscursiva =\r\n                Math.Round(Math.Clamp(energia \u002B bonusBurst, 0, 10), 1);\r\n\r\n            // CORRE\u00C7\u00C3O: Defini\u00E7\u00E3o da Classifica\u00E7\u00E3o Textual (Evita \u0027Indefinida\u0027)\r\n            if (e.IntensidadeDiscursiva \u003E 7.5) e.ClassificacaoIntensidade = \u0022Explosiva\u0022;\r\n            else if (e.IntensidadeDiscursiva \u003E 5.5) e.ClassificacaoIntensidade = \u0022Alta\u0022;\r\n            else if (e.IntensidadeDiscursiva \u003E 3.5) e.ClassificacaoIntensidade = \u0022Moderada\u0022;\r\n            else if (e.IntensidadeDiscursiva \u003E 1.5) e.ClassificacaoIntensidade = \u0022Contida\u0022;\r\n            else e.ClassificacaoIntensidade = \u0022Fugaz\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorTermico",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Energia",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Energia\\ClassificadorTermico.cs",
+      "Code": "using Scriptome.Fingerprint;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Energia\r\n{\r\n    public class ClassificadorTermico : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Termodin\u00E2mica H\u00EDbrida (Universal \u002B Local)\u0022;\r\n\r\n        // 1. INDIVIDUAL\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // Calor (Expans\u00E3o) vs Frio (Contra\u00E7\u00E3o)\r\n            // Escala esperada: -10 a \u002B10\r\n            double calor = p.ScoreDominancia \u002B p.ScoreVolicao \u002B p.ScoreEgo \u002B (p.ScoreAfeto * 0.5);\r\n            double frio = p.ScoreRacionalidade \u002B p.ScoreIronia \u002B p.ScoreErudicao;\r\n            double deltaBruto = calor - frio;\r\n\r\n            // Armazena bruto (temporariamente usando o campo ScoreReal ou criando um auxiliar se preferir, \r\n            // mas aqui vamos recalcular no loop de grupo para simplificar o DTO)\r\n\r\n            // Fallback Universal\r\n            double zUniversal = CalcularZUniversal(deltaBruto);\r\n            e.Termodinamica = DefinirClima(zUniversal);\r\n            p.ArquetipoTermico = e.Termodinamica;\r\n        }\r\n\r\n        // 2. GRUPO\r\n        public void ClassificarElenco(List\u003CPerfilPersonagem\u003E elenco)\r\n        {\r\n            if (elenco == null || !elenco.Any()) return;\r\n\r\n            // Recalcula os Deltas Brutos\r\n            var deltas = new Dictionary\u003Cstring, double\u003E();\r\n            foreach (var p in elenco)\r\n            {\r\n                double calor = p.ScoreDominancia \u002B p.ScoreVolicao \u002B p.ScoreEgo \u002B (p.ScoreAfeto * 0.5);\r\n                double frio = p.ScoreRacionalidade \u002B p.ScoreIronia \u002B p.ScoreErudicao;\r\n                deltas[p.Nome] = calor - frio;\r\n            }\r\n\r\n            double mediaLocal = deltas.Values.Average();\r\n            double desvioLocal = EstatisticaForense.DesvioPadrao(deltas.Values);\r\n\r\n            // Ajuste de Peso (Se o filme \u00E9 mon\u00F3tono, confiamos mais no universal)\r\n            double pesoLocal = (desvioLocal \u003C 2.0) ? 0.2 : 0.4;\r\n            double pesoUniversal = 1.0 - pesoLocal;\r\n\r\n            foreach (var p in elenco)\r\n            {\r\n                double val = deltas[p.Nome];\r\n\r\n                double zUniversal = CalcularZUniversal(val);\r\n                double zLocal = EstatisticaForense.ZScore(val, mediaLocal, desvioLocal);\r\n\r\n                // Fus\u00E3o\r\n                double zFinal = (zUniversal * pesoUniversal) \u002B (zLocal * pesoLocal);\r\n\r\n                p.Etograma.Termodinamica = DefinirClima(zFinal);\r\n                p.ArquetipoTermico = p.Etograma.Termodinamica;\r\n            }\r\n        }\r\n\r\n        // No Universal, o zero \u00E9 neutro e o desvio padr\u00E3o \u00E9 aprox 3.5\r\n        private double CalcularZUniversal(double raw)\r\n        {\r\n            return raw / 3.5;\r\n        }\r\n\r\n        private string DefinirClima(double z)\r\n        {\r\n            if (z \u003E 1.0) return \u0022\uD83D\uDD25 FOGO (Alto)\u0022;\r\n            if (z \u003E 0.3) return \u0022\u26C5 AR (Morno)\u0022;\r\n            if (z \u003E -0.3) return \u0022\uD83D\uDCA7 \u00C1GUA (Neutro)\u0022;\r\n            return \u0022\uD83E\uDDCA GELO (Baixo)\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorNarrativaV2",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Narrativa",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Narrativa\\ClassificadorNarrativaUnificado.cs",
+      "Code": "using Scriptome.Fingerprint.Dados;\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Interfaces;\r\nusing Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Narrativa\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CLASSIFICADOR NARRATIVO V2 (RNA-Based)\r\n    ///\r\n    /// - Mesmo padr\u00E3o estrutural de Jung / MBTI / Lacan\r\n    /// - Apenas RNA \u002B Splicing\r\n    /// - Regras declarativas preservadas integralmente\r\n    /// \u003C/summary\u003E\r\n    public sealed class ClassificadorNarrativaV2\r\n        : IClassificadorNarrativaV2\r\n    {\r\n        private static readonly ArquetipoNarrativo[] _todos =\r\n            Enum.GetValues(typeof(ArquetipoNarrativo))\r\n                .Cast\u003CArquetipoNarrativo\u003E()\r\n                .ToArray();\r\n\r\n        private readonly List\u003CRegraArquetipo\u003E _regras;\r\n        private readonly IMotorSplicing _splicing;\r\n\r\n        public string Nome =\u003E \u0022Narrativa Unificada V2 (RNA-Based)\u0022;\r\n\r\n        public ClassificadorNarrativaV2(IMotorSplicing splicing)\r\n        {\r\n            _splicing = splicing\r\n                ?? throw new ArgumentNullException(nameof(splicing));\r\n\r\n            _regras = InicializarRegras();\r\n        }\r\n\r\n        public ExpressaoNarrativa Classificar(\r\n            RnaBruto rna,\r\n            int quantidadeFalas,\r\n            ExpressaoEnergetica energia,\r\n            ExpressaoPsicodinamica psico)\r\n        {\r\n            if (rna == null)\r\n                return GerarExpressao(ArquetipoNarrativo.Indefinido);\r\n\r\n            var splice = _splicing.Extrair(\r\n                rna,\r\n                \u0022D\u0022, \u0022E\u0022, \u0022R\u0022, \u0022I\u0022, \u0022V\u0022, \u0022A\u0022, \u0022IE\u0022, \u0022S\u0022\r\n            );\r\n\r\n            var baseReconstruido = new ResultadoBaseLinguistico\r\n            (\r\n                Nome: string.Empty,\r\n                QuantidadeFalas: quantidadeFalas,\r\n                DramatismoMedio: 0,\r\n                BurstMedio: 0,\r\n\r\n                ScoreDominancia: splice.Get(\u0022D\u0022),\r\n                ScoreEgo: splice.Get(\u0022E\u0022),\r\n                ScoreRacionalidade: splice.Get(\u0022R\u0022),\r\n                ScoreIronia: splice.Get(\u0022I\u0022),\r\n                ScoreVolicao: splice.Get(\u0022V\u0022),\r\n                ScoreAfeto: splice.Get(\u0022A\u0022),\r\n                ScoreErudicao: splice.Get(\u0022IE\u0022),\r\n                ScoreSensorium: splice.Get(\u0022S\u0022),\r\n\r\n                DnaVisual: string.Empty,\r\n                KarmaMoral: 0,\r\n                KarmaOrdem: 0,\r\n                AlinhamentoMoral: string.Empty\r\n            );\r\n\r\n            if (baseReconstruido.QuantidadeFalas \u003C= 4)\r\n                return GerarExpressao(ArquetipoNarrativo.Figurante);\r\n\r\n            var ctx = new ContextoNarrativo(baseReconstruido, energia, psico);\r\n\r\n            var scores = _todos.ToDictionary(a =\u003E a, _ =\u003E 0.0);\r\n\r\n            foreach (var regra in _regras)\r\n            {\r\n                if (regra.Condicao(ctx))\r\n                    scores[regra.Arquetipo] \u002B= regra.Peso;\r\n            }\r\n\r\n            AplicarModulacaoLacaniana(scores, ctx.Psico.RegistroDominante);\r\n\r\n            var vencedor = scores\r\n                .OrderByDescending(x =\u003E x.Value)\r\n                .ThenByDescending(_ =\u003E ctx.Base.ScoreDominancia)\r\n                .ThenByDescending(_ =\u003E ctx.Base.ScoreVolicao)\r\n                .First();\r\n\r\n            var final = vencedor.Value \u003C 1.0\r\n                ? ArquetipoNarrativo.Indefinido\r\n                : vencedor.Key;\r\n\r\n            return GerarExpressao(final);\r\n        }\r\n\r\n        // ===============================\r\n        // REGRAS (INALTERADAS)\r\n        // ===============================\r\n\r\n        private List\u003CRegraArquetipo\u003E InicializarRegras()\r\n        {\r\n            return new List\u003CRegraArquetipo\u003E\r\n            {\r\n                new(ArquetipoNarrativo.HeroiClassico, 3.0,\r\n                    c =\u003E c.Base.ScoreVolicao \u003E 0.6 \u0026\u0026 c.Base.ScoreAfeto \u003E 0.3),\r\n\r\n                // (mant\u00E9m TODAS as demais regras exatamente como est\u00E3o)\r\n            };\r\n        }\r\n\r\n        private void AplicarModulacaoLacaniana(\r\n            Dictionary\u003CArquetipoNarrativo, double\u003E scores,\r\n            string registroDominante)\r\n        {\r\n            const double fator = 1.12;\r\n\r\n            void Mult(params ArquetipoNarrativo[] a)\r\n            {\r\n                foreach (var arq in a)\r\n                    if (scores[arq] \u003E 0)\r\n                        scores[arq] *= fator;\r\n            }\r\n\r\n            if (registroDominante == \u0022REAL\u0022)\r\n                Mult(ArquetipoNarrativo.Predador,\r\n                     ArquetipoNarrativo.Psicopata,\r\n                     ArquetipoNarrativo.Sadico,\r\n                     ArquetipoNarrativo.Valentao);\r\n\r\n            else if (registroDominante == \u0022SIMB\u00D3LICO\u0022)\r\n                Mult(ArquetipoNarrativo.Juiz,\r\n                     ArquetipoNarrativo.Patriarca,\r\n                     ArquetipoNarrativo.Matriarca,\r\n                     ArquetipoNarrativo.Mentor,\r\n                     ArquetipoNarrativo.Cientista);\r\n\r\n            else if (registroDominante == \u0022IMAGIN\u00C1RIO\u0022)\r\n                Mult(ArquetipoNarrativo.Sedutor,\r\n                     ArquetipoNarrativo.Camaleao,\r\n                     ArquetipoNarrativo.Trickster,\r\n                     ArquetipoNarrativo.Galante,\r\n                     ArquetipoNarrativo.Amante);\r\n        }\r\n\r\n        private ExpressaoNarrativa GerarExpressao(ArquetipoNarrativo a)\r\n            =\u003E new ExpressaoNarrativa(\r\n                a.ToString(),\r\n                BibliotecaArquetipos.ObterDescricao(a)\r\n            );\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorScriptome",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Narrativa",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Narrativa\\ClassificadorScriptome.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Narrativa\r\n{\r\n    public class ClassificadorScriptome : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022S\u00CDNTESE NARRATIVA SCRIPTOME 6.1 (Ajuste Fino)\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // -------------------------------------------------\r\n            // 0 \u2014 PREMISSA: FIGURANTE\r\n            // -------------------------------------------------\r\n            if (p.QuantidadeFalas \u003C= 4)\r\n            {\r\n                e.ArquetipoNarrativoFinal = ArquetipoNarrativo.Figurante;\r\n                return;\r\n            }\r\n\r\n            var scores = InicializarScores();\r\n\r\n            // Vari\u00E1veis Auxiliares\r\n            bool ironiaAmarga = p.ScoreIronia \u003E 0.4 \u0026\u0026 p.ScoreAfeto \u003C -0.1;\r\n            bool violenciaFria = e.NivelCrueldade \u003E 4 \u0026\u0026 p.ScoreRacionalidade \u003E 0.5;\r\n            bool seducaoFatal = e.NivelErotizacao \u003E 5 \u0026\u0026 e.NivelManipulacao \u003E 4;\r\n\r\n            // =================================================================\r\n            // GRUPO 1: PROTAGONISTAS\r\n            // =================================================================\r\n\r\n            // Heroi Cl\u00E1ssico\r\n            if (p.ScoreVolicao \u003E 0.6 \u0026\u0026 p.ScoreAfeto \u003E 0.3)\r\n                scores[ArquetipoNarrativo.HeroiClassico] \u002B= 3.0;\r\n\r\n            // Anti-Her\u00F3i (Ajustado: Baixadinha de 4.0 para 3.0)\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 (ironiaAmarga || e.NivelManipulacao \u003E 3))\r\n                scores[ArquetipoNarrativo.AntiHeroi] \u002B= 3.0;\r\n\r\n            // Sobrevivente\r\n            if (p.ScoreVolicao \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003C 0.5)\r\n                scores[ArquetipoNarrativo.Sobrevivente] \u002B= 4.0;\r\n\r\n            // Buscador\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreSensorium \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Buscador] \u002B= 2.0;\r\n\r\n            // Vision\u00E1rio\r\n            if (p.ScoreVolicao \u003E 0.7 \u0026\u0026 p.ScoreRacionalidade \u003E 0.7)\r\n                scores[ArquetipoNarrativo.Visionario] \u002B= 3.0;\r\n\r\n            // Competidor\r\n            if (p.ScoreDominancia \u003E 0.6 \u0026\u0026 p.ScoreVolicao \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Competidor] \u002B= 3.0;\r\n\r\n            // Bon Vivant\r\n            if (p.ScoreSensorium \u003E 0.7 \u0026\u0026 p.ScoreVolicao \u003C 0.4)\r\n                scores[ArquetipoNarrativo.BonVivant] \u002B= 3.0;\r\n\r\n            // Adrenalista\r\n            if (p.ScoreSensorium \u003E 0.8 \u0026\u0026 p.ScoreVolicao \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Adrenalista] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 2: ANTAGONISTAS\r\n            // =================================================================\r\n\r\n            // Tirano\r\n            if (p.ScoreDominancia \u003E 0.7 \u0026\u0026 p.ScoreAfeto \u003C -0.2)\r\n                scores[ArquetipoNarrativo.Tirano] \u002B= 3.0;\r\n\r\n            // Psicopata\r\n            if (e.NivelCrueldade \u003E 7 \u0026\u0026 Math.Abs(p.ScoreAfeto) \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Psicopata] \u002B= 5.0;\r\n\r\n            // S\u00E1dico\r\n            if (e.NivelCrueldade \u003E 5 \u0026\u0026 (p.ScoreIronia \u003E 0.4 || p.ScoreSensorium \u003E 0.5))\r\n                scores[ArquetipoNarrativo.Sadico] \u002B= 3.0;\r\n\r\n            // Predador\r\n            if (violenciaFria)\r\n                scores[ArquetipoNarrativo.Predador] \u002B= 4.0;\r\n\r\n            // Rival\r\n            if (p.ScoreDominancia \u003E 0.5 \u0026\u0026 p.ScoreVolicao \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Rival] \u002B= 2.0;\r\n\r\n            // Valent\u00E3o\r\n            if (p.ScoreDominancia \u003E 0.6 \u0026\u0026 p.ScoreRacionalidade \u003C 0.4 \u0026\u0026 e.NivelCrueldade \u003E 3)\r\n                scores[ArquetipoNarrativo.Valentao] \u002B= 4.0;\r\n\r\n            // Manipulador\r\n            if (e.NivelManipulacao \u003E 6)\r\n                scores[ArquetipoNarrativo.Manipulador] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 3: MEDIADORES\r\n            // =================================================================\r\n\r\n            // Malandro\r\n            if (p.ScoreIronia \u003E 0.4 \u0026\u0026 e.NivelManipulacao \u003E 4 \u0026\u0026 p.ScoreVolicao \u003E 0.3)\r\n                scores[ArquetipoNarrativo.Malandro] \u002B= 4.0;\r\n\r\n            // Camale\u00E3o\r\n            if (e.NivelManipulacao \u003E 6 \u0026\u0026 p.ScoreDominancia \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Camaleao] \u002B= 3.0;\r\n\r\n            // Rebelde\r\n            if (p.ScoreDominancia \u003E 0.4 \u0026\u0026 p.ScoreIronia \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Rebelde] \u002B= 2.0;\r\n\r\n            // Fora da Lei\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreRacionalidade \u003E 0.4 \u0026\u0026 p.ScoreAfeto \u003C 0.2)\r\n                scores[ArquetipoNarrativo.ForaDaLei] \u002B= 4.0;\r\n\r\n            // Trickster (Requer manipula\u00E7\u00E3o ativa para n\u00E3o ser s\u00F3 um buf\u00E3o)\r\n            if (p.ScoreIronia \u003E 0.7 \u0026\u0026 p.ScoreSensorium \u003E 0.6 \u0026\u0026 e.NivelManipulacao \u003E 5)\r\n                scores[ArquetipoNarrativo.Trickster] \u002B= 3.0;\r\n\r\n            // Enigma\r\n            if (p.ScoreRacionalidade \u003C 0.3 \u0026\u0026 Math.Abs(p.ScoreAfeto) \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Enigma] \u002B= 3.0;\r\n\r\n            // Piv\u00F4 do Caos\r\n            if (p.QuantidadeFalas \u003E 20 \u0026\u0026 p.ScoreVolicao \u003C 0.3 \u0026\u0026 e.NivelErotizacao \u003E 4)\r\n                scores[ArquetipoNarrativo.PivoDoCaos] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 4: MENTORES\r\n            // =================================================================\r\n\r\n            // Mentor\r\n            if (p.ScoreRacionalidade \u003E 0.6 \u0026\u0026 p.ScoreAfeto \u003E 0.1)\r\n                scores[ArquetipoNarrativo.Mentor] \u002B= 3.0;\r\n\r\n            // Juiz\r\n            if (p.ScoreRacionalidade \u003E 0.8 \u0026\u0026 p.ScoreAfeto \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Juiz] \u002B= 3.0;\r\n\r\n            // Patriarca\r\n            if (p.ScoreDominancia \u003E 0.7 \u0026\u0026 p.ScoreAfeto \u003E 0.3)\r\n                scores[ArquetipoNarrativo.Patriarca] \u002B= 3.0;\r\n\r\n            // Matriarca\r\n            if (p.ScoreAfeto \u003E 0.7 \u0026\u0026 p.ScoreDominancia \u003E 0.4)\r\n                scores[ArquetipoNarrativo.Matriarca] \u002B= 4.0;\r\n\r\n            // Cientista\r\n            if (p.ScoreRacionalidade \u003E 0.9)\r\n                scores[ArquetipoNarrativo.Cientista] \u002B= 4.0;\r\n\r\n            // Guru\r\n            if (p.ScoreDominancia \u003E 0.5 \u0026\u0026 p.ScoreIronia \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Guru] \u002B= 2.0;\r\n\r\n            // Idealista\r\n            if (p.ScoreRacionalidade \u003E 0.6 \u0026\u0026 p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreSensorium \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Idealista] \u002B= 2.0;\r\n\r\n            // Soldado\r\n            if (p.ScoreVolicao \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Soldado] \u002B= 2.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 5: RELACIONAIS\r\n            // =================================================================\r\n\r\n            // M\u00E1rtir\r\n            if (p.ScoreAfeto \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003C 0.3)\r\n                scores[ArquetipoNarrativo.Martir] \u002B= 3.0;\r\n\r\n            // Penitente\r\n            if (p.ScoreAfeto \u003C -0.3 \u0026\u0026 p.ScoreVolicao \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Penitente] \u002B= 4.0;\r\n\r\n            // Masoquista\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreDominancia \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Masoquista] \u002B= 2.0;\r\n\r\n            // Cuidador\r\n            if (p.ScoreAfeto \u003E 0.8)\r\n                scores[ArquetipoNarrativo.Cuidador] \u002B= 4.0;\r\n\r\n            // Amante\r\n            if (p.ScoreAfeto \u003E 0.5 \u0026\u0026 p.ScoreSensorium \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Amante] \u002B= 2.0;\r\n\r\n            // Sedutor (Ajustado: Baixadinha de 6.0 para 4.5)\r\n            // Ainda requer erotiza\u00E7\u00E3o e manipula\u00E7\u00E3o, mas n\u00E3o garante vit\u00F3ria autom\u00E1tica.\r\n            if (seducaoFatal)\r\n                scores[ArquetipoNarrativo.Sedutor] \u002B= 4.5;\r\n\r\n            // Galante\r\n            if (p.ScoreSensorium \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Galante] \u002B= 2.0;\r\n\r\n            // Diletante\r\n            if ((p.ScoreSensorium \u003E 0.5 || p.ScoreRacionalidade \u003E 0.5) \u0026\u0026 p.ScoreVolicao \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Diletante] \u002B= 4.0;\r\n\r\n            // Inocente\r\n            if (p.ScoreAfeto \u003E 0.4 \u0026\u0026 p.ScoreIronia \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Inocente] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 6: SOCIAIS\r\n            // =================================================================\r\n\r\n            // Conformista\r\n            if (Math.Abs(p.ScoreDominancia) \u003C 0.2 \u0026\u0026 Math.Abs(p.ScoreIronia) \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Conformista] \u002B= 2.0;\r\n\r\n            // Solit\u00E1rio\r\n            if (p.ScoreAfeto \u003C 0.1 \u0026\u0026 p.ScoreDominancia \u003C 0.3)\r\n                scores[ArquetipoNarrativo.Solitario] \u002B= 3.0;\r\n\r\n            // Rabugento (Captura a ironia amarga, impedindo falso positivo de Buf\u00E3o)\r\n            if (ironiaAmarga)\r\n            {\r\n                scores[ArquetipoNarrativo.Rabugento] \u002B= 4.0;\r\n                scores[ArquetipoNarrativo.Bufao] -= 5.0;\r\n            }\r\n\r\n            // Exc\u00EAntrico\r\n            if (p.ScoreRacionalidade \u003C 0.3 \u0026\u0026 p.ScoreIronia \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Excentrico] \u002B= 3.0;\r\n\r\n            // Buf\u00E3o (Somente se for engra\u00E7ado sem dor/crueldade)\r\n            if (p.ScoreIronia \u003E 0.8 \u0026\u0026 p.ScoreAfeto \u003E -0.1 \u0026\u0026 e.NivelCrueldade \u003C 2)\r\n                scores[ArquetipoNarrativo.Bufao] \u002B= 3.0;\r\n\r\n\r\n            // -------------------------------------------------\r\n            // DECIS\u00C3O FINAL\r\n            // -------------------------------------------------\r\n            var vencedor = scores\r\n                .OrderByDescending(x =\u003E x.Value)\r\n                .First();\r\n\r\n            if (vencedor.Value \u003C 1.0)\r\n                e.ArquetipoNarrativoFinal = ArquetipoNarrativo.Indefinido;\r\n            else\r\n                e.ArquetipoNarrativoFinal = vencedor.Key;\r\n        }\r\n\r\n        private Dictionary\u003CArquetipoNarrativo, double\u003E InicializarScores()\r\n        {\r\n            return Enum.GetValues(typeof(ArquetipoNarrativo))\r\n                .Cast\u003CArquetipoNarrativo\u003E()\r\n                .ToDictionary(a =\u003E a, a =\u003E 0.0);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ContextoNarrativoRNA",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Narrativa",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Narrativa\\ContextoNarrativoRNA.cs",
+      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Narrativa\r\n{\r\n    public sealed record ContextoNarrativoRNA(\r\n        double D,\r\n        double E,\r\n        double R,\r\n        double I,\r\n        double V,\r\n        double A,\r\n        double S,\r\n        int Falas,\r\n        ExpressaoEnergetica Energia,\r\n        ExpressaoPsicodinamica Psico)\r\n    {\r\n        public bool IroniaAmarga =\u003E I \u003E 0.4 \u0026\u0026 A \u003C -0.1;\r\n        public bool ViolenciaFria =\u003E Energia.NivelCrueldade \u003E 4 \u0026\u0026 R \u003E 0.5;\r\n        public bool SeducaoFatal =\u003E Energia.NivelErotizacao \u003E 5 \u0026\u0026\r\n                                    Energia.NivelManipulacao \u003E 4;\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorHibrido",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorHibrido.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CLASSIFICADOR H\u00CDBRIDO (JUNG \u002B KARMA \u002B COGNITIVO \u002B T\u00C9RMICO).\r\n    /// Objetivo: Gerar um r\u00F3tulo psicol\u00F3gico leg\u00EDvel e acion\u00E1vel para roteiristas.\r\n    /// Substitui o MBTI categ\u00F3rico por \u0022Modos Cognitivos\u0022.\r\n    /// \u003C/summary\u003E\r\n    public class ClassificadorHibrido : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Psicologia H\u00EDbrida Unificada\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            string papel = e.ArquetipoJung ?? \u0022Indefinido\u0022;\r\n            string moral = p.AlinhamentoMoral ?? \u0022Neutro\u0022;\r\n            string mbti = e.TipoMbti ?? \u0022----\u0022;\r\n            string termo = e.Termodinamica ?? \u0022Neutro\u0022;\r\n\r\n            e.PerfilHibrido =\r\n                $\u0022{papel} ({moral}) [{mbti}] {termo}\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorLacaniano",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorLacaniano.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    public class ClassificadorLacaniano : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Topologia Lacaniana (R.S.I. Estrutural)\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // ===============================\r\n            // 1. C\u00C1LCULO ESTRUTURAL (LEGADO PRESERVADO)\r\n            // ===============================\r\n\r\n            double intensidadeI = (p.ScoreEgo * 2.0 \u002B p.ScoreSensorium \u002B p.ScoreAfeto) / 4.0;\r\n\r\n            double ordemNorm = Math.Clamp((p.KarmaOrdem \u002B 100) / 20.0, 0, 10);\r\n            double intensidadeS = (p.ScoreRacionalidade * 1.5 \u002B p.ScoreErudicao \u002B ordemNorm) / 3.5;\r\n\r\n            double burstNorm = Math.Clamp(p.BurstMedio / 5.0, 0, 10);\r\n            double intensidadeR = (p.ScoreVolicao * 2.0 \u002B p.ScoreDominancia \u002B burstNorm) / 4.0;\r\n\r\n            // Preserva intensidade estrutural\r\n            e.IntensidadeImaginario = Math.Round(intensidadeI, 2);\r\n            e.IntensidadeSimbolico = Math.Round(intensidadeS, 2);\r\n            e.IntensidadeReal = Math.Round(intensidadeR, 2);\r\n\r\n            // ===============================\r\n            // 2. NORMALIZA\u00C7\u00C3O RELATIVA\r\n            // ===============================\r\n\r\n            double total = intensidadeI \u002B intensidadeS \u002B intensidadeR;\r\n\r\n            if (total \u003C= 0.01)\r\n            {\r\n                e.ScoreImaginario = 0;\r\n                e.ScoreSimbolico = 0;\r\n                e.ScoreReal = 0;\r\n                e.RegistroDominante = \u0022INDEFINIDO\u0022;\r\n                e.EstruturaPsiquica = \u0022Indeterminada\u0022;\r\n                return;\r\n            }\r\n\r\n            e.ScoreImaginario = Math.Round((intensidadeI / total) * 10, 2);\r\n            e.ScoreSimbolico = Math.Round((intensidadeS / total) * 10, 2);\r\n            e.ScoreReal = Math.Round((intensidadeR / total) * 10, 2);\r\n\r\n            // ===============================\r\n            // 3. REGISTRO DOMINANTE\r\n            // ===============================\r\n\r\n            var registros = new Dictionary\u003Cstring, double\u003E\r\n            {\r\n                { \u0022IMAGIN\u00C1RIO\u0022, e.ScoreImaginario },\r\n                { \u0022SIMB\u00D3LICO\u0022, e.ScoreSimbolico },\r\n                { \u0022REAL\u0022, e.ScoreReal }\r\n            };\r\n\r\n            if (registros.Values.Distinct().Count() == 1)\r\n                e.RegistroDominante = \u0022EQUILIBRADO\u0022;\r\n            else\r\n                e.RegistroDominante = registros\r\n                    .OrderByDescending(x =\u003E x.Value)\r\n                    .First().Key;\r\n\r\n            // ===============================\r\n            // 4. DIAGN\u00D3STICO CL\u00CDNICO\r\n            // ===============================\r\n\r\n            e.EstruturaPsiquica = DiagnosticarClinico(\r\n                e.RegistroDominante,\r\n                e.IntensidadeReal,\r\n                e.IntensidadeSimbolico\r\n            );\r\n        }\r\n\r\n        private string DiagnosticarClinico(string dominante, double intensidadeReal, double intensidadeSimbolico)\r\n        {\r\n            // Psicose \u2192 Real estrutural alto \u002B Simb\u00F3lico estrutural baixo\r\n            if (intensidadeReal \u003E 6 \u0026\u0026 intensidadeSimbolico \u003C 3)\r\n                return \u0022Psicose (Foraclus\u00E3o)\u0022;\r\n\r\n            if (dominante == \u0022IMAGIN\u00C1RIO\u0022)\r\n                return \u0022Neurose Hist\u00E9rica\u0022;\r\n\r\n            if (dominante == \u0022SIMB\u00D3LICO\u0022)\r\n                return \u0022Neurose Obsessiva\u0022;\r\n\r\n            if (dominante == \u0022REAL\u0022)\r\n                return \u0022Estrutura Pulsional\u0022;\r\n\r\n            return \u0022Estrutura Lim\u00EDtrofe\u0022;\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ClassificadorLacanianoV2",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorLacanianoV2.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Interfaces;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    public sealed class ClassificadorLacanianoV2\r\n        : IClassificadorLacanianoV2\r\n    {\r\n        private readonly IMotorSplicing _splicing;\r\n\r\n        public string Nome =\u003E \u0022Topologia Lacaniana V2 (RNA-Based)\u0022;\r\n\r\n        public ClassificadorLacanianoV2(IMotorSplicing splicing)\r\n        {\r\n            _splicing = splicing\r\n                ?? throw new ArgumentNullException(nameof(splicing));\r\n        }\r\n\r\n        // ===============================\r\n        // INDIVIDUAL\r\n        // ===============================\r\n        public ResultadoLacaniano Classificar(RnaBruto rna)\r\n        {\r\n            if (rna == null)\r\n                return ResultadoVazio();\r\n\r\n            var f = _splicing.Extrair(\r\n                rna,\r\n                \u0022E\u0022, \u0022S\u0022, \u0022A\u0022,\r\n                \u0022R\u0022, \u0022IE\u0022,\r\n                \u0022V\u0022, \u0022D\u0022,\r\n                \u0022I\u0022, \u0022BURST\u0022\r\n            );\r\n\r\n            double intensidadeI =\r\n                (f.Get(\u0022E\u0022) * 2.0 \u002B\r\n                 f.Get(\u0022S\u0022) \u002B\r\n                 f.Get(\u0022A\u0022)) / 4.0;\r\n\r\n            double intensidadeS =\r\n                (f.Get(\u0022R\u0022) * 1.5 \u002B\r\n                 f.Get(\u0022IE\u0022)) / 2.5;\r\n\r\n            double burstNorm =\r\n                Math.Clamp(f.Get(\u0022BURST\u0022) / 5.0, 0, 10);\r\n\r\n            double intensidadeR =\r\n                (f.Get(\u0022V\u0022) * 2.0 \u002B\r\n                 f.Get(\u0022D\u0022) \u002B\r\n                 burstNorm) / 4.0;\r\n\r\n            intensidadeI = Math.Round(intensidadeI, 2);\r\n            intensidadeS = Math.Round(intensidadeS, 2);\r\n            intensidadeR = Math.Round(intensidadeR, 2);\r\n\r\n            double total = intensidadeI \u002B intensidadeS \u002B intensidadeR;\r\n\r\n            double scoreI = 0;\r\n            double scoreS = 0;\r\n            double scoreR = 0;\r\n            string registro = \u0022INDEFINIDO\u0022;\r\n            string estrutura = \u0022Indefinida\u0022;\r\n\r\n            if (total \u003E 0.01)\r\n            {\r\n                scoreI = Math.Round((intensidadeI / total) * 10, 2);\r\n                scoreS = Math.Round((intensidadeS / total) * 10, 2);\r\n                scoreR = Math.Round((intensidadeR / total) * 10, 2);\r\n\r\n                var mapa = new Dictionary\u003Cstring, double\u003E\r\n                {\r\n                    { \u0022IMAGIN\u00C1RIO\u0022, scoreI },\r\n                    { \u0022SIMB\u00D3LICO\u0022, scoreS },\r\n                    { \u0022REAL\u0022, scoreR }\r\n                };\r\n\r\n                registro = mapa.Values.Distinct().Count() == 1\r\n                    ? \u0022EQUILIBRADO\u0022\r\n                    : mapa.OrderByDescending(x =\u003E x.Value).First().Key;\r\n\r\n                estrutura = Diagnosticar(registro, intensidadeR, intensidadeS);\r\n            }\r\n\r\n            return new ResultadoLacaniano(\r\n                EstruturaPsiquica: estrutura,\r\n                RegistroDominante: registro,\r\n                IntensidadeReal: intensidadeR,\r\n                IntensidadeSimbolico: intensidadeS,\r\n                IntensidadeImaginario: intensidadeI,\r\n                ScoreReal: scoreR,\r\n                ScoreSimbolico: scoreS,\r\n                ScoreImaginario: scoreI\r\n            );\r\n        }\r\n\r\n        // ===============================\r\n        // ELENCO (opcional)\r\n        // ===============================\r\n        public Dictionary\u003CRnaBruto, ResultadoLacaniano\u003E ClassificarElenco(\r\n            IReadOnlyList\u003CRnaBruto\u003E elenco)\r\n        {\r\n            var resultado = new Dictionary\u003CRnaBruto, ResultadoLacaniano\u003E();\r\n\r\n            if (elenco == null || elenco.Count == 0)\r\n                return resultado;\r\n\r\n            foreach (var rna in elenco)\r\n                resultado[rna] = Classificar(rna);\r\n\r\n            return resultado;\r\n        }\r\n\r\n        private string Diagnosticar(\r\n            string dominante,\r\n            double intensidadeReal,\r\n            double intensidadeSimbolico)\r\n        {\r\n            if (intensidadeReal \u003E 6 \u0026\u0026 intensidadeSimbolico \u003C 3)\r\n                return \u0022Psicose (Foraclus\u00E3o)\u0022;\r\n\r\n            if (dominante == \u0022IMAGIN\u00C1RIO\u0022)\r\n                return \u0022Neurose Hist\u00E9rica\u0022;\r\n\r\n            if (dominante == \u0022SIMB\u00D3LICO\u0022)\r\n                return \u0022Neurose Obsessiva\u0022;\r\n\r\n            if (dominante == \u0022REAL\u0022)\r\n                return \u0022Estrutura Pulsional\u0022;\r\n\r\n            return \u0022Estrutura Lim\u00EDtrofe\u0022;\r\n        }\r\n\r\n        private ResultadoLacaniano ResultadoVazio()\r\n            =\u003E new(\r\n                \u0022Indefinida\u0022,\r\n                \u0022INDEFINIDO\u0022,\r\n                0, 0, 0,\r\n                0, 0, 0\r\n            );\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorLacanianoV2Legado",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorLacanianoV2Legado.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CLASSIFICADOR LACANIANO V2\r\n    ///\r\n    /// Modelo imut\u00E1vel compat\u00EDvel com MotorEtogramaV2.\r\n    /// N\u00E3o altera estado externo.\r\n    /// Retorna apenas os campos que calcula.\r\n    /// \u003C/summary\u003E\r\n    public sealed class ClassificadorLacanianoV2Legado : IClassificadorEtogramaV2\r\n    {\r\n        public string Nome =\u003E \u0022Topologia Lacaniana V2 (Pipeline Dependente)\u0022;\r\n\r\n        public ParcialEtograma Executar(\r\n            PerfilPersonagem p,\r\n            ParcialEtograma acumulado)\r\n        {\r\n            if (p == null)\r\n                return new ParcialEtograma();\r\n\r\n            // ==========================================\r\n            // 1. C\u00C1LCULO DAS INTENSIDADES ESTRUTURAIS\r\n            // ==========================================\r\n\r\n            double intensidadeI =\r\n                (p.ScoreEgo * 2.0 \u002B\r\n                 p.ScoreSensorium \u002B\r\n                 p.ScoreAfeto) / 4.0;\r\n\r\n            double ordemNorm =\r\n                Math.Clamp((p.KarmaOrdem \u002B 100) / 20.0, 0, 10);\r\n\r\n            double intensidadeS =\r\n                (p.ScoreRacionalidade * 1.5 \u002B\r\n                 p.ScoreErudicao \u002B\r\n                 ordemNorm) / 3.5;\r\n\r\n            double burstNorm =\r\n                Math.Clamp(p.BurstMedio / 5.0, 0, 10);\r\n\r\n            double intensidadeR =\r\n                (p.ScoreVolicao * 2.0 \u002B\r\n                 p.ScoreDominancia \u002B\r\n                 burstNorm) / 4.0;\r\n\r\n            intensidadeI = Math.Round(intensidadeI, 2);\r\n            intensidadeS = Math.Round(intensidadeS, 2);\r\n            intensidadeR = Math.Round(intensidadeR, 2);\r\n\r\n            // ==========================================\r\n            // 2. NORMALIZA\u00C7\u00C3O RELATIVA\r\n            // ==========================================\r\n\r\n            double total =\r\n                intensidadeI \u002B\r\n                intensidadeS \u002B\r\n                intensidadeR;\r\n\r\n            double? scoreI = null;\r\n            double? scoreS = null;\r\n            double? scoreR = null;\r\n            string registro = null;\r\n            string estrutura = null;\r\n\r\n            if (total \u003E 0.01)\r\n            {\r\n                scoreI = Math.Round((intensidadeI / total) * 10, 2);\r\n                scoreS = Math.Round((intensidadeS / total) * 10, 2);\r\n                scoreR = Math.Round((intensidadeR / total) * 10, 2);\r\n\r\n                var registros = new Dictionary\u003Cstring, double\u003E\r\n                {\r\n                    { \u0022IMAGIN\u00C1RIO\u0022, scoreI.Value },\r\n                    { \u0022SIMB\u00D3LICO\u0022, scoreS.Value },\r\n                    { \u0022REAL\u0022, scoreR.Value }\r\n                };\r\n\r\n                registro =\r\n                    registros.Values.Distinct().Count() == 1\r\n                    ? \u0022EQUILIBRADO\u0022\r\n                    : registros\r\n                        .OrderByDescending(x =\u003E x.Value)\r\n                        .First().Key;\r\n\r\n                estrutura =\r\n                    DiagnosticarClinico(\r\n                        registro,\r\n                        intensidadeR,\r\n                        intensidadeS);\r\n            }\r\n\r\n            // ==========================================\r\n            // 3. RETORNO IMUT\u00C1VEL\r\n            // ==========================================\r\n\r\n            return new ParcialEtograma\r\n            {\r\n                IntensidadeImaginario = intensidadeI,\r\n                IntensidadeSimbolico = intensidadeS,\r\n                IntensidadeReal = intensidadeR,\r\n\r\n                ScoreImaginario = scoreI,\r\n                ScoreSimbolico = scoreS,\r\n                ScoreReal = scoreR,\r\n\r\n                RegistroDominante = registro,\r\n                EstruturaPsiquica = estrutura\r\n            };\r\n        }\r\n\r\n        // ==========================================\r\n        // DIAGN\u00D3STICO CL\u00CDNICO\r\n        // ==========================================\r\n\r\n        private string DiagnosticarClinico(\r\n            string dominante,\r\n            double intensidadeReal,\r\n            double intensidadeSimbolico)\r\n        {\r\n            if (intensidadeReal \u003E 6 \u0026\u0026 intensidadeSimbolico \u003C 3)\r\n                return \u0022Psicose (Foraclus\u00E3o)\u0022;\r\n\r\n            if (dominante == \u0022IMAGIN\u00C1RIO\u0022)\r\n                return \u0022Neurose Hist\u00E9rica\u0022;\r\n\r\n            if (dominante == \u0022SIMB\u00D3LICO\u0022)\r\n                return \u0022Neurose Obsessiva\u0022;\r\n\r\n            if (dominante == \u0022REAL\u0022)\r\n                return \u0022Estrutura Pulsional\u0022;\r\n\r\n            return \u0022Estrutura Lim\u00EDtrofe\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorMBTI",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorMBTI.cs",
+      "Code": "//ESTA OBSOLETO, \u00C9 CHAMANDO MAS N \u00C9 USADO. REMOVER\r\n\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    public class ClassificadorMBTI : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022MBTI-RSI\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // CORRE\u00C7\u00C3O: Se n\u00E3o h\u00E1 massa cr\u00EDtica de dados, n\u00E3o chutamos INTJ\r\n            if (p.ScoreDominancia == 0 \u0026\u0026 p.ScoreAfeto == 0 \u0026\u0026 p.ScoreEgo == 0)\r\n            {\r\n                e.TipoMbti = \u0022XXXX\u0022;\r\n                return;\r\n            }\r\n\r\n            // MANTIDO: Sua l\u00F3gica de Diferen\u00E7as Relativas\r\n            string IE = RSI(p.ScoreAfeto \u002B p.ScoreDominancia, p.ScoreEgo) \u003E 0 ? \u0022E\u0022 : \u0022I\u0022;\r\n            string SN = RSI(p.ScoreSensorium, p.ScoreErudicao) \u003E 0 ? \u0022S\u0022 : \u0022N\u0022;\r\n            string TF = RSI(p.ScoreRacionalidade, p.ScoreAfeto) \u003E 0 ? \u0022T\u0022 : \u0022F\u0022;\r\n            string JP = RSI(p.ScoreVolicao, p.ScoreIronia) \u003E 0 ? \u0022J\u0022 : \u0022P\u0022;\r\n\r\n            e.TipoMbti = $\u0022{IE}{SN}{TF}{JP}\u0022;\r\n        }\r\n\r\n        private double RSI(double a, double b)\r\n        {\r\n            double denom = Math.Abs(a) \u002B Math.Abs(b);\r\n            if (denom \u003C 0.0001) return 0;\r\n            return (a - b) / denom;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorMBTIV2",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorMBTIV2.cs",
+      "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Interfaces;\r\nusing Scriptome.Nucleo.Modelos.Genoma;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    public sealed class ClassificadorMBTIV2 : IClassificadorMBTIV2\r\n    {\r\n        private readonly IMotorSplicing _splicing;\r\n\r\n        public string Nome =\u003E \u0022MBTI-RSI V2 (RNA-Based)\u0022;\r\n\r\n        public ClassificadorMBTIV2(IMotorSplicing splicing)\r\n        {\r\n            _splicing = splicing\r\n                ?? throw new ArgumentNullException(nameof(splicing));\r\n        }\r\n\r\n        // ===============================\r\n        // INDIVIDUAL\r\n        // ===============================\r\n        public ResultadoMBTI Classificar(RnaBruto rna)\r\n        {\r\n            if (rna == null)\r\n                return new ResultadoMBTI(\u0022XXXX\u0022);\r\n\r\n            var splice = _splicing.Extrair(\r\n                rna,\r\n                \u0022D\u0022, \u0022E\u0022, \u0022R\u0022, \u0022I\u0022, \u0022V\u0022, \u0022A\u0022, \u0022S\u0022, \u0022IE\u0022);\r\n\r\n            double D = splice.Get(\u0022D\u0022);\r\n            double E = splice.Get(\u0022E\u0022);\r\n            double R = splice.Get(\u0022R\u0022);\r\n            double I = splice.Get(\u0022I\u0022);\r\n            double V = splice.Get(\u0022V\u0022);\r\n            double A = splice.Get(\u0022A\u0022);\r\n            double S = splice.Get(\u0022S\u0022);\r\n            double IE = splice.Get(\u0022IE\u0022);\r\n\r\n            if (D == 0 \u0026\u0026 A == 0 \u0026\u0026 E == 0)\r\n                return new ResultadoMBTI(\u0022XXXX\u0022);\r\n\r\n            double scoreEI = RSI(A \u002B D, E);\r\n            double scoreSN = RSI(S, IE);\r\n            double scoreTF = RSI(R, A);\r\n            double scoreJP = RSI(V, I);\r\n\r\n            string tipo =\r\n                $\u0022{(scoreEI \u003E 0 ? \u0022E\u0022 : \u0022I\u0022)}\u0022 \u002B\r\n                $\u0022{(scoreSN \u003E 0 ? \u0022S\u0022 : \u0022N\u0022)}\u0022 \u002B\r\n                $\u0022{(scoreTF \u003E 0 ? \u0022T\u0022 : \u0022F\u0022)}\u0022 \u002B\r\n                $\u0022{(scoreJP \u003E 0 ? \u0022J\u0022 : \u0022P\u0022)}\u0022;\r\n\r\n            return new ResultadoMBTI(\r\n                Tipo: tipo,\r\n                ScoreEI: scoreEI,\r\n                ScoreSN: scoreSN,\r\n                ScoreTF: scoreTF,\r\n                ScoreJP: scoreJP\r\n            );\r\n        }\r\n\r\n        // ===============================\r\n        // ELENCO (opcional \u2013 mant\u00E9m simetria com Jung)\r\n        // ===============================\r\n        public Dictionary\u003CRnaBruto, ResultadoMBTI\u003E ClassificarElenco(\r\n            IReadOnlyList\u003CRnaBruto\u003E elenco)\r\n        {\r\n            var resultado = new Dictionary\u003CRnaBruto, ResultadoMBTI\u003E();\r\n\r\n            if (elenco == null || elenco.Count == 0)\r\n                return resultado;\r\n\r\n            foreach (var rna in elenco)\r\n                resultado[rna] = Classificar(rna);\r\n\r\n            return resultado;\r\n        }\r\n\r\n        private double RSI(double a, double b)\r\n        {\r\n            double denom = Math.Abs(a) \u002B Math.Abs(b);\r\n            if (denom \u003C 0.0001) return 0;\r\n            return (a - b) / denom;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ClassificadorPsicodinamico",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorPsicodinamico.cs",
+      "Code": "\r\n/// \u003Csummary\u003E\r\n/// CLASSIFICADOR PSICODIN\u00C2MICO (LACAN \u002B KARMA \u002B BURST).\r\n/// Objetivo: Gerar um r\u00F3tulo psicol\u00F3gico leg\u00EDvel e acion\u00E1vel para roteiristas.\r\n/// Baseado na tr\u00EDade Lacaniana (Imagin\u00E1rio, Simb\u00F3lico, Real) com ajustes de Karma e Burst.\r\n/// \u003C/summary\u003E\r\n/// \r\n\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    public class ClassificadorPsicodinamico : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Psicodin\u00E2mica Instrumental\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // INTEN\u00C7\u00C3O\r\n            e.IntencaoCognitiva = Math.Round(\r\n                (p.ScoreRacionalidade * 0.6) \u002B\r\n                (p.ScoreErudicao * 0.4), 1);\r\n\r\n            e.IntencaoMotora = Math.Round(\r\n                (p.ScoreVolicao * 0.7) \u002B\r\n                (p.ScoreDominancia * 0.3), 1);\r\n\r\n            e.IntencaoEmocional = Math.Round(\r\n                p.ScoreAfeto, 1);\r\n\r\n            // PERVERSIDADE\r\n            double faltaAfeto = Math.Max(0, 10 - p.ScoreAfeto);\r\n\r\n            e.NivelCrueldade = Math.Round(\r\n                (p.ScoreDominancia * 0.5) \u002B\r\n                (p.ScoreEgo * 0.2) \u002B\r\n                (faltaAfeto * 0.3), 1);\r\n\r\n            e.NivelManipulacao = Math.Round(\r\n                (p.ScoreRacionalidade * 0.4) \u002B\r\n                (p.ScoreIronia * 0.3) \u002B\r\n                (p.ScoreDominancia * 0.3), 1);\r\n\r\n            e.NivelErotizacao = Math.Round(\r\n                (p.ScoreSensorium * 0.4) \u002B\r\n                (p.ScoreDominancia * 0.3) \u002B\r\n                (p.ScoreVolicao * 0.3), 1);\r\n\r\n            e.IndicePerversidade = Math.Round(\r\n                (e.NivelCrueldade * 0.5) \u002B\r\n                (e.NivelManipulacao * 0.3) \u002B\r\n                (e.NivelErotizacao * 0.2), 1);\r\n        }\r\n    }\r\n}\r\n\r\npublic class ClassificadorPsicodinamicoAvancado: IClassificadorIndividual\r\n{\r\n    public string Nome =\u003E \u0022Psicodin\u00E2mica Lacaniana Avan\u00E7ada\u0022;\r\n\r\n    public void Classificar(PerfilPersonagem p, Etograma e)\r\n    {\r\n        double ordem = Math.Clamp((p.KarmaOrdem \u002B 100) / 20.0, 0, 10);\r\n        double burst = Math.Clamp(p.BurstMedio / 5.0, 0, 10);\r\n\r\n        double I =\r\n            p.ScoreEgo * 0.5 \u002B\r\n            p.ScoreSensorium * 0.25 \u002B\r\n            p.ScoreAfeto * 0.25;\r\n\r\n        double S =\r\n            p.ScoreRacionalidade * 0.4 \u002B\r\n            p.ScoreErudicao * 0.3 \u002B\r\n            ordem * 0.3;\r\n\r\n        double Rbase =\r\n            p.ScoreVolicao * 0.5 \u002B\r\n            p.ScoreDominancia * 0.5;\r\n\r\n        double R = Rbase \u002B Math.Sqrt(burst) * 0.6;\r\n\r\n        I = Math.Clamp(I, 0, 10);\r\n        S = Math.Clamp(S, 0, 10);\r\n        R = Math.Clamp(R, 0, 10);\r\n\r\n        e.IntensidadeImaginario = I;\r\n        e.IntensidadeSimbolico = S;\r\n        e.IntensidadeReal = R;\r\n\r\n        double max = Math.Max(I, Math.Max(S, R)) \u002B 0.0001;\r\n\r\n        e.ScoreImaginario = Math.Round(I / max * 10, 2);\r\n        e.ScoreSimbolico = Math.Round(S / max * 10, 2);\r\n        e.ScoreReal = Math.Round(R / max * 10, 2);\r\n\r\n        double media = (I \u002B S \u002B R) / 3.0;\r\n        double variancia =\r\n            (Math.Pow(I - media, 2) \u002B\r\n             Math.Pow(S - media, 2) \u002B\r\n             Math.Pow(R - media, 2)) / 3.0;\r\n\r\n        e.RegistroDominante = variancia \u003C 0.35\r\n            ? \u0022EQUILIBRADO\u0022\r\n            : new[] { (\u0022IMAGIN\u00C1RIO\u0022, I), (\u0022SIMB\u00D3LICO\u0022, S), (\u0022REAL\u0022, R) }\r\n                .OrderByDescending(x =\u003E x.Item2)\r\n                .First().Item1;\r\n\r\n        double razaoRS = R / (S \u002B 0.01);\r\n\r\n        if (razaoRS \u003E 1.4)\r\n            e.EstruturaPsiquica = \u0022Psicose (Foraclus\u00E3o)\u0022;\r\n        else if (e.RegistroDominante == \u0022SIMB\u00D3LICO\u0022)\r\n            e.EstruturaPsiquica = \u0022Neurose Obsessiva\u0022;\r\n        else if (e.RegistroDominante == \u0022IMAGIN\u00C1RIO\u0022)\r\n            e.EstruturaPsiquica = \u0022Neurose Hist\u00E9rica\u0022;\r\n        else if (e.RegistroDominante == \u0022REAL\u0022 \u0026\u0026 media \u003E 5)\r\n            e.EstruturaPsiquica = \u0022Estrutura Pulsional\u0022;\r\n        else\r\n            e.EstruturaPsiquica = \u0022Estrutura Lim\u00EDtrofe\u0022;\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ClassificadorPsicodinamicoAvancado",
+      "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
+      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorPsicodinamico.cs",
+      "Code": "\r\n/// \u003Csummary\u003E\r\n/// CLASSIFICADOR PSICODIN\u00C2MICO (LACAN \u002B KARMA \u002B BURST).\r\n/// Objetivo: Gerar um r\u00F3tulo psicol\u00F3gico leg\u00EDvel e acion\u00E1vel para roteiristas.\r\n/// Baseado na tr\u00EDade Lacaniana (Imagin\u00E1rio, Simb\u00F3lico, Real) com ajustes de Karma e Burst.\r\n/// \u003C/summary\u003E\r\n/// \r\n\r\nusing Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Psique\r\n{\r\n    public class ClassificadorPsicodinamico : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022Psicodin\u00E2mica Instrumental\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // INTEN\u00C7\u00C3O\r\n            e.IntencaoCognitiva = Math.Round(\r\n                (p.ScoreRacionalidade * 0.6) \u002B\r\n                (p.ScoreErudicao * 0.4), 1);\r\n\r\n            e.IntencaoMotora = Math.Round(\r\n                (p.ScoreVolicao * 0.7) \u002B\r\n                (p.ScoreDominancia * 0.3), 1);\r\n\r\n            e.IntencaoEmocional = Math.Round(\r\n                p.ScoreAfeto, 1);\r\n\r\n            // PERVERSIDADE\r\n            double faltaAfeto = Math.Max(0, 10 - p.ScoreAfeto);\r\n\r\n            e.NivelCrueldade = Math.Round(\r\n                (p.ScoreDominancia * 0.5) \u002B\r\n                (p.ScoreEgo * 0.2) \u002B\r\n                (faltaAfeto * 0.3), 1);\r\n\r\n            e.NivelManipulacao = Math.Round(\r\n                (p.ScoreRacionalidade * 0.4) \u002B\r\n                (p.ScoreIronia * 0.3) \u002B\r\n                (p.ScoreDominancia * 0.3), 1);\r\n\r\n            e.NivelErotizacao = Math.Round(\r\n                (p.ScoreSensorium * 0.4) \u002B\r\n                (p.ScoreDominancia * 0.3) \u002B\r\n                (p.ScoreVolicao * 0.3), 1);\r\n\r\n            e.IndicePerversidade = Math.Round(\r\n                (e.NivelCrueldade * 0.5) \u002B\r\n                (e.NivelManipulacao * 0.3) \u002B\r\n                (e.NivelErotizacao * 0.2), 1);\r\n        }\r\n    }\r\n}\r\n\r\npublic class ClassificadorPsicodinamicoAvancado: IClassificadorIndividual\r\n{\r\n    public string Nome =\u003E \u0022Psicodin\u00E2mica Lacaniana Avan\u00E7ada\u0022;\r\n\r\n    public void Classificar(PerfilPersonagem p, Etograma e)\r\n    {\r\n        double ordem = Math.Clamp((p.KarmaOrdem \u002B 100) / 20.0, 0, 10);\r\n        double burst = Math.Clamp(p.BurstMedio / 5.0, 0, 10);\r\n\r\n        double I =\r\n            p.ScoreEgo * 0.5 \u002B\r\n            p.ScoreSensorium * 0.25 \u002B\r\n            p.ScoreAfeto * 0.25;\r\n\r\n        double S =\r\n            p.ScoreRacionalidade * 0.4 \u002B\r\n            p.ScoreErudicao * 0.3 \u002B\r\n            ordem * 0.3;\r\n\r\n        double Rbase =\r\n            p.ScoreVolicao * 0.5 \u002B\r\n            p.ScoreDominancia * 0.5;\r\n\r\n        double R = Rbase \u002B Math.Sqrt(burst) * 0.6;\r\n\r\n        I = Math.Clamp(I, 0, 10);\r\n        S = Math.Clamp(S, 0, 10);\r\n        R = Math.Clamp(R, 0, 10);\r\n\r\n        e.IntensidadeImaginario = I;\r\n        e.IntensidadeSimbolico = S;\r\n        e.IntensidadeReal = R;\r\n\r\n        double max = Math.Max(I, Math.Max(S, R)) \u002B 0.0001;\r\n\r\n        e.ScoreImaginario = Math.Round(I / max * 10, 2);\r\n        e.ScoreSimbolico = Math.Round(S / max * 10, 2);\r\n        e.ScoreReal = Math.Round(R / max * 10, 2);\r\n\r\n        double media = (I \u002B S \u002B R) / 3.0;\r\n        double variancia =\r\n            (Math.Pow(I - media, 2) \u002B\r\n             Math.Pow(S - media, 2) \u002B\r\n             Math.Pow(R - media, 2)) / 3.0;\r\n\r\n        e.RegistroDominante = variancia \u003C 0.35\r\n            ? \u0022EQUILIBRADO\u0022\r\n            : new[] { (\u0022IMAGIN\u00C1RIO\u0022, I), (\u0022SIMB\u00D3LICO\u0022, S), (\u0022REAL\u0022, R) }\r\n                .OrderByDescending(x =\u003E x.Item2)\r\n                .First().Item1;\r\n\r\n        double razaoRS = R / (S \u002B 0.01);\r\n\r\n        if (razaoRS \u003E 1.4)\r\n            e.EstruturaPsiquica = \u0022Psicose (Foraclus\u00E3o)\u0022;\r\n        else if (e.RegistroDominante == \u0022SIMB\u00D3LICO\u0022)\r\n            e.EstruturaPsiquica = \u0022Neurose Obsessiva\u0022;\r\n        else if (e.RegistroDominante == \u0022IMAGIN\u00C1RIO\u0022)\r\n            e.EstruturaPsiquica = \u0022Neurose Hist\u00E9rica\u0022;\r\n        else if (e.RegistroDominante == \u0022REAL\u0022 \u0026\u0026 media \u003E 5)\r\n            e.EstruturaPsiquica = \u0022Estrutura Pulsional\u0022;\r\n        else\r\n            e.EstruturaPsiquica = \u0022Estrutura Lim\u00EDtrofe\u0022;\r\n    }\r\n}\r\n"
+    }
+  ],
+  "Referencias": [
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "IMotorEtogramaCartesiano"
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "MotorTaxonomia",
+      "ToType": "Cluster"
+    },
+    {
+      "FromType": "MotorTaxonomia",
+      "ToType": "PerfilPersonagemConsolidado"
+    },
+    {
+      "FromType": "Cluster",
+      "ToType": "MotorTaxonomia"
+    },
+    {
+      "FromType": "Cluster",
+      "ToType": "PerfilPersonagemConsolidado"
+    },
+    {
+      "FromType": "InfoArquetipo",
+      "ToType": "BibliotecaArquetipos"
+    },
+    {
+      "FromType": "BibliotecaArquetipos",
+      "ToType": "InfoArquetipo"
+    },
+    {
+      "FromType": "DivergenceLogger",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "DivergenceLogger",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "DivergenceScore",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "DivergenceScore",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IClassificadorBiometrico",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "IClassificadorBiometrico",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IClassificadorColetivo",
+      "ToType": "IClassificadorBiometrico"
+    },
+    {
+      "FromType": "IClassificadorColetivo",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IClassificadorEtogramaV2",
+      "ToType": "ParcialEtograma"
+    },
+    {
+      "FromType": "IClassificadorEtogramaV2",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IClassificadorIndividual",
+      "ToType": "IClassificadorBiometrico"
+    },
+    {
+      "FromType": "IClassificadorIndividual",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "IClassificadorIndividual",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IClassificadorJungV2",
+      "ToType": "ResultadoJung"
+    },
+    {
+      "FromType": "IClassificadorJungV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "IClassificadorLacanianoV2",
+      "ToType": "ResultadoLacaniano"
+    },
+    {
+      "FromType": "IClassificadorLacanianoV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "IClassificadorMBTIV2",
+      "ToType": "ResultadoMBTI"
+    },
+    {
+      "FromType": "IClassificadorMBTIV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "IClassificadorNarrativaV2",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "IClassificadorNarrativaV2",
+      "ToType": "ExpressaoNarrativa"
+    },
+    {
+      "FromType": "IClassificadorNarrativaV2",
+      "ToType": "ExpressaoPsicodinamica"
+    },
+    {
+      "FromType": "IClassificadorNarrativaV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "IExtratorEtograma",
+      "ToType": "VetorEtograma3D"
+    },
+    {
+      "FromType": "IExtratorEtograma",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "permite"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "MotorEtogramaHeuristico"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "permite",
+      "ToType": "IMotorEtograma"
+    },
+    {
+      "FromType": "permite",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "permite",
+      "ToType": "MotorEtogramaHeuristico"
+    },
+    {
+      "FromType": "permite",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "permite"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "MotorEtogramaHeuristico"
+    },
+    {
+      "FromType": "IMotorEtograma",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IMotorEtogramaCartesiano",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "IMotorEtogramaCartesiano",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "IMotorIdentidadeRNA",
+      "ToType": "ResultadoIdentidadeConsolidada"
+    },
+    {
+      "FromType": "IMotorIdentidadeRNA",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "IMotorIdentidadeRNA",
+      "ToType": "ExpressaoPsicodinamica"
+    },
+    {
+      "FromType": "IMotorIdentidadeRNA",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "IMotorIntencional",
+      "ToType": "ExpressaoIntencional"
+    },
+    {
+      "FromType": "IMotorIntencional",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "BibliotecaCentroidesEtograma",
+      "ToType": "VetorEtograma3D"
+    },
+    {
+      "FromType": "BlocoNarrativoFingerprint",
+      "ToType": "TurnoDialogoFingerprint"
+    },
+    {
+      "FromType": "ContextoIdentidadeFingerprint",
+      "ToType": "ContextoNarrativoFingerprint"
+    },
+    {
+      "FromType": "ContextoIdentidadeFingerprint",
+      "ToType": "EstatisticasRoteiro"
+    },
+    {
+      "FromType": "ContextoIdentidadeFingerprint",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ContextoIdentidadeFingerprint",
+      "ToType": "ResultadoBaseLinguistico"
+    },
+    {
+      "FromType": "ContextoNarrativo",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "ContextoNarrativo",
+      "ToType": "ExpressaoPsicodinamica"
+    },
+    {
+      "FromType": "ContextoNarrativo",
+      "ToType": "ResultadoBaseLinguistico"
+    },
+    {
+      "FromType": "ContextoNarrativoFingerprint",
+      "ToType": "BlocoNarrativoFingerprint"
+    },
+    {
+      "FromType": "RegraArquetipo",
+      "ToType": "ContextoNarrativo"
+    },
+    {
+      "FromType": "ResultadoIdentidadeConsolidada",
+      "ToType": "ResultadoJung"
+    },
+    {
+      "FromType": "ResultadoIdentidadeConsolidada",
+      "ToType": "ResultadoLacaniano"
+    },
+    {
+      "FromType": "ResultadoIdentidadeConsolidada",
+      "ToType": "ResultadoMBTI"
+    },
+    {
+      "FromType": "ResultadoIdentidadeConsolidada",
+      "ToType": "ExpressaoNarrativa"
+    },
+    {
+      "FromType": "TurnoDialogoFingerprint",
+      "ToType": "TokenFingerprint"
+    },
+    {
+      "FromType": "VetorEtograma3D",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "IMotorIntencional"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "ResultadoEtograma"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "MotorEtogramaV2"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "ExpressaoIntencional"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "IModuloAnalise"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "EstatisticasRoteiro"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "Roteiro"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorJungV2"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorLacanianoV2"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorMBTIV2"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorNarrativaV2"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IMotorIdentidadeRNA"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ResultadoIdentidadeConsolidada"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ExpressaoPsicodinamica"
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "ExtratorEtogramaDeriva6",
+      "ToType": "IExtratorEtograma"
+    },
+    {
+      "FromType": "ExtratorEtogramaDeriva6",
+      "ToType": "VetorEtograma3D"
+    },
+    {
+      "FromType": "ExtratorEtogramaDeriva6",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "IExtratorEtograma"
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "IMotorEtogramaCartesiano"
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "ClassificadorEtogramaCartesiano"
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "IMotorEtograma"
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "ClassificadorScriptome"
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "BibliotecaArquetipos"
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "IClassificadorEtogramaV2"
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "ParcialEtograma"
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "ResultadoEtograma"
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "MotorVetorialV2",
+      "ToType": "ExpressaoVetorial"
+    },
+    {
+      "FromType": "MotorVetorialV2",
+      "ToType": "ResultadoBaseLinguistico"
+    },
+    {
+      "FromType": "MotorIntencionalV1",
+      "ToType": "IMotorIntencional"
+    },
+    {
+      "FromType": "MotorIntencionalV1",
+      "ToType": "ExpressaoIntencional"
+    },
+    {
+      "FromType": "MotorIntencionalV1",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "EstatisticaForense"
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "IClassificadorJungV2"
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "ResultadoJung"
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "IMotorSplicing"
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "ClassificadorEtogramaCartesiano",
+      "ToType": "VetorEtograma3D"
+    },
+    {
+      "FromType": "ClassificadorEnergia_V2",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "ClassificadorEnergia_V2",
+      "ToType": "ResultadoBaseLinguistico"
+    },
+    {
+      "FromType": "ClassificadorIntensidade",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorIntensidade",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorIntensidade",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "EstatisticaForense"
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "BibliotecaArquetipos"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "IClassificadorNarrativaV2"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ContextoNarrativo"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "RegraArquetipo"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "IMotorSplicing"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ExpressaoNarrativa"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ExpressaoPsicodinamica"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ResultadoBaseLinguistico"
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "ClassificadorScriptome",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorScriptome",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorScriptome",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ContextoNarrativoRNA",
+      "ToType": "ExpressaoEnergetica"
+    },
+    {
+      "FromType": "ContextoNarrativoRNA",
+      "ToType": "ExpressaoPsicodinamica"
+    },
+    {
+      "FromType": "ClassificadorHibrido",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorHibrido",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorHibrido",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorLacaniano",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorLacaniano",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorLacaniano",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "IClassificadorLacanianoV2"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "ResultadoLacaniano"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "IMotorSplicing"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2Legado",
+      "ToType": "IClassificadorEtogramaV2"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2Legado",
+      "ToType": "ParcialEtograma"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2Legado",
+      "ToType": "MotorEtogramaV2"
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2Legado",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorMBTI",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorMBTI",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorMBTI",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "IClassificadorMBTIV2"
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "ResultadoMBTI"
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "IMotorSplicing"
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "RnaBruto"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "ClassificadorPsicodinamicoAvancado"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "PerfilPersonagem"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "IClassificadorIndividual"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "Etograma"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "ClassificadorPsicodinamico"
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "PerfilPersonagem"
+    }
+  ]
+}

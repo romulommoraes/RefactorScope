@@ -1,9 +1,11 @@
 ﻿using RefactorScope.Analyzers;
+using RefactorScope.Analyzers.Solid;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Datasets;
 using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
@@ -11,11 +13,28 @@ using RefactorScope.Parsers.CSharpRegex;
 using Spectre.Console;
 
 Console.WriteLine();
+// 🔬 TESTE DI CONTROLADO (linha textual apenas)
+var __fake = "services.AddScoped<FakeZombieService>();";
 
-// O fluxo de execução central (Linear e Declarativo)
+// =====================================================
+// 🔹 FLUXO PRINCIPAL
+// =====================================================
+
 if (!TryRunConfiguration(out var config)) return;
 if (!TryRunParsing(config, out var context)) return;
 if (!TryRunAnalysis(context, out var report)) return;
+
+// 🔥 DEBUG — Zombie Breakdown
+var breakdown = report.GetZombieBreakdown();
+
+AnsiConsole.WriteLine();
+AnsiConsole.MarkupLine("[bold cyan]Zombie Analysis Breakdown[/]");
+AnsiConsole.WriteLine($"Structural Candidates : {breakdown.StructuralCandidates}");
+AnsiConsole.WriteLine($"Probabilistic Confirmed (≥ {report.ZombieProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
+AnsiConsole.WriteLine($"Absolved : {breakdown.Absolved}");
+AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
+AnsiConsole.WriteLine();
+
 if (!TryRunExport(config, context, report)) return;
 
 RunVisualization(report);
@@ -28,10 +47,21 @@ ApplyCiExitCode(report);
 static bool TryRunConfiguration(out RefactorScopeConfig config)
 {
     config = null!;
+
     try
     {
-        config = ConfigLoader.Load();
+        bool enableSelfSelector = true;
+
+        var configPath = RefactorScope.CLI.SelfAnalysisSelector
+            .ResolveConfigPath(
+                "refactorscope.json",
+                "refactorscope_v1_1_self.json",
+                enableSelfSelector);
+
+        config = ConfigLoader.Load(configPath);
+
         ConfigValidator.Validate(config);
+
         config.FitnessGates = FitnessGateConfigResolver.Resolve(
             config.FitnessGates,
             msg => TerminalRenderer.Warn(msg)
@@ -53,6 +83,7 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
     }
 }
 
+
 // =====================================================
 // 🔹 BLOCO 2 — PARSING
 // =====================================================
@@ -62,10 +93,12 @@ static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext contex
     try
     {
         IParserCodigo parser = new CSharpRegexParser();
+
         var model = TerminalRenderer.WithSpinner("Parsing código...",
             () => parser.Parse(config.RootPath, config.Include, config.Exclude));
 
         TerminalRenderer.Success("Parsing concluído");
+
         context = new AnalysisContext(config, model);
         return true;
     }
@@ -76,29 +109,66 @@ static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext contex
     }
 }
 
+
 // =====================================================
-// 🔹 BLOCOS 3 e 4 — ANALISADORES E ORQUESTRAÇÃO
+// 🔹 BLOCO 3 — ANÁLISE + CONSOLIDAÇÃO
 // =====================================================
 static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport report)
 {
     report = null!;
     try
     {
-        var analyzers = new List<IAnalyzer>
+        var analyzers = new List<IAnalyzer>();
+
+        // ===============================
+        // 🔹 Zombie estrutural
+        // ===============================
+        if (IsEnabled(context, "zombie"))
         {
-            new ZombieAnalyzer(),
-            new ArchitecturalClassificationAnalyzer(),
-            new EntryPointHeuristicAnalyzer(),
-            new CoreIsolationAnalyzer(),
-            new CouplingAnalyzer(),
-            new FitnessGateAnalyzer(context.Config.FitnessGates)
-        };
+            analyzers.Add(new ZombieAnalyzer());
+        }
+
+        // ===============================
+        // 🔹 Zombie probabilístico
+        // ===============================
+        if (IsEnabled(context, "zombieRefinement") &&
+            context.Config.ZombieDetection.EnableRefinement)
+        {
+            analyzers.Add(new ZombieRefinementAnalyzer());
+        }
+
+        // ===============================
+        // 🔹 Demais analisadores
+        // ===============================
+        if (IsEnabled(context, "architecture"))
+            analyzers.Add(new ArchitecturalClassificationAnalyzer());
+
+        if (IsEnabled(context, "entrypoints"))
+            analyzers.Add(new EntryPointHeuristicAnalyzer());
+
+        if (IsEnabled(context, "coreIsolation"))
+            analyzers.Add(new CoreIsolationAnalyzer());
+
+        if (IsEnabled(context, "coupling"))
+            analyzers.Add(new CouplingAnalyzer());
+
+        if (IsEnabled(context, "solid"))
+            analyzers.Add(new SolidAnalyzer());
+
+        // ⚠ FitnessGate SEMPRE por último
+        analyzers.Add(new FitnessGateAnalyzer(context.Config.FitnessGates));
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
-        report = TerminalRenderer.WithSpinner("Executando analisadores...",
+
+        var rawReport = TerminalRenderer.WithSpinner(
+            "Executando analisadores...",
             () => orchestrator.Execute(context));
 
         TerminalRenderer.Success("Análise concluída");
+
+        var consolidator = new ReportConsolidator();
+        report = consolidator.Consolidate(rawReport);
+
         return true;
     }
     catch (Exception ex)
@@ -109,15 +179,18 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
 }
 
 // =====================================================
-// 🔹 BLOCOS 5, 6 e 7 — DATASETS, EXPORTADORES E DUMPS
+// 🔹 BLOCO 4 — EXPORTAÇÃO + RELATÓRIO MD
 // =====================================================
-static bool TryRunExport(RefactorScopeConfig config, AnalysisContext context, ConsolidatedReport report)
+static bool TryRunExport(
+    RefactorScopeConfig config,
+    AnalysisContext context,
+    ConsolidatedReport report)
 {
     try
     {
         TerminalRenderer.Step("Gerando dumps e datasets...");
 
-        var datasetBuilders = new List<IAnalyticalDatasetBuilder> 
+        var datasetBuilders = new List<IAnalyticalDatasetBuilder>
         {
             new GlobalTypesDatasetBuilder(),
             new StructuralOverviewDatasetBuilder(),
@@ -126,8 +199,9 @@ static bool TryRunExport(RefactorScopeConfig config, AnalysisContext context, Co
             new TypeContributionDatasetBuilder(),
             new GlobalMetricsDatasetBuilder(),
             new StructuralScoreDatasetBuilder(),
-            new StructuralTrendDatasetBuilder() 
+            new StructuralTrendDatasetBuilder()
         };
+
         var exporters = new List<IExporter>
         {
             new DumpAnaliseExporter(),
@@ -139,9 +213,15 @@ static bool TryRunExport(RefactorScopeConfig config, AnalysisContext context, Co
         };
 
         var strategy = DumpStrategyResolver.Resolve(config);
+
         strategy.Execute(context, report, exporters);
 
-        TerminalRenderer.Success("Dumps gerados com sucesso");
+        // 🔹 GARANTE que tudo vá para o mesmo OutputPath
+        GenerateMarkdownReport(report, config.OutputPath);
+        GenerateStructuralDashboard(report, config.OutputPath);
+
+        TerminalRenderer.Success("Dumps e relatório gerados com sucesso");
+
         return true;
     }
     catch (Exception ex)
@@ -152,38 +232,96 @@ static bool TryRunExport(RefactorScopeConfig config, AnalysisContext context, Co
 }
 
 // =====================================================
-// 🔹 BLOCOS 8 e 9 — VISUALIZAÇÃO NO TERMINAL
+// 🔹 BLOCO 5 — RELATÓRIO MARKDOWN e HTML DASHBOARD
+// =====================================================
+static void GenerateMarkdownReport(
+    ConsolidatedReport report,
+    string outputDirectory)
+{
+    try
+    {
+        Directory.CreateDirectory(outputDirectory);
+
+        var outputPath = Path.Combine(
+            outputDirectory,
+            "Relatorio_Arquitetural.md");
+
+        var exporter = new MarkdownReportExporter();
+        exporter.Export(report, outputPath);
+
+        TerminalRenderer.Success("Relatório Markdown gerado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO AO GERAR MD]: {ex.Message}");
+    }
+}
+
+static void GenerateStructuralDashboard(
+    ConsolidatedReport report,
+    string outputDirectory)
+{
+    try
+    {
+        Directory.CreateDirectory(outputDirectory);
+
+        var exporter = new StructuralInventoryExporter();
+        exporter.Export(report, outputDirectory);
+
+        TerminalRenderer.Success("Structural Dashboard gerado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO AO GERAR DASHBOARD]: {ex.Message}");
+    }
+}
+
+
+// =====================================================
+// 🔹 BLOCO 6 — VISUALIZAÇÃO TERMINAL
 // =====================================================
 static void RunVisualization(ConsolidatedReport report)
 {
     TerminalRenderer.Section("Architectural Health");
 
-    var modules = report.Results
-        .OfType<ArchitecturalClassificationResult>()
-        .FirstOrDefault()?.Items
-        .GroupBy(i => i.Folder);
+    var architecture = report.GetResult<ArchitecturalClassificationResult>();
+    if (architecture == null)
+        return;
 
-    var zombies = report.Results.OfType<ZombieResult>().FirstOrDefault();
-    var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
-    var coupling = report.Results.OfType<CouplingResult>().FirstOrDefault();
+    var modules = architecture.Items.GroupBy(i => i.Folder);
 
-    if (modules == null) return;
+    var isolated = report.GetResult<CoreIsolationResult>();
+    var coupling = report.GetResult<CouplingResult>();
+
+    // 🔥 Fonte oficial de zombies
+    //var zombieThreshold = 0.60; // fallback seguro
+    var configZombieThreshold = report
+        .GetResult<FitnessGateResult>(); // não temos config aqui
+
+    //// Melhor solução: usar constante ou mover config para report futuramente
+    //zombieThreshold = 0.60;
+
+    var effectiveZombies = report.GetEffectiveZombieTypes();
 
     foreach (var module in modules)
     {
         var total = module.Count();
         if (total == 0) continue;
 
-        var zombieCount = zombies?.ZombieTypes.Count(z => module.Any(m => m.TypeName == z)) ?? 0;
-        var isolatedCount = isolated?.IsolatedCoreTypes.Count(i => module.Any(m => m.TypeName == i)) ?? 0;
-        var fanOut = coupling?.ModuleFanOut.GetValueOrDefault(module.Key) ?? 0;
+        var zombieCount = effectiveZombies
+            .Count(z => module.Any(m => m.TypeName == z));
+
+        var isolatedCount = isolated?.IsolatedCoreTypes
+            .Count(i => module.Any(m => m.TypeName == i)) ?? 0;
+
+        var fanOut = coupling?.ModuleFanOut
+            .GetValueOrDefault(module.Key) ?? 0;
 
         var zombieRate = zombieCount / (double)total;
         var isolationRate = isolatedCount / (double)total;
         var couplingRate = fanOut / (double)total;
         var coreDensity = module.Count(t => t.Layer == "Core") / (double)total;
 
-        // 🟢 Zombie agora é absoluto + relativo
         var zombieDisplay = $"{zombieCount} ({zombieRate:0%})";
 
         var score =
@@ -202,11 +340,15 @@ static void RunVisualization(ConsolidatedReport report)
             couplingRate,
             isolationRate
         );
-
     }
+
     RenderFitnessGates(report);
 }
 
+
+// =====================================================
+// 🔹 BLOCO 7 — FITNESS GATES
+// =====================================================
 static void RenderFitnessGates(ConsolidatedReport report)
 {
     var gates = report.Results
@@ -245,6 +387,10 @@ static void RenderFitnessGates(ConsolidatedReport report)
     }
 }
 
+
+// =====================================================
+// 🔹 BLOCO 8 — CI EXIT CODE
+// =====================================================
 static void ApplyCiExitCode(ConsolidatedReport report)
 {
     var gates = report.Results
@@ -258,11 +404,16 @@ static void ApplyCiExitCode(ConsolidatedReport report)
     {
         Console.WriteLine();
         Console.WriteLine("[CI] Fitness Gates falharam.");
-
         Environment.ExitCode = 1;
     }
     else
     {
         Environment.ExitCode = 0;
     }
+}
+
+static bool IsEnabled(AnalysisContext context, string analyzerName)
+{
+    return context.Config.Analyzers.TryGetValue(analyzerName, out var enabled)
+           && enabled;
 }

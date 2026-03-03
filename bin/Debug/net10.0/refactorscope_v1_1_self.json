@@ -1,0 +1,79 @@
+{
+  "rootPath": "C:\\Users\\romul\\source\\repos\\RefactorScope",
+
+  "outputPath": "refactorscope-self-analysis",
+
+  "include": [],
+  "exclude": [
+    "bin",
+    "obj",
+    ".vs",
+    "refactorscope-self-analysis"
+  ],
+
+  "analyzers": {
+    "zombie": true,
+    "zombieRefinement": true,
+    "architecture": true,
+    "coreIsolation": true,
+    "entrypoints": true,
+    "coupling": true,
+    "solid": true
+  },
+
+  "zombieDetection": {
+    "enableRefinement": true,
+    "globalRateThreshold_DI": 0.10,
+    "globalRateThreshold_Interface": 0.08,
+    "diProbability": 0.10,
+    "interfaceProbability": 0.20,
+    "minZombieProbabilityThreshold": 0.30
+  },
+
+  "layerRules": {
+    "UI": {
+      "namespaceContains": [ "Reporting", "CLI" ]
+    },
+    "Core": {
+      "namespaceContains": [ "Core", "Analyzers", "Model" ]
+    },
+    "Infra": {
+      "namespaceContains": [ "Infrastructure" ],
+      "nameEquals": [ "Program" ]
+    }
+  },
+
+  "parser": "CSharpRegex",
+
+  "exporters": [
+    "htmlDashboard",
+    "dumpAnalysis"
+  ],
+
+  "dumpStrategy": {
+    "mode": "segmented",
+    "splitBy": "topFolder"
+  },
+
+  "fitnessGates": {
+    "deadCode": {
+      "warnAbove": 0.05,
+      "failAbove": 0.10
+    },
+    "coupling": {
+      "warnAbove": 4,
+      "failAbove": 8
+    },
+    "coreIsolation": {
+      "failIfAny": true
+    },
+    "solidAlerts": {
+      "warnAbove": 5,
+      "failAbove": 15
+    },
+    "smellIndex": {
+      "warnAbove": 40,
+      "failAbove": 65
+    }
+  }
+}

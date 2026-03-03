@@ -106,6 +106,103 @@ namespace RefactorScope.Analyzers
 
 
 ==========================================
+ARQUIVO: ArchitecturalHygieneAnalyzer.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\ArchitecturalHygieneAnalyzer.cs
+==========================================
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Analyzers
+{
+    /// <summary>
+    /// Calcula métricas estruturais agregadas do sistema.
+    /// 
+    /// Fonte oficial de zombie: modelo probabilístico se disponível.
+    /// </summary>
+    public sealed class ArchitecturalHygieneAnalyzer
+    {
+        public HygieneReport Analyze(ConsolidatedReport report)
+        {
+            var architecture = report.GetResult<ArchitecturalClassificationResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+
+            if (architecture == null)
+                return new HygieneReport
+                {
+                    TotalClasses = 0,
+                    DeadCount = 0,
+                    LegacyCount = 0,
+                    CoreCount = 0,
+                    RemovalCandidates = 0,
+                    IsolatedCoreCount = 0,
+                    StructuralEntropy = 0,
+                    SmellIndex = 0
+                };
+
+            const double zombieThreshold = 0.60;
+
+            var effectiveZombies = report.GetEffectiveZombieTypes(zombieThreshold);
+
+            var total = architecture.Items.Count;
+
+            var deadCount = effectiveZombies.Count;
+
+            var coreCount = architecture.Items.Count(i => i.Layer == "Core");
+
+            var legacyCount = architecture.Items.Count(i => i.Status.Contains("Legado"));
+
+            var removalCandidates = deadCount;
+
+            var isolatedCoreCount = isolated?.IsolatedCoreTypes.Count ?? 0;
+
+            var entropy = ComputeEntropy(architecture);
+
+            // Índice composto (heurístico)
+            var smellIndex =
+                (deadCount * 1.2)
+                + (legacyCount * 0.8)
+                + (isolatedCoreCount * 1.0)
+                + (entropy * 50);
+
+            return new HygieneReport
+            {
+                TotalClasses = total,
+                DeadCount = deadCount,
+                LegacyCount = legacyCount,
+                CoreCount = coreCount,
+                RemovalCandidates = removalCandidates,
+                IsolatedCoreCount = isolatedCoreCount,
+                StructuralEntropy = entropy,
+                SmellIndex = smellIndex
+            };
+        }
+
+        private double ComputeEntropy(ArchitecturalClassificationResult architecture)
+        {
+            var groups = architecture.Items.GroupBy(i => i.Folder).ToList();
+            var total = architecture.Items.Count;
+
+            if (total == 0 || groups.Count <= 1)
+                return 0;
+
+            double entropy = 0;
+
+            foreach (var group in groups)
+            {
+                var p = group.Count() / (double)total;
+                if (p > 0)
+                    entropy -= p * Math.Log(p, 2);
+            }
+
+            var maxEntropy = Math.Log(groups.Count, 2);
+
+            return maxEntropy == 0 ? 0 : entropy / maxEntropy;
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: CoreIsolationAnalyzer.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\CoreIsolationAnalyzer.cs
 ==========================================
@@ -161,6 +258,70 @@ namespace RefactorScope.Analyzers
 
 
 ==========================================
+ARQUIVO: CouplingAnalyser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\CouplingAnalyser.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Analyzers
+{
+    /// <summary>
+    /// Calcula Fan-Out estrutural por módulo.
+    /// 
+    /// Scope-safe:
+    /// Opera apenas sobre o universo analisado.
+    /// </summary>
+    public class CouplingAnalyzer : IAnalyzer
+    {
+        public string Name => "coupling";
+
+        public IAnalysisResult Analyze(AnalysisContext context)
+        {
+            var fanOutPorModulo = new Dictionary<string, int>();
+            var fanOutPorTipoPorModulo = new Dictionary<string, Dictionary<string, int>>();
+
+            var tipos = context.Model.Tipos;
+            var referencias = context.Model.Referencias;
+
+            foreach (var tipo in tipos)
+            {
+                var modulo = ExtractTopFolder(tipo.DeclaredInFile);
+                var fanOut = referencias.Count(r => r.FromType == tipo.Name);
+
+                if (!fanOutPorModulo.ContainsKey(modulo))
+                    fanOutPorModulo[modulo] = 0;
+
+                fanOutPorModulo[modulo] += fanOut;
+
+                if (!fanOutPorTipoPorModulo.ContainsKey(modulo))
+                    fanOutPorTipoPorModulo[modulo] = new Dictionary<string, int>();
+
+                fanOutPorTipoPorModulo[modulo][tipo.Name] = fanOut;
+            }
+
+            return new CouplingResult(fanOutPorModulo, fanOutPorTipoPorModulo);
+        }
+
+        private static string ExtractTopFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return "Root";
+
+            var parts = path
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            return parts.Length > 1
+                ? parts[0]
+                : "Root";
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: EntryPointHeuristicAnalyzer.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\EntryPointHeuristicAnalyzer.cs
 ==========================================
@@ -185,6 +346,142 @@ namespace RefactorScope.Analyzers
 
             return new EntryPointHeuristicResult(entryPoints);
         }
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateAnalyzer.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\FitnessGateAnalyzer.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Configuration;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Analyzers
+{
+    /// <summary>
+    /// Avalia a prontidão arquitetural do sistema com base em Fitness Gates.
+    /// Não cria métricas — apenas interpreta resultados existentes.
+    /// Thresholds são configuráveis via refactorscope.json.
+    /// </summary>
+    public class FitnessGateAnalyzer : IAnalyzer
+    {
+        public string Name => "fitnessGates";
+
+        private readonly FitnessGateConfig _config;
+
+        public FitnessGateAnalyzer(FitnessGateConfig config)
+        {
+            _config = config;
+        }
+
+        public IAnalysisResult Analyze(AnalysisContext context)
+        {
+            var gates = new List<FitnessGateStatus>();
+
+            var zombies = context.GetResult<ZombieResult>();
+            var isolated = context.GetResult<CoreIsolationResult>();
+            var coupling = context.GetResult<CouplingResult>();
+            var architecture = context.GetResult<ArchitecturalClassificationResult>();
+
+            gates.Add(EvaluateCoreIsolation(isolated));
+            gates.Add(EvaluateDeadCode(zombies, architecture, context));
+            gates.Add(EvaluateCoupling(coupling));
+
+            return new FitnessGateResult(gates);
+        }
+
+        // ==============================
+        // Gates
+        // ==============================
+
+        private FitnessGateStatus EvaluateCoreIsolation(CoreIsolationResult? isolated)
+        {
+            if (_config.CoreIsolation.FailIfAny &&
+                isolated != null &&
+                isolated.IsolatedCoreTypes.Any())
+            {
+                return Fail("CoreIntegrity",
+                    $"{isolated.IsolatedCoreTypes.Count} tipos Core isolados");
+            }
+
+            return Pass("CoreIntegrity");
+        }
+
+        private FitnessGateStatus EvaluateDeadCode(
+           ZombieResult? zombies,
+           ArchitecturalClassificationResult? architecture,
+           AnalysisContext context)
+        {
+            if (architecture == null)
+                return Pass("DeadCode");
+
+            var total = architecture.Items.Count;
+            if (total == 0)
+                return Pass("DeadCode");
+
+            // ===============================
+            // ?? Novo: tenta usar modelo probabilístico
+            // ===============================
+            var zombieProb = context.GetResult<ZombieProbabilityResult>();
+
+            int zombieCount;
+
+            if (zombieProb != null)
+            {
+                var threshold = context.Config.ZombieDetection.MinZombieProbabilityThreshold;
+
+                zombieCount = zombieProb
+                    .ConfirmedZombies(threshold)
+                    .Count;
+            }
+            else
+            {
+                // Fallback legado
+                zombieCount = zombies?.ZombieTypes.Count ?? 0;
+            }
+
+            var rate = zombieCount / (double)total;
+
+            if (rate > _config.DeadCode.FailAbove)
+                return Fail("DeadCode", $"ZombieRate alto: {rate:0%}");
+
+            if (rate > _config.DeadCode.WarnAbove)
+                return Warn("DeadCode", $"ZombieRate moderado: {rate:0%}");
+
+            return Pass("DeadCode");
+        }
+
+        private FitnessGateStatus EvaluateCoupling(CouplingResult? coupling)
+        {
+            if (coupling == null)
+                return Pass("Coupling");
+
+            var avg = coupling.ModuleFanOut.Values.DefaultIfEmpty(0).Average();
+
+            if (avg > _config.Coupling.FailAbove)
+                return Fail("Coupling", $"FanOut médio alto: {avg:0.0}");
+
+            if (avg > _config.Coupling.WarnAbove)
+                return Warn("Coupling", $"FanOut moderado: {avg:0.0}");
+
+            return Pass("Coupling");
+        }
+
+        // ==============================
+        // Helpers
+        // ==============================
+
+        private FitnessGateStatus Pass(string name)
+            => new() { GateName = name, Status = GateStatus.Pass };
+
+        private FitnessGateStatus Warn(string name, string msg)
+            => new() { GateName = name, Status = GateStatus.Warn, Message = msg };
+
+        private FitnessGateStatus Fail(string name, string msg)
+            => new() { GateName = name, Status = GateStatus.Fail, Message = msg };
     }
 }
 
@@ -223,6 +520,313 @@ namespace RefactorScope.Analyzers
                 .ToList();
 
             return new ZombieResult(zombies);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: SolidAnalyzer.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\SolidAnalyzer.cs
+==========================================
+using RefactorScope.Analyzers.Solid.Rules;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Analyzers.Solid
+{
+    public sealed class SolidAnalyzer : IAnalyzer
+    {
+        private readonly SolidConfig _config;
+        private readonly List<IAbsolutionRule> _absolutionRules;
+        private readonly List<IOmissionRule> _omissionRules;
+
+        public SolidAnalyzer()
+        {
+            _config = new SolidConfig();
+
+            _absolutionRules = new()
+            {
+                new OrchestratorAbsolutionRule(_config),
+                new CoreDependencyAbsolutionRule(_config)
+            };
+
+            _omissionRules = new()
+            {
+                new PublicZeroUsageOmissionRule()
+            };
+        }
+
+        public string Name => "SOLID";
+
+        public IAnalysisResult Analyze(AnalysisContext context)
+        {
+            var suspicions = Pass1Heuristic(context);
+
+            foreach (var omission in _omissionRules)
+                suspicions.AddRange(omission.Generate(context));
+
+            suspicions = suspicions
+                .Where(s => !_absolutionRules.Any(r => r.ShouldPardon(s, context)))
+                .ToList();
+
+            return new SolidResult(suspicions);
+        }
+
+        private List<SolidSuspicion> Pass1Heuristic(AnalysisContext context)
+        {
+            var result = new List<SolidSuspicion>();
+
+            var coupling = context.Results
+                .OfType<CouplingResult>()
+                .FirstOrDefault();
+
+            if (coupling == null)
+                return result;
+
+            foreach (var module in coupling.TypeFanOutByModule)
+            {
+                foreach (var type in module.Value)
+                {
+                    if (type.Value > _config.SrpFanOutThreshold)
+                    {
+                        result.Add(new SolidSuspicion
+                        {
+                            Principle = SolidPrinciple.SRP,
+                            ClassName = type.Key,
+                            Namespace = module.Key,
+                            Reason = $"FanOut > {_config.SrpFanOutThreshold}"
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: SolidConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\SolidConfig.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Analyzers.Solid
+{
+    public sealed class SolidConfig
+    {
+        public int SrpFanOutThreshold { get; init; } = 15;
+
+        public List<string> OrchestratorSuffixes { get; init; } =
+            new() { "Controller", "Facade", "Module", "Bootstrapper" };
+
+        public List<string> AllowedCoreDependencies { get; init; } =
+            new() { "System", "Microsoft" };
+    }
+}
+
+
+
+==========================================
+ARQUIVO: SolidPrinciple.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\SolidPrinciple.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Analyzers.Solid
+{
+    public enum SolidPrinciple
+    {
+        SRP,
+        DIP
+    }
+}
+
+
+
+==========================================
+ARQUIVO: SolidResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\SolidResult.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Analyzers.Solid
+{
+    public sealed class SolidResult : IAnalysisResult
+    {
+        public IReadOnlyList<SolidSuspicion> Alerts { get; }
+
+        public SolidResult(List<SolidSuspicion> alerts)
+        {
+            Alerts = alerts;
+        }
+    }
+}
+
+
+
+==========================================
+ARQUIVO: SolidSuspicion.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\SolidSuspicion.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Analyzers.Solid
+{
+    public sealed class SolidSuspicion
+    {
+        public SolidPrinciple Principle { get; init; }
+
+        public string ClassName { get; init; } = string.Empty;
+
+        public string Namespace { get; init; } = string.Empty;
+
+        public string Reason { get; init; } = string.Empty;
+    }
+}
+
+
+
+==========================================
+ARQUIVO: CoreDependencyAbsolutionRule.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\Rules\CoreDependencyAbsolutionRule.cs
+==========================================
+using RefactorScope.Analyzers.Solid;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+
+namespace RefactorScope.Analyzers.Solid.Rules
+{
+    public sealed class CoreDependencyAbsolutionRule : IAbsolutionRule
+    {
+        private readonly SolidConfig _config;
+
+        public CoreDependencyAbsolutionRule(SolidConfig config)
+        {
+            _config = config;
+        }
+
+        public bool ShouldPardon(SolidSuspicion suspicion, AnalysisContext context)
+        {
+            if (suspicion.Principle != SolidPrinciple.DIP)
+                return false;
+
+            return _config.AllowedCoreDependencies
+                .Any(ns => suspicion.Namespace.StartsWith(ns));
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: IAbsolutionRule.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\Rules\IAbsolutionRule.cs
+==========================================
+using RefactorScope.Analyzers.Solid;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+
+namespace RefactorScope.Analyzers.Solid.Rules
+{
+    public interface IAbsolutionRule
+    {
+        bool ShouldPardon(SolidSuspicion suspicion, AnalysisContext context);
+    }
+}
+
+
+==========================================
+ARQUIVO: IOmissionRule.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\Rules\IOmissionRule.cs
+==========================================
+using RefactorScope.Analyzers.Solid;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+
+namespace RefactorScope.Analyzers.Solid.Rules
+{
+    public interface IOmissionRule
+    {
+        IEnumerable<SolidSuspicion> Generate(AnalysisContext context);
+    }
+}
+
+
+==========================================
+ARQUIVO: OrchestratorAbsolutionRule.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\Rules\OrchestratorAbsolutionRule.cs
+==========================================
+using RefactorScope.Analyzers.Solid;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+
+namespace RefactorScope.Analyzers.Solid.Rules
+{
+    public sealed class OrchestratorAbsolutionRule : IAbsolutionRule
+    {
+        private readonly SolidConfig _config;
+
+        public OrchestratorAbsolutionRule(SolidConfig config)
+        {
+            _config = config;
+        }
+
+        public bool ShouldPardon(SolidSuspicion suspicion, AnalysisContext context)
+        {
+            if (suspicion.Principle != SolidPrinciple.SRP)
+                return false;
+
+            return _config.OrchestratorSuffixes
+                .Any(s => suspicion.ClassName.EndsWith(s));
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: PublicZeroUsageOmissionRule.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\Solid\Rules\PublicZeroUsageOmissionRule.cs
+==========================================
+using RefactorScope.Analyzers.Solid;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Analyzers.Solid.Rules
+{
+    public sealed class PublicZeroUsageOmissionRule : IOmissionRule
+    {
+        public IEnumerable<SolidSuspicion> Generate(AnalysisContext context)
+        {
+            var classification = context.Results
+                .OfType<ArchitecturalClassificationResult>()
+                .FirstOrDefault();
+
+            if (classification == null)
+                return Enumerable.Empty<SolidSuspicion>();
+
+            return classification.Items
+                .Where(i => i.UsageCount == 0 && i.Status == "Ativo")
+                .Select(i => new SolidSuspicion
+                {
+                    Principle = SolidPrinciple.SRP,
+                    ClassName = i.TypeName,
+                    Namespace = i.Namespace,
+                    Reason = "Public class with zero usage."
+                });
         }
     }
 }

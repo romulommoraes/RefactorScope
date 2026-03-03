@@ -1,0 +1,903 @@
+{
+  "RootPath": "C:\\Users\\romul\\source\\repos\\RefactorScope",
+  "Tipos": [
+    {
+      "Name": "IAnalysisResult",
+      "Namespace": "RefactorScope.Core.Abstractions",
+      "File": "RefactorScope\\Core\\Abstractions\\IAnalysisResult.cs",
+      "Code": "namespace RefactorScope.Core.Abstractions\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa o resultado de uma an\u00E1lise estrutural.\r\n    /// Interface de marca\u00E7\u00E3o para permitir agrega\u00E7\u00E3o polim\u00F3rfica.\r\n    /// \u003C/summary\u003E\r\n    public interface IAnalysisResult\r\n    {\r\n    }\r\n}"
+    },
+    {
+      "Name": "IAnalyzer",
+      "Namespace": "RefactorScope.Core.Abstractions",
+      "File": "RefactorScope\\Core\\Abstractions\\IAnalyzer.cs",
+      "Code": "using RefactorScope.Core.Context;\r\n\r\nnamespace RefactorScope.Core.Abstractions\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Define o contrato de execu\u00E7\u00E3o para analisadores estruturais.\r\n    /// Cada analisador deve operar de forma isolada e determin\u00EDstica.\r\n    /// \u003C/summary\u003E\r\n    public interface IAnalyzer\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome \u00FAnico do analisador (usado na configura\u00E7\u00E3o).\r\n        /// \u003C/summary\u003E\r\n        string Name { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Executa a an\u00E1lise com base no contexto fornecido.\r\n        /// \u003C/summary\u003E\r\n        /// \u003Cparam name=\u0022context\u0022\u003EContexto de an\u00E1lise contendo modelo estrutural e configura\u00E7\u00E3o.\u003C/param\u003E\r\n        /// \u003Creturns\u003EResultado da an\u00E1lise.\u003C/returns\u003E\r\n        IAnalysisResult Analyze(AnalysisContext context);\r\n    }\r\n}"
+    },
+    {
+      "Name": "IExporter",
+      "Namespace": "RefactorScope.Core.Abstractions",
+      "File": "RefactorScope\\Core\\Abstractions\\IExporter.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\n\r\nnamespace RefactorScope.Core.Abstractions\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Define o contrato para exporta\u00E7\u00E3o de resultados de an\u00E1lise.\r\n    /// \r\n    /// Exportadores n\u00E3o decidem o destino.\r\n    /// O CLI define o outputPath.\r\n    /// \u003C/summary\u003E\r\n    public interface IExporter\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome do exportador (ex: JSON, CSV, DumpIA).\r\n        /// \u003C/summary\u003E\r\n        string Name { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Exporta os resultados da an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        /// \u003Cparam name=\u0022context\u0022\u003EContexto da an\u00E1lise\u003C/param\u003E\r\n        /// \u003Cparam name=\u0022report\u0022\u003ERelat\u00F3rio consolidado\u003C/param\u003E\r\n        /// \u003Cparam name=\u0022outputPath\u0022\u003EPasta de sa\u00EDda definida pelo CLI\u003C/param\u003E\r\n        void Export(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report,\r\n            string outputPath\r\n        );\r\n    }\r\n}"
+    },
+    {
+      "Name": "IParserCodigo",
+      "Namespace": "RefactorScope.Core.Abstractions",
+      "File": "RefactorScope\\Core\\Abstractions\\IParserCodigo.cs",
+      "Code": "using RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Abstractions\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Define o contrato para parsers de c\u00F3digo.\r\n    /// Converte c\u00F3digo fonte em Modelo Estrutural agn\u00F3stico.\r\n    /// \r\n    /// O parser recebe instru\u00E7\u00F5es de escopo (include/exclude),\r\n    /// mas n\u00E3o conhece a configura\u00E7\u00E3o diretamente,\r\n    /// preservando o isolamento arquitetural.\r\n    /// \u003C/summary\u003E\r\n    public interface IParserCodigo\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser (ex: CSharpRegex, Roslyn).\r\n        /// \u003C/summary\u003E\r\n        string Name { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Constr\u00F3i o modelo estrutural a partir do caminho alvo.\r\n        /// \r\n        /// Include e Exclude permitem restringir o escopo de an\u00E1lise\r\n        /// sem acoplar o parser ao sistema de configura\u00E7\u00E3o.\r\n        /// \u003C/summary\u003E\r\n        /// \u003Cparam name=\u0022rootPath\u0022\u003ERaiz do escopo de an\u00E1lise.\u003C/param\u003E\r\n        /// \u003Cparam name=\u0022include\u0022\u003EPastas ou caminhos a incluir.\u003C/param\u003E\r\n        /// \u003Cparam name=\u0022exclude\u0022\u003EPastas ou caminhos a excluir.\u003C/param\u003E\r\n        /// \u003Creturns\u003EModelo estrutural gerado.\u003C/returns\u003E\r\n        ModeloEstrutural Parse(\r\n            string rootPath,\r\n            IEnumerable\u003Cstring\u003E? include = null,\r\n            IEnumerable\u003Cstring\u003E? exclude = null\r\n        );\r\n    }\r\n}"
+    },
+    {
+      "Name": "DumpStrategyConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\DumpStrategyConfig.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    public class DumpStrategyConfig\r\n    {\r\n        public string Mode { get; set; } = \u0022global\u0022;\r\n        public string SplitBy { get; set; } = \u0022layer\u0022;\r\n    }\r\n}"
+    },
+    {
+      "Name": "FitnessGateConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\FitnessGateConfig.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    public class FitnessGateConfig\r\n    {\r\n        public DeadCodeGateConfig DeadCode { get; set; } = new();\r\n        public CouplingGateConfig Coupling { get; set; } = new();\r\n        public CoreIsolationGateConfig CoreIsolation { get; set; } = new();\r\n    }\r\n\r\n    public class DeadCodeGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 0.10;\r\n        public double FailAbove { get; set; } = 0.20;\r\n    }\r\n\r\n    public class CouplingGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 3;\r\n        public double FailAbove { get; set; } = 5;\r\n    }\r\n\r\n    public class CoreIsolationGateConfig\r\n    {\r\n        public bool FailIfAny { get; set; } = true;\r\n    }\r\n}"
+    },
+    {
+      "Name": "DeadCodeGateConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\FitnessGateConfig.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    public class FitnessGateConfig\r\n    {\r\n        public DeadCodeGateConfig DeadCode { get; set; } = new();\r\n        public CouplingGateConfig Coupling { get; set; } = new();\r\n        public CoreIsolationGateConfig CoreIsolation { get; set; } = new();\r\n    }\r\n\r\n    public class DeadCodeGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 0.10;\r\n        public double FailAbove { get; set; } = 0.20;\r\n    }\r\n\r\n    public class CouplingGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 3;\r\n        public double FailAbove { get; set; } = 5;\r\n    }\r\n\r\n    public class CoreIsolationGateConfig\r\n    {\r\n        public bool FailIfAny { get; set; } = true;\r\n    }\r\n}"
+    },
+    {
+      "Name": "CouplingGateConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\FitnessGateConfig.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    public class FitnessGateConfig\r\n    {\r\n        public DeadCodeGateConfig DeadCode { get; set; } = new();\r\n        public CouplingGateConfig Coupling { get; set; } = new();\r\n        public CoreIsolationGateConfig CoreIsolation { get; set; } = new();\r\n    }\r\n\r\n    public class DeadCodeGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 0.10;\r\n        public double FailAbove { get; set; } = 0.20;\r\n    }\r\n\r\n    public class CouplingGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 3;\r\n        public double FailAbove { get; set; } = 5;\r\n    }\r\n\r\n    public class CoreIsolationGateConfig\r\n    {\r\n        public bool FailIfAny { get; set; } = true;\r\n    }\r\n}"
+    },
+    {
+      "Name": "CoreIsolationGateConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\FitnessGateConfig.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    public class FitnessGateConfig\r\n    {\r\n        public DeadCodeGateConfig DeadCode { get; set; } = new();\r\n        public CouplingGateConfig Coupling { get; set; } = new();\r\n        public CoreIsolationGateConfig CoreIsolation { get; set; } = new();\r\n    }\r\n\r\n    public class DeadCodeGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 0.10;\r\n        public double FailAbove { get; set; } = 0.20;\r\n    }\r\n\r\n    public class CouplingGateConfig\r\n    {\r\n        public double WarnAbove { get; set; } = 3;\r\n        public double FailAbove { get; set; } = 5;\r\n    }\r\n\r\n    public class CoreIsolationGateConfig\r\n    {\r\n        public bool FailIfAny { get; set; } = true;\r\n    }\r\n}"
+    },
+    {
+      "Name": "FitnessGateConfigResolver",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\FitnessGateConfigResolver.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    public static class FitnessGateConfigResolver\r\n    {\r\n        public static FitnessGateConfig Resolve(\r\n            FitnessGateConfig? config,\r\n            Action\u003Cstring\u003E? warn = null)\r\n        {\r\n            if (config == null)\r\n            {\r\n                warn?.Invoke(\u0022FitnessGates config ausente. Usando valores default.\u0022);\r\n                return new FitnessGateConfig();\r\n            }\r\n\r\n            var resolved = new FitnessGateConfig\r\n            {\r\n                DeadCode = ResolveDeadCode(config.DeadCode, warn),\r\n                Coupling = ResolveCoupling(config.Coupling, warn),\r\n                CoreIsolation = ResolveCoreIsolation(config.CoreIsolation, warn)\r\n            };\r\n\r\n            return resolved;\r\n        }\r\n\r\n        private static DeadCodeGateConfig ResolveDeadCode(\r\n            DeadCodeGateConfig? cfg,\r\n            Action\u003Cstring\u003E? warn)\r\n        {\r\n            if (cfg == null)\r\n            {\r\n                warn?.Invoke(\u0022DeadCode gate ausente. Usando default.\u0022);\r\n                return new DeadCodeGateConfig();\r\n            }\r\n\r\n            if (cfg.WarnAbove \u003E= cfg.FailAbove)\r\n            {\r\n                warn?.Invoke(\u0022DeadCode thresholds inv\u00E1lidos (warn \u003E= fail). Usando default.\u0022);\r\n                return new DeadCodeGateConfig();\r\n            }\r\n\r\n            return cfg;\r\n        }\r\n\r\n        private static CouplingGateConfig ResolveCoupling(\r\n            CouplingGateConfig? cfg,\r\n            Action\u003Cstring\u003E? warn)\r\n        {\r\n            if (cfg == null)\r\n            {\r\n                warn?.Invoke(\u0022Coupling gate ausente. Usando default.\u0022);\r\n                return new CouplingGateConfig();\r\n            }\r\n\r\n            if (cfg.WarnAbove \u003E= cfg.FailAbove)\r\n            {\r\n                warn?.Invoke(\u0022Coupling thresholds inv\u00E1lidos (warn \u003E= fail). Usando default.\u0022);\r\n                return new CouplingGateConfig();\r\n            }\r\n\r\n            return cfg;\r\n        }\r\n\r\n        private static CoreIsolationGateConfig ResolveCoreIsolation(\r\n            CoreIsolationGateConfig? cfg,\r\n            Action\u003Cstring\u003E? warn)\r\n        {\r\n            if (cfg == null)\r\n            {\r\n                warn?.Invoke(\u0022CoreIsolation gate ausente. Usando default.\u0022);\r\n                return new CoreIsolationGateConfig();\r\n            }\r\n\r\n            return cfg;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "RefactorScopeConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\RefactorScopeConfig.cs",
+      "Code": "using RefactorScope.Core.Context;\r\n\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a configura\u00E7\u00E3o de execu\u00E7\u00E3o do RefactorScope.\r\n    /// Define escopo de an\u00E1lise, analisadores ativos e exporta\u00E7\u00F5es.\r\n    /// \u003C/summary\u003E\r\n    public class RefactorScopeConfig\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho raiz do escopo de an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public string RootPath { get; set; } = string.Empty;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a incluir na an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Include { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a excluir da an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exclude { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Define quais analisadores est\u00E3o habilitados.\r\n        /// A chave deve corresponder ao Name do analisador.\r\n        /// \u003C/summary\u003E\r\n        public Dictionary\u003Cstring, bool\u003E Analyzers { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser a ser utilizado.\r\n        /// \u003C/summary\u003E\r\n        public string Parser { get; set; } = \u0022CSharpRegex\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Exportadores ativos.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exporters { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Camadas / Modulos do sistema e suas regras de depend\u00EAncia.\r\n        /// \u003C/summary\u003E\r\n\r\n        public Dictionary\u003Cstring, LayerRuleConfig\u003E? LayerRules { get; set; }\r\n\r\n        public string OutputPath { get; set; } = \u0022refactorscope-output\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Config do strategy para exporta\u00E7\u00E3o do dump otimizado para IA.\r\n        /// \u003C/summary\u003E\r\n\r\n        public DumpStrategyConfig DumpStrategy { get; set; } = new();\r\n\r\n        public FitnessGateConfig FitnessGates { get; set; } = new();\r\n\r\n        public ZombieDetectionOptions ZombieDetection { get; set; } = new();\r\n    }\r\n}"
+    },
+    {
+      "Name": "ZombieDetectionOptions",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\ZombieDetetionOptions.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    public class ZombieDetectionOptions\r\n    {\r\n        public bool EnableRefinement { get; set; } = true;\r\n\r\n        public double GlobalRateThreshold_DI { get; set; } = 0.20;\r\n        public double GlobalRateThreshold_Interface { get; set; } = 0.15;\r\n\r\n        public double DIProbability { get; set; } = 0.15;\r\n        public double InterfaceProbability { get; set; } = 0.25;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Acima desse valor o tipo continua sendo considerado Zombie Confirmado.\r\n        /// \u003C/summary\u003E\r\n        public double MinZombieProbabilityThreshold { get; set; } = 0.60;\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "AnalysisContext",
+      "Namespace": "RefactorScope.Core.Context",
+      "File": "RefactorScope\\Core\\Context\\AnalysisContext.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Configuration;\r\nusing RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Context\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa o contexto de execu\u00E7\u00E3o compartilhado entre os analisadores.\r\n    /// Cont\u00E9m o modelo estrutural e a configura\u00E7\u00E3o ativa.\r\n    /// \u003C/summary\u003E\r\n    public class AnalysisContext\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Configura\u00E7\u00E3o da execu\u00E7\u00E3o.\r\n        /// \u003C/summary\u003E\r\n        public RefactorScopeConfig Config { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Modelo estrutural gerado pelo parser.\r\n        /// \u003C/summary\u003E\r\n        public ModeloEstrutural Model { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Timestamp da execu\u00E7\u00E3o.\r\n        /// \u003C/summary\u003E\r\n        public DateTime ExecutionTime { get; }\r\n\r\n        public AnalysisContext(\r\n            RefactorScopeConfig config,\r\n            ModeloEstrutural model)\r\n        {\r\n            Config = config ?? throw new ArgumentNullException(nameof(config));\r\n            Model = model ?? throw new ArgumentNullException(nameof(model));\r\n            ExecutionTime = DateTime.UtcNow;\r\n        }\r\n\r\n        public IReadOnlyList\u003CIAnalysisResult\u003E Results { get; set; } = new List\u003CIAnalysisResult\u003E();\r\n    }\r\n}"
+    },
+    {
+      "Name": "AnalysisContextExtensions",
+      "Namespace": "RefactorScope.Core.Context",
+      "File": "RefactorScope\\Core\\Context\\AnalysisContextExtensions.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Context\r\n{\r\n    public static class AnalysisContextExtensions\r\n    {\r\n        public static T? GetResult\u003CT\u003E(this AnalysisContext context)\r\n            where T : class, IAnalysisResult\r\n        {\r\n            return context.Results\r\n                .OfType\u003CT\u003E()\r\n                .FirstOrDefault();\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "LayerRuleConfig",
+      "Namespace": "RefactorScope.Core.Context",
+      "File": "RefactorScope\\Core\\Context\\LayerRuleConfig.cs",
+      "Code": "namespace RefactorScope.Core.Context\r\n{\r\n    public class LayerRuleConfig\r\n    {\r\n        public List\u003Cstring\u003E? NameStartsWith { get; set; }\r\n        public List\u003Cstring\u003E? NamespaceContains { get; set; }\r\n        public List\u003Cstring\u003E? NameEquals { get; set; }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ArchitecturalHealthDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\ArchitecturalHealthDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset de sa\u00FAde arquitetural por m\u00F3dulo f\u00EDsico.\r\n    ///\r\n    /// Ideal para dashboards KPI:\r\n    /// - Gauge\r\n    /// - Ranking\r\n    /// - Donut charts\r\n    ///\r\n    /// M\u00E9tricas s\u00E3o normalizadas dentro do escopo analisado.\r\n    /// Funciona corretamente mesmo em an\u00E1lise parcial.\r\n    /// \u003C/summary\u003E\r\n    public class ArchitecturalHealthDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_arch_health\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Module\u0022,\r\n            \u0022ZombieRate\u0022,\r\n            \u0022IsolationRate\u0022,\r\n            \u0022CoreDensity\u0022,\r\n            \u0022EntryDensity\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var zombies = report.Results.OfType\u003CZombieResult\u003E().FirstOrDefault();\r\n            var entries = report.Results.OfType\u003CEntryPointHeuristicResult\u003E().FirstOrDefault();\r\n            var isolated = report.Results.OfType\u003CCoreIsolationResult\u003E().FirstOrDefault();\r\n            var arch = report.Results.OfType\u003CArchitecturalClassificationResult\u003E().FirstOrDefault();\r\n\r\n            var tipos = context.Model.Tipos;\r\n\r\n            var modules = tipos.GroupBy(t =\u003E ExtractTopFolder(t.DeclaredInFile));\r\n\r\n            foreach (var module in modules)\r\n            {\r\n                var tiposDoModulo = module.ToList();\r\n                var total = tiposDoModulo.Count;\r\n\r\n                if (total == 0)\r\n                    continue;\r\n\r\n                var zombieCount = zombies?.ZombieTypes.Count(z =\u003E tiposDoModulo.Any(t =\u003E t.Name == z)) ?? 0;\r\n                var isolatedCount = isolated?.IsolatedCoreTypes.Count(i =\u003E tiposDoModulo.Any(t =\u003E t.Name == i)) ?? 0;\r\n                var entryCount = entries?.EntryPoints.Count(e =\u003E tiposDoModulo.Any(t =\u003E t.Name == e)) ?? 0;\r\n                var coreCount = tiposDoModulo.Count(t =\u003E arch?.Items.Any(a =\u003E a.TypeName == t.Name \u0026\u0026 a.Layer == \u0022Core\u0022) == true);\r\n\r\n                yield return new[]\r\n                {\r\n                    module.Key,\r\n                    (zombieCount / (double)total).ToString(\u00220.00\u0022),\r\n                    (isolatedCount / (double)total).ToString(\u00220.00\u0022),\r\n                    (coreCount / (double)total).ToString(\u00220.00\u0022),\r\n                    (entryCount / (double)total).ToString(\u00220.00\u0022)\r\n                };\r\n            }\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Extrai o m\u00F3dulo f\u00EDsico a partir do caminho relativo do arquivo.\r\n        /// Usa a primeira pasta abaixo da raiz como identificador do m\u00F3dulo.\r\n        /// \u003C/summary\u003E\r\n        private static string ExtractTopFolder(string path)\r\n        {\r\n            if (string.IsNullOrWhiteSpace(path))\r\n                return \u0022Root\u0022;\r\n\r\n            var parts = path\r\n                .Replace(\u0022\\\\\u0022, \u0022/\u0022)\r\n                .Split(\u0027/\u0027, StringSplitOptions.RemoveEmptyEntries);\r\n\r\n            return parts.Length \u003E 1\r\n                ? parts[0]\r\n                : \u0022Root\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "GlobalMetricsDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\GlobalMetricsDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset de m\u00E9tricas globais.\r\n    /// \r\n    /// Ideal para KPI dashboards e gauges.\r\n    /// Representa a sa\u00FAde estrutural do escopo analisado.\r\n    /// \u003C/summary\u003E\r\n    public class GlobalMetricsDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_global_metrics\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Metric\u0022,\r\n            \u0022Value\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var coupling = report.Results.OfType\u003CCouplingResult\u003E().FirstOrDefault();\r\n            var zombies = report.Results.OfType\u003CZombieResult\u003E().FirstOrDefault();\r\n            var entries = report.Results.OfType\u003CEntryPointHeuristicResult\u003E().FirstOrDefault();\r\n            var isolated = report.Results.OfType\u003CCoreIsolationResult\u003E().FirstOrDefault();\r\n            var arch = report.Results.OfType\u003CArchitecturalClassificationResult\u003E().FirstOrDefault();\r\n\r\n            var tipos = context.Model.Tipos;\r\n            var total = tipos.Count;\r\n\r\n            if (total == 0)\r\n                yield break;\r\n\r\n            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;\r\n            var zombieRate = zombies?.ZombieTypes.Count / (double)total ?? 0;\r\n            var isolationRate = isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;\r\n            var entryDensity = entries?.EntryPoints.Count / (double)total ?? 0;\r\n            var coreDensity = arch?.Items.Count(i =\u003E i.Layer == \u0022Core\u0022) / (double)total ?? 0;\r\n\r\n            yield return new[] { \u0022Coupling\u0022, Normalize(totalFanOut, total).ToString(\u00220.00\u0022) };\r\n            yield return new[] { \u0022ZombieRate\u0022, zombieRate.ToString(\u00220.00\u0022) };\r\n            yield return new[] { \u0022IsolationRate\u0022, isolationRate.ToString(\u00220.00\u0022) };\r\n            yield return new[] { \u0022EntryPointDensity\u0022, entryDensity.ToString(\u00220.00\u0022) };\r\n            yield return new[] { \u0022CoreDensity\u0022, coreDensity.ToString(\u00220.00\u0022) };\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Normaliza FanOut por tipo.\r\n        /// \u003C/summary\u003E\r\n        private static double Normalize(int fanOut, int totalTipos)\r\n        {\r\n            if (totalTipos == 0) return 0;\r\n            return fanOut / (double)totalTipos;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "GlobalTypesDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\GlobalTypesDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset global tabular por tipo.\r\n    ///\r\n    /// Cada linha representa um tipo do sistema.\r\n    /// Ideal para:\r\n    /// - Heatmaps\r\n    /// - Scatter plots\r\n    /// - Rankings\r\n    /// - Drill-down BI\r\n    ///\r\n    /// Funciona corretamente em an\u00E1lises parciais.\r\n    /// \u003C/summary\u003E\r\n    public class GlobalTypesDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_types_global\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Type\u0022,\r\n            \u0022Module\u0022,\r\n            \u0022Layer\u0022,\r\n            \u0022Usage\u0022,\r\n            \u0022StructuralStatus\u0022,\r\n            \u0022IsZombie\u0022,\r\n            \u0022IsIsolated\u0022,\r\n            \u0022IsEntryPoint\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var zombies = report.Results.OfType\u003CZombieResult\u003E().FirstOrDefault();\r\n            var entries = report.Results.OfType\u003CEntryPointHeuristicResult\u003E().FirstOrDefault();\r\n            var isolated = report.Results.OfType\u003CCoreIsolationResult\u003E().FirstOrDefault();\r\n            var arch = report.Results.OfType\u003CArchitecturalClassificationResult\u003E().FirstOrDefault();\r\n\r\n            var tipos = context.Model.Tipos;\r\n\r\n            foreach (var tipo in tipos)\r\n            {\r\n                var archItem = arch?.Items.FirstOrDefault(a =\u003E a.TypeName == tipo.Name);\r\n\r\n                yield return new[]\r\n                {\r\n                    tipo.Name,\r\n                    ExtractTopFolder(tipo.DeclaredInFile),\r\n                    archItem?.Layer ?? \u0022Unknown\u0022,\r\n                    archItem?.UsageCount.ToString() ?? \u00220\u0022,\r\n                    archItem?.StructuralStatus ?? \u0022Unknown\u0022,\r\n                    zombies?.ZombieTypes.Contains(tipo.Name) == true ? \u00221\u0022 : \u00220\u0022,\r\n                    isolated?.IsolatedCoreTypes.Contains(tipo.Name) == true ? \u00221\u0022 : \u00220\u0022,\r\n                    entries?.EntryPoints.Contains(tipo.Name) == true ? \u00221\u0022 : \u00220\u0022\r\n                };\r\n            }\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Extrai o m\u00F3dulo f\u00EDsico do caminho do arquivo.\r\n        /// \u003C/summary\u003E\r\n        private static string ExtractTopFolder(string path)\r\n        {\r\n            if (string.IsNullOrWhiteSpace(path))\r\n                return \u0022Root\u0022;\r\n\r\n            var parts = path\r\n                .Replace(\u0022\\\\\u0022, \u0022/\u0022)\r\n                .Split(\u0027/\u0027, StringSplitOptions.RemoveEmptyEntries);\r\n\r\n            return parts.Length \u003E 1\r\n                ? parts[0]\r\n                : \u0022Root\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "IAnalyticalDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\IAnalyticalDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Define o contrato para builders de datasets anal\u00EDticos.\r\n    /// \r\n    /// Respons\u00E1vel por transformar o relat\u00F3rio consolidado\r\n    /// em linhas de dados prontas para exporta\u00E7\u00E3o.\r\n    /// \u003C/summary\u003E\r\n    public interface IAnalyticalDatasetBuilder\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome do dataset gerado.\r\n        /// \u003C/summary\u003E\r\n        string DatasetName { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Gera linhas do dataset a partir do relat\u00F3rio.\r\n        /// \u003C/summary\u003E\r\n        IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report);\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Cabe\u00E7alhos do dataset.\r\n        /// \u003C/summary\u003E\r\n        string[] Headers { get; }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ModuleContributionDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\ModuleContributionDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset de contribui\u00E7\u00E3o por m\u00F3dulo.\r\n    ///\r\n    /// Mostra quanto cada m\u00F3dulo contribui para uma m\u00E9trica\r\n    /// dentro do escopo analisado.\r\n    ///\r\n    /// Preparado para Coupling.\r\n    /// \u003C/summary\u003E\r\n    public class ModuleContributionDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_module_contribution\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Metric\u0022,\r\n            \u0022Module\u0022,\r\n            \u0022AbsoluteValue\u0022,\r\n            \u0022ContributionWithinScope\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var coupling = report.Results\r\n                .OfType\u003CCouplingResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (coupling == null)\r\n                yield break;\r\n\r\n            var total = coupling.ModuleFanOut.Values.Sum();\r\n\r\n            if (total == 0)\r\n                yield break;\r\n\r\n            foreach (var kvp in coupling.ModuleFanOut)\r\n            {\r\n                yield return new[]\r\n                {\r\n                    \u0022Coupling\u0022,\r\n                    kvp.Key,\r\n                    kvp.Value.ToString(),\r\n                    (kvp.Value / (double)total).ToString(\u00220.00\u0022)\r\n                };\r\n            }\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "StructuralOverviewDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\StructuralOverviewDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset estrutural por m\u00F3dulo f\u00EDsico.\r\n    /// \r\n    /// Este dataset \u00E9 ideal para visualiza\u00E7\u00F5es de radar chart,\r\n    /// mostrando a maturidade arquitetural por m\u00F3dulo dentro\r\n    /// do escopo analisado.\r\n    ///\r\n    /// Importante:\r\n    /// - N\u00E3o depende da classifica\u00E7\u00E3o heur\u00EDstica de pastas\r\n    /// - Utiliza apenas o universo real analisado (context.Model)\r\n    /// - Funciona corretamente em an\u00E1lises parciais\r\n    /// \u003C/summary\u003E\r\n    public class StructuralOverviewDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_structural_overview\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Module\u0022,\r\n            \u0022TotalTypes\u0022,\r\n            \u0022CoreTypes\u0022,\r\n            \u0022ZombieTypes\u0022,\r\n            \u0022EntryPoints\u0022,\r\n            \u0022IsolatedTypes\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var zombies = report.Results.OfType\u003CZombieResult\u003E().FirstOrDefault();\r\n            var entries = report.Results.OfType\u003CEntryPointHeuristicResult\u003E().FirstOrDefault();\r\n            var isolated = report.Results.OfType\u003CCoreIsolationResult\u003E().FirstOrDefault();\r\n            var arch = report.Results.OfType\u003CArchitecturalClassificationResult\u003E().FirstOrDefault();\r\n\r\n            // Universo real analisado\r\n            var tipos = context.Model.Tipos;\r\n\r\n            // Agrupamento f\u00EDsico por m\u00F3dulo\r\n            var modules = tipos.GroupBy(t =\u003E ExtractTopFolder(t.DeclaredInFile));\r\n\r\n            foreach (var module in modules)\r\n            {\r\n                var tiposDoModulo = module.ToList();\r\n\r\n                yield return new[]\r\n                {\r\n                    module.Key,\r\n                    tiposDoModulo.Count.ToString(),\r\n                    tiposDoModulo.Count(t =\u003E arch?.Items.Any(a =\u003E a.TypeName == t.Name \u0026\u0026 a.Layer == \u0022Core\u0022) == true).ToString(),\r\n                    zombies?.ZombieTypes.Count(z =\u003E tiposDoModulo.Any(t =\u003E t.Name == z)).ToString() ?? \u00220\u0022,\r\n                    entries?.EntryPoints.Count(e =\u003E tiposDoModulo.Any(t =\u003E t.Name == e)).ToString() ?? \u00220\u0022,\r\n                    isolated?.IsolatedCoreTypes.Count(i =\u003E tiposDoModulo.Any(t =\u003E t.Name == i)).ToString() ?? \u00220\u0022\r\n                };\r\n            }\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Extrai o m\u00F3dulo f\u00EDsico a partir do caminho relativo do arquivo.\r\n        /// Usa a primeira pasta abaixo da raiz como identificador do m\u00F3dulo.\r\n        /// \u003C/summary\u003E\r\n        private static string ExtractTopFolder(string path)\r\n        {\r\n            if (string.IsNullOrWhiteSpace(path))\r\n                return \u0022Root\u0022;\r\n\r\n            var parts = path\r\n                .Replace(\u0022\\\\\u0022, \u0022/\u0022)\r\n                .Split(\u0027/\u0027, StringSplitOptions.RemoveEmptyEntries);\r\n\r\n            return parts.Length \u003E 1\r\n                ? parts[0]\r\n                : \u0022Root\u0022;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "StructuralScoreDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\StructuralScoreDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Calcula o Structural Score (0-100).\r\n    /// \r\n    /// Representa a maturidade arquitetural do escopo analisado.\r\n    /// Ideal para KPI executivo.\r\n    /// \u003C/summary\u003E\r\n    public class StructuralScoreDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_structural_score\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Metric\u0022,\r\n            \u0022Value\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var coupling = report.Results.OfType\u003CCouplingResult\u003E().FirstOrDefault();\r\n            var zombies = report.Results.OfType\u003CZombieResult\u003E().FirstOrDefault();\r\n            var entries = report.Results.OfType\u003CEntryPointHeuristicResult\u003E().FirstOrDefault();\r\n            var isolated = report.Results.OfType\u003CCoreIsolationResult\u003E().FirstOrDefault();\r\n            var arch = report.Results.OfType\u003CArchitecturalClassificationResult\u003E().FirstOrDefault();\r\n\r\n            var tipos = context.Model.Tipos;\r\n            var total = tipos.Count;\r\n\r\n            if (total == 0)\r\n                yield break;\r\n\r\n            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;\r\n            var zombieRate = zombies?.ZombieTypes.Count / (double)total ?? 0;\r\n            var isolationRate = isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;\r\n            var entryDensity = entries?.EntryPoints.Count / (double)total ?? 0;\r\n            var coreDensity = arch?.Items.Count(i =\u003E i.Layer == \u0022Core\u0022) / (double)total ?? 0;\r\n\r\n            var normalizedCoupling = Normalize(totalFanOut, total);\r\n\r\n            var score =\r\n                100\r\n                - (normalizedCoupling * 30)\r\n                - (zombieRate * 25)\r\n                - (isolationRate * 20)\r\n                - (entryDensity * 10)\r\n                \u002B (coreDensity * 15);\r\n\r\n            score = Clamp(score, 0, 100);\r\n\r\n            yield return new[]\r\n            {\r\n                \u0022StructuralScore\u0022,\r\n                score.ToString(\u00220.00\u0022)\r\n            };\r\n        }\r\n\r\n        private static double Normalize(int fanOut, int totalTipos)\r\n        {\r\n            if (totalTipos == 0) return 0;\r\n            return fanOut / (double)totalTipos;\r\n        }\r\n\r\n        private static double Clamp(double value, double min, double max)\r\n        {\r\n            return Math.Max(min, Math.Min(max, value));\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "StructuralTrendDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\StructuralTrendDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset hist\u00F3rico de tend\u00EAncia estrutural.\r\n    ///\r\n    /// \u26A0\uFE0F Fonte \u00DAnica de Verdade para zombies:\r\n    /// Sempre utiliza ConsolidatedReport.GetEffectiveZombieTypes(),\r\n    /// respeitando o modelo probabil\u00EDstico quando dispon\u00EDvel.\r\n    ///\r\n    /// Nunca consome ZombieResult diretamente.\r\n    /// \u003C/summary\u003E\r\n    public class StructuralTrendDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_structural_trend\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Timestamp\u0022,\r\n            \u0022Scope\u0022,\r\n            \u0022StructuralScore\u0022,\r\n            \u0022Coupling\u0022,\r\n            \u0022ZombieRate\u0022,\r\n            \u0022IsolationRate\u0022,\r\n            \u0022CoreDensity\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var coupling = report.GetResult\u003CCouplingResult\u003E();\r\n            var isolated = report.GetResult\u003CCoreIsolationResult\u003E();\r\n            var architecture = report.GetResult\u003CArchitecturalClassificationResult\u003E();\r\n\r\n            var totalTypes = context.Model.Tipos.Count;\r\n\r\n            if (totalTypes == 0)\r\n                yield break;\r\n\r\n            // ===============================\r\n            // Fonte Oficial de Zombie\r\n            // ===============================\r\n            var threshold = context.Config\r\n                .ZombieDetection\r\n                .MinZombieProbabilityThreshold;\r\n\r\n            var effectiveZombies =\r\n                report.GetEffectiveZombieTypes();\r\n\r\n            // ===============================\r\n            // M\u00E9tricas\r\n            // ===============================\r\n            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;\r\n            var normalizedCoupling = totalFanOut / (double)totalTypes;\r\n\r\n            var zombieRate =\r\n                effectiveZombies.Count / (double)totalTypes;\r\n\r\n            var isolationRate =\r\n                isolated?.IsolatedCoreTypes.Count / (double)totalTypes ?? 0;\r\n\r\n            var coreDensity =\r\n                architecture?.Items.Count(i =\u003E i.Layer == \u0022Core\u0022)\r\n                / (double)totalTypes ?? 0;\r\n\r\n            yield return new[]\r\n            {\r\n                DateTime.UtcNow.ToString(\u0022o\u0022),\r\n                context.Config.RootPath,\r\n                ComputeScore(\r\n                    normalizedCoupling,\r\n                    zombieRate,\r\n                    isolationRate,\r\n                    coreDensity\r\n                ).ToString(\u00220.00\u0022),\r\n                normalizedCoupling.ToString(\u00220.00\u0022),\r\n                zombieRate.ToString(\u00220.00\u0022),\r\n                isolationRate.ToString(\u00220.00\u0022),\r\n                coreDensity.ToString(\u00220.00\u0022)\r\n            };\r\n        }\r\n\r\n        private static double ComputeScore(\r\n            double coupling,\r\n            double zombie,\r\n            double isolation,\r\n            double core)\r\n        {\r\n            var score =\r\n                100\r\n                - (coupling * 30)\r\n                - (zombie * 25)\r\n                - (isolation * 20)\r\n                \u002B (core * 15);\r\n\r\n            return Math.Max(0, Math.Min(100, score));\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "TypeContributionDatasetBuilder",
+      "Namespace": "RefactorScope.Core.Datasets",
+      "File": "RefactorScope\\Core\\Datasets\\TypeContributionDatasetBuilder.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Datasets\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Dataset de contribui\u00E7\u00E3o por tipo dentro do m\u00F3dulo.\r\n    /// Ideal para drill-down de coupling.\r\n    /// \u003C/summary\u003E\r\n    public class TypeContributionDatasetBuilder : IAnalyticalDatasetBuilder\r\n    {\r\n        public string DatasetName =\u003E \u0022dataset_type_contribution\u0022;\r\n\r\n        public string[] Headers =\u003E new[]\r\n        {\r\n            \u0022Metric\u0022,\r\n            \u0022Module\u0022,\r\n            \u0022Type\u0022,\r\n            \u0022AbsoluteValue\u0022,\r\n            \u0022ContributionWithinModule\u0022\r\n        };\r\n\r\n        public IEnumerable\u003Cstring[]\u003E Build(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            var coupling = report.Results\r\n                .OfType\u003CCouplingResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (coupling == null)\r\n                yield break;\r\n\r\n            foreach (var module in coupling.TypeFanOutByModule)\r\n            {\r\n                var total = module.Value.Values.Sum();\r\n\r\n                if (total == 0)\r\n                    continue;\r\n\r\n                foreach (var tipo in module.Value)\r\n                {\r\n                    yield return new[]\r\n                    {\r\n                        \u0022Coupling\u0022,\r\n                        module.Key,\r\n                        tipo.Key,\r\n                        tipo.Value.ToString(),\r\n                        (tipo.Value / (double)total).ToString(\u00220.00\u0022)\r\n                    };\r\n                }\r\n            }\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "FitnessGateEvaluator",
+      "Namespace": "RefactorScope.Core.Governance",
+      "File": "RefactorScope\\Core\\Governance\\FitnessGateEvaluator.cs",
+      "Code": "namespace RefactorScope.Core.Governance\r\n{\r\n    using RefactorScope.Core.Orchestration;\r\n    using RefactorScope.Core.Results;\r\n\r\n    public static class FitnessGateEvaluator\r\n    {\r\n        public static bool HasFailure(ConsolidatedReport report)\r\n        {\r\n            var gates = report.Results\r\n                .OfType\u003CFitnessGateResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (gates == null)\r\n                return false;\r\n\r\n            return gates.HasFailure;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ArquivoInfo",
+      "Namespace": "RefactorScope.Core.Model",
+      "File": "RefactorScope\\Core\\Model\\ArquivoInfo.cs",
+      "Code": "using System.Reflection;\r\n\r\nnamespace RefactorScope.Core.Model\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa um arquivo dentro do escopo analisado.\r\n    /// \u003C/summary\u003E\r\n    public class ArquivoInfo\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho relativo ao root analisado.\r\n        /// \u003C/summary\u003E\r\n        public string RelativePath { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Namespace detectado no arquivo.\r\n        /// \u003C/summary\u003E\r\n        public string Namespace { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Conte\u00FAdo do c\u00F3digo fonte.\r\n        /// \u003C/summary\u003E\r\n        public string SourceCode { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Tipos declarados neste arquivo.\r\n        /// \u003C/summary\u003E\r\n        public IReadOnlyList\u003CTipoInfo\u003E Tipos { get; }\r\n\r\n        public ArquivoInfo(\r\n            string relativePath,\r\n            string @namespace,\r\n            string sourceCode,\r\n            IReadOnlyList\u003CTipoInfo\u003E tipos)\r\n        {\r\n            RelativePath = relativePath;\r\n            Namespace = @namespace;\r\n            SourceCode = sourceCode;\r\n            Tipos = tipos;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "HygieneReport",
+      "Namespace": "RefactorScope.Core.Analyzers",
+      "File": "RefactorScope\\Core\\Model\\HygieneReport.cs",
+      "Code": "namespace RefactorScope.Core.Analyzers\r\n{\r\n    public sealed class HygieneReport\r\n    {\r\n        public int TotalClasses { get; init; }\r\n\r\n        public int DeadCount { get; init; }\r\n\r\n        public int LegacyCount { get; init; }\r\n\r\n        public int CoreCount { get; init; }\r\n\r\n        public int RemovalCandidates { get; init; }\r\n\r\n        public int IsolatedCoreCount { get; init; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Shannon entropy normalizada (0\u20131).\r\n        /// Mede dispers\u00E3o estrutural entre estados.\r\n        /// \u003C/summary\u003E\r\n        public double StructuralEntropy { get; init; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// \u00CDndice composto (0\u2013100).\r\n        /// Quanto maior, pior a higiene arquitetural.\r\n        /// \u003C/summary\u003E\r\n        public double SmellIndex { get; init; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Interpreta\u00E7\u00E3o textual do Smell Index.\r\n        /// \u003C/summary\u003E\r\n        public string HygieneLevel =\u003E\r\n            SmellIndex switch\r\n            {\r\n                \u003C= 20 =\u003E \u0022\uD83D\uDFE2 Healthy\u0022,\r\n                \u003C= 40 =\u003E \u0022\uD83D\uDFE1 Attention\u0022,\r\n                \u003C= 60 =\u003E \u0022\uD83D\uDFE0 Degrading\u0022,\r\n                \u003C= 80 =\u003E \u0022\uD83D\uDD34 Critical\u0022,\r\n                _ =\u003E \u0022\uD83D\uDD25 Structural Collapse\u0022\r\n            };\r\n    }\r\n}"
+    },
+    {
+      "Name": "ModeloEstrutural",
+      "Namespace": "RefactorScope.Core.Model",
+      "File": "RefactorScope\\Core\\Model\\ModeloEstrutural.cs",
+      "Code": "namespace RefactorScope.Core.Model\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa o modelo estrutural agn\u00F3stico do c\u00F3digo analisado.\r\n    /// \u003C/summary\u003E\r\n    public class ModeloEstrutural\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho raiz analisado.\r\n        /// \u003C/summary\u003E\r\n        public string RootPath { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Arquivos encontrados no escopo.\r\n        /// \u003C/summary\u003E\r\n        public IReadOnlyList\u003CArquivoInfo\u003E Arquivos { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Todos os tipos detectados.\r\n        /// \u003C/summary\u003E\r\n        public IReadOnlyList\u003CTipoInfo\u003E Tipos { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Todas as refer\u00EAncias detectadas.\r\n        /// \u003C/summary\u003E\r\n        public IReadOnlyList\u003CReferenciaInfo\u003E Referencias { get; }\r\n\r\n        public ModeloEstrutural(\r\n            string rootPath,\r\n            IReadOnlyList\u003CArquivoInfo\u003E arquivos,\r\n            IReadOnlyList\u003CTipoInfo\u003E tipos,\r\n            IReadOnlyList\u003CReferenciaInfo\u003E referencias)\r\n        {\r\n            RootPath = rootPath;\r\n            Arquivos = arquivos;\r\n            Tipos = tipos;\r\n            Referencias = referencias;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ReferenciaInfo",
+      "Namespace": "RefactorScope.Core.Model",
+      "File": "RefactorScope\\Core\\Model\\ReferenciaInfo.cs",
+      "Code": "namespace RefactorScope.Core.Model\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa uma refer\u00EAncia entre tipos.\r\n    /// \u003C/summary\u003E\r\n    public class ReferenciaInfo\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Tipo de origem da refer\u00EAncia.\r\n        /// \u003C/summary\u003E\r\n        public string FromType { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Tipo referenciado.\r\n        /// \u003C/summary\u003E\r\n        public string ToType { get; }\r\n\r\n        public ReferenciaInfo(string fromType, string toType)\r\n        {\r\n            FromType = fromType;\r\n            ToType = toType;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "TipoInfo",
+      "Namespace": "RefactorScope.Core.Model",
+      "File": "RefactorScope\\Core\\Model\\TipoInfo.cs",
+      "Code": "namespace RefactorScope.Core.Model\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa um tipo estrutural do c\u00F3digo.\r\n    /// \u003C/summary\u003E\r\n    public class TipoInfo\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome do tipo.\r\n        /// \u003C/summary\u003E\r\n        public string Name { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Namespace do tipo.\r\n        /// \u003C/summary\u003E\r\n        public string Namespace { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Tipo de declara\u00E7\u00E3o (class, interface, record, struct).\r\n        /// \u003C/summary\u003E\r\n        public string Kind { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Caminho do arquivo onde foi declarado.\r\n        /// \u003C/summary\u003E\r\n        public string DeclaredInFile { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Refer\u00EAncias feitas por este tipo.\r\n        /// \u003C/summary\u003E\r\n        public IReadOnlyList\u003CReferenciaInfo\u003E References { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Caminho completo do arquivo onde o tipo est\u00E1 definido.\r\n        /// Necess\u00E1rio para gera\u00E7\u00E3o do Dump IA.\r\n        /// \u003C/summary\u003E\r\n\r\n        public string FilePath { get; set; } = string.Empty;\r\n\r\n        public TipoInfo(\r\n            string name,\r\n            string @namespace,\r\n            string kind,\r\n            string declaredInFile,\r\n            IReadOnlyList\u003CReferenciaInfo\u003E references)\r\n        {\r\n            Name = name;\r\n            Namespace = @namespace;\r\n            Kind = kind;\r\n            DeclaredInFile = declaredInFile;\r\n            References = references;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ZombieAnalysisBreakdown",
+      "Namespace": "RefactorScope.Core.Model",
+      "File": "RefactorScope\\Core\\Model\\ZombieAnalysisBreakdown.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Core.Model\r\n{\r\n    public record ZombieAnalysisBreakdown(\r\n        int StructuralCandidates,\r\n        int ProbabilisticConfirmed,\r\n        int Absolved,\r\n        double ReductionRate\r\n    );\r\n}\r\n"
+    },
+    {
+      "Name": "AnalysisOrchestrator",
+      "Namespace": "RefactorScope.Core.Orchestration",
+      "File": "RefactorScope\\Core\\Orchestration\\AnalysisOrchestrator.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\n\r\nnamespace RefactorScope.Core.Orchestration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Respons\u00E1vel por executar os analisadores habilitados\r\n    /// e consolidar seus resultados.\r\n    ///\r\n    /// \uD83D\uDD12 Importante:\r\n    /// O threshold probabil\u00EDstico de zombie passa a fazer parte\r\n    /// do estado consolidado da an\u00E1lise (ConsolidatedReport).\r\n    /// \u003C/summary\u003E\r\n    public class AnalysisOrchestrator\r\n    {\r\n        private readonly IEnumerable\u003CIAnalyzer\u003E _analyzers;\r\n\r\n        public AnalysisOrchestrator(IEnumerable\u003CIAnalyzer\u003E analyzers)\r\n        {\r\n            _analyzers = analyzers;\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Executa os analisadores ativos conforme configura\u00E7\u00E3o.\r\n        /// Atualiza o contexto incrementalmente para suportar\r\n        /// depend\u00EAncia entre analisadores (two-pass model).\r\n        /// \u003C/summary\u003E\r\n        public ConsolidatedReport Execute(AnalysisContext context)\r\n        {\r\n            var activeResults = new List\u003CIAnalysisResult\u003E();\r\n\r\n            foreach (var analyzer in _analyzers)\r\n            {\r\n                if (!IsAnalyzerEnabled(context, analyzer))\r\n                    continue;\r\n\r\n                var result = analyzer.Analyze(context);\r\n\r\n                // \uD83D\uDD25 Atualiza contexto incrementalmente\r\n                activeResults.Add(result);\r\n                context.Results = activeResults;\r\n            }\r\n\r\n            // \uD83D\uDD25 Threshold oficial da an\u00E1lise\r\n            var zombieThreshold =\r\n                context.Config.ZombieDetection.MinZombieProbabilityThreshold;\r\n\r\n            return new ConsolidatedReport(\r\n                activeResults,\r\n                context.ExecutionTime,\r\n                context.Config.RootPath,\r\n                zombieThreshold\r\n            );\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Verifica se o analisador est\u00E1 habilitado na configura\u00E7\u00E3o.\r\n        /// Se n\u00E3o houver configura\u00E7\u00E3o expl\u00EDcita, assume habilitado.\r\n        /// \u003C/summary\u003E\r\n        private bool IsAnalyzerEnabled(\r\n            AnalysisContext context,\r\n            IAnalyzer analyzer)\r\n        {\r\n            if (context.Config.Analyzers == null)\r\n                return true;\r\n\r\n            if (!context.Config.Analyzers\r\n                .TryGetValue(analyzer.Name, out var enabled))\r\n                return true;\r\n\r\n            return enabled;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ConsolidatedReport",
+      "Namespace": "RefactorScope.Core.Orchestration",
+      "File": "RefactorScope\\Core\\Orchestration\\ConsolidatedReport.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\nusing RefactorScope.Core.Results;\nusing RefactorScope.Core.Model;\n\nnamespace RefactorScope.Core.Orchestration\n{\n    /// \u003Csummary\u003E\n    /// Representa o relat\u00F3rio consolidado da execu\u00E7\u00E3o.\n    ///\n    /// \uD83D\uDD12 Fonte \u00FAnica de verdade para zombies.\n    /// O threshold probabil\u00EDstico passa a fazer parte do estado da an\u00E1lise.\n    /// \u003C/summary\u003E\n    public class ConsolidatedReport\n    {\n        public IReadOnlyCollection\u003CIAnalysisResult\u003E Results { get; }\n        public DateTime ExecutionTime { get; }\n        public string TargetScope { get; }\n\n        /// \u003Csummary\u003E\n        /// Threshold usado para confirmar zombies probabil\u00EDsticos.\n        /// \u003C/summary\u003E\n        public double ZombieProbabilityThreshold { get; }\n\n        public ConsolidatedReport(\n            IReadOnlyCollection\u003CIAnalysisResult\u003E results,\n            DateTime executionTime,\n            string targetScope,\n            double zombieProbabilityThreshold)\n        {\n            Results = results;\n            ExecutionTime = executionTime;\n            TargetScope = targetScope;\n            ZombieProbabilityThreshold = zombieProbabilityThreshold;\n        }\n\n        // ==========================================================\n        // \uD83D\uDD39 Acesso Gen\u00E9rico\n        // ==========================================================\n\n        public T? GetResult\u003CT\u003E() where T : class, IAnalysisResult\n            =\u003E Results.OfType\u003CT\u003E().FirstOrDefault();\n\n        // ==========================================================\n        // \uD83D\uDD39 Fonte Oficial de Zombie\n        // ==========================================================\n\n        /// \u003Csummary\u003E\n        /// Retorna os zombies efetivos respeitando o threshold da an\u00E1lise.\n        /// \u003C/summary\u003E\n        public IReadOnlyList\u003Cstring\u003E GetEffectiveZombieTypes()\n        {\n            var probabilistic = GetResult\u003CZombieProbabilityResult\u003E();\n\n            if (probabilistic != null)\n            {\n                return probabilistic\n                    .ConfirmedZombies(ZombieProbabilityThreshold)\n                    .Select(x =\u003E x.TypeName)\n                    .ToList();\n            }\n\n            var legacy = GetResult\u003CZombieResult\u003E();\n            return legacy?.ZombieTypes ?? new List\u003Cstring\u003E();\n        }\n\n        /// \u003Csummary\u003E\n        /// Retorna todos os candidatos a zombie.\n        /// \u003C/summary\u003E\n        public IReadOnlyList\u003Cstring\u003E GetZombieCandidates()\n        {\n            var probabilistic = GetResult\u003CZombieProbabilityResult\u003E();\n\n            if (probabilistic != null)\n            {\n                return probabilistic\n                    .Items\n                    .Select(x =\u003E x.TypeName)\n                    .ToList();\n            }\n\n            var legacy = GetResult\u003CZombieResult\u003E();\n            return legacy?.ZombieTypes ?? new List\u003Cstring\u003E();\n        }\n\n        /// \u003Csummary\u003E\n        /// Taxa efetiva de zombie.\n        /// \u003C/summary\u003E\n        public double GetZombieRate(int totalTypes)\n        {\n            if (totalTypes == 0)\n                return 0;\n\n            return GetEffectiveZombieTypes().Count / (double)totalTypes;\n        }\n\n        public ZombieAnalysisBreakdown GetZombieBreakdown()\r\n        {\r\n            var structural = GetResult\u003CZombieResult\u003E();\r\n            var probabilistic = GetResult\u003CZombieProbabilityResult\u003E();\r\n\r\n            var structuralCount = structural?.ZombieTypes.Count ?? 0;\r\n\r\n            if (probabilistic == null)\r\n            {\r\n                return new ZombieAnalysisBreakdown(\r\n                    structuralCount,\r\n                    structuralCount,\r\n                    0,\r\n                    0\r\n                );\r\n            }\r\n\r\n            var confirmed = probabilistic\r\n                .ConfirmedZombies(ZombieProbabilityThreshold)\r\n                .Count;\r\n\r\n            var absolved = structuralCount - confirmed;\r\n\r\n            var reduction = structuralCount == 0\r\n                ? 0\r\n                : (structuralCount - confirmed) / (double)structuralCount;\r\n\r\n            return new ZombieAnalysisBreakdown(\r\n                structuralCount,\r\n                confirmed,\r\n                absolved,\r\n                reduction\r\n            );\r\n        }\n    }\n}"
+    },
+    {
+      "Name": "MarkdownReportExporter",
+      "Namespace": "RefactorScope.Core.Reporting",
+      "File": "RefactorScope\\Core\\Reporting\\MarkdownReportExporter.cs",
+      "Code": "using System.Text;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Reporting\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Exporta relat\u00F3rio arquitetural em formato Markdown.\r\n    /// Utiliza Zombie efetivo (probabil\u00EDstico se dispon\u00EDvel).\r\n    /// \u003C/summary\u003E\r\n    public sealed class MarkdownReportExporter\r\n    {\r\n        public void Export(ConsolidatedReport report, string outputPath)\r\n        {\r\n            var sb = new StringBuilder();\r\n\r\n            var architecture = report.GetResult\u003CArchitecturalClassificationResult\u003E();\r\n            var isolated = report.GetResult\u003CCoreIsolationResult\u003E();\r\n            var coupling = report.GetResult\u003CCouplingResult\u003E();\r\n            var fitness = report.GetResult\u003CFitnessGateResult\u003E();\r\n\r\n            if (architecture == null)\r\n                return;\r\n\r\n            var threshold = 0.60;\r\n            var effectiveZombies = report.GetEffectiveZombieTypes();\r\n\r\n            sb.AppendLine(\u0022# \uD83E\uDDEC RefactorScope \u2013 Relat\u00F3rio Arquitetural\u0022);\r\n            sb.AppendLine();\r\n            sb.AppendLine($\u0022\uD83D\uDCC5 **Execution Time:** {report.ExecutionTime:yyyy-MM-dd HH:mm} UTC  \u0022);\r\n            sb.AppendLine($\u0022\uD83D\uDCC2 **Target Scope:** \u0060{report.TargetScope}\u0060  \u0022);\r\n            sb.AppendLine();\r\n            sb.AppendLine(\u0022---\u0022);\r\n            sb.AppendLine();\r\n            sb.AppendLine(\u0022## \uD83C\uDFE5 Architectural Health by Module\u0022);\r\n            sb.AppendLine();\r\n\r\n            var modules = architecture.Items.GroupBy(i =\u003E i.Folder);\r\n\r\n            foreach (var module in modules)\r\n            {\r\n                var total = module.Count();\r\n                if (total == 0) continue;\r\n\r\n                var zombieCount = effectiveZombies\r\n                    .Count(z =\u003E module.Any(m =\u003E m.TypeName == z));\r\n\r\n                var isolatedCount = isolated?.IsolatedCoreTypes\r\n                    .Count(i =\u003E module.Any(m =\u003E m.TypeName == i)) ?? 0;\r\n\r\n                var fanOut = coupling?.ModuleFanOut\r\n                    .GetValueOrDefault(module.Key) ?? 0;\r\n\r\n                var zombieRate = zombieCount / (double)total;\r\n                var isolationRate = isolatedCount / (double)total;\r\n                var couplingRate = fanOut / (double)total;\r\n                var coreDensity = module.Count(t =\u003E t.Layer == \u0022Core\u0022) / (double)total;\r\n\r\n                var score =\r\n                    100\r\n                    - (couplingRate * 30)\r\n                    - (zombieRate * 25)\r\n                    - (isolationRate * 20)\r\n                    \u002B (coreDensity * 15);\r\n\r\n                score = Math.Max(0, Math.Min(100, score));\r\n\r\n                var scoreEmoji = score \u003E= 70 ? \u0022\uD83D\uDFE2\u0022\r\n                                 : score \u003E= 40 ? \u0022\uD83D\uDFE1\u0022\r\n                                 : \u0022\uD83D\uDD34\u0022;\r\n\r\n                sb.AppendLine($\u0022### {scoreEmoji} {module.Key}\u0022);\r\n                sb.AppendLine();\r\n                sb.AppendLine($\u0022- **Score:** \u0060{score:0.0}\u0060\u0022);\r\n                sb.AppendLine($\u0022- **Zombies:** {(zombieCount \u003E 0 ? \u0022\uD83D\uDD34\u0022 : \u0022\uD83D\uDFE2\u0022)} {zombieCount} ({zombieRate:0%})\u0022);\r\n                sb.AppendLine($\u0022- **Coupling:** {couplingRate:0.00}\u0022);\r\n                sb.AppendLine($\u0022- **Isolation:** {isolationRate:0.00}\u0022);\r\n                sb.AppendLine();\r\n            }\r\n\r\n            if (fitness != null)\r\n            {\r\n                sb.AppendLine(\u0022---\u0022);\r\n                sb.AppendLine();\r\n                sb.AppendLine(\u0022## \uD83D\uDEA6 Fitness Gates\u0022);\r\n                sb.AppendLine();\r\n\r\n                foreach (var gate in fitness.Gates)\r\n                {\r\n                    var emoji = gate.Status switch\r\n                    {\r\n                        GateStatus.Pass =\u003E \u0022\uD83D\uDFE2\u0022,\r\n                        GateStatus.Warn =\u003E \u0022\uD83D\uDFE1\u0022,\r\n                        GateStatus.Fail =\u003E \u0022\uD83D\uDD34\u0022,\r\n                        _ =\u003E \u0022\u26AA\u0022\r\n                    };\r\n\r\n                    sb.AppendLine($\u0022- {emoji} **{gate.GateName}** {gate.Message}\u0022);\r\n                }\r\n\r\n                sb.AppendLine();\r\n                sb.AppendLine(fitness.HasFailure\r\n                    ? \u0022\uD83D\uDD34 **Arquitetura N\u00C3O pronta para CI/CD**\u0022\r\n                    : \u0022\uD83D\uDFE2 **Arquitetura pronta para CI/CD**\u0022);\r\n            }\r\n\r\n            sb.AppendLine();\r\n            sb.AppendLine(\u0022---\u0022);\r\n            sb.AppendLine();\r\n            sb.AppendLine(\u0022_Generated by RefactorScope_\u0022);\r\n\r\n            File.WriteAllText(outputPath, sb.ToString());\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ReportConsolidator",
+      "Namespace": "RefactorScope.Core.Reporting",
+      "File": "RefactorScope\\Core\\Reporting\\ReportConsolidator.cs",
+      "Code": "using RefactorScope.Core.Orchestration;\r\n\r\nnamespace RefactorScope.Core.Reporting\r\n{\r\n    public sealed class ReportConsolidator\r\n    {\r\n        public ConsolidatedReport Consolidate(ConsolidatedReport report)\r\n        {\r\n            return report;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "StructuralInventoryExporter",
+      "Namespace": "RefactorScope.Core.Reporting",
+      "File": "RefactorScope\\Core\\Reporting\\StructuralInventoryExporter.cs",
+      "Code": "using RefactorScope.Analyzers.Solid;\r\nusing RefactorScope.Core.Analyzers;\r\nusing RefactorScope.Core.Orchestration;\r\nusing RefactorScope.Core.Results;\r\nusing System.Globalization;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Core.Reporting\r\n{\r\n    public sealed class StructuralInventoryExporter\r\n    {\r\n        public void Export(ConsolidatedReport report, string outputDirectory)\r\n        {\r\n            Directory.CreateDirectory(outputDirectory);\r\n            var htmlPath = Path.Combine(outputDirectory, \u0022StructuralDashboard.html\u0022);\r\n            ExportHtml(report, htmlPath);\r\n        }\r\n\r\n        private void ExportHtml(ConsolidatedReport report, string path)\r\n        {\r\n            var classification = report.Results\r\n                .OfType\u003CArchitecturalClassificationResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            var solid = report.Results\r\n                .OfType\u003CSolidResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (classification == null)\r\n                return;\r\n\r\n            var items = classification.Items;\r\n\r\n            var hygieneAnalyzer = new ArchitecturalHygieneAnalyzer();\r\n            var hygiene = hygieneAnalyzer.Analyze(report);\r\n\r\n            var sb = new StringBuilder();\r\n\r\n            sb.AppendLine(\u0022\u003Chtml\u003E\u003Chead\u003E\u003Cmeta charset=\u0027UTF-8\u0027\u003E\u0022);\r\n\r\n            #region STYLE\r\n\r\n            sb.AppendLine(\u0022\u003Cstyle\u003E\u0022);\r\n            sb.AppendLine(\u0022body { background:#0f1117; color:#e6edf3; font-family:Segoe UI; margin:30px; }\u0022);\r\n            sb.AppendLine(\u0022.card { display:inline-block; padding:20px; margin:10px; background:#161b22; border-radius:10px; min-width:220px; vertical-align:top; }\u0022);\r\n            sb.AppendLine(\u0022.danger { color:#ff6b6b; }\u0022);\r\n            sb.AppendLine(\u0022.warning { color:#ffd166; }\u0022);\r\n            sb.AppendLine(\u0022.ok { color:#06d6a0; }\u0022);\r\n            sb.AppendLine(\u0022table { border-collapse: collapse; width:100%; margin-top:20px; }\u0022);\r\n            sb.AppendLine(\u0022th, td { border:1px solid #30363d; padding:8px; }\u0022);\r\n            sb.AppendLine(\u0022th { cursor:pointer; background:#21262d; }\u0022);\r\n            sb.AppendLine(\u0022tr.dead { background:#2d1117; }\u0022);\r\n            sb.AppendLine(\u0022tr.legacy { background:#332701; }\u0022);\r\n            sb.AppendLine(\u0022tr.core { background:#0d1b2a; }\u0022);\r\n\r\n            sb.AppendLine(@\u0022\r\n.tooltip { position: relative; cursor: help; }\r\n.tooltip .tooltiptext {\r\n  visibility: hidden;\r\n  width: 320px;\r\n  background-color: #1f2937;\r\n  color: #fff;\r\n  text-align: left;\r\n  padding: 14px;\r\n  border-radius: 6px;\r\n  position: absolute;\r\n  z-index: 1;\r\n  top: 125%;\r\n  left: 50%;\r\n  margin-left: -160px;\r\n  opacity: 0;\r\n  transition: opacity 0.3s;\r\n  font-size: 12px;\r\n}\r\n.tooltip:hover .tooltiptext {\r\n  visibility: visible;\r\n  opacity: 1;\r\n}\u0022);\r\n            sb.AppendLine(\u0022\u003C/style\u003E\u0022);\r\n\r\n            #endregion\r\n\r\n            #region SCRIPT\r\n\r\n            sb.AppendLine(\u0022\u003Cscript\u003E\u0022);\r\n            sb.AppendLine(@\u0022\r\nfunction searchTable() {\r\n  var input = document.getElementById(\u0027search\u0027);\r\n  var filter = input.value.toLowerCase();\r\n  var rows = document.getElementById(\u0027table\u0027).rows;\r\n  for (var i = 1; i \u003C rows.length; i\u002B\u002B) {\r\n    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? \u0027\u0027 : \u0027none\u0027;\r\n  }\r\n}\r\nfunction sortTable(n) {\r\n  var table = document.getElementById(\u0027table\u0027);\r\n  var switching = true;\r\n  var dir = \u0027asc\u0027;\r\n  while (switching) {\r\n    switching = false;\r\n    var rows = table.rows;\r\n    for (var i = 1; i \u003C rows.length - 1; i\u002B\u002B) {\r\n      var x = rows[i].getElementsByTagName(\u0027TD\u0027)[n];\r\n      var y = rows[i \u002B 1].getElementsByTagName(\u0027TD\u0027)[n];\r\n      var shouldSwitch = false;\r\n      if (dir == \u0027asc\u0027 \u0026\u0026 x.innerHTML.toLowerCase() \u003E y.innerHTML.toLowerCase()) shouldSwitch = true;\r\n      if (dir == \u0027desc\u0027 \u0026\u0026 x.innerHTML.toLowerCase() \u003C y.innerHTML.toLowerCase()) shouldSwitch = true;\r\n      if (shouldSwitch) {\r\n        rows[i].parentNode.insertBefore(rows[i \u002B 1], rows[i]);\r\n        switching = true;\r\n      }\r\n    }\r\n    if (!switching \u0026\u0026 dir == \u0027asc\u0027) { dir = \u0027desc\u0027; switching = true; }\r\n  }\r\n}\u0022);\r\n            sb.AppendLine(\u0022\u003C/script\u003E\u0022);\r\n\r\n            #endregion\r\n\r\n            sb.AppendLine(\u0022\u003C/head\u003E\u003Cbody\u003E\u0022);\r\n\r\n            sb.AppendLine(\u0022\u003Ch1\u003E\uD83E\uDDEC Structural Dashboard\u003C/h1\u003E\u0022);\r\n            sb.AppendLine($\u0022\u003Cp\u003EGenerated: {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC\u003C/p\u003E\u0022);\r\n\r\n            #region KPI CARDS\r\n\r\n            sb.AppendLine(\u0022\u003Cdiv\u003E\u0022);\r\n            sb.AppendLine($\u0022\u003Cdiv class=\u0027card\u0027\u003ETotal Classes\u003Cbr\u003E\u003Cb\u003E{hygiene.TotalClasses}\u003C/b\u003E\u003C/div\u003E\u0022);\r\n            sb.AppendLine($\u0022\u003Cdiv class=\u0027card danger\u0027\u003EDead\u003Cbr\u003E\u003Cb\u003E{hygiene.DeadCount}\u003C/b\u003E\u003C/div\u003E\u0022);\r\n            sb.AppendLine($\u0022\u003Cdiv class=\u0027card warning\u0027\u003ELegacy\u003Cbr\u003E\u003Cb\u003E{hygiene.LegacyCount}\u003C/b\u003E\u003C/div\u003E\u0022);\r\n            sb.AppendLine($\u0022\u003Cdiv class=\u0027card ok\u0027\u003ECore\u003Cbr\u003E\u003Cb\u003E{hygiene.CoreCount}\u003C/b\u003E\u003C/div\u003E\u0022);\r\n            sb.AppendLine($\u0022\u003Cdiv class=\u0027card\u0027\u003ERemoval Candidates\u003Cbr\u003E\u003Cb\u003E{hygiene.RemovalCandidates}\u003C/b\u003E\u003C/div\u003E\u0022);\r\n\r\n            sb.AppendLine($@\u0022\r\n\u003Cdiv class=\u0027card tooltip\u0027\u003E\r\nStructural Entropy\u003Cbr\u003E\r\n\u003Cb\u003E{hygiene.StructuralEntropy:0.000}\u003C/b\u003E\r\n\u003Cspan class=\u0027tooltiptext\u0027\u003E\r\nNormalized Shannon Entropy (0\u20131 scale).\r\n\r\n0.00\u20130.25 \u2192 Homogeneous structure  \r\n0.25\u20130.60 \u2192 Moderate dispersion  \r\n0.60\u20131.00 \u2192 High architectural fragmentation  \r\n\r\nHigher values indicate structural disorder.\r\n\u003C/span\u003E\r\n\u003C/div\u003E\u0022);\r\n\r\n            sb.AppendLine($@\u0022\r\n\u003Cdiv class=\u0027card tooltip\u0027\u003E\r\nSmell Index\u003Cbr\u003E\r\n\u003Cb\u003E{hygiene.SmellIndex:0.0}\u003C/b\u003E\r\n\u003Cspan class=\u0027tooltiptext\u0027\u003E\r\nComposite hygiene indicator (0\u2013100 scale).\r\n\r\n0\u201320 \u2192 Healthy  \r\n20\u201340 \u2192 Attention  \r\n40\u201360 \u2192 Degrading  \r\n60\u201380 \u2192 Critical  \r\n80\u2013100 \u2192 Structural Collapse  \r\n\r\nHeuristic early-warning metric.\r\n\u003C/span\u003E\r\n\u003C/div\u003E\u0022);\r\n\r\n            sb.AppendLine($@\u0022\r\n\u003Cdiv class=\u0027card tooltip\u0027\u003E\r\nHygiene Level\u003Cbr\u003E\r\n\u003Cb\u003E{hygiene.HygieneLevel}\u003C/b\u003E\r\n\u003Cspan class=\u0027tooltiptext\u0027\u003E\r\nTextual interpretation of Smell Index.\r\n\r\nHealthy \u2192 Controlled  \r\nAttention \u2192 Growing signals  \r\nDegrading \u2192 Smell accumulation  \r\nCritical \u2192 Architectural risk  \r\nStructural Collapse \u2192 Severe erosion\r\n\u003C/span\u003E\r\n\u003C/div\u003E\u0022);\r\n\r\n            if (solid != null)\r\n            {\r\n                sb.AppendLine($@\u0022\r\n\u003Cdiv class=\u0027card tooltip\u0027\u003E\r\nSOLID Alerts\u003Cbr\u003E\r\n\u003Cb\u003E{solid.Alerts.Count}\u003C/b\u003E\r\n\u003Cspan class=\u0027tooltiptext\u0027\u003E\r\nTwo-Pass Heuristic Model:\r\n1) Suspicion detection  \r\n2) Absolution filtering  \r\n\r\nThis is an alert system, not a formal compliance proof.\r\n\u003C/span\u003E\r\n\u003C/div\u003E\u0022);\r\n            }\r\n\r\n            sb.AppendLine(\u0022\u003C/div\u003E\u0022);\r\n\r\n            #endregion\r\n\r\n            #region RADAR (LEFT) \u002B SEARCH BELOW\r\n\r\n            sb.AppendLine(\u0022\u003Cdiv style=\u0027margin-top:40px;\u0027\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Ch2\u003E\uD83D\uDCE1 Architectural Radar\u003C/h2\u003E\u0022);\r\n            sb.AppendLine(RenderRadarSvg(hygiene));\r\n\r\n            sb.AppendLine(@\u0022\r\n\u003Cdiv style=\u0027margin-top:20px;\u0027\u003E\r\n  \u003Cinput id=\u0027search\u0027 onkeyup=\u0027searchTable()\u0027 placeholder=\u0027Search...\u0027 \r\n         style=\u0027width:350px; padding:8px; background:#161b22; border:1px solid #30363d; color:white;\u0027\u003E\r\n\u003C/div\u003E\u0022);\r\n\r\n            sb.AppendLine(\u0022\u003C/div\u003E\u0022);\r\n\r\n            #endregion\r\n\r\n            #region TABLE\r\n\r\n            sb.AppendLine(\u0022\u003Ctable id=\u0027table\u0027\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Ctr\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Cth onclick=\u0027sortTable(0)\u0027\u003EClasse\u003C/th\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Cth onclick=\u0027sortTable(1)\u0027\u003EArquivo\u003C/th\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Cth onclick=\u0027sortTable(2)\u0027\u003ENamespace\u003C/th\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Cth onclick=\u0027sortTable(3)\u0027\u003EUsos\u003C/th\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Cth onclick=\u0027sortTable(4)\u0027\u003EStatus\u003C/th\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003Cth onclick=\u0027sortTable(5)\u0027\u003ERemo\u00E7\u00E3o\u003C/th\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003C/tr\u003E\u0022);\r\n\r\n            foreach (var item in items)\r\n            {\r\n                var rowClass = item.Status.Contains(\u0022Morto\u0022) ? \u0022dead\u0022\r\n                             : item.Status.Contains(\u0022Legado\u0022) ? \u0022legacy\u0022\r\n                             : item.Layer == \u0022Core\u0022 ? \u0022core\u0022\r\n                             : \u0022\u0022;\r\n\r\n                sb.AppendLine($\u0022\u003Ctr class=\u0027{rowClass}\u0027\u003E\u0022);\r\n                sb.AppendLine($\u0022\u003Ctd\u003E{item.TypeName}\u003C/td\u003E\u0022);\r\n                sb.AppendLine($\u0022\u003Ctd\u003E{item.DeclaredInFile}\u003C/td\u003E\u0022);\r\n                sb.AppendLine($\u0022\u003Ctd\u003E{item.Namespace}\u003C/td\u003E\u0022);\r\n                sb.AppendLine($\u0022\u003Ctd\u003E{item.UsageCount}\u003C/td\u003E\u0022);\r\n                sb.AppendLine($\u0022\u003Ctd\u003E{item.Status}\u003C/td\u003E\u0022);\r\n                sb.AppendLine($\u0022\u003Ctd\u003E{item.RemovalCandidate}\u003C/td\u003E\u0022);\r\n                sb.AppendLine(\u0022\u003C/tr\u003E\u0022);\r\n            }\r\n\r\n            sb.AppendLine(\u0022\u003C/table\u003E\u0022);\r\n\r\n            #endregion\r\n\r\n            #region SOLID TABLE \r\n            if (solid != null \u0026\u0026 solid.Alerts.Any()) { sb.AppendLine(\u0022\u003Ch2 style=\u0027margin-top:50px;\u0027\u003E\u26A0 SOLID Alerts\u003C/h2\u003E\u0022); sb.AppendLine(\u0022\u003Ctable\u003E\u0022); sb.AppendLine(\u0022\u003Ctr\u003E\u003Cth\u003EPrinciple\u003C/th\u003E\u003Cth\u003EClass\u003C/th\u003E\u003Cth\u003ENamespace\u003C/th\u003E\u003Cth\u003EReason\u003C/th\u003E\u003C/tr\u003E\u0022); foreach (var alert in solid.Alerts) { sb.AppendLine(\u0022\u003Ctr\u003E\u0022); sb.AppendLine($\u0022\u003Ctd\u003E{alert.Principle}\u003C/td\u003E\u0022); sb.AppendLine($\u0022\u003Ctd\u003E{alert.ClassName}\u003C/td\u003E\u0022); sb.AppendLine($\u0022\u003Ctd\u003E{alert.Namespace}\u003C/td\u003E\u0022); sb.AppendLine($\u0022\u003Ctd\u003E{alert.Reason}\u003C/td\u003E\u0022); sb.AppendLine(\u0022\u003C/tr\u003E\u0022); } sb.AppendLine(\u0022\u003C/table\u003E\u0022); }\r\n            #endregion \r\n            #region DISCLAIMER\r\n            sb.AppendLine(@\u0022 \u003Cdiv style=\u0027margin-top:60px; padding:20px; background:#111827; border-radius:10px; font-size:13px; color:#9ca3af;\u0027\u003E \u003Ch3\u003E\uD83D\uDCD8 Methodology \u0026 Limitations\u003C/h3\u003E This dashboard is based on heuristic structural analysis. SOLID evaluation follows a two-pass refinement model: \u2022 Pass 1 \u2013 Structural suspicion detection \u2022 Pass 2 \u2013 Contextual absolution filtering Entropy is computed using normalized Shannon entropy. Smell Index is a composite heuristic metric. These indicators are early-warning architectural signals. They are NOT formal proofs of design violations. Final architectural judgment must always be performed by a human reviewer. \u003C/div\u003E \u0022); \r\n            #endregion\r\n\r\n            sb.AppendLine(\u0022\u003C/body\u003E\u003C/html\u003E\u0022);\r\n\r\n            File.WriteAllText(path, sb.ToString(), Encoding.UTF8);\r\n        }\r\n\r\n        private string RenderRadarSvg(HygieneReport h)\r\n        {\r\n            double Normalize(int value, int total) =\u003E total == 0 ? 0 : value / (double)total;\r\n            string Fmt(double val) =\u003E val.ToString(CultureInfo.InvariantCulture);\r\n\r\n            var values = new[]\r\n            {\r\n                Normalize(h.DeadCount, h.TotalClasses),\r\n                Normalize(h.LegacyCount, h.TotalClasses),\r\n                Normalize(h.RemovalCandidates, h.TotalClasses),\r\n                h.StructuralEntropy,\r\n                Normalize(h.IsolatedCoreCount, h.TotalClasses)\r\n            };\r\n\r\n            var labels = new[] { \u0022Dead\u0022, \u0022Legacy\u0022, \u0022Removal\u0022, \u0022Entropy\u0022, \u0022Isolation\u0022 };\r\n\r\n            int size = 320;\r\n            int center = size / 2;\r\n            int radius = 110;\r\n            int levels = 4;\r\n\r\n            var sb = new StringBuilder();\r\n            sb.AppendLine($\u0022\u003Csvg width=\u0027{size}\u0027 height=\u0027{size}\u0027 style=\u0027background:#161b22;border-radius:12px\u0027\u003E\u0022);\r\n\r\n            for (int l = 1; l \u003C= levels; l\u002B\u002B)\r\n            {\r\n                double r = radius * (l / (double)levels);\r\n                sb.AppendLine($\u0022\u003Ccircle cx=\u0027{center}\u0027 cy=\u0027{center}\u0027 r=\u0027{Fmt(r)}\u0027 fill=\u0027none\u0027 stroke=\u0027#30363d\u0027 stroke-width=\u00271\u0027 /\u003E\u0022);\r\n            }\r\n\r\n            for (int i = 0; i \u003C values.Length; i\u002B\u002B)\r\n            {\r\n                double angle = (Math.PI * 2 / values.Length) * i - Math.PI / 2;\r\n                double x = center \u002B radius * Math.Cos(angle);\r\n                double y = center \u002B radius * Math.Sin(angle);\r\n\r\n                sb.AppendLine($\u0022\u003Cline x1=\u0027{center}\u0027 y1=\u0027{center}\u0027 x2=\u0027{Fmt(x)}\u0027 y2=\u0027{Fmt(y)}\u0027 stroke=\u0027#30363d\u0027 /\u003E\u0022);\r\n\r\n                double lx = center \u002B (radius \u002B 20) * Math.Cos(angle);\r\n                double ly = center \u002B (radius \u002B 20) * Math.Sin(angle);\r\n\r\n                sb.AppendLine($\u0022\u003Ctext x=\u0027{Fmt(lx)}\u0027 y=\u0027{Fmt(ly)}\u0027 fill=\u0027#e6edf3\u0027 font-size=\u002712\u0027 text-anchor=\u0027middle\u0027\u003E{labels[i]}\u003C/text\u003E\u0022);\r\n            }\r\n\r\n            var points = new List\u003Cstring\u003E();\r\n\r\n            for (int i = 0; i \u003C values.Length; i\u002B\u002B)\r\n            {\r\n                double angle = (Math.PI * 2 / values.Length) * i - Math.PI / 2;\r\n                double r = radius * values[i];\r\n                double x = center \u002B r * Math.Cos(angle);\r\n                double y = center \u002B r * Math.Sin(angle);\r\n\r\n                points.Add($\u0022{Fmt(x)},{Fmt(y)}\u0022);\r\n            }\r\n\r\n            sb.AppendLine($\u0022\u003Cpolygon points=\u0027{string.Join(\u0022 \u0022, points)}\u0027 fill=\u0027rgba(255,99,132,0.4)\u0027 stroke=\u0027#ff6384\u0027 stroke-width=\u00272\u0027/\u003E\u0022);\r\n            sb.AppendLine(\u0022\u003C/svg\u003E\u0022);\r\n\r\n            return sb.ToString();\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ArchitecturalClassificationItem",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\ArchitecturalClassificationItem.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    public class ArchitecturalClassificationItem\r\n    {\r\n        public string TypeName { get; init; } = string.Empty;\r\n        public string Namespace { get; init; } = string.Empty;\r\n        public string Folder { get; init; } = string.Empty;\r\n        public string Layer { get; init; } = string.Empty;\r\n        public string NamespaceAlignment { get; init; } = string.Empty;\r\n        public string StructuralStatus { get; init; } = string.Empty;\r\n        public string Status { get; init; } = string.Empty;\r\n        public string RemovalCandidate { get; init; } = string.Empty;\r\n        public int UsageCount { get; init; }\r\n\r\n        public string DeclaredInFile { get; init; }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ArchitecturalClassificationResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\ArchitecturalClassificationResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Resultado da classifica\u00E7\u00E3o arquitetural.\r\n    /// \u003C/summary\u003E\r\n    public class ArchitecturalClassificationResult : IAnalysisResult\r\n    {\r\n        public IReadOnlyList\u003CArchitecturalClassificationItem\u003E Items { get; }\r\n\r\n        public ArchitecturalClassificationResult(IReadOnlyList\u003CArchitecturalClassificationItem\u003E items)\r\n        {\r\n            Items = items;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "CoreIsolationResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\CoreIsolationResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa tipos da camada Core isolados estruturalmente.\r\n    /// \u003C/summary\u003E\r\n    public class CoreIsolationResult : IAnalysisResult\r\n    {\r\n        public IReadOnlyList\u003Cstring\u003E IsolatedCoreTypes { get; }\r\n\r\n        public CoreIsolationResult(IReadOnlyList\u003Cstring\u003E isolatedCoreTypes)\r\n        {\r\n            IsolatedCoreTypes = isolatedCoreTypes;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "CouplingResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\CouplingResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Resultado do c\u00E1lculo de acoplamento estrutural.\r\n    /// \u003C/summary\u003E\r\n    public class CouplingResult : IAnalysisResult\r\n    {\r\n        public IReadOnlyDictionary\u003Cstring, int\u003E ModuleFanOut { get; }\r\n\r\n        public IReadOnlyDictionary\u003Cstring, Dictionary\u003Cstring, int\u003E\u003E TypeFanOutByModule { get; }\r\n\r\n        public CouplingResult(\r\n            Dictionary\u003Cstring, int\u003E moduleFanOut,\r\n            Dictionary\u003Cstring, Dictionary\u003Cstring, int\u003E\u003E typeFanOutByModule)\r\n        {\r\n            ModuleFanOut = moduleFanOut;\r\n            TypeFanOutByModule = typeFanOutByModule;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "EntryPointHeuristicResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\EntryPointHeuristicResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    public class EntryPointHeuristicResult : IAnalysisResult\r\n    {\r\n        public IReadOnlyList\u003Cstring\u003E EntryPoints { get; }\r\n\r\n        public EntryPointHeuristicResult(IReadOnlyList\u003Cstring\u003E entryPoints)\r\n        {\r\n            EntryPoints = entryPoints;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "FitnessGateResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\FitnessGateResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa o resultado da avalia\u00E7\u00E3o de Fitness Gates.\r\n    /// Define o estado de prontid\u00E3o arquitetural do sistema.\r\n    /// \u003C/summary\u003E\r\n    public class FitnessGateResult : IAnalysisResult\r\n    {\r\n        public IReadOnlyList\u003CFitnessGateStatus\u003E Gates { get; }\r\n\r\n        public bool HasFailure =\u003E Gates.Any(g =\u003E g.Status == GateStatus.Fail);\r\n\r\n        public FitnessGateResult(IReadOnlyList\u003CFitnessGateStatus\u003E gates)\r\n        {\r\n            Gates = gates;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "FitnessGateStatus",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\FitnessGateStatus.cs",
+      "Code": "namespace RefactorScope.Core.Results\r\n{\r\n    public class FitnessGateStatus\r\n    {\r\n        public string GateName { get; init; } = string.Empty;\r\n        public GateStatus Status { get; init; }\r\n        public string Message { get; init; } = string.Empty;\r\n    }\r\n\r\n    public enum GateStatus\r\n    {\r\n        Pass,\r\n        Warn,\r\n        Fail\r\n    }\r\n}"
+    },
+    {
+      "Name": "ZombieProbabilityItem",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\ZombieProbabilityItem.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    public class ZombieProbabilityItem\r\n    {\r\n        public string TypeName { get; }\r\n\r\n        public double Probability { get; }\r\n\r\n        public string ConfidenceLevel { get; }\r\n\r\n        public bool DiDetected { get; }\r\n\r\n        public bool InterfaceDetected { get; }\r\n\r\n        public ZombieProbabilityItem(\r\n            string typeName,\r\n            double probability,\r\n            string confidenceLevel,\r\n            bool diDetected,\r\n            bool interfaceDetected)\r\n        {\r\n            TypeName = typeName;\r\n            Probability = probability;\r\n            ConfidenceLevel = confidenceLevel;\r\n            DiDetected = diDetected;\r\n            InterfaceDetected = interfaceDetected;\r\n        }\r\n    }\r\n}\r\n"
+    },
+    {
+      "Name": "ZombieProbabilityResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\ZombieProbabilityResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    public class ZombieProbabilityResult : IAnalysisResult\r\n    {\r\n        public IReadOnlyList\u003CZombieProbabilityItem\u003E Items { get; }\r\n\r\n        public ZombieProbabilityResult(IReadOnlyList\u003CZombieProbabilityItem\u003E items)\r\n        {\r\n            Items = items;\r\n        }\r\n\r\n        public IReadOnlyList\u003CZombieProbabilityItem\u003E ConfirmedZombies(double threshold)\r\n            =\u003E Items.Where(i =\u003E i.Probability \u003E= threshold).ToList();\r\n    }\r\n}"
+    },
+    {
+      "Name": "ZombieRefinementAnalyzer",
+      "Namespace": "RefactorScope.Analyzers",
+      "File": "RefactorScope\\Core\\Results\\ZombieRefinementAnalyzer.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Analyzers\r\n{\r\n    public class ZombieRefinementAnalyzer : IAnalyzer\r\n    {\r\n        public string Name =\u003E \u0022zombie-refinement\u0022;\r\n\r\n        public IAnalysisResult Analyze(AnalysisContext context)\r\n        {\r\n\r\n            var config = context.Config.ZombieDetection;\r\n\r\n            if (!config.EnableRefinement)\r\n                return new ZombieProbabilityResult(new List\u003CZombieProbabilityItem\u003E());\r\n\r\n            var zombieBase = context.Results\r\n                .OfType\u003CZombieResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (zombieBase == null)\r\n                return new ZombieProbabilityResult(new List\u003CZombieProbabilityItem\u003E());\r\n\r\n            var totalTypes = context.Model.Tipos.Count;\r\n            var globalZombieRate = totalTypes == 0\r\n                ? 0\r\n                : (double)zombieBase.ZombieTypes.Count / totalTypes;\r\n\r\n            var results = new List\u003CZombieProbabilityItem\u003E();\r\n\r\n            foreach (var typeName in zombieBase.ZombieTypes)\r\n            {\r\n                double probability = 1.0;\r\n                bool diDetected = false;\r\n                bool interfaceDetected = false;\r\n                string confidence = \u0022Alta (estrutural)\u0022;\r\n\r\n                // ===============================\r\n                // Camada 1 \u2013 DI\r\n                // ===============================\r\n                if (globalZombieRate \u003E config.GlobalRateThreshold_DI)\r\n                {\r\n                    if (IsRegisteredInDI(typeName, context))\r\n                    {\r\n                        probability = config.DIProbability;\r\n                        diDetected = true;\r\n                        confidence = \u0022Prov\u00E1vel uso via DI\u0022;\r\n                    }\r\n                }\r\n\r\n                // ===============================\r\n                // Camada 2 \u2013 Interface naming heuristic\r\n                // ===============================\r\n                if (globalZombieRate \u003E config.GlobalRateThreshold_Interface)\r\n                {\r\n                    if (MatchesInterfacePattern(typeName, context))\r\n                    {\r\n                        probability = config.InterfaceProbability;\r\n                        interfaceDetected = true;\r\n                        confidence = \u0022Prov\u00E1vel uso polim\u00F3rfico\u0022;\r\n                    }\r\n                }\r\n\r\n                results.Add(new ZombieProbabilityItem(\r\n                    typeName,\r\n                    probability,\r\n                    confidence,\r\n                    diDetected,\r\n                    interfaceDetected\r\n                ));\r\n            }\r\n            Console.WriteLine(\u0022[DEBUG] ZombieRefinementAnalyzer executado\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Base zombies: {zombieBase.ZombieTypes.Count}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Global zombie rate: {globalZombieRate:0.00}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] DI threshold: {config.GlobalRateThreshold_DI}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Interface threshold: {config.GlobalRateThreshold_Interface}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Confirmed after refinement: {results.Count(r =\u003E r.Probability \u003E= config.MinZombieProbabilityThreshold)}\u0022);\r\n\r\n            return new ZombieProbabilityResult(results);\r\n        }\r\n\r\n        // ====================================================\r\n        // \uD83D\uDD0E Heur\u00EDstica DI (SourceCode real)\r\n        // ====================================================\r\n        private bool IsRegisteredInDI(string typeName, AnalysisContext context)\r\n        {\r\n            foreach (var arquivo in context.Model.Arquivos)\r\n            {\r\n                var texto = arquivo.SourceCode;\r\n\r\n                if (texto.Contains($\u0022AddScoped\u003C{typeName}\u003E\u0022) ||\r\n                    texto.Contains($\u0022AddTransient\u003C{typeName}\u003E\u0022) ||\r\n                    texto.Contains($\u0022AddSingleton\u003C{typeName}\u003E\u0022))\r\n                    return true;\r\n            }\r\n\r\n            return false;\r\n        }\r\n\r\n        // ====================================================\r\n        // \uD83D\uDD0E Heur\u00EDstica Interface baseada em conven\u00E7\u00E3o INome\r\n        // ====================================================\r\n        private bool MatchesInterfacePattern(string typeName, AnalysisContext context)\r\n        {\r\n            var interfaceName = $\u0022I{typeName}\u0022;\r\n\r\n            // 1\uFE0F\u20E3 Verifica se interface existe\r\n            var interfaceExists = context.Model.Tipos\r\n                .Any(t =\u003E t.Name == interfaceName \u0026\u0026 t.Kind == \u0022interface\u0022);\r\n\r\n            if (!interfaceExists)\r\n                return false;\r\n\r\n            // 2\uFE0F\u20E3 Verifica se interface \u00E9 referenciada por algum outro tipo\r\n            var interfaceReferenced = context.Model.Tipos\r\n                .Any(t =\u003E t.References.Any(r =\u003E r.ToType == interfaceName));\r\n\r\n            return interfaceReferenced;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "existe",
+      "Namespace": "RefactorScope.Analyzers",
+      "File": "RefactorScope\\Core\\Results\\ZombieRefinementAnalyzer.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Analyzers\r\n{\r\n    public class ZombieRefinementAnalyzer : IAnalyzer\r\n    {\r\n        public string Name =\u003E \u0022zombie-refinement\u0022;\r\n\r\n        public IAnalysisResult Analyze(AnalysisContext context)\r\n        {\r\n\r\n            var config = context.Config.ZombieDetection;\r\n\r\n            if (!config.EnableRefinement)\r\n                return new ZombieProbabilityResult(new List\u003CZombieProbabilityItem\u003E());\r\n\r\n            var zombieBase = context.Results\r\n                .OfType\u003CZombieResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (zombieBase == null)\r\n                return new ZombieProbabilityResult(new List\u003CZombieProbabilityItem\u003E());\r\n\r\n            var totalTypes = context.Model.Tipos.Count;\r\n            var globalZombieRate = totalTypes == 0\r\n                ? 0\r\n                : (double)zombieBase.ZombieTypes.Count / totalTypes;\r\n\r\n            var results = new List\u003CZombieProbabilityItem\u003E();\r\n\r\n            foreach (var typeName in zombieBase.ZombieTypes)\r\n            {\r\n                double probability = 1.0;\r\n                bool diDetected = false;\r\n                bool interfaceDetected = false;\r\n                string confidence = \u0022Alta (estrutural)\u0022;\r\n\r\n                // ===============================\r\n                // Camada 1 \u2013 DI\r\n                // ===============================\r\n                if (globalZombieRate \u003E config.GlobalRateThreshold_DI)\r\n                {\r\n                    if (IsRegisteredInDI(typeName, context))\r\n                    {\r\n                        probability = config.DIProbability;\r\n                        diDetected = true;\r\n                        confidence = \u0022Prov\u00E1vel uso via DI\u0022;\r\n                    }\r\n                }\r\n\r\n                // ===============================\r\n                // Camada 2 \u2013 Interface naming heuristic\r\n                // ===============================\r\n                if (globalZombieRate \u003E config.GlobalRateThreshold_Interface)\r\n                {\r\n                    if (MatchesInterfacePattern(typeName, context))\r\n                    {\r\n                        probability = config.InterfaceProbability;\r\n                        interfaceDetected = true;\r\n                        confidence = \u0022Prov\u00E1vel uso polim\u00F3rfico\u0022;\r\n                    }\r\n                }\r\n\r\n                results.Add(new ZombieProbabilityItem(\r\n                    typeName,\r\n                    probability,\r\n                    confidence,\r\n                    diDetected,\r\n                    interfaceDetected\r\n                ));\r\n            }\r\n            Console.WriteLine(\u0022[DEBUG] ZombieRefinementAnalyzer executado\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Base zombies: {zombieBase.ZombieTypes.Count}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Global zombie rate: {globalZombieRate:0.00}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] DI threshold: {config.GlobalRateThreshold_DI}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Interface threshold: {config.GlobalRateThreshold_Interface}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Confirmed after refinement: {results.Count(r =\u003E r.Probability \u003E= config.MinZombieProbabilityThreshold)}\u0022);\r\n\r\n            return new ZombieProbabilityResult(results);\r\n        }\r\n\r\n        // ====================================================\r\n        // \uD83D\uDD0E Heur\u00EDstica DI (SourceCode real)\r\n        // ====================================================\r\n        private bool IsRegisteredInDI(string typeName, AnalysisContext context)\r\n        {\r\n            foreach (var arquivo in context.Model.Arquivos)\r\n            {\r\n                var texto = arquivo.SourceCode;\r\n\r\n                if (texto.Contains($\u0022AddScoped\u003C{typeName}\u003E\u0022) ||\r\n                    texto.Contains($\u0022AddTransient\u003C{typeName}\u003E\u0022) ||\r\n                    texto.Contains($\u0022AddSingleton\u003C{typeName}\u003E\u0022))\r\n                    return true;\r\n            }\r\n\r\n            return false;\r\n        }\r\n\r\n        // ====================================================\r\n        // \uD83D\uDD0E Heur\u00EDstica Interface baseada em conven\u00E7\u00E3o INome\r\n        // ====================================================\r\n        private bool MatchesInterfacePattern(string typeName, AnalysisContext context)\r\n        {\r\n            var interfaceName = $\u0022I{typeName}\u0022;\r\n\r\n            // 1\uFE0F\u20E3 Verifica se interface existe\r\n            var interfaceExists = context.Model.Tipos\r\n                .Any(t =\u003E t.Name == interfaceName \u0026\u0026 t.Kind == \u0022interface\u0022);\r\n\r\n            if (!interfaceExists)\r\n                return false;\r\n\r\n            // 2\uFE0F\u20E3 Verifica se interface \u00E9 referenciada por algum outro tipo\r\n            var interfaceReferenced = context.Model.Tipos\r\n                .Any(t =\u003E t.References.Any(r =\u003E r.ToType == interfaceName));\r\n\r\n            return interfaceReferenced;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "\u00E9",
+      "Namespace": "RefactorScope.Analyzers",
+      "File": "RefactorScope\\Core\\Results\\ZombieRefinementAnalyzer.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Analyzers\r\n{\r\n    public class ZombieRefinementAnalyzer : IAnalyzer\r\n    {\r\n        public string Name =\u003E \u0022zombie-refinement\u0022;\r\n\r\n        public IAnalysisResult Analyze(AnalysisContext context)\r\n        {\r\n\r\n            var config = context.Config.ZombieDetection;\r\n\r\n            if (!config.EnableRefinement)\r\n                return new ZombieProbabilityResult(new List\u003CZombieProbabilityItem\u003E());\r\n\r\n            var zombieBase = context.Results\r\n                .OfType\u003CZombieResult\u003E()\r\n                .FirstOrDefault();\r\n\r\n            if (zombieBase == null)\r\n                return new ZombieProbabilityResult(new List\u003CZombieProbabilityItem\u003E());\r\n\r\n            var totalTypes = context.Model.Tipos.Count;\r\n            var globalZombieRate = totalTypes == 0\r\n                ? 0\r\n                : (double)zombieBase.ZombieTypes.Count / totalTypes;\r\n\r\n            var results = new List\u003CZombieProbabilityItem\u003E();\r\n\r\n            foreach (var typeName in zombieBase.ZombieTypes)\r\n            {\r\n                double probability = 1.0;\r\n                bool diDetected = false;\r\n                bool interfaceDetected = false;\r\n                string confidence = \u0022Alta (estrutural)\u0022;\r\n\r\n                // ===============================\r\n                // Camada 1 \u2013 DI\r\n                // ===============================\r\n                if (globalZombieRate \u003E config.GlobalRateThreshold_DI)\r\n                {\r\n                    if (IsRegisteredInDI(typeName, context))\r\n                    {\r\n                        probability = config.DIProbability;\r\n                        diDetected = true;\r\n                        confidence = \u0022Prov\u00E1vel uso via DI\u0022;\r\n                    }\r\n                }\r\n\r\n                // ===============================\r\n                // Camada 2 \u2013 Interface naming heuristic\r\n                // ===============================\r\n                if (globalZombieRate \u003E config.GlobalRateThreshold_Interface)\r\n                {\r\n                    if (MatchesInterfacePattern(typeName, context))\r\n                    {\r\n                        probability = config.InterfaceProbability;\r\n                        interfaceDetected = true;\r\n                        confidence = \u0022Prov\u00E1vel uso polim\u00F3rfico\u0022;\r\n                    }\r\n                }\r\n\r\n                results.Add(new ZombieProbabilityItem(\r\n                    typeName,\r\n                    probability,\r\n                    confidence,\r\n                    diDetected,\r\n                    interfaceDetected\r\n                ));\r\n            }\r\n            Console.WriteLine(\u0022[DEBUG] ZombieRefinementAnalyzer executado\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Base zombies: {zombieBase.ZombieTypes.Count}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Global zombie rate: {globalZombieRate:0.00}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] DI threshold: {config.GlobalRateThreshold_DI}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Interface threshold: {config.GlobalRateThreshold_Interface}\u0022);\r\n            Console.WriteLine($\u0022[DEBUG] Confirmed after refinement: {results.Count(r =\u003E r.Probability \u003E= config.MinZombieProbabilityThreshold)}\u0022);\r\n\r\n            return new ZombieProbabilityResult(results);\r\n        }\r\n\r\n        // ====================================================\r\n        // \uD83D\uDD0E Heur\u00EDstica DI (SourceCode real)\r\n        // ====================================================\r\n        private bool IsRegisteredInDI(string typeName, AnalysisContext context)\r\n        {\r\n            foreach (var arquivo in context.Model.Arquivos)\r\n            {\r\n                var texto = arquivo.SourceCode;\r\n\r\n                if (texto.Contains($\u0022AddScoped\u003C{typeName}\u003E\u0022) ||\r\n                    texto.Contains($\u0022AddTransient\u003C{typeName}\u003E\u0022) ||\r\n                    texto.Contains($\u0022AddSingleton\u003C{typeName}\u003E\u0022))\r\n                    return true;\r\n            }\r\n\r\n            return false;\r\n        }\r\n\r\n        // ====================================================\r\n        // \uD83D\uDD0E Heur\u00EDstica Interface baseada em conven\u00E7\u00E3o INome\r\n        // ====================================================\r\n        private bool MatchesInterfacePattern(string typeName, AnalysisContext context)\r\n        {\r\n            var interfaceName = $\u0022I{typeName}\u0022;\r\n\r\n            // 1\uFE0F\u20E3 Verifica se interface existe\r\n            var interfaceExists = context.Model.Tipos\r\n                .Any(t =\u003E t.Name == interfaceName \u0026\u0026 t.Kind == \u0022interface\u0022);\r\n\r\n            if (!interfaceExists)\r\n                return false;\r\n\r\n            // 2\uFE0F\u20E3 Verifica se interface \u00E9 referenciada por algum outro tipo\r\n            var interfaceReferenced = context.Model.Tipos\r\n                .Any(t =\u003E t.References.Any(r =\u003E r.ToType == interfaceName));\r\n\r\n            return interfaceReferenced;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ZombieResult",
+      "Namespace": "RefactorScope.Core.Results",
+      "File": "RefactorScope\\Core\\Results\\ZombieResult.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\n\r\nnamespace RefactorScope.Core.Results\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Resultado da an\u00E1lise de tipos potencialmente n\u00E3o utilizados.\r\n    /// \u003C/summary\u003E\r\n    public class ZombieResult : IAnalysisResult\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Tipos que n\u00E3o possuem refer\u00EAncias externas.\r\n        /// \u003C/summary\u003E\r\n        public IReadOnlyList\u003Cstring\u003E ZombieTypes { get; }\r\n\r\n        public ZombieResult(IReadOnlyList\u003Cstring\u003E zombieTypes)\r\n        {\r\n            ZombieTypes = zombieTypes;\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ScopeFilteredFileDiscovery",
+      "Namespace": "RefactorScope.Core.Scope",
+      "File": "RefactorScope\\Core\\Scope\\ScopeFilteredFileDiscovery.cs",
+      "Code": "namespace RefactorScope.Core.Scope\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Respons\u00E1vel por descobrir arquivos dentro do escopo de an\u00E1lise.\r\n    /// Separa descoberta de arquivos da l\u00F3gica de parsing.\r\n    /// \u003C/summary\u003E\r\n    public class ScopeFilteredFileDiscovery\r\n    {\r\n        private readonly ScopeRuleSet _rules;\r\n\r\n        public ScopeFilteredFileDiscovery(ScopeRuleSet rules)\r\n        {\r\n            _rules = rules;\r\n        }\r\n\r\n        public List\u003Cstring\u003E Discover(string rootPath)\r\n        {\r\n            return Directory\r\n                .GetFiles(rootPath, \u0022*.cs\u0022, SearchOption.AllDirectories)\r\n                .Where(f =\u003E _rules.IsInScope(rootPath, f))\r\n                .ToList();\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "ScopeRuleSet",
+      "Namespace": "RefactorScope.Core.Scope",
+      "File": "RefactorScope\\Core\\Scope\\ScopeRuleSet.cs",
+      "Code": "namespace RefactorScope.Core.Scope\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa o conjunto de regras de escopo determin\u00EDstico.\r\n    /// Respons\u00E1vel por decidir se um arquivo pertence ao dom\u00EDnio de an\u00E1lise.\r\n    ///\r\n    /// Regras:\r\n    /// - Compara\u00E7\u00E3o case-insensitive\r\n    /// - Separadores normalizados\r\n    /// - Suporte a pasta e arquivo\r\n    /// - Preced\u00EAncia: Exclude \u003E Include\r\n    /// \u003C/summary\u003E\r\n    public class ScopeRuleSet\r\n    {\r\n        private readonly List\u003Cstring\u003E _includes;\r\n        private readonly List\u003Cstring\u003E _excludes;\r\n\r\n        public ScopeRuleSet(\r\n            IEnumerable\u003Cstring\u003E? includes,\r\n            IEnumerable\u003Cstring\u003E? excludes)\r\n        {\r\n            _includes = Normalize(includes);\r\n            _excludes = Normalize(excludes);\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Determina se um caminho pertence ao escopo.\r\n        /// \u003C/summary\u003E\r\n        public bool IsInScope(string rootPath, string fullPath)\r\n        {\r\n            var relative = NormalizePath(\r\n                Path.GetRelativePath(rootPath, fullPath));\r\n\r\n            if (MatchesAny(relative, _excludes))\r\n                return false;\r\n\r\n            if (_includes.Count == 0)\r\n                return true;\r\n\r\n            return MatchesAny(relative, _includes);\r\n        }\r\n\r\n        // =============================\r\n        // Helpers\r\n        // =============================\r\n\r\n        private static List\u003Cstring\u003E Normalize(IEnumerable\u003Cstring\u003E? rules)\r\n        {\r\n            if (rules == null)\r\n                return new List\u003Cstring\u003E();\r\n\r\n            return rules\r\n                .Select(NormalizePath)\r\n                .ToList();\r\n        }\r\n\r\n        private static string NormalizePath(string path)\r\n        {\r\n            return path\r\n                .Replace(\u0022\\\\\u0022, \u0022/\u0022)\r\n                .Trim()\r\n                .TrimStart(\u0027/\u0027)\r\n                .ToLowerInvariant();\r\n        }\r\n\r\n        private static bool MatchesAny(string relative, List\u003Cstring\u003E rules)\r\n        {\r\n            foreach (var rule in rules)\r\n            {\r\n                if (IsFolderRule(rule))\r\n                {\r\n                    if (relative.StartsWith(rule))\r\n                        return true;\r\n                }\r\n                else\r\n                {\r\n                    if (relative.Equals(rule))\r\n                        return true;\r\n                }\r\n            }\r\n\r\n            return false;\r\n        }\r\n\r\n        private static bool IsFolderRule(string rule)\r\n        {\r\n            return !rule.Contains(\u0022.\u0022);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "StructuralAlignmentEvaluator",
+      "Namespace": "RefactorScope.Core.Structure",
+      "File": "RefactorScope\\Core\\Structure\\StructuralAlignmentEvaluator.cs",
+      "Code": "using RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Structure\r\n{\r\n    public static class StructuralAlignmentEvaluator\r\n    {\r\n        public static string ExtractFolder(string declaredInFile)\r\n        {\r\n            if (string.IsNullOrWhiteSpace(declaredInFile))\r\n                return \u0022Root\u0022;\r\n\r\n            var parts = declaredInFile\r\n                .Replace(\u0022\\\\\u0022, \u0022/\u0022)\r\n                .Split(\u0027/\u0027, StringSplitOptions.RemoveEmptyEntries);\r\n\r\n            // Ignorar pasta raiz do projeto analisador (ex: AvaliaRoteiro)\r\n            // e capturar a primeira pasta do dom\u00EDnio real (ex: Scriptome)\r\n\r\n            if (parts.Length \u003E= 2)\r\n                return parts[1];\r\n\r\n            return parts[0];\r\n        }\r\n\r\n        public static string EvaluateNamespaceAlignment(string folder, string ns)\r\n        {\r\n            if (string.IsNullOrWhiteSpace(ns))\r\n                return \u0022SemNamespace\u0022;\r\n\r\n            return ns.Contains(folder, StringComparison.OrdinalIgnoreCase)\r\n                ? \u0022Alinhado\u0022\r\n                : \u0022Desalinhado\u0022;\r\n        }\r\n\r\n        public static string EvaluateStructuralStatus(\r\n            string folder,\r\n            string ns,\r\n            string layer)\r\n        {\r\n            var namespaceAligned = EvaluateNamespaceAlignment(folder, ns);\r\n\r\n            if (namespaceAligned == \u0022Desalinhado\u0022)\r\n                return \u0022DriftLogico\u0022;\r\n\r\n            if (!ns.Contains(layer, StringComparison.OrdinalIgnoreCase))\r\n                return \u0022DriftArquitetural\u0022;\r\n\r\n            return \u0022Coerente\u0022;\r\n        }\r\n    }\r\n}"
+    }
+  ],
+  "Referencias": [
+    {
+      "FromType": "IAnalyzer",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "IAnalyzer",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "IExporter",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "IExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "IParserCodigo",
+      "ToType": "ModeloEstrutural"
+    },
+    {
+      "FromType": "FitnessGateConfig",
+      "ToType": "DeadCodeGateConfig"
+    },
+    {
+      "FromType": "FitnessGateConfig",
+      "ToType": "CouplingGateConfig"
+    },
+    {
+      "FromType": "FitnessGateConfig",
+      "ToType": "CoreIsolationGateConfig"
+    },
+    {
+      "FromType": "DeadCodeGateConfig",
+      "ToType": "FitnessGateConfig"
+    },
+    {
+      "FromType": "DeadCodeGateConfig",
+      "ToType": "CouplingGateConfig"
+    },
+    {
+      "FromType": "DeadCodeGateConfig",
+      "ToType": "CoreIsolationGateConfig"
+    },
+    {
+      "FromType": "CouplingGateConfig",
+      "ToType": "FitnessGateConfig"
+    },
+    {
+      "FromType": "CouplingGateConfig",
+      "ToType": "DeadCodeGateConfig"
+    },
+    {
+      "FromType": "CouplingGateConfig",
+      "ToType": "CoreIsolationGateConfig"
+    },
+    {
+      "FromType": "CoreIsolationGateConfig",
+      "ToType": "FitnessGateConfig"
+    },
+    {
+      "FromType": "CoreIsolationGateConfig",
+      "ToType": "DeadCodeGateConfig"
+    },
+    {
+      "FromType": "CoreIsolationGateConfig",
+      "ToType": "CouplingGateConfig"
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "FitnessGateConfig"
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "DeadCodeGateConfig"
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "CouplingGateConfig"
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "CoreIsolationGateConfig"
+    },
+    {
+      "FromType": "RefactorScopeConfig",
+      "ToType": "DumpStrategyConfig"
+    },
+    {
+      "FromType": "RefactorScopeConfig",
+      "ToType": "FitnessGateConfig"
+    },
+    {
+      "FromType": "RefactorScopeConfig",
+      "ToType": "ZombieDetectionOptions"
+    },
+    {
+      "FromType": "RefactorScopeConfig",
+      "ToType": "LayerRuleConfig"
+    },
+    {
+      "FromType": "AnalysisContext",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "AnalysisContext",
+      "ToType": "RefactorScopeConfig"
+    },
+    {
+      "FromType": "AnalysisContext",
+      "ToType": "ModeloEstrutural"
+    },
+    {
+      "FromType": "AnalysisContextExtensions",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "AnalysisContextExtensions",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult"
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "CouplingResult"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult"
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult"
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "IAnalyticalDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "IAnalyticalDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "ModuleContributionDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "ModuleContributionDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "ModuleContributionDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "ModuleContributionDatasetBuilder",
+      "ToType": "CouplingResult"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "\u00E9"
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "CouplingResult"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult"
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "CouplingResult"
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "TypeContributionDatasetBuilder",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "TypeContributionDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder"
+    },
+    {
+      "FromType": "TypeContributionDatasetBuilder",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "TypeContributionDatasetBuilder",
+      "ToType": "CouplingResult"
+    },
+    {
+      "FromType": "FitnessGateEvaluator",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "FitnessGateEvaluator",
+      "ToType": "FitnessGateResult"
+    },
+    {
+      "FromType": "ArquivoInfo",
+      "ToType": "TipoInfo"
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "ArquivoInfo"
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "ReferenciaInfo"
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "TipoInfo"
+    },
+    {
+      "FromType": "TipoInfo",
+      "ToType": "ReferenciaInfo"
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "IAnalyzer"
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "ZombieAnalysisBreakdown"
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "ZombieProbabilityResult"
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "MarkdownReportExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "MarkdownReportExporter",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "MarkdownReportExporter",
+      "ToType": "CoreIsolationResult"
+    },
+    {
+      "FromType": "MarkdownReportExporter",
+      "ToType": "CouplingResult"
+    },
+    {
+      "FromType": "MarkdownReportExporter",
+      "ToType": "FitnessGateResult"
+    },
+    {
+      "FromType": "ReportConsolidator",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "StructuralInventoryExporter",
+      "ToType": "ArchitecturalHygieneAnalyzer"
+    },
+    {
+      "FromType": "StructuralInventoryExporter",
+      "ToType": "SolidResult"
+    },
+    {
+      "FromType": "StructuralInventoryExporter",
+      "ToType": "HygieneReport"
+    },
+    {
+      "FromType": "StructuralInventoryExporter",
+      "ToType": "ConsolidatedReport"
+    },
+    {
+      "FromType": "StructuralInventoryExporter",
+      "ToType": "ArchitecturalClassificationResult"
+    },
+    {
+      "FromType": "ArchitecturalClassificationResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "ArchitecturalClassificationResult",
+      "ToType": "ArchitecturalClassificationItem"
+    },
+    {
+      "FromType": "CoreIsolationResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "CouplingResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "EntryPointHeuristicResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "FitnessGateResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "FitnessGateResult",
+      "ToType": "FitnessGateStatus"
+    },
+    {
+      "FromType": "ZombieProbabilityResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "ZombieProbabilityResult",
+      "ToType": "ZombieProbabilityItem"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "IAnalyzer"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "ZombieProbabilityItem"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "ZombieProbabilityResult"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "existe"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "\u00E9"
+    },
+    {
+      "FromType": "ZombieRefinementAnalyzer",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "IAnalyzer"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "ZombieProbabilityItem"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "ZombieProbabilityResult"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "ZombieRefinementAnalyzer"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "\u00E9"
+    },
+    {
+      "FromType": "existe",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "IAnalyzer"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "AnalysisContext"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "ZombieProbabilityItem"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "ZombieProbabilityResult"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "ZombieRefinementAnalyzer"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "existe"
+    },
+    {
+      "FromType": "\u00E9",
+      "ToType": "ZombieResult"
+    },
+    {
+      "FromType": "ZombieResult",
+      "ToType": "IAnalysisResult"
+    },
+    {
+      "FromType": "ScopeFilteredFileDiscovery",
+      "ToType": "ScopeRuleSet"
+    }
+  ]
+}

@@ -6,6 +6,10 @@ namespace RefactorScope.Core.Orchestration
     /// <summary>
     /// Responsável por executar os analisadores habilitados
     /// e consolidar seus resultados.
+    ///
+    /// 🔒 Importante:
+    /// O threshold probabilístico de zombie passa a fazer parte
+    /// do estado consolidado da análise (ConsolidatedReport).
     /// </summary>
     public class AnalysisOrchestrator
     {
@@ -18,6 +22,8 @@ namespace RefactorScope.Core.Orchestration
 
         /// <summary>
         /// Executa os analisadores ativos conforme configuração.
+        /// Atualiza o contexto incrementalmente para suportar
+        /// dependência entre analisadores (two-pass model).
         /// </summary>
         public ConsolidatedReport Execute(AnalysisContext context)
         {
@@ -29,21 +35,37 @@ namespace RefactorScope.Core.Orchestration
                     continue;
 
                 var result = analyzer.Analyze(context);
+
+                // 🔥 Atualiza contexto incrementalmente
                 activeResults.Add(result);
+                context.Results = activeResults;
             }
+
+            // 🔥 Threshold oficial da análise
+            var zombieThreshold =
+                context.Config.ZombieDetection.MinZombieProbabilityThreshold;
 
             return new ConsolidatedReport(
                 activeResults,
                 context.ExecutionTime,
-                context.Config.RootPath);
+                context.Config.RootPath,
+                zombieThreshold
+            );
         }
 
-        private bool IsAnalyzerEnabled(AnalysisContext context, IAnalyzer analyzer)
+        /// <summary>
+        /// Verifica se o analisador está habilitado na configuração.
+        /// Se não houver configuração explícita, assume habilitado.
+        /// </summary>
+        private bool IsAnalyzerEnabled(
+            AnalysisContext context,
+            IAnalyzer analyzer)
         {
             if (context.Config.Analyzers == null)
                 return true;
 
-            if (!context.Config.Analyzers.TryGetValue(analyzer.Name, out var enabled))
+            if (!context.Config.Analyzers
+                .TryGetValue(analyzer.Name, out var enabled))
                 return true;
 
             return enabled;

@@ -1,0 +1,9 @@
+﻿Type,Module,Layer,Usage,StructuralStatus,IsZombie,IsIsolated,IsEntryPoint
+DumpStrategyResolver,RefactorScope,Aplicação,0,DriftLogico,1,0,0
+ISegmentationResolver,RefactorScope,Aplicação,4,DriftLogico,0,0,0
+LayerSegmentationResolver,RefactorScope,Aplicação,1,DriftLogico,0,0,0
+SegmentScope,RefactorScope,Aplicação,3,DriftLogico,0,0,0
+TopFolderSegmentationResolver,RefactorScope,Aplicação,1,DriftLogico,0,0,0
+GlobalDumpStrategy,RefactorScope,Aplicação,1,DriftLogico,0,0,0
+IDumpStrategy,RefactorScope,Aplicação,3,DriftLogico,0,0,0
+SegmentedDumpStrategy,RefactorScope,Aplicação,1,DriftLogico,0,0,0

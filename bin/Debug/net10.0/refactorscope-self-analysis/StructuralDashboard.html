@@ -1,0 +1,893 @@
+﻿<html><head><meta charset='UTF-8'>
+<style>
+body { background:#0f1117; color:#e6edf3; font-family:Segoe UI; margin:30px; }
+.card { display:inline-block; padding:20px; margin:10px; background:#161b22; border-radius:10px; min-width:220px; vertical-align:top; }
+.danger { color:#ff6b6b; }
+.warning { color:#ffd166; }
+.ok { color:#06d6a0; }
+table { border-collapse: collapse; width:100%; margin-top:20px; }
+th, td { border:1px solid #30363d; padding:8px; }
+th { cursor:pointer; background:#21262d; }
+tr.dead { background:#2d1117; }
+tr.legacy { background:#332701; }
+tr.core { background:#0d1b2a; }
+
+.tooltip { position: relative; cursor: help; }
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 320px;
+  background-color: #1f2937;
+  color: #fff;
+  text-align: left;
+  padding: 14px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  top: 125%;
+  left: 50%;
+  margin-left: -160px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 12px;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
+<script>
+
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var rows = document.getElementById('table').rows;
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+      if (dir == 'asc' && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) shouldSwitch = true;
+      if (dir == 'desc' && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) shouldSwitch = true;
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+    if (!switching && dir == 'asc') { dir = 'desc'; switching = true; }
+  }
+}
+</script>
+</head><body>
+<h1>🧬 Structural Dashboard</h1>
+<p>Generated: 2026-03-03 17:04 UTC</p>
+<div>
+<div class='card'>Total Classes<br><b>90</b></div>
+<div class='card danger'>Dead<br><b>35</b></div>
+<div class='card warning'>Legacy<br><b>0</b></div>
+<div class='card ok'>Core<br><b>66</b></div>
+<div class='card'>Removal Candidates<br><b>35</b></div>
+
+<div class='card tooltip'>
+Structural Entropy<br>
+<b>0,633</b>
+<span class='tooltiptext'>
+Normalized Shannon Entropy (0–1 scale).
+
+0.00–0.25 → Homogeneous structure  
+0.25–0.60 → Moderate dispersion  
+0.60–1.00 → High architectural fragmentation  
+
+Higher values indicate structural disorder.
+</span>
+</div>
+
+<div class='card tooltip'>
+Smell Index<br>
+<b>93,6</b>
+<span class='tooltiptext'>
+Composite hygiene indicator (0–100 scale).
+
+0–20 → Healthy  
+20–40 → Attention  
+40–60 → Degrading  
+60–80 → Critical  
+80–100 → Structural Collapse  
+
+Heuristic early-warning metric.
+</span>
+</div>
+
+<div class='card tooltip'>
+Hygiene Level<br>
+<b>🔥 Structural Collapse</b>
+<span class='tooltiptext'>
+Textual interpretation of Smell Index.
+
+Healthy → Controlled  
+Attention → Growing signals  
+Degrading → Smell accumulation  
+Critical → Architectural risk  
+Structural Collapse → Severe erosion
+</span>
+</div>
+
+<div class='card tooltip'>
+SOLID Alerts<br>
+<b>0</b>
+<span class='tooltiptext'>
+Two-Pass Heuristic Model:
+1) Suspicion detection  
+2) Absolution filtering  
+
+This is an alert system, not a formal compliance proof.
+</span>
+</div>
+</div>
+<div style='margin-top:40px;'>
+<h2>📡 Architectural Radar</h2>
+<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
+<circle cx='160' cy='160' r='27.5' fill='none' stroke='#30363d' stroke-width='1' />
+<circle cx='160' cy='160' r='55' fill='none' stroke='#30363d' stroke-width='1' />
+<circle cx='160' cy='160' r='82.5' fill='none' stroke='#30363d' stroke-width='1' />
+<circle cx='160' cy='160' r='110' fill='none' stroke='#30363d' stroke-width='1' />
+<line x1='160' y1='160' x2='160' y2='50' stroke='#30363d' />
+<text x='160' y='30' fill='#e6edf3' font-size='12' text-anchor='middle'>Dead</text>
+<line x1='160' y1='160' x2='264.6162167924669' y2='126.00813061875579' stroke='#30363d' />
+<text x='283.63734711837' y='119.82779073125684' fill='#e6edf3' font-size='12' text-anchor='middle'>Legacy</text>
+<line x1='160' y1='160' x2='224.65637775217203' y2='248.99186938124421' stroke='#30363d' />
+<text x='236.41208279802152' y='265.1722092687432' fill='#e6edf3' font-size='12' text-anchor='middle'>Removal</text>
+<line x1='160' y1='160' x2='95.34362224782797' y2='248.99186938124421' stroke='#30363d' />
+<text x='83.58791720197851' y='265.1722092687432' fill='#e6edf3' font-size='12' text-anchor='middle'>Entropy</text>
+<line x1='160' y1='160' x2='55.3837832075331' y2='126.0081306187558' stroke='#30363d' />
+<text x='36.36265288163003' y='119.82779073125685' fill='#e6edf3' font-size='12' text-anchor='middle'>Isolation</text>
+<polygon points='160,117.22222222222223 160,160 185.14414690362247,194.6079492038172 119.08753470967027,216.3111775475143 136.75195182389623,152.4462512486124' fill='rgba(255,99,132,0.4)' stroke='#ff6384' stroke-width='2'/>
+</svg>
+
+
+<div style='margin-top:20px;'>
+  <input id='search' onkeyup='searchTable()' placeholder='Search...' 
+         style='width:350px; padding:8px; background:#161b22; border:1px solid #30363d; color:white;'>
+</div>
+</div>
+<table id='table'>
+<tr>
+<th onclick='sortTable(0)'>Classe</th>
+<th onclick='sortTable(1)'>Arquivo</th>
+<th onclick='sortTable(2)'>Namespace</th>
+<th onclick='sortTable(3)'>Usos</th>
+<th onclick='sortTable(4)'>Status</th>
+<th onclick='sortTable(5)'>Remoção</th>
+</tr>
+<tr class='dead'>
+<td>ArchitecturalClassificationAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalHygieneAnalyzer</td>
+<td></td>
+<td>RefactorScope.Core.Analyzers</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>CoreIsolationAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>CouplingAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>EntryPointHeuristicAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>FitnessGateAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>ZombieAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>SelfAnalysisSelector</td>
+<td></td>
+<td>RefactorScope.CLI</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>FakeZombieService</td>
+<td></td>
+<td>RefactorScope.Debug</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>DatasetExporter</td>
+<td></td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>DumpAnaliseExporter</td>
+<td></td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>DumpIaExporter</td>
+<td></td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>FitnessGateCsvExporter</td>
+<td></td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>HtmlDashboardExporter</td>
+<td></td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>ProjectStructureExporter</td>
+<td></td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>ConfigLoader</td>
+<td></td>
+<td>RefactorScope.Infrastructure</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>ConfigValidator</td>
+<td></td>
+<td>RefactorScope.Infrastructure</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class=''>
+<td>LayerRuleEvaluator</td>
+<td></td>
+<td>RefactorScope.Infrastructure</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>TerminalRenderer</td>
+<td></td>
+<td>RefactorScope.Infrastructure</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>SolidAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>SolidConfig</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>SolidResult</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>SolidSuspicion</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>8</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>IAnalysisResult</td>
+<td></td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>23</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>IAnalyzer</td>
+<td></td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>11</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>IExporter</td>
+<td></td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>9</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>IParserCodigo</td>
+<td></td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>DumpStrategyConfig</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>FitnessGateConfig</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>6</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>DeadCodeGateConfig</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>CouplingGateConfig</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>CoreIsolationGateConfig</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>FitnessGateConfigResolver</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>RefactorScopeConfig</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ZombieDetectionOptions</td>
+<td></td>
+<td>RefactorScope.Core.Configuration</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>AnalysisContext</td>
+<td></td>
+<td>RefactorScope.Core.Context</td>
+<td>42</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>AnalysisContextExtensions</td>
+<td></td>
+<td>RefactorScope.Core.Context</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>LayerRuleConfig</td>
+<td></td>
+<td>RefactorScope.Core.Context</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>ArchitecturalHealthDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>GlobalMetricsDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>GlobalTypesDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>IAnalyticalDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>9</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>ModuleContributionDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>StructuralOverviewDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>StructuralScoreDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>StructuralTrendDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>TypeContributionDatasetBuilder</td>
+<td></td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>FitnessGateEvaluator</td>
+<td></td>
+<td>RefactorScope.Core.Governance</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>ArquivoInfo</td>
+<td></td>
+<td>RefactorScope.Core.Model</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>HygieneReport</td>
+<td></td>
+<td>RefactorScope.Core.Analyzers</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ModeloEstrutural</td>
+<td></td>
+<td>RefactorScope.Core.Model</td>
+<td>5</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ReferenciaInfo</td>
+<td></td>
+<td>RefactorScope.Core.Model</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>TipoInfo</td>
+<td></td>
+<td>RefactorScope.Core.Model</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ZombieAnalysisBreakdown</td>
+<td></td>
+<td>RefactorScope.Core.Model</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>AnalysisOrchestrator</td>
+<td></td>
+<td>RefactorScope.Core.Orchestration</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>ConsolidatedReport</td>
+<td></td>
+<td>RefactorScope.Core.Orchestration</td>
+<td>25</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>MarkdownReportExporter</td>
+<td></td>
+<td>RefactorScope.Core.Reporting</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>ReportConsolidator</td>
+<td></td>
+<td>RefactorScope.Core.Reporting</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>StructuralInventoryExporter</td>
+<td></td>
+<td>RefactorScope.Core.Reporting</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalClassificationItem</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalClassificationResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>13</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>CoreIsolationResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>11</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>CouplingResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>9</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>EntryPointHeuristicResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>7</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>FitnessGateResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>FitnessGateStatus</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ZombieProbabilityItem</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ZombieProbabilityResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>5</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ZombieRefinementAnalyzer</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>existe</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>é</td>
+<td></td>
+<td>RefactorScope.Analyzers</td>
+<td>6</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>ZombieResult</td>
+<td></td>
+<td>RefactorScope.Core.Results</td>
+<td>13</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>ScopeFilteredFileDiscovery</td>
+<td></td>
+<td>RefactorScope.Core.Scope</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>ScopeRuleSet</td>
+<td></td>
+<td>RefactorScope.Core.Scope</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>StructuralAlignmentEvaluator</td>
+<td></td>
+<td>RefactorScope.Core.Structure</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='dead'>
+<td>DumpStrategyResolver</td>
+<td></td>
+<td>Global</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='dead'>
+<td>CSharpRegexParser</td>
+<td></td>
+<td>RefactorScope.Parsers.CSharpRegex</td>
+<td>0</td>
+<td>Morto Absoluto</td>
+<td>SIM</td>
+</tr>
+<tr class='core'>
+<td>CoreDependencyAbsolutionRule</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>IAbsolutionRule</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>IOmissionRule</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>OrchestratorAbsolutionRule</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>PublicZeroUsageOmissionRule</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>2</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class='core'>
+<td>with</td>
+<td></td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>ISegmentationResolver</td>
+<td></td>
+<td>Global</td>
+<td>4</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>LayerSegmentationResolver</td>
+<td></td>
+<td>Global</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>SegmentScope</td>
+<td></td>
+<td>Global</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>TopFolderSegmentationResolver</td>
+<td></td>
+<td>Global</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>GlobalDumpStrategy</td>
+<td></td>
+<td>Global</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>IDumpStrategy</td>
+<td></td>
+<td>Global</td>
+<td>3</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+<tr class=''>
+<td>SegmentedDumpStrategy</td>
+<td></td>
+<td>Global</td>
+<td>1</td>
+<td>Ativo</td>
+<td>NÃO</td>
+</tr>
+</table>
+ <div style='margin-top:60px; padding:20px; background:#111827; border-radius:10px; font-size:13px; color:#9ca3af;'> <h3>📘 Methodology & Limitations</h3> This dashboard is based on heuristic structural analysis. SOLID evaluation follows a two-pass refinement model: • Pass 1 – Structural suspicion detection • Pass 2 – Contextual absolution filtering Entropy is computed using normalized Shannon entropy. Smell Index is a composite heuristic metric. These indicators are early-warning architectural signals. They are NOT formal proofs of design violations. Final architectural judgment must always be performed by a human reviewer. </div> 
+</body></html>
