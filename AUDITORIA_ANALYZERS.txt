@@ -114,50 +114,38 @@ using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Analyzers
 {
-    /// <summary>
-    /// Calcula métricas estruturais agregadas do sistema.
-    /// 
-    /// Fonte oficial de zombie: modelo probabilístico se disponível.
-    /// </summary>
     public sealed class ArchitecturalHygieneAnalyzer
     {
         public HygieneReport Analyze(ConsolidatedReport report)
         {
-            var architecture = report.GetResult<ArchitecturalClassificationResult>();
-            var isolated = report.GetResult<CoreIsolationResult>();
+            var architecture =
+                report.GetResult<ArchitecturalClassificationResult>();
+
+            var isolated =
+                report.GetResult<CoreIsolationResult>();
 
             if (architecture == null)
-                return new HygieneReport
-                {
-                    TotalClasses = 0,
-                    DeadCount = 0,
-                    LegacyCount = 0,
-                    CoreCount = 0,
-                    RemovalCandidates = 0,
-                    IsolatedCoreCount = 0,
-                    StructuralEntropy = 0,
-                    SmellIndex = 0
-                };
+                return Empty();
 
-            const double zombieThreshold = 0.60;
-
-            var effectiveZombies = report.GetEffectiveZombieTypes(zombieThreshold);
+            // ?? Fonte oficial unificada
+            var effectiveZombies =
+                report.GetEffectiveZombieTypes();
 
             var total = architecture.Items.Count;
 
             var deadCount = effectiveZombies.Count;
 
-            var coreCount = architecture.Items.Count(i => i.Layer == "Core");
+            var coreCount =
+                architecture.Items.Count(i => i.Layer == "Core");
 
-            var legacyCount = architecture.Items.Count(i => i.Status.Contains("Legado"));
+            var legacyCount =
+                architecture.Items.Count(i => i.Status.Contains("Legado"));
 
-            var removalCandidates = deadCount;
-
-            var isolatedCoreCount = isolated?.IsolatedCoreTypes.Count ?? 0;
+            var isolatedCoreCount =
+                isolated?.IsolatedCoreTypes.Count ?? 0;
 
             var entropy = ComputeEntropy(architecture);
 
-            // Índice composto (heurístico)
             var smellIndex =
                 (deadCount * 1.2)
                 + (legacyCount * 0.8)
@@ -170,16 +158,34 @@ namespace RefactorScope.Core.Analyzers
                 DeadCount = deadCount,
                 LegacyCount = legacyCount,
                 CoreCount = coreCount,
-                RemovalCandidates = removalCandidates,
+                RemovalCandidates = deadCount,
                 IsolatedCoreCount = isolatedCoreCount,
                 StructuralEntropy = entropy,
                 SmellIndex = smellIndex
             };
         }
 
-        private double ComputeEntropy(ArchitecturalClassificationResult architecture)
+        private static HygieneReport Empty()
         {
-            var groups = architecture.Items.GroupBy(i => i.Folder).ToList();
+            return new HygieneReport
+            {
+                TotalClasses = 0,
+                DeadCount = 0,
+                LegacyCount = 0,
+                CoreCount = 0,
+                RemovalCandidates = 0,
+                IsolatedCoreCount = 0,
+                StructuralEntropy = 0,
+                SmellIndex = 0
+            };
+        }
+
+        private static double ComputeEntropy(
+            ArchitecturalClassificationResult architecture)
+        {
+            var groups =
+                architecture.Items.GroupBy(i => i.Folder).ToList();
+
             var total = architecture.Items.Count;
 
             if (total == 0 || groups.Count <= 1)
@@ -196,7 +202,9 @@ namespace RefactorScope.Core.Analyzers
 
             var maxEntropy = Math.Log(groups.Count, 2);
 
-            return maxEntropy == 0 ? 0 : entropy / maxEntropy;
+            return maxEntropy == 0
+                ? 0
+                : entropy / maxEntropy;
         }
     }
 }
@@ -363,8 +371,8 @@ namespace RefactorScope.Analyzers
 {
     /// <summary>
     /// Avalia a prontidão arquitetural do sistema com base em Fitness Gates.
-    /// Não cria métricas — apenas interpreta resultados existentes.
-    /// Thresholds são configuráveis via refactorscope.json.
+    /// Interpreta métricas já produzidas pelos analisadores.
+    /// Suporta modelo probabilístico de zombies com fallback legado.
     /// </summary>
     public class FitnessGateAnalyzer : IAnalyzer
     {
@@ -381,20 +389,21 @@ namespace RefactorScope.Analyzers
         {
             var gates = new List<FitnessGateStatus>();
 
-            var zombies = context.GetResult<ZombieResult>();
             var isolated = context.GetResult<CoreIsolationResult>();
             var coupling = context.GetResult<CouplingResult>();
             var architecture = context.GetResult<ArchitecturalClassificationResult>();
+            var zombieBinary = context.GetResult<ZombieResult>();
+            var zombieProb = context.GetResult<ZombieProbabilityResult>();
 
             gates.Add(EvaluateCoreIsolation(isolated));
-            gates.Add(EvaluateDeadCode(zombies, architecture, context));
+            gates.Add(EvaluateDeadCode(architecture, zombieBinary, zombieProb, context));
             gates.Add(EvaluateCoupling(coupling));
 
             return new FitnessGateResult(gates);
         }
 
         // ==============================
-        // Gates
+        // Core Isolation
         // ==============================
 
         private FitnessGateStatus EvaluateCoreIsolation(CoreIsolationResult? isolated)
@@ -410,10 +419,15 @@ namespace RefactorScope.Analyzers
             return Pass("CoreIntegrity");
         }
 
+        // ==============================
+        // Dead Code (Zombie)
+        // ==============================
+
         private FitnessGateStatus EvaluateDeadCode(
-           ZombieResult? zombies,
-           ArchitecturalClassificationResult? architecture,
-           AnalysisContext context)
+            ArchitecturalClassificationResult? architecture,
+            ZombieResult? zombieBinary,
+            ZombieProbabilityResult? zombieProb,
+            AnalysisContext context)
         {
             if (architecture == null)
                 return Pass("DeadCode");
@@ -422,16 +436,12 @@ namespace RefactorScope.Analyzers
             if (total == 0)
                 return Pass("DeadCode");
 
-            // ===============================
-            // ?? Novo: tenta usar modelo probabilístico
-            // ===============================
-            var zombieProb = context.GetResult<ZombieProbabilityResult>();
-
             int zombieCount;
 
             if (zombieProb != null)
             {
-                var threshold = context.Config.ZombieDetection.MinZombieProbabilityThreshold;
+                var threshold =
+                    context.Config.ZombieDetection.MinZombieProbabilityThreshold;
 
                 zombieCount = zombieProb
                     .ConfirmedZombies(threshold)
@@ -440,7 +450,7 @@ namespace RefactorScope.Analyzers
             else
             {
                 // Fallback legado
-                zombieCount = zombies?.ZombieTypes.Count ?? 0;
+                zombieCount = zombieBinary?.ZombieTypes.Count ?? 0;
             }
 
             var rate = zombieCount / (double)total;
@@ -454,12 +464,18 @@ namespace RefactorScope.Analyzers
             return Pass("DeadCode");
         }
 
+        // ==============================
+        // Coupling
+        // ==============================
+
         private FitnessGateStatus EvaluateCoupling(CouplingResult? coupling)
         {
             if (coupling == null)
                 return Pass("Coupling");
 
-            var avg = coupling.ModuleFanOut.Values.DefaultIfEmpty(0).Average();
+            var avg = coupling.ModuleFanOut.Values
+                .DefaultIfEmpty(0)
+                .Average();
 
             if (avg > _config.Coupling.FailAbove)
                 return Fail("Coupling", $"FanOut médio alto: {avg:0.0}");

@@ -949,6 +949,15 @@ using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Datasets
 {
+    /// <summary>
+    /// Dataset histórico de tendência estrutural.
+    ///
+    /// ?? Fonte Única de Verdade para zombies:
+    /// Sempre utiliza ConsolidatedReport.GetEffectiveZombieTypes(),
+    /// respeitando o modelo probabilístico quando disponível.
+    ///
+    /// Nunca consome ZombieResult diretamente.
+    /// </summary>
     public class StructuralTrendDatasetBuilder : IAnalyticalDatasetBuilder
     {
         public string DatasetName => "dataset_structural_trend";
@@ -968,29 +977,51 @@ namespace RefactorScope.Core.Datasets
             AnalysisContext context,
             ConsolidatedReport report)
         {
-            var score = report.Results.OfType<CouplingResult>().FirstOrDefault();
-            var zombies = report.Results.OfType<ZombieResult>().FirstOrDefault();
-            var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
-            var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
+            var coupling = report.GetResult<CouplingResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var architecture = report.GetResult<ArchitecturalClassificationResult>();
 
-            var tipos = context.Model.Tipos;
-            var total = tipos.Count;
+            var totalTypes = context.Model.Tipos.Count;
 
-            if (total == 0)
+            if (totalTypes == 0)
                 yield break;
 
-            var totalFanOut = score?.ModuleFanOut.Values.Sum() ?? 0;
-            var zombieRate = zombies?.ZombieTypes.Count / (double)total ?? 0;
-            var isolationRate = isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;
-            var coreDensity = arch?.Items.Count(i => i.Layer == "Core") / (double)total ?? 0;
+            // ===============================
+            // Fonte Oficial de Zombie
+            // ===============================
+            var threshold = context.Config
+                .ZombieDetection
+                .MinZombieProbabilityThreshold;
 
-            var normalizedCoupling = totalFanOut / (double)total;
+            var effectiveZombies =
+                report.GetEffectiveZombieTypes();
+
+            // ===============================
+            // Métricas
+            // ===============================
+            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;
+            var normalizedCoupling = totalFanOut / (double)totalTypes;
+
+            var zombieRate =
+                effectiveZombies.Count / (double)totalTypes;
+
+            var isolationRate =
+                isolated?.IsolatedCoreTypes.Count / (double)totalTypes ?? 0;
+
+            var coreDensity =
+                architecture?.Items.Count(i => i.Layer == "Core")
+                / (double)totalTypes ?? 0;
 
             yield return new[]
             {
                 DateTime.UtcNow.ToString("o"),
                 context.Config.RootPath,
-                ComputeScore(normalizedCoupling, zombieRate, isolationRate, coreDensity).ToString("0.00"),
+                ComputeScore(
+                    normalizedCoupling,
+                    zombieRate,
+                    isolationRate,
+                    coreDensity
+                ).ToString("0.00"),
                 normalizedCoupling.ToString("0.00"),
                 zombieRate.ToString("0.00"),
                 isolationRate.ToString("0.00"),
@@ -998,7 +1029,11 @@ namespace RefactorScope.Core.Datasets
             };
         }
 
-        private static double ComputeScore(double coupling, double zombie, double isolation, double core)
+        private static double ComputeScore(
+            double coupling,
+            double zombie,
+            double isolation,
+            double core)
         {
             var score =
                 100
@@ -1334,6 +1369,26 @@ namespace RefactorScope.Core.Model
 
 
 ==========================================
+ARQUIVO: ZombieAnalysisBreakdown.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ZombieAnalysisBreakdown.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Core.Model
+{
+    public record ZombieAnalysisBreakdown(
+        int StructuralCandidates,
+        int ProbabilisticConfirmed,
+        int Absolved,
+        double ReductionRate
+    );
+}
+
+
+
+==========================================
 ARQUIVO: AnalysisOrchestrator.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs
 ==========================================
@@ -1345,6 +1400,10 @@ namespace RefactorScope.Core.Orchestration
     /// <summary>
     /// Responsável por executar os analisadores habilitados
     /// e consolidar seus resultados.
+    ///
+    /// ?? Importante:
+    /// O threshold probabilístico de zombie passa a fazer parte
+    /// do estado consolidado da análise (ConsolidatedReport).
     /// </summary>
     public class AnalysisOrchestrator
     {
@@ -1357,6 +1416,8 @@ namespace RefactorScope.Core.Orchestration
 
         /// <summary>
         /// Executa os analisadores ativos conforme configuração.
+        /// Atualiza o contexto incrementalmente para suportar
+        /// dependência entre analisadores (two-pass model).
         /// </summary>
         public ConsolidatedReport Execute(AnalysisContext context)
         {
@@ -1374,18 +1435,31 @@ namespace RefactorScope.Core.Orchestration
                 context.Results = activeResults;
             }
 
+            // ?? Threshold oficial da análise
+            var zombieThreshold =
+                context.Config.ZombieDetection.MinZombieProbabilityThreshold;
+
             return new ConsolidatedReport(
                 activeResults,
                 context.ExecutionTime,
-                context.Config.RootPath);
+                context.Config.RootPath,
+                zombieThreshold
+            );
         }
 
-        private bool IsAnalyzerEnabled(AnalysisContext context, IAnalyzer analyzer)
+        /// <summary>
+        /// Verifica se o analisador está habilitado na configuração.
+        /// Se não houver configuração explícita, assume habilitado.
+        /// </summary>
+        private bool IsAnalyzerEnabled(
+            AnalysisContext context,
+            IAnalyzer analyzer)
         {
             if (context.Config.Analyzers == null)
                 return true;
 
-            if (!context.Config.Analyzers.TryGetValue(analyzer.Name, out var enabled))
+            if (!context.Config.Analyzers
+                .TryGetValue(analyzer.Name, out var enabled))
                 return true;
 
             return enabled;
@@ -1400,72 +1474,61 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestrat
 ==========================================
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Results;
+using RefactorScope.Core.Model;
 
 namespace RefactorScope.Core.Orchestration
 {
     /// <summary>
     /// Representa o relatório consolidado da execução.
-    /// 
-    /// É o ponto único de verdade para acesso a resultados.
-    /// Fornece métodos auxiliares para evitar que consumidores
-    /// acessem diretamente resultados específicos e criem
-    /// inconsistências entre modelo legado e modelo probabilístico.
+    ///
+    /// ?? Fonte única de verdade para zombies.
+    /// O threshold probabilístico passa a fazer parte do estado da análise.
     /// </summary>
     public class ConsolidatedReport
     {
-        /// <summary>
-        /// Resultados produzidos pelos analisadores.
-        /// </summary>
         public IReadOnlyCollection<IAnalysisResult> Results { get; }
-
-        /// <summary>
-        /// Timestamp da execução.
-        /// </summary>
         public DateTime ExecutionTime { get; }
+        public string TargetScope { get; }
 
         /// <summary>
-        /// Escopo alvo da análise.
+        /// Threshold usado para confirmar zombies probabilísticos.
         /// </summary>
-        public string TargetScope { get; }
+        public double ZombieProbabilityThreshold { get; }
 
         public ConsolidatedReport(
             IReadOnlyCollection<IAnalysisResult> results,
             DateTime executionTime,
-            string targetScope)
+            string targetScope,
+            double zombieProbabilityThreshold)
         {
             Results = results;
             ExecutionTime = executionTime;
             TargetScope = targetScope;
+            ZombieProbabilityThreshold = zombieProbabilityThreshold;
         }
 
         // ==========================================================
         // ?? Acesso Genérico
         // ==========================================================
 
-        /// <summary>
-        /// Obtém um resultado específico por tipo.
-        /// </summary>
         public T? GetResult<T>() where T : class, IAnalysisResult
             => Results.OfType<T>().FirstOrDefault();
 
         // ==========================================================
-        // ?? Zombie – Fonte Oficial de Verdade
+        // ?? Fonte Oficial de Zombie
         // ==========================================================
 
         /// <summary>
-        /// Retorna os tipos considerados zombies efetivos.
-        /// 
-        /// Prioriza o modelo probabilístico se disponível.
-        /// Caso contrário, utiliza o modelo estrutural legado.
+        /// Retorna os zombies efetivos respeitando o threshold da análise.
         /// </summary>
-        public IReadOnlyList<string> GetEffectiveZombieTypes(double probabilityThreshold)
+        public IReadOnlyList<string> GetEffectiveZombieTypes()
         {
             var probabilistic = GetResult<ZombieProbabilityResult>();
 
             if (probabilistic != null)
             {
                 return probabilistic
-                    .ConfirmedZombies(probabilityThreshold)
+                    .ConfirmedZombies(ZombieProbabilityThreshold)
                     .Select(x => x.TypeName)
                     .ToList();
             }
@@ -1475,9 +1538,7 @@ namespace RefactorScope.Core.Orchestration
         }
 
         /// <summary>
-        /// Retorna todos os candidatos a zombie (inclui baixa probabilidade).
-        /// Se modelo probabilístico existir, retorna todos os analisados.
-        /// Caso contrário, retorna apenas os detectados estruturalmente.
+        /// Retorna todos os candidatos a zombie.
         /// </summary>
         public IReadOnlyList<string> GetZombieCandidates()
         {
@@ -1496,15 +1557,49 @@ namespace RefactorScope.Core.Orchestration
         }
 
         /// <summary>
-        /// Retorna a taxa efetiva de zombie considerando o total de tipos.
+        /// Taxa efetiva de zombie.
         /// </summary>
-        public double GetZombieRate(int totalTypes, double probabilityThreshold)
+        public double GetZombieRate(int totalTypes)
         {
             if (totalTypes == 0)
                 return 0;
 
-            var effective = GetEffectiveZombieTypes(probabilityThreshold);
-            return effective.Count / (double)totalTypes;
+            return GetEffectiveZombieTypes().Count / (double)totalTypes;
+        }
+
+        public ZombieAnalysisBreakdown GetZombieBreakdown()
+        {
+            var structural = GetResult<ZombieResult>();
+            var probabilistic = GetResult<ZombieProbabilityResult>();
+
+            var structuralCount = structural?.ZombieTypes.Count ?? 0;
+
+            if (probabilistic == null)
+            {
+                return new ZombieAnalysisBreakdown(
+                    structuralCount,
+                    structuralCount,
+                    0,
+                    0
+                );
+            }
+
+            var confirmed = probabilistic
+                .ConfirmedZombies(ZombieProbabilityThreshold)
+                .Count;
+
+            var absolved = structuralCount - confirmed;
+
+            var reduction = structuralCount == 0
+                ? 0
+                : (structuralCount - confirmed) / (double)structuralCount;
+
+            return new ZombieAnalysisBreakdown(
+                structuralCount,
+                confirmed,
+                absolved,
+                reduction
+            );
         }
     }
 }
@@ -1559,7 +1654,7 @@ namespace RefactorScope.Core.Reporting
                 return;
 
             var threshold = 0.60;
-            var effectiveZombies = report.GetEffectiveZombieTypes(threshold);
+            var effectiveZombies = report.GetEffectiveZombieTypes();
 
             sb.AppendLine("# ?? RefactorScope – Relatório Arquitetural");
             sb.AppendLine();
@@ -2310,6 +2405,11 @@ namespace RefactorScope.Analyzers
                 ));
             }
             Console.WriteLine("[DEBUG] ZombieRefinementAnalyzer executado");
+            Console.WriteLine($"[DEBUG] Base zombies: {zombieBase.ZombieTypes.Count}");
+            Console.WriteLine($"[DEBUG] Global zombie rate: {globalZombieRate:0.00}");
+            Console.WriteLine($"[DEBUG] DI threshold: {config.GlobalRateThreshold_DI}");
+            Console.WriteLine($"[DEBUG] Interface threshold: {config.GlobalRateThreshold_Interface}");
+            Console.WriteLine($"[DEBUG] Confirmed after refinement: {results.Count(r => r.Probability >= config.MinZombieProbabilityThreshold)}");
 
             return new ZombieProbabilityResult(results);
         }

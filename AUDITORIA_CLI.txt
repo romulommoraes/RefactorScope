@@ -17,6 +17,8 @@ using RefactorScope.Parsers.CSharpRegex;
 using Spectre.Console;
 
 Console.WriteLine();
+// ?? TESTE DI CONTROLADO (linha textual apenas)
+var __fake = "services.AddScoped<FakeZombieService>();";
 
 // =====================================================
 // ?? FLUXO PRINCIPAL
@@ -25,6 +27,18 @@ Console.WriteLine();
 if (!TryRunConfiguration(out var config)) return;
 if (!TryRunParsing(config, out var context)) return;
 if (!TryRunAnalysis(context, out var report)) return;
+
+// ?? DEBUG — Zombie Breakdown
+var breakdown = report.GetZombieBreakdown();
+
+AnsiConsole.WriteLine();
+AnsiConsole.MarkupLine("[bold cyan]Zombie Analysis Breakdown[/]");
+AnsiConsole.WriteLine($"Structural Candidates : {breakdown.StructuralCandidates}");
+AnsiConsole.WriteLine($"Probabilistic Confirmed (= {report.ZombieProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
+AnsiConsole.WriteLine($"Absolved : {breakdown.Absolved}");
+AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
+AnsiConsole.WriteLine();
+
 if (!TryRunExport(config, context, report)) return;
 
 RunVisualization(report);
@@ -284,14 +298,14 @@ static void RunVisualization(ConsolidatedReport report)
     var coupling = report.GetResult<CouplingResult>();
 
     // ?? Fonte oficial de zombies
-    var zombieThreshold = 0.60; // fallback seguro
+    //var zombieThreshold = 0.60; // fallback seguro
     var configZombieThreshold = report
         .GetResult<FitnessGateResult>(); // não temos config aqui
 
-    // Melhor solução: usar constante ou mover config para report futuramente
-    zombieThreshold = 0.60;
+    //// Melhor solução: usar constante ou mover config para report futuramente
+    //zombieThreshold = 0.60;
 
-    var effectiveZombies = report.GetEffectiveZombieTypes(zombieThreshold);
+    var effectiveZombies = report.GetEffectiveZombieTypes();
 
     foreach (var module in modules)
     {
