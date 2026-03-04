@@ -4,13 +4,24 @@ using RefactorScope.Core.Results;
 
 namespace RefactorScope.Analyzers
 {
+    /// <summary>
+    /// Aplica refinamento probabilístico sobre candidatos estruturais a Zombie.
+    ///
+    /// 🔒 ADR-EXP-007:
+    /// Um tipo NÃO pode ser confirmado como Zombie se:
+    /// - Pertencer a categoria estrutural conhecida (Analyzer, Result, Exporter, etc.)
+    /// - For detectado via DI
+    /// - For detectado via interface
+    ///
+    /// Esta classe NÃO altera Structural Candidates.
+    /// Apenas decide confirmação probabilística.
+    /// </summary>
     public class ZombieRefinementAnalyzer : IAnalyzer
     {
         public string Name => "zombie-refinement";
 
         public IAnalysisResult Analyze(AnalysisContext context)
         {
-
             var config = context.Config.ZombieDetection;
 
             if (!config.EnableRefinement)
@@ -35,31 +46,44 @@ namespace RefactorScope.Analyzers
                 double probability = 1.0;
                 bool diDetected = false;
                 bool interfaceDetected = false;
+                bool structuralProtected = false;
                 string confidence = "Alta (estrutural)";
 
-                // ===============================
-                // Camada 1 – DI
-                // ===============================
-                if (globalZombieRate > config.GlobalRateThreshold_DI)
+                // ====================================================
+                // 🔒 Camada 0 – Proteção de Categoria Estrutural
+                // ====================================================
+                if (IsStructuralProtected(typeName))
                 {
-                    if (IsRegisteredInDI(typeName, context))
-                    {
-                        probability = config.DIProbability;
-                        diDetected = true;
-                        confidence = "Provável uso via DI";
-                    }
+                    probability = 0.0;
+                    structuralProtected = true;
+                    confidence = "Categoria estrutural protegida (ADR-007)";
                 }
-
-                // ===============================
-                // Camada 2 – Interface naming heuristic
-                // ===============================
-                if (globalZombieRate > config.GlobalRateThreshold_Interface)
+                else
                 {
-                    if (MatchesInterfacePattern(typeName, context))
+                    // ===============================
+                    // Camada 1 – DI
+                    // ===============================
+                    if (globalZombieRate > config.GlobalRateThreshold_DI)
                     {
-                        probability = config.InterfaceProbability;
-                        interfaceDetected = true;
-                        confidence = "Provável uso polimórfico";
+                        if (IsRegisteredInDI(typeName, context))
+                        {
+                            probability = config.DIProbability;
+                            diDetected = true;
+                            confidence = "Provável uso via DI";
+                        }
+                    }
+
+                    // ===============================
+                    // Camada 2 – Interface naming heuristic
+                    // ===============================
+                    if (globalZombieRate > config.GlobalRateThreshold_Interface)
+                    {
+                        if (MatchesInterfacePattern(typeName, context))
+                        {
+                            probability = config.InterfaceProbability;
+                            interfaceDetected = true;
+                            confidence = "Provável uso polimórfico";
+                        }
                     }
                 }
 
@@ -71,14 +95,28 @@ namespace RefactorScope.Analyzers
                     interfaceDetected
                 ));
             }
+
             Console.WriteLine("[DEBUG] ZombieRefinementAnalyzer executado");
             Console.WriteLine($"[DEBUG] Base zombies: {zombieBase.ZombieTypes.Count}");
             Console.WriteLine($"[DEBUG] Global zombie rate: {globalZombieRate:0.00}");
-            Console.WriteLine($"[DEBUG] DI threshold: {config.GlobalRateThreshold_DI}");
-            Console.WriteLine($"[DEBUG] Interface threshold: {config.GlobalRateThreshold_Interface}");
             Console.WriteLine($"[DEBUG] Confirmed after refinement: {results.Count(r => r.Probability >= config.MinZombieProbabilityThreshold)}");
 
             return new ZombieProbabilityResult(results);
+        }
+
+        // ====================================================
+        // 🔒 Filtro de categorias estruturais protegidas
+        // ====================================================
+        private bool IsStructuralProtected(string typeName)
+        {
+            return typeName.EndsWith("Analyzer")
+                || typeName.EndsWith("Result")
+                || typeName.EndsWith("Exporter")
+                || typeName.EndsWith("DatasetBuilder")
+                || typeName.EndsWith("Strategy")
+                || typeName.EndsWith("Resolver")
+                || typeName.EndsWith("Config")
+                || typeName.EndsWith("Context");
         }
 
         // ====================================================
@@ -106,14 +144,12 @@ namespace RefactorScope.Analyzers
         {
             var interfaceName = $"I{typeName}";
 
-            // 1️⃣ Verifica se interface existe
             var interfaceExists = context.Model.Tipos
                 .Any(t => t.Name == interfaceName && t.Kind == "interface");
 
             if (!interfaceExists)
                 return false;
 
-            // 2️⃣ Verifica se interface é referenciada por algum outro tipo
             var interfaceReferenced = context.Model.Tipos
                 .Any(t => t.References.Any(r => r.ToType == interfaceName));
 

@@ -1,4 +1,5 @@
-﻿using RefactorScope.Core.Orchestration;
+﻿using RefactorScope.Core.Model;
+using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Analyzers
@@ -7,75 +8,52 @@ namespace RefactorScope.Core.Analyzers
     {
         public HygieneReport Analyze(ConsolidatedReport report)
         {
-            var architecture =
-                report.GetResult<ArchitecturalClassificationResult>();
-
-            var isolated =
-                report.GetResult<CoreIsolationResult>();
+            var architecture = report.GetResult<ArchitecturalClassificationResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
 
             if (architecture == null)
-                return Empty();
+                return new HygieneReport(0, 0, 0, 0, 0, 0);
 
-            // 🔥 Fonte oficial unificada
-            var effectiveZombies =
-                report.GetEffectiveZombieTypes();
+            var items = architecture.Items;
+            var total = items.Count;
 
-            var total = architecture.Items.Count;
+            var unreferenced = items.Count(i => i.UsageCount == 0);
 
-            var deadCount = effectiveZombies.Count;
+            var globalNamespace = items.Count(i => i.Namespace == "Global");
 
-            var coreCount =
-                architecture.Items.Count(i => i.Layer == "Core");
-
-            var legacyCount =
-                architecture.Items.Count(i => i.Status.Contains("Legado"));
-
-            var isolatedCoreCount =
-                isolated?.IsolatedCoreTypes.Count ?? 0;
-
-            var entropy = ComputeEntropy(architecture);
-
-            var smellIndex =
-                (deadCount * 1.2)
-                + (legacyCount * 0.8)
-                + (isolatedCoreCount * 1.0)
-                + (entropy * 50);
-
-            return new HygieneReport
+            int namespaceDrift = architecture.Items.Count(i =>
             {
-                TotalClasses = total,
-                DeadCount = deadCount,
-                LegacyCount = legacyCount,
-                CoreCount = coreCount,
-                RemovalCandidates = deadCount,
-                IsolatedCoreCount = isolatedCoreCount,
-                StructuralEntropy = entropy,
-                SmellIndex = smellIndex
-            };
+                if (string.IsNullOrWhiteSpace(i.Namespace))
+                    return true;
+
+                if (string.IsNullOrWhiteSpace(i.Folder))
+                    return false;
+
+                var expectedSuffix = i.Folder
+                    .Replace("\\", ".")
+                    .Replace("/", ".");
+
+                return !i.Namespace.EndsWith(expectedSuffix);
+            });
+
+            var isolatedCoreCount = isolated?.IsolatedCoreTypes.Count ?? 0;
+
+            var entropy = ComputeEntropy(items);
+
+            return new HygieneReport(
+                total,
+                unreferenced,
+                globalNamespace,
+                namespaceDrift,
+                isolatedCoreCount,
+                entropy
+            );
         }
 
-        private static HygieneReport Empty()
+        private static double ComputeEntropy(IReadOnlyList<ArchitecturalClassificationItem> items)
         {
-            return new HygieneReport
-            {
-                TotalClasses = 0,
-                DeadCount = 0,
-                LegacyCount = 0,
-                CoreCount = 0,
-                RemovalCandidates = 0,
-                IsolatedCoreCount = 0,
-                StructuralEntropy = 0,
-                SmellIndex = 0
-            };
-        }
-
-        private static double ComputeEntropy(
-            ArchitecturalClassificationResult architecture)
-        {
-            var groups =
-                architecture.Items.GroupBy(i => i.Folder).ToList();
-
-            var total = architecture.Items.Count;
+            var groups = items.GroupBy(i => i.Folder).ToList();
+            var total = items.Count;
 
             if (total == 0 || groups.Count <= 1)
                 return 0;
@@ -91,9 +69,7 @@ namespace RefactorScope.Core.Analyzers
 
             var maxEntropy = Math.Log(groups.Count, 2);
 
-            return maxEntropy == 0
-                ? 0
-                : entropy / maxEntropy;
+            return maxEntropy == 0 ? 0 : entropy / maxEntropy;
         }
     }
 }

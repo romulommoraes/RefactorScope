@@ -1,4 +1,2 @@
 ﻿GateName,Status,Message
-CoreIntegrity,Fail,20 tipos Core isolados
-DeadCode,Fail,ZombieRate alto: 39%
-Coupling,Fail,"FanOut médio alto: 288,0"
+UnreferencedTypes,Fail,Structural Unreferenced rate alto: 20%

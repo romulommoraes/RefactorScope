@@ -1,5 +1,6 @@
 # Project Structure
 
+│   ├── Docs
 │   ├── RefactorScope
 │   │   ├── Analyzers
 │   │   │   ├── Solid

@@ -10,11 +10,92 @@
 body { background:#111; color:#eee; font-family:Arial; }
 .container { display:flex; flex-wrap:wrap; }
 .card { background:#1b1b1b; margin:20px; padding:20px; border-radius:8px; width:45%; }
+
+.confirmed {
+    color:#ff4c4c;
+    font-weight:bold;
+}
+
+.section {
+    margin:20px;
+    padding:20px;
+    background:#1b1b1b;
+    border-radius:8px;
+}
+
+.count {
+    font-size:20px;
+    font-weight:bold;
+}
+
 </style>
 </head>
 <body>
 
 <h1>RefactorScope Dashboard</h1>
+
+<div class='section'>
+<h2>Zombie Classification (ADR-EXP-007)</h2>
+<p class='count'>Confirmed Zombies: <span style='color:#ff4c4c'>10</span></p>
+<p class='count'>Structural Candidates: 37</p>
+
+<h3>Confirmed Zombies</h3>
+<ul>
+<li class='confirmed'>SelfAnalysisSelector</li>
+<li class='confirmed'>ConfigLoader</li>
+<li class='confirmed'>ConfigValidator</li>
+<li class='confirmed'>TerminalRenderer</li>
+<li class='confirmed'>AnalysisContextExtensions</li>
+<li class='confirmed'>FitnessGateEvaluator</li>
+<li class='confirmed'>AnalysisOrchestrator</li>
+<li class='confirmed'>ReportConsolidator</li>
+<li class='confirmed'>ScopeFilteredFileDiscovery</li>
+<li class='confirmed'>CSharpRegexParser</li>
+
+</ul>
+
+<h3>All Structural Candidates</h3>
+<ul>
+<li>ArchitecturalClassificationAnalyzer</li>
+<li>CoreIsolationAnalyzer</li>
+<li>CouplingAnalyzer</li>
+<li>EntryPointHeuristicAnalyzer</li>
+<li>FitnessGateAnalyzer</li>
+<li>ZombieAnalyzer</li>
+<li>SelfAnalysisSelector</li>
+<li>FakeZombieService</li>
+<li>DatasetExporter</li>
+<li>DumpAnaliseExporter</li>
+<li>DumpIaExporter</li>
+<li>FitnessGateCsvExporter</li>
+<li>HtmlDashboardExporter</li>
+<li>ProjectStructureExporter</li>
+<li>ConfigLoader</li>
+<li>ConfigValidator</li>
+<li>TerminalRenderer</li>
+<li>SolidAnalyzer</li>
+<li>FitnessGateConfigResolver</li>
+<li>AnalysisContextExtensions</li>
+<li>ArchitecturalHealthDatasetBuilder</li>
+<li>GlobalMetricsDatasetBuilder</li>
+<li>GlobalTypesDatasetBuilder</li>
+<li>ModuleContributionDatasetBuilder</li>
+<li>StructuralOverviewDatasetBuilder</li>
+<li>StructuralScoreDatasetBuilder</li>
+<li>StructuralTrendDatasetBuilder</li>
+<li>TypeContributionDatasetBuilder</li>
+<li>FitnessGateEvaluator</li>
+<li>AnalysisOrchestrator</li>
+<li>MarkdownReportExporter</li>
+<li>ReportConsolidator</li>
+<li>StructuralInventoryExporter</li>
+<li>ZombieRefinementAnalyzer</li>
+<li>ScopeFilteredFileDiscovery</li>
+<li>DumpStrategyResolver</li>
+<li>CSharpRegexParser</li>
+
+</ul>
+</div>
 
 <div class='container'>
 <div class='card'>

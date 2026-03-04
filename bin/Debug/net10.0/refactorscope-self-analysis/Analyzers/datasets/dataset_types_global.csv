@@ -9,10 +9,9 @@ ZombieAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,1,0
 SolidAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,1,0
 SolidConfig,RefactorScope,Core,3,DriftArquitetural,0,0,0
 SolidResult,RefactorScope,Core,2,DriftArquitetural,0,0,0
-SolidSuspicion,RefactorScope,Core,8,DriftArquitetural,0,0,0
+SolidSuspicion,RefactorScope,Core,7,DriftArquitetural,0,0,0
 CoreDependencyAbsolutionRule,RefactorScope,Core,1,DriftArquitetural,0,0,0
 IAbsolutionRule,RefactorScope,Core,3,DriftArquitetural,0,0,0
-IOmissionRule,RefactorScope,Core,3,DriftArquitetural,0,0,0
+IOmissionRule,RefactorScope,Core,2,DriftArquitetural,0,0,0
 OrchestratorAbsolutionRule,RefactorScope,Core,1,DriftArquitetural,0,0,0
-PublicZeroUsageOmissionRule,RefactorScope,Core,2,DriftArquitetural,0,0,0
-with,RefactorScope,Core,1,DriftArquitetural,0,0,0
+PublicZeroUsageOmissionRule,RefactorScope,Core,1,DriftArquitetural,0,0,0

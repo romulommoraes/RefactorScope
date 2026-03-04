@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Relatório Arquitetural
 
-📅 **Execution Time:** 2026-03-03 17:04 UTC  
+📅 **Execution Time:** 2026-03-04 03:18 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -9,10 +9,10 @@
 
 ### 🟢 Analyzers
 
-- **Score:** `96,5`
-- **Zombies:** 🔴 7 (41%)
+- **Score:** `100,0`
+- **Zombies:** 🟢 0 (0%)
 - **Coupling:** 0,00
-- **Isolation:** 0,41
+- **Isolation:** 0,44
 
 ### 🟢 CLI
 
@@ -30,8 +30,8 @@
 
 ### 🟢 Exporters
 
-- **Score:** `75,0`
-- **Zombies:** 🔴 6 (100%)
+- **Score:** `100,0`
+- **Zombies:** 🟢 0 (0%)
 - **Coupling:** 0,00
 - **Isolation:** 0,00
 
@@ -45,14 +45,14 @@
 ### 🟢 Core
 
 - **Score:** `100,0`
-- **Zombies:** 🔴 16 (31%)
+- **Zombies:** 🔴 5 (10%)
 - **Coupling:** 0,00
-- **Isolation:** 0,25
+- **Isolation:** 0,27
 
 ### 🟢 Execution
 
-- **Score:** `96,9`
-- **Zombies:** 🔴 1 (13%)
+- **Score:** `100,0`
+- **Zombies:** 🟢 0 (0%)
 - **Coupling:** 0,00
 - **Isolation:** 0,00
 
@@ -67,9 +67,7 @@
 
 ## 🚦 Fitness Gates
 
-- 🔴 **CoreIntegrity** 20 tipos Core isolados
-- 🔴 **DeadCode** ZombieRate alto: 39%
-- 🔴 **Coupling** FanOut médio alto: 288,0
+- 🔴 **UnreferencedTypes** Structural Unreferenced rate alto: 20%
 
 🔴 **Arquitetura NÃO pronta para CI/CD**
 

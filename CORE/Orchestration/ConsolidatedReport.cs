@@ -7,8 +7,13 @@ namespace RefactorScope.Core.Orchestration
     /// <summary>
     /// Representa o relatório consolidado da execução.
     ///
-    /// 🔒 Fonte única de verdade para zombies.
-    /// O threshold probabilístico passa a fazer parte do estado da análise.
+    /// 🔒 Fonte Única de Verdade para classificação de Zombies.
+    ///
+    /// Separação formal:
+    /// - Structural Candidates (ausência estrutural)
+    /// - Confirmed Zombies (após threshold probabilístico)
+    /// - Suspicious (candidatos abaixo do threshold)
+    /// - Absolved (candidatos estruturais não confirmados)
     /// </summary>
     public class ConsolidatedReport
     {
@@ -17,7 +22,7 @@ namespace RefactorScope.Core.Orchestration
         public string TargetScope { get; }
 
         /// <summary>
-        /// Threshold usado para confirmar zombies probabilísticos.
+        /// Threshold aplicado para confirmação probabilística.
         /// </summary>
         public double ZombieProbabilityThreshold { get; }
 
@@ -41,91 +46,97 @@ namespace RefactorScope.Core.Orchestration
             => Results.OfType<T>().FirstOrDefault();
 
         // ==========================================================
-        // 🔹 Fonte Oficial de Zombie
+        // 🔹 Camada 1 — Structural Candidates
         // ==========================================================
 
+        public IReadOnlyList<string> GetStructuralCandidates()
+        {
+            var structural = GetResult<ZombieResult>();
+            return structural?.ZombieTypes ?? new List<string>();
+        }
+
+        // ==========================================================
+        // 🔹 Camada 2 — Confirmed Zombies
+        // ==========================================================
+
+        public IReadOnlyList<string> GetConfirmedZombies()
+        {
+            var probabilistic = GetResult<ZombieProbabilityResult>();
+
+            if (probabilistic == null)
+                return new List<string>();
+
+            return probabilistic
+                .ConfirmedZombies(ZombieProbabilityThreshold)
+                .Select(x => x.TypeName)
+                .ToList();
+        }
+
         /// <summary>
-        /// Retorna os zombies efetivos respeitando o threshold da análise.
+        /// Compatibilidade retroativa.
         /// </summary>
         public IReadOnlyList<string> GetEffectiveZombieTypes()
+            => GetConfirmedZombies();
+
+        // ==========================================================
+        // 🔹 Camada 3 — Suspicious
+        // ==========================================================
+
+        public IReadOnlyList<string> GetSuspiciousZombies()
         {
             var probabilistic = GetResult<ZombieProbabilityResult>();
 
-            if (probabilistic != null)
-            {
-                return probabilistic
-                    .ConfirmedZombies(ZombieProbabilityThreshold)
-                    .Select(x => x.TypeName)
-                    .ToList();
-            }
+            if (probabilistic == null)
+                return new List<string>();
 
-            var legacy = GetResult<ZombieResult>();
-            return legacy?.ZombieTypes ?? new List<string>();
+            return probabilistic.Items
+                .Where(i => i.Probability < ZombieProbabilityThreshold)
+                .Select(i => i.TypeName)
+                .ToList();
         }
 
-        /// <summary>
-        /// Retorna todos os candidatos a zombie.
-        /// </summary>
-        public IReadOnlyList<string> GetZombieCandidates()
+        // ==========================================================
+        // 🔹 Camada 4 — Absolved
+        // ==========================================================
+
+        public IReadOnlyList<string> GetAbsolvedZombies()
         {
-            var probabilistic = GetResult<ZombieProbabilityResult>();
+            var structural = GetStructuralCandidates();
+            var confirmed = GetConfirmedZombies();
 
-            if (probabilistic != null)
-            {
-                return probabilistic
-                    .Items
-                    .Select(x => x.TypeName)
-                    .ToList();
-            }
-
-            var legacy = GetResult<ZombieResult>();
-            return legacy?.ZombieTypes ?? new List<string>();
+            return structural
+                .Where(s => !confirmed.Contains(s))
+                .ToList();
         }
 
-        /// <summary>
-        /// Taxa efetiva de zombie.
-        /// </summary>
-        public double GetZombieRate(int totalTypes)
-        {
-            if (totalTypes == 0)
-                return 0;
-
-            return GetEffectiveZombieTypes().Count / (double)totalTypes;
-        }
+        // ==========================================================
+        // 🔹 Breakdown Oficial
+        // ==========================================================
 
         public ZombieAnalysisBreakdown GetZombieBreakdown()
         {
-            var structural = GetResult<ZombieResult>();
-            var probabilistic = GetResult<ZombieProbabilityResult>();
+            var structural = GetStructuralCandidates();
+            var confirmed = GetConfirmedZombies();
+            var suspicious = GetSuspiciousZombies();
+            var absolved = GetAbsolvedZombies();
 
-            var structuralCount = structural?.ZombieTypes.Count ?? 0;
-
-            if (probabilistic == null)
-            {
-                return new ZombieAnalysisBreakdown(
-                    structuralCount,
-                    structuralCount,
-                    0,
-                    0
-                );
-            }
-
-            var confirmed = probabilistic
-                .ConfirmedZombies(ZombieProbabilityThreshold)
-                .Count;
-
-            var absolved = structuralCount - confirmed;
-
-            var reduction = structuralCount == 0
+            var reduction = structural.Count == 0
                 ? 0
-                : (structuralCount - confirmed) / (double)structuralCount;
+                : (structural.Count - confirmed.Count) / (double)structural.Count;
 
             return new ZombieAnalysisBreakdown(
-                structuralCount,
-                confirmed,
-                absolved,
+                structural.Count,
+                confirmed.Count,
+                suspicious.Count,
+                absolved.Count,
                 reduction
             );
+        }
+
+        public double GetZombieRate(int totalTypes)
+        {
+            if (totalTypes == 0) return 0;
+            return GetConfirmedZombies().Count / (double)totalTypes;
         }
     }
 }

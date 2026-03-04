@@ -1,5 +1,6 @@
 ﻿using RefactorScope.Analyzers.Solid;
 using RefactorScope.Core.Analyzers;
+using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 using System.Globalization;
@@ -34,6 +35,13 @@ namespace RefactorScope.Core.Reporting
             var hygieneAnalyzer = new ArchitecturalHygieneAnalyzer();
             var hygiene = hygieneAnalyzer.Analyze(report);
 
+            var confirmed = report.GetConfirmedZombies();
+            var suspicious = report.GetSuspiciousZombies();
+
+            var confirmedCount = confirmed.Count;
+            var candidatesCount = hygiene.UnreferencedCount;
+            var absolvedCount = candidatesCount - confirmedCount;
+
             var sb = new StringBuilder();
 
             sb.AppendLine("<html><head><meta charset='UTF-8'>");
@@ -49,8 +57,9 @@ namespace RefactorScope.Core.Reporting
             sb.AppendLine("table { border-collapse: collapse; width:100%; margin-top:20px; }");
             sb.AppendLine("th, td { border:1px solid #30363d; padding:8px; }");
             sb.AppendLine("th { cursor:pointer; background:#21262d; }");
-            sb.AppendLine("tr.dead { background:#2d1117; }");
-            sb.AppendLine("tr.legacy { background:#332701; }");
+
+            sb.AppendLine("tr.danger { background:#2d1117; color:#ff6b6b; }");
+            sb.AppendLine("tr.warning { background:#332701; color:#ffd166; }");
             sb.AppendLine("tr.core { background:#0d1b2a; }");
 
             sb.AppendLine(@"
@@ -111,7 +120,6 @@ function sortTable(n) {
       }
     }
     if (!switching && dir == 'asc') { dir = 'desc'; switching = true; }
-  }
 }");
             sb.AppendLine("</script>");
 
@@ -126,10 +134,63 @@ function sortTable(n) {
 
             sb.AppendLine("<div>");
             sb.AppendLine($"<div class='card'>Total Classes<br><b>{hygiene.TotalClasses}</b></div>");
-            sb.AppendLine($"<div class='card danger'>Dead<br><b>{hygiene.DeadCount}</b></div>");
-            sb.AppendLine($"<div class='card warning'>Legacy<br><b>{hygiene.LegacyCount}</b></div>");
-            sb.AppendLine($"<div class='card ok'>Core<br><b>{hygiene.CoreCount}</b></div>");
-            sb.AppendLine($"<div class='card'>Removal Candidates<br><b>{hygiene.RemovalCandidates}</b></div>");
+
+
+                                sb.AppendLine($@"
+                    <div class='card tooltip warning'>
+                    Structural Candidates<br>
+                    <b>{candidatesCount}</b>
+                    <span class='tooltiptext'>
+                    Classes flagged as potential dead-code candidates
+                    based on structural reference analysis.
+
+                    These classes appear to have zero or near-zero
+                    static usage in the analyzed codebase.
+
+                    This stage represents the initial detection phase.
+                    </span>
+                    </div>");
+
+                                sb.AppendLine($@"
+                    <div class='card tooltip ok'>
+                    Pattern Similarity<br>
+                    <b>{absolvedCount}</b>
+                    <span class='tooltiptext'>
+                    Classes that exhibit structural similarity
+                    to known design patterns.
+
+                    Similarity is detected using heuristics such as:
+
+                    • Interface usage  
+                    • Factory patterns  
+                    • Strategy patterns  
+                    • Dependency injection structures  
+
+                    Important:
+                    Pattern similarity does NOT guarantee runtime usage.
+                    Legacy code may still appear in this category.
+                    </span>
+                    </div>");
+
+                                sb.AppendLine($@"
+                    <div class='card tooltip danger'>
+                    Unresolved<br>
+                    <b>{confirmedCount}</b>
+                    <span class='tooltiptext'>
+                    Classes that could not be associated with
+                    recognized structural patterns.
+
+                    These remain potential dead-code candidates,
+                    but the analyzer cannot provide definitive proof.
+
+                    Manual inspection is recommended.
+                    </span>
+                    </div>");
+
+
+            sb.AppendLine($"<div class='card warning'>Namespace Drift<br><b>{hygiene.NamespaceDriftCount}</b></div>");
+            sb.AppendLine($"<div class='card'>Global Namespace<br><b>{hygiene.GlobalNamespaceCount}</b></div>");
+            sb.AppendLine($"<div class='card'>Isolated Core<br><b>{hygiene.IsolatedCoreCount}</b></div>");
 
             sb.AppendLine($@"
 <div class='card tooltip'>
@@ -140,9 +201,7 @@ Normalized Shannon Entropy (0–1 scale).
 
 0.00–0.25 → Homogeneous structure  
 0.25–0.60 → Moderate dispersion  
-0.60–1.00 → High architectural fragmentation  
-
-Higher values indicate structural disorder.
+0.60–1.00 → High architectural fragmentation
 </span>
 </div>");
 
@@ -151,15 +210,12 @@ Higher values indicate structural disorder.
 Smell Index<br>
 <b>{hygiene.SmellIndex:0.0}</b>
 <span class='tooltiptext'>
-Composite hygiene indicator (0–100 scale).
+Proportional composite hygiene indicator (0–100).
 
-0–20 → Healthy  
-20–40 → Attention  
-40–60 → Degrading  
-60–80 → Critical  
-80–100 → Structural Collapse  
-
-Heuristic early-warning metric.
+Unreferenced weight: 40  
+Namespace Drift weight: 20  
+Isolation weight: 20  
+Entropy weight: 20
 </span>
 </div>");
 
@@ -168,13 +224,11 @@ Heuristic early-warning metric.
 Hygiene Level<br>
 <b>{hygiene.HygieneLevel}</b>
 <span class='tooltiptext'>
-Textual interpretation of Smell Index.
-
-Healthy → Controlled  
-Attention → Growing signals  
-Degrading → Smell accumulation  
+Healthy → Stable structure  
+Stable → Controlled signals  
+Degrading → Hygiene erosion  
 Critical → Architectural risk  
-Structural Collapse → Severe erosion
+Structural Risk → Severe issue density
 </span>
 </div>");
 
@@ -187,9 +241,7 @@ SOLID Alerts<br>
 <span class='tooltiptext'>
 Two-Pass Heuristic Model:
 1) Suspicion detection  
-2) Absolution filtering  
-
-This is an alert system, not a formal compliance proof.
+2) Contextual absolution filtering
 </span>
 </div>");
             }
@@ -198,21 +250,16 @@ This is an alert system, not a formal compliance proof.
 
             #endregion
 
-            #region RADAR (LEFT) + SEARCH BELOW
+
+            #region RADAR RESTAURADO
 
             sb.AppendLine("<div style='margin-top:40px;'>");
             sb.AppendLine("<h2>📡 Architectural Radar</h2>");
             sb.AppendLine(RenderRadarSvg(hygiene));
-
-            sb.AppendLine(@"
-<div style='margin-top:20px;'>
-  <input id='search' onkeyup='searchTable()' placeholder='Search...' 
-         style='width:350px; padding:8px; background:#161b22; border:1px solid #30363d; color:white;'>
-</div>");
-
             sb.AppendLine("</div>");
 
             #endregion
+
 
             #region TABLE
 
@@ -228,10 +275,14 @@ This is an alert system, not a formal compliance proof.
 
             foreach (var item in items)
             {
-                var rowClass = item.Status.Contains("Morto") ? "dead"
-                             : item.Status.Contains("Legado") ? "legacy"
-                             : item.Layer == "Core" ? "core"
-                             : "";
+                string rowClass = "";
+
+                if (confirmed.Contains(item.TypeName))
+                    rowClass = "danger";
+                else if (suspicious.Contains(item.TypeName))
+                    rowClass = "warning";
+                else if (item.Layer == "Core")
+                    rowClass = "core";
 
                 sb.AppendLine($"<tr class='{rowClass}'>");
                 sb.AppendLine($"<td>{item.TypeName}</td>");
@@ -247,11 +298,39 @@ This is an alert system, not a formal compliance proof.
 
             #endregion
 
-            #region SOLID TABLE 
-            if (solid != null && solid.Alerts.Any()) { sb.AppendLine("<h2 style='margin-top:50px;'>⚠ SOLID Alerts</h2>"); sb.AppendLine("<table>"); sb.AppendLine("<tr><th>Principle</th><th>Class</th><th>Namespace</th><th>Reason</th></tr>"); foreach (var alert in solid.Alerts) { sb.AppendLine("<tr>"); sb.AppendLine($"<td>{alert.Principle}</td>"); sb.AppendLine($"<td>{alert.ClassName}</td>"); sb.AppendLine($"<td>{alert.Namespace}</td>"); sb.AppendLine($"<td>{alert.Reason}</td>"); sb.AppendLine("</tr>"); } sb.AppendLine("</table>"); }
-            #endregion 
+            #region SOLID TABLE
+
+            if (solid != null && solid.Alerts.Any())
+            {
+                sb.AppendLine("<h2 style='margin-top:50px;'>⚠ SOLID Alerts</h2>");
+                sb.AppendLine("<table>");
+                sb.AppendLine("<tr><th>Principle</th><th>Class</th><th>Namespace</th><th>Reason</th></tr>");
+                foreach (var alert in solid.Alerts)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendLine($"<td>{alert.Principle}</td>");
+                    sb.AppendLine($"<td>{alert.ClassName}</td>");
+                    sb.AppendLine($"<td>{alert.Namespace}</td>");
+                    sb.AppendLine($"<td>{alert.Reason}</td>");
+                    sb.AppendLine("</tr>");
+                }
+                sb.AppendLine("</table>");
+            }
+
+            #endregion
+
             #region DISCLAIMER
-            sb.AppendLine(@" <div style='margin-top:60px; padding:20px; background:#111827; border-radius:10px; font-size:13px; color:#9ca3af;'> <h3>📘 Methodology & Limitations</h3> This dashboard is based on heuristic structural analysis. SOLID evaluation follows a two-pass refinement model: • Pass 1 – Structural suspicion detection • Pass 2 – Contextual absolution filtering Entropy is computed using normalized Shannon entropy. Smell Index is a composite heuristic metric. These indicators are early-warning architectural signals. They are NOT formal proofs of design violations. Final architectural judgment must always be performed by a human reviewer. </div> "); 
+
+            sb.AppendLine(@"
+<div style='margin-top:60px; padding:20px; background:#111827; border-radius:10px; font-size:13px; color:#9ca3af;'>
+<h3>📘 Methodology & Limitations</h3>
+Structural Unreferenced does NOT imply runtime unused.
+Namespace Drift indicates folder/namespace misalignment.
+Smell Index is proportional and statistically normalized.
+These metrics are architectural signals, not formal proofs.
+Human review remains mandatory.
+</div>");
+
             #endregion
 
             sb.AppendLine("</body></html>");
@@ -266,14 +345,21 @@ This is an alert system, not a formal compliance proof.
 
             var values = new[]
             {
-                Normalize(h.DeadCount, h.TotalClasses),
-                Normalize(h.LegacyCount, h.TotalClasses),
-                Normalize(h.RemovalCandidates, h.TotalClasses),
+                Normalize(h.UnreferencedCount, h.TotalClasses),
+                Normalize(h.NamespaceDriftCount, h.TotalClasses),
+                Normalize(h.GlobalNamespaceCount, h.TotalClasses),
                 h.StructuralEntropy,
                 Normalize(h.IsolatedCoreCount, h.TotalClasses)
             };
 
-            var labels = new[] { "Dead", "Legacy", "Removal", "Entropy", "Isolation" };
+            var labels = new[]
+            {
+                "Unreferenced",
+                "Namespace Drift",
+                "Global",
+                "Entropy",
+                "Isolation"
+            };
 
             int size = 320;
             int center = size / 2;

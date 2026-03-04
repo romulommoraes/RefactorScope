@@ -1,42 +1,61 @@
-﻿namespace RefactorScope.Core.Analyzers
+﻿namespace RefactorScope.Core.Model
 {
-    public sealed class HygieneReport
-    {
-        public int TotalClasses { get; init; }
+        public sealed class HygieneReport
+        {
+            public int TotalClasses { get; }
 
-        public int DeadCount { get; init; }
+            public int UnreferencedCount { get; }
 
-        public int LegacyCount { get; init; }
+            public int GlobalNamespaceCount { get; }
 
-        public int CoreCount { get; init; }
+            public int NamespaceDriftCount { get; }
 
-        public int RemovalCandidates { get; init; }
+            public int IsolatedCoreCount { get; }
 
-        public int IsolatedCoreCount { get; init; }
+            /// <summary>
+            /// Shannon entropy normalizada (0–1)
+            /// </summary>
+            public double StructuralEntropy { get; }
 
-        /// <summary>
-        /// Shannon entropy normalizada (0–1).
-        /// Mede dispersão estrutural entre estados.
-        /// </summary>
-        public double StructuralEntropy { get; init; }
+            /// <summary>
+            /// Índice composto (0–100)
+            /// </summary>
+            public double SmellIndex { get; }
 
-        /// <summary>
-        /// Índice composto (0–100).
-        /// Quanto maior, pior a higiene arquitetural.
-        /// </summary>
-        public double SmellIndex { get; init; }
+            public string HygieneLevel =>
+                SmellIndex switch
+                {
+                    <= 20 => "🟢 Healthy",
+                    <= 40 => "🟡 Stable",
+                    <= 60 => "🟠 Degrading",
+                    <= 80 => "🔴 Critical",
+                    _ => "🔥 Structural Risk"
+                };
 
-        /// <summary>
-        /// Interpretação textual do Smell Index.
-        /// </summary>
-        public string HygieneLevel =>
-            SmellIndex switch
+            public HygieneReport(
+                int totalClasses,
+                int unreferencedCount,
+                int globalNamespaceCount,
+                int namespaceDriftCount,
+                int isolatedCoreCount,
+                double structuralEntropy)
             {
-                <= 20 => "🟢 Healthy",
-                <= 40 => "🟡 Attention",
-                <= 60 => "🟠 Degrading",
-                <= 80 => "🔴 Critical",
-                _ => "🔥 Structural Collapse"
-            };
+                TotalClasses = totalClasses;
+                UnreferencedCount = unreferencedCount;
+                GlobalNamespaceCount = globalNamespaceCount;
+                NamespaceDriftCount = namespaceDriftCount;
+                IsolatedCoreCount = isolatedCoreCount;
+                StructuralEntropy = structuralEntropy;
+
+                var deadRatio = totalClasses == 0 ? 0 : unreferencedCount / (double)totalClasses;
+                var driftRatio = totalClasses == 0 ? 0 : namespaceDriftCount / (double)totalClasses;
+                var isolationRatio = totalClasses == 0 ? 0 : isolatedCoreCount / (double)totalClasses;
+
+                SmellIndex =
+                    (deadRatio * 40)
+                    + (driftRatio * 20)
+                    + (isolationRatio * 20)
+                    + (structuralEntropy * 20);
+            }
+        }
     }
-}

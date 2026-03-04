@@ -10,8 +10,15 @@ namespace RefactorScope.Analyzers
     /// Classifica os tipos do sistema em camadas arquiteturais
     /// com base em regras configuráveis (layerRules).
     ///
-    /// NÃO contém heurísticas hardcoded.
-    /// A definição de camadas é externa e fornecida via config.
+    /// ⚠ IMPORTANTE (ADR-EXP-007):
+    /// Esta análise é puramente estrutural.
+    /// 
+    /// - NÃO declara morte definitiva.
+    /// - NÃO confirma Zombie.
+    /// - NÃO toma decisão de remoção.
+    ///
+    /// A ausência de referência é apenas um indício estrutural.
+    /// A confirmação final é responsabilidade do modelo probabilístico.
     /// </summary>
     public class ArchitecturalClassificationAnalyzer : IAnalyzer
     {
@@ -22,6 +29,7 @@ namespace RefactorScope.Analyzers
             var tipos = context.Model.Tipos;
             var referencias = context.Model.Referencias;
 
+            // Mapa de uso estrutural (quantas vezes um tipo é referenciado)
             var usageMap = referencias
                 .GroupBy(r => r.ToType)
                 .ToDictionary(g => g.Key, g => g.Count());
@@ -57,7 +65,7 @@ namespace RefactorScope.Analyzers
                     );
 
                 var status = DetectStatus(usage);
-                var removal = DetectRemovalCandidate(status);
+                var removal = DetectRemovalCandidate();
 
                 items.Add(new ArchitecturalClassificationItem
                 {
@@ -78,24 +86,26 @@ namespace RefactorScope.Analyzers
 
         /// <summary>
         /// Define o status estrutural do tipo.
+        ///
+        /// ⚠ NÃO representa confirmação de zombie.
+        /// Apenas indica ausência de referência direta no escopo analisado.
         /// </summary>
         private string DetectStatus(int usage)
         {
             return usage == 0
-                ? "Morto Absoluto"
-                : "Ativo";
+                ? "Sem Referência Estrutural"
+                : "Referenciado";
         }
 
         /// <summary>
-        /// Determina se o tipo é candidato à remoção.
+        /// Neutraliza qualquer decisão automática de remoção.
+        ///
+        /// ⚠ Remoção nunca é decidida por análise estrutural isolada.
+        /// Sempre requer validação manual ou confirmação probabilística.
         /// </summary>
-        private string DetectRemovalCandidate(string status)
+        private string DetectRemovalCandidate()
         {
-            return status switch
-            {
-                "Morto Absoluto" => "SIM",
-                _ => "NÃO"
-            };
+            return "Requer Análise";
         }
     }
 }

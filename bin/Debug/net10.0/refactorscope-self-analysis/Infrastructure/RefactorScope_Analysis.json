@@ -33,6 +33,7 @@
     "MarkdownReportExporter",
     "ReportConsolidator",
     "StructuralInventoryExporter",
+    "ZombieRefinementAnalyzer",
     "ScopeFilteredFileDiscovery",
     "DumpStrategyResolver",
     "CSharpRegexParser"
@@ -57,6 +58,7 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
+    "ZombieRefinementAnalyzer",
     "ScopeFilteredFileDiscovery"
   ],
   "EntryPoints": []
