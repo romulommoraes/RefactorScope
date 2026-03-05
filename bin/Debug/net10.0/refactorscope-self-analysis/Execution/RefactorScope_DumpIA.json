@@ -35,145 +35,266 @@
       "Name": "GlobalDumpStrategy",
       "Namespace": "Global",
       "File": "RefactorScope\\Execution\\Dump\\Strategies\\GlobalDumpStrategy.cs",
-      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\n\r\npublic class GlobalDumpStrategy : IDumpStrategy\r\n{\r\n    public void Execute(\r\n        AnalysisContext context,\r\n        ConsolidatedReport report,\r\n        IEnumerable\u003CIExporter\u003E exporters)\r\n    {\r\n        var output = context.Config.OutputPath;\r\n        Directory.CreateDirectory(output);\r\n\r\n        foreach (var exporter in exporters)\r\n        {\r\n            exporter.Export(context, report, output);\r\n        }\r\n    }\r\n}\r\n"
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\npublic class GlobalDumpStrategy : IDumpStrategy\r\n{\r\n    public void Execute(\r\n        AnalysisContext context,\r\n        ConsolidatedReport report,\r\n        IEnumerable\u003CIExporter\u003E exporters)\r\n    {\r\n        var output = context.Config.OutputPath;\r\n        Directory.CreateDirectory(output);\r\n\r\n        foreach (var exporter in exporters)\r\n        {\r\n            exporter.Export(context, report, output);\r\n        }\r\n    }\r\n}\r\n"
     },
     {
       "Name": "IDumpStrategy",
       "Namespace": "Global",
       "File": "RefactorScope\\Execution\\Dump\\Strategies\\IDumpStrategy.cs",
-      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\n\r\npublic interface IDumpStrategy\r\n{\r\n    void Execute(\r\n        AnalysisContext context,\r\n        ConsolidatedReport report,\r\n        IEnumerable\u003CIExporter\u003E exporters\r\n    );\r\n}"
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\npublic interface IDumpStrategy\r\n{\r\n    void Execute(\r\n        AnalysisContext context,\r\n        ConsolidatedReport report,\r\n        IEnumerable\u003CIExporter\u003E exporters\r\n    );\r\n}"
     },
     {
       "Name": "SegmentedDumpStrategy",
       "Namespace": "Global",
       "File": "RefactorScope\\Execution\\Dump\\Strategies\\SegmentedDumpStrategy.cs",
-      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Orchestration;\r\n\r\npublic class SegmentedDumpStrategy : IDumpStrategy\r\n{\r\n    private readonly ISegmentationResolver _resolver;\r\n\r\n    public SegmentedDumpStrategy(ISegmentationResolver resolver)\r\n    {\r\n        _resolver = resolver;\r\n    }\r\n\r\n    public void Execute(\r\n        AnalysisContext context,\r\n        ConsolidatedReport report,\r\n        IEnumerable\u003CIExporter\u003E exporters)\r\n    {\r\n        var segments = _resolver.Resolve(context);\r\n\r\n        foreach (var segment in segments)\r\n        {\r\n            var path = Path.Combine(\r\n                context.Config.OutputPath,\r\n                segment.Name\r\n            );\r\n\r\n            Directory.CreateDirectory(path);\r\n\r\n            foreach (var exporter in exporters)\r\n            {\r\n                exporter.Export(\r\n                    segment.Context,\r\n                    report,\r\n                    path\r\n                );\r\n            }\r\n        }\r\n    }\r\n}"
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\npublic class SegmentedDumpStrategy : IDumpStrategy\r\n{\r\n    private readonly ISegmentationResolver _resolver;\r\n\r\n    public SegmentedDumpStrategy(ISegmentationResolver resolver)\r\n    {\r\n        _resolver = resolver;\r\n    }\r\n\r\n    public void Execute(\r\n        AnalysisContext context,\r\n        ConsolidatedReport report,\r\n        IEnumerable\u003CIExporter\u003E exporters)\r\n    {\r\n        var segments = _resolver.Resolve(context);\r\n\r\n        foreach (var segment in segments)\r\n        {\r\n            var path = Path.Combine(\r\n                context.Config.OutputPath,\r\n                segment.Name\r\n            );\r\n\r\n            Directory.CreateDirectory(path);\r\n\r\n            foreach (var exporter in exporters)\r\n            {\r\n                exporter.Export(\r\n                    segment.Context,\r\n                    report,\r\n                    path\r\n                );\r\n            }\r\n        }\r\n    }\r\n}"
     }
   ],
   "Referencias": [
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "RefactorScopeConfig"
+      "ToType": "IDumpStrategy",
+      "Kind": 0
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "ISegmentationResolver"
+      "ToType": "RefactorScopeConfig",
+      "Kind": 0
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "LayerSegmentationResolver"
+      "ToType": "GlobalDumpStrategy",
+      "Kind": 1
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "TopFolderSegmentationResolver"
+      "ToType": "GlobalDumpStrategy",
+      "Kind": 0
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "GlobalDumpStrategy"
+      "ToType": "SegmentedDumpStrategy",
+      "Kind": 1
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "IDumpStrategy"
+      "ToType": "SegmentedDumpStrategy",
+      "Kind": 0
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "SegmentedDumpStrategy"
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
+    },
+    {
+      "FromType": "DumpStrategyResolver",
+      "ToType": "TopFolderSegmentationResolver",
+      "Kind": 1
+    },
+    {
+      "FromType": "DumpStrategyResolver",
+      "ToType": "TopFolderSegmentationResolver",
+      "Kind": 0
+    },
+    {
+      "FromType": "DumpStrategyResolver",
+      "ToType": "LayerSegmentationResolver",
+      "Kind": 1
+    },
+    {
+      "FromType": "DumpStrategyResolver",
+      "ToType": "LayerSegmentationResolver",
+      "Kind": 0
     },
     {
       "FromType": "ISegmentationResolver",
-      "ToType": "AnalysisContext"
+      "ToType": "SegmentScope",
+      "Kind": 3
     },
     {
       "FromType": "ISegmentationResolver",
-      "ToType": "SegmentScope"
+      "ToType": "SegmentScope",
+      "Kind": 0
+    },
+    {
+      "FromType": "ISegmentationResolver",
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "LayerSegmentationResolver",
-      "ToType": "LayerRuleEvaluator"
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
     },
     {
       "FromType": "LayerSegmentationResolver",
-      "ToType": "AnalysisContext"
+      "ToType": "SegmentScope",
+      "Kind": 3
     },
     {
       "FromType": "LayerSegmentationResolver",
-      "ToType": "ModeloEstrutural"
+      "ToType": "SegmentScope",
+      "Kind": 0
     },
     {
       "FromType": "LayerSegmentationResolver",
-      "ToType": "ISegmentationResolver"
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "LayerSegmentationResolver",
-      "ToType": "SegmentScope"
+      "ToType": "LayerRuleEvaluator",
+      "Kind": 2
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "LayerRuleEvaluator",
+      "Kind": 0
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "ModeloEstrutural",
+      "Kind": 1
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "ModeloEstrutural",
+      "Kind": 0
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "SegmentScope",
+      "Kind": 1
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "AnalysisContext",
+      "Kind": 1
     },
     {
       "FromType": "SegmentScope",
-      "ToType": "AnalysisContext"
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "TopFolderSegmentationResolver",
-      "ToType": "AnalysisContext"
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
     },
     {
       "FromType": "TopFolderSegmentationResolver",
-      "ToType": "ModeloEstrutural"
+      "ToType": "SegmentScope",
+      "Kind": 3
     },
     {
       "FromType": "TopFolderSegmentationResolver",
-      "ToType": "ISegmentationResolver"
+      "ToType": "SegmentScope",
+      "Kind": 0
     },
     {
       "FromType": "TopFolderSegmentationResolver",
-      "ToType": "SegmentScope"
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "ModeloEstrutural",
+      "Kind": 1
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "ModeloEstrutural",
+      "Kind": 0
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "SegmentScope",
+      "Kind": 1
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "AnalysisContext",
+      "Kind": 1
     },
     {
       "FromType": "GlobalDumpStrategy",
-      "ToType": "IExporter"
+      "ToType": "IDumpStrategy",
+      "Kind": 0
     },
     {
       "FromType": "GlobalDumpStrategy",
-      "ToType": "AnalysisContext"
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "GlobalDumpStrategy",
-      "ToType": "ConsolidatedReport"
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
     },
     {
       "FromType": "GlobalDumpStrategy",
-      "ToType": "IDumpStrategy"
+      "ToType": "IExporter",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 0
     },
     {
       "FromType": "IDumpStrategy",
-      "ToType": "IExporter"
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "IDumpStrategy",
-      "ToType": "AnalysisContext"
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
     },
     {
       "FromType": "IDumpStrategy",
-      "ToType": "ConsolidatedReport"
+      "ToType": "IExporter",
+      "Kind": 3
+    },
+    {
+      "FromType": "IDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 0
     },
     {
       "FromType": "SegmentedDumpStrategy",
-      "ToType": "IExporter"
+      "ToType": "IDumpStrategy",
+      "Kind": 0
     },
     {
       "FromType": "SegmentedDumpStrategy",
-      "ToType": "AnalysisContext"
+      "ToType": "ISegmentationResolver",
+      "Kind": 6
     },
     {
       "FromType": "SegmentedDumpStrategy",
-      "ToType": "ConsolidatedReport"
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
     },
     {
       "FromType": "SegmentedDumpStrategy",
-      "ToType": "ISegmentationResolver"
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "SegmentedDumpStrategy",
-      "ToType": "IDumpStrategy"
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 3
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 0
     }
   ]
 }

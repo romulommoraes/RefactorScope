@@ -2,27 +2,27 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RefactorScope.Core.Model
+namespace RefactorScope.Core.Results
 {
-    public class ZombieAnalysisBreakdown
+    public class StructuralCandidateAnalysisBreakdown
     {
         public int StructuralCandidates { get; }
         public int ProbabilisticConfirmed { get; }
         public int Suspicious { get; }
-        public int Absolved { get; }
+        public int PatternSimilarity { get; }
         public double ReductionRate { get; }
 
-        public ZombieAnalysisBreakdown(
+        public StructuralCandidateAnalysisBreakdown(
             int structuralCandidates,
             int probabilisticConfirmed,
             int suspicious,
-            int absolved,
+            int patternSimilarity,
             double reductionRate)
         {
             StructuralCandidates = structuralCandidates;
             ProbabilisticConfirmed = probabilisticConfirmed;
             Suspicious = suspicious;
-            Absolved = absolved;
+            PatternSimilarity = patternSimilarity;
             ReductionRate = reductionRate;
         }
     }

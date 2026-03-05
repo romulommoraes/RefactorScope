@@ -3,6 +3,7 @@ using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
 using RefactorScope.Infrastructure;
 using RefactorScope.Core.Structure;
+using RefactorScope.Core.Model;
 
 namespace RefactorScope.Analyzers
 {
@@ -14,7 +15,7 @@ namespace RefactorScope.Analyzers
     /// Esta análise é puramente estrutural.
     /// 
     /// - NÃO declara morte definitiva.
-    /// - NÃO confirma Zombie.
+    /// - NÃO confirma Structural Candidate.
     /// - NÃO toma decisão de remoção.
     ///
     /// A ausência de referência é apenas um indício estrutural.
@@ -51,6 +52,10 @@ namespace RefactorScope.Analyzers
                     tipo.DeclaredInFile
                 );
 
+                var folderHierarchy = ExtractFolderHierarchy(
+                    tipo.DeclaredInFile
+                );
+
                 var namespaceAlignment =
                     StructuralAlignmentEvaluator.EvaluateNamespaceAlignment(
                         folder,
@@ -65,13 +70,21 @@ namespace RefactorScope.Analyzers
                     );
 
                 var status = DetectStatus(usage);
-                var removal = DetectRemovalCandidate();
+                var removal = DetectRemovalCandidate(
+                    tipo.Name,
+                    usage,
+                    new HashSet<string>(),
+                    new HashSet<string>()
+                );
+
 
                 items.Add(new ArchitecturalClassificationItem
                 {
                     TypeName = tipo.Name,
                     Namespace = tipo.Namespace,
+                    DeclaredInFile = TrimRootFolder(tipo.DeclaredInFile),
                     Folder = folder,
+                    FolderHierarchy = folderHierarchy,
                     Layer = layer,
                     NamespaceAlignment = namespaceAlignment,
                     StructuralStatus = structuralStatus,
@@ -103,9 +116,65 @@ namespace RefactorScope.Analyzers
         /// ⚠ Remoção nunca é decidida por análise estrutural isolada.
         /// Sempre requer validação manual ou confirmação probabilística.
         /// </summary>
-        private string DetectRemovalCandidate()
+        private string DetectRemovalCandidate(
+            string typeName,
+            int usage,
+            HashSet<string> unresolved,
+            HashSet<string> patternSimilarity)
         {
+            // Se possui uso, não é candidato
+            if (usage > 0)
+                return "N/A";
+
+            // Entry point explícito
+            if (typeName == "Program")
+                return "N/A";
+
+            // Similaridade arquitetural detectada
+            if (patternSimilarity.Contains(typeName))
+                return "Requer Análise";
+
+            // Estruturalmente não explicado
+            if (unresolved.Contains(typeName))
+                return "Remoção Indicada";
+
             return "Requer Análise";
+        }
+
+        private static string TrimRootFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return path;
+
+            var parts = path.Split(Path.DirectorySeparatorChar);
+
+            // remove o primeiro segmento (ex: RefactorScope)
+            if (parts.Length > 1)
+                return string.Join(Path.DirectorySeparatorChar, parts.Skip(1));
+
+            return path;
+        }
+
+        private static string ExtractFolderHierarchy(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return string.Empty;
+
+            var directory = Path.GetDirectoryName(path);
+
+            if (string.IsNullOrWhiteSpace(directory))
+                return string.Empty;
+
+            var normalized = directory
+                .Replace("\\", "/");
+
+            // remove possível raiz do projeto
+            var parts = normalized.Split('/');
+
+            if (parts.Length <= 1)
+                return normalized;
+
+            return string.Join("/", parts.Skip(1));
         }
     }
 }

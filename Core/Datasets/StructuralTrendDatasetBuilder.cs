@@ -1,17 +1,24 @@
 ﻿using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Datasets
 {
     /// <summary>
-    /// Dataset histórico de tendência estrutural.
+    /// Historical dataset representing structural health trends over time.
     ///
-    /// ⚠️ Fonte Única de Verdade para zombies:
-    /// Sempre utiliza ConsolidatedReport.GetEffectiveZombieTypes(),
-    /// respeitando o modelo probabilístico quando disponível.
+    /// ⚠️ Source of Truth for candidate resolution:
+    /// Always uses ConsolidatedReport.GetEffectiveUnresolvedCandidates(),
+    /// ensuring probabilistic refinement is respected when available.
     ///
-    /// Nunca consome ZombieResult diretamente.
+    /// Legacy compatibility:
+    /// The column "ZombieRate" is preserved for compatibility with
+    /// previously generated datasets and dashboards.
+    ///
+    /// Conceptually this value now represents:
+    ///     Unresolved Candidate Rate
+    ///
+    /// Planned migration (future version):
+    ///     ZombieRate → UnresolvedRate
     /// </summary>
     public class StructuralTrendDatasetBuilder : IAnalyticalDatasetBuilder
     {
@@ -23,7 +30,7 @@ namespace RefactorScope.Core.Datasets
             "Scope",
             "StructuralScore",
             "Coupling",
-            "ZombieRate",
+            "ZombieRate",     // legacy column (UnresolvedRate)
             "IsolationRate",
             "CoreDensity"
         };
@@ -42,23 +49,21 @@ namespace RefactorScope.Core.Datasets
                 yield break;
 
             // ===============================
-            // Fonte Oficial de Zombie
+            // Official source of unresolved candidates
             // ===============================
-            var threshold = context.Config
-                .ZombieDetection
-                .MinZombieProbabilityThreshold;
 
-            var effectiveZombies =
-                report.GetEffectiveZombieTypes();
+            var unresolvedCandidates =
+                report.GetEffectiveUnresolvedCandidates();
 
             // ===============================
-            // Métricas
+            // Metrics
             // ===============================
+
             var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;
             var normalizedCoupling = totalFanOut / (double)totalTypes;
 
-            var zombieRate =
-                effectiveZombies.Count / (double)totalTypes;
+            var unresolvedRate =
+                unresolvedCandidates.Count / (double)totalTypes;
 
             var isolationRate =
                 isolated?.IsolatedCoreTypes.Count / (double)totalTypes ?? 0;
@@ -73,12 +78,12 @@ namespace RefactorScope.Core.Datasets
                 context.Config.RootPath,
                 ComputeScore(
                     normalizedCoupling,
-                    zombieRate,
+                    unresolvedRate,
                     isolationRate,
                     coreDensity
                 ).ToString("0.00"),
                 normalizedCoupling.ToString("0.00"),
-                zombieRate.ToString("0.00"),
+                unresolvedRate.ToString("0.00"),
                 isolationRate.ToString("0.00"),
                 coreDensity.ToString("0.00")
             };
@@ -86,14 +91,14 @@ namespace RefactorScope.Core.Datasets
 
         private static double ComputeScore(
             double coupling,
-            double zombie,
+            double unresolved,
             double isolation,
             double core)
         {
             var score =
                 100
                 - (coupling * 30)
-                - (zombie * 25)
+                - (unresolved * 25)
                 - (isolation * 20)
                 + (core * 15);
 

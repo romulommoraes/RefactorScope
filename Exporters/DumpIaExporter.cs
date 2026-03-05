@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Results;
 
 namespace RefactorScope.Exporters
 {

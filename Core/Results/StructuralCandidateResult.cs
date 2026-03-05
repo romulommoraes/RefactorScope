@@ -5,16 +5,16 @@ namespace RefactorScope.Core.Results
     /// <summary>
     /// Resultado da análise de tipos potencialmente não utilizados.
     /// </summary>
-    public class ZombieResult : IAnalysisResult
+    public class StructuralCandidateResult : IAnalysisResult
     {
         /// <summary>
         /// Tipos que não possuem referências externas.
         /// </summary>
-        public IReadOnlyList<string> ZombieTypes { get; }
+        public IReadOnlyList<string> StructuralCandidateTypes { get; }
 
-        public ZombieResult(IReadOnlyList<string> zombieTypes)
+        public StructuralCandidateResult(IReadOnlyList<string> zombieTypes)
         {
-            ZombieTypes = zombieTypes;
+            StructuralCandidateTypes = zombieTypes;
         }
     }
 }

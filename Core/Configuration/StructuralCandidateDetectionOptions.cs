@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RefactorScope.Core.Configuration
 {
-    public class ZombieDetectionOptions
+    public class StructuralCandidateDetectionOptions
     {
         public bool EnableRefinement { get; set; } = true;
 
@@ -15,8 +15,8 @@ namespace RefactorScope.Core.Configuration
         public double InterfaceProbability { get; set; } = 0.25;
 
         /// <summary>
-        /// Acima desse valor o tipo continua sendo considerado Zombie Confirmado.
+        /// Acima desse valor o tipo permanece classificado como Unresolved Candidate.
         /// </summary>
-        public double MinZombieProbabilityThreshold { get; set; } = 0.60;
+        public double MinUnresolvedProbabilityThreshold { get; set; } = 0.60;
     }
 }

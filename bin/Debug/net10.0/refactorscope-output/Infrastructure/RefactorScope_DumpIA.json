@@ -166,384 +166,719 @@
   ],
   "Referencias": [
     {
-      "FromType": "ConfigService",
-      "ToType": "PathResolver"
-    },
-    {
-      "FromType": "PathResolver",
-      "ToType": "ConfigService"
+      "FromType": "RaizComposicao",
+      "ToType": "IModuloAnalise",
+      "Kind": 3
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "MotorDeIdentidade"
+      "ToType": "IModuloAnalise",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ZumbiScanner"
+      "ToType": "ZumbiScanner",
+      "Kind": 2
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "ZumbiScanner",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IMotorEtogramaCartesiano"
+      "ToType": "BancoDeDadosLexico",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IMotorIdentidadeRNA"
+      "ToType": "IServicoVocabulario",
+      "Kind": 6
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "BibliotecaCentroidesEtograma"
+      "ToType": "IServicoVocabulario",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "MotorIdentidadeRNA"
+      "ToType": "BancoDeDadosLexico",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ExtratorEtogramaDeriva6"
+      "ToType": "ParametrosVader",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "MotorEtogramaCartesiano3D"
+      "ToType": "ParametrosVader",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "MotorDeriva6"
+      "ToType": "MotorDeriva6",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "BancoDeDadosLexico"
+      "ToType": "IMotorDeriva",
+      "Kind": 6
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ParametrosVader"
+      "ToType": "IMotorDeriva",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IMotorDeriva"
+      "ToType": "MotorDeriva6",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IServicoVocabulario"
+      "ToType": "MotorLimbic",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "MotorLimbic"
+      "ToType": "MotorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "AdaptadorBasico"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 3
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "AdaptadorBeats"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "AdaptadorDinamica"
+      "ToType": "ClassificadorIntensidade",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "AdaptadorDuracao"
+      "ToType": "ClassificadorIntensidade",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "AdaptadorInteracao"
+      "ToType": "ClassificadorTermico",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "AdaptadorLimbic"
+      "ToType": "ClassificadorTermico",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IModuloAnalise"
+      "ToType": "ClassificadorPsicodinamico",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "IMotorSplicing"
+      "ToType": "ClassificadorPsicodinamico",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "MotorSplicing"
+      "ToType": "ClassificadorJung",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorJung"
+      "ToType": "ClassificadorJung",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorJungV2"
+      "ToType": "ClassificadorScriptome",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorEtogramaCartesiano"
+      "ToType": "ClassificadorScriptome",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorIntensidade"
+      "ToType": "ExtratorEtogramaDeriva6",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorTermico"
+      "ToType": "ExtratorEtogramaDeriva6",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorNarrativaV2"
+      "ToType": "ClassificadorEtogramaCartesiano",
+      "Kind": 1
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorScriptome"
+      "ToType": "BibliotecaCentroidesEtograma",
+      "Kind": 2
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorLacaniano"
+      "ToType": "ClassificadorEtogramaCartesiano",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorLacanianoV2"
+      "ToType": "BibliotecaCentroidesEtograma",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorMBTI"
+      "ToType": "IMotorEtogramaCartesiano",
+      "Kind": 6
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorMBTIV2"
+      "ToType": "IMotorEtogramaCartesiano",
+      "Kind": 0
     },
     {
       "FromType": "RaizComposicao",
-      "ToType": "ClassificadorPsicodinamico"
+      "ToType": "MotorEtogramaCartesiano3D",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorEtogramaCartesiano3D",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorDeIdentidade",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorDeIdentidade",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorSplicing",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "IMotorSplicing",
+      "Kind": 6
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "IMotorSplicing",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorSplicing",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorJungV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorJungV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorLacanianoV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorLacanianoV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorMBTIV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorMBTIV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorNarrativaV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "ClassificadorNarrativaV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "IMotorIdentidadeRNA",
+      "Kind": 6
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "IMotorIdentidadeRNA",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorIdentidadeRNA",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "MotorIdentidadeRNA",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorBasico",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorBasico",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorLimbic",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorInteracao",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorInteracao",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorBeats",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorBeats",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorDuracao",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorDuracao",
+      "Kind": 0
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorDinamica",
+      "Kind": 1
+    },
+    {
+      "FromType": "RaizComposicao",
+      "ToType": "AdaptadorDinamica",
+      "Kind": 0
     },
     {
       "FromType": "ScriptomeJsonExporter",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "ScriptomeVisualizer",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "ZumbiScanner",
-      "ToType": "Program"
+      "ToType": "ClasseInfo",
+      "Kind": 0
     },
     {
       "FromType": "ZumbiScanner",
-      "ToType": "MotorDeIdentidade"
-    },
-    {
-      "FromType": "ZumbiScanner",
-      "ToType": "ClasseInfo"
-    },
-    {
-      "FromType": "ClasseInfo",
-      "ToType": "Program"
-    },
-    {
-      "FromType": "ClasseInfo",
-      "ToType": "MotorDeIdentidade"
-    },
-    {
-      "FromType": "ClasseInfo",
-      "ToType": "ZumbiScanner"
+      "ToType": "ClasseInfo",
+      "Kind": 3
     },
     {
       "FromType": "ExportadorBaselineElencoLegacyJson",
-      "ToType": "Etograma"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorBaselineElencoLegacyJson",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "Etograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "ExportadorBaselineElencoLegacyJson",
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "ScriptomeVisualizer"
+      "ToType": "IExportadorScriptome",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "VisualizadorEtograma"
+      "ToType": "IAbaExcel",
+      "Kind": 3
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "IExportadorScriptome"
+      "ToType": "AbaDashboard",
+      "Kind": 1
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "AbaDashboard",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "Roteiro"
+      "ToType": "AbaBeatSheet",
+      "Kind": 1
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "AbaAnaliseDeCenas"
+      "ToType": "AbaBeatSheet",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "AbaBeatSheet"
+      "ToType": "AbaAnaliseDeCenas",
+      "Kind": 1
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "AbaDashboard"
+      "ToType": "AbaAnaliseDeCenas",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "AbaElenco"
+      "ToType": "AbaElenco",
+      "Kind": 1
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "AbaMatrizSocial"
+      "ToType": "AbaElenco",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorExcelModular",
-      "ToType": "AbaTaxonomia"
+      "ToType": "AbaMatrizSocial",
+      "Kind": 1
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "AbaMatrizSocial",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "AbaTaxonomia",
+      "Kind": 1
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "AbaTaxonomia",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "ScriptomeVisualizer",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "Roteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "VisualizadorEtograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "ExportadorExcelModular",
+      "ToType": "VisualizadorEtograma",
+      "Kind": 0
     },
     {
       "FromType": "VisualizadorEtograma",
-      "ToType": "BibliotecaCentroidesEtograma"
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 3
     },
     {
       "FromType": "VisualizadorEtograma",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 0
     },
     {
       "FromType": "VisualizadorEtograma",
-      "ToType": "PerfilPersonagemConsolidado"
+      "ToType": "BibliotecaCentroidesEtograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "VisualizadorEtograma",
+      "ToType": "BibliotecaCentroidesEtograma",
+      "Kind": 0
     },
     {
       "FromType": "IAbaExcel",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "IExportadorScriptome",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "ComparadorJung",
-      "ToType": "ComparacaoJung"
+      "ToType": "ComparacaoJung",
+      "Kind": 0
+    },
+    {
+      "FromType": "ComparadorJung",
+      "ToType": "ComparacaoJung",
+      "Kind": 1
     },
     {
       "FromType": "ExecutorValidacaoJung",
-      "ToType": "ComparacaoJung"
+      "ToType": "ValidadorJung",
+      "Kind": 6
     },
     {
       "FromType": "ExecutorValidacaoJung",
-      "ToType": "MetricasDivergencia"
+      "ToType": "ValidadorJung",
+      "Kind": 0
     },
     {
       "FromType": "ExecutorValidacaoJung",
-      "ToType": "ValidadorJung"
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
     },
     {
       "FromType": "ExecutorValidacaoJung",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ExecutorValidacaoJung",
-      "ToType": "RnaBruto"
+      "ToType": "RnaBruto",
+      "Kind": 3
+    },
+    {
+      "FromType": "ExecutorValidacaoJung",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExecutorValidacaoJung",
+      "ToType": "ComparacaoJung",
+      "Kind": 3
+    },
+    {
+      "FromType": "ExecutorValidacaoJung",
+      "ToType": "ComparacaoJung",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExecutorValidacaoJung",
+      "ToType": "MetricasDivergencia",
+      "Kind": 0
     },
     {
       "FromType": "ExportadorBaselineJung",
-      "ToType": "PerfilPersonagemConsolidado"
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 3
+    },
+    {
+      "FromType": "ExportadorBaselineJung",
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 0
     },
     {
       "FromType": "MetricasDivergencia",
-      "ToType": "ComparacaoJung"
+      "ToType": "ComparacaoJung",
+      "Kind": 3
+    },
+    {
+      "FromType": "MetricasDivergencia",
+      "ToType": "ComparacaoJung",
+      "Kind": 0
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "IClassificadorJungV2"
+      "ToType": "ClassificadorJung",
+      "Kind": 6
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "Etograma"
+      "ToType": "ClassificadorJung",
+      "Kind": 0
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "ComparacaoJung"
+      "ToType": "IClassificadorJungV2",
+      "Kind": 6
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "ComparadorJung"
+      "ToType": "IClassificadorJungV2",
+      "Kind": 0
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "ClassificadorJung"
+      "ToType": "ComparadorJung",
+      "Kind": 6
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "PerfilPersonagem"
+      "ToType": "ComparadorJung",
+      "Kind": 0
     },
     {
       "FromType": "ValidadorJung",
-      "ToType": "RnaBruto"
+      "ToType": "ComparacaoJung",
+      "Kind": 0
+    },
+    {
+      "FromType": "ValidadorJung",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "ValidadorJung",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "ValidadorJung",
+      "ToType": "Etograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "ValidadorJung",
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "AbaAnaliseDeCenas",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaAnaliseDeCenas",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaBeatSheet",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaBeatSheet",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaDashboard",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaDashboard",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaElenco",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaElenco",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaEstrutura",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaEstrutura",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaMatrizSocial",
-      "ToType": "IAbaExcel"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaMatrizSocial",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaTaxonomia",
-      "ToType": "MotorTaxonomia"
+      "ToType": "IAbaExcel",
+      "Kind": 0
     },
     {
       "FromType": "AbaTaxonomia",
-      "ToType": "IAbaExcel"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "AbaTaxonomia",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "MotorTaxonomia",
+      "Kind": 1
+    },
+    {
+      "FromType": "AbaTaxonomia",
+      "ToType": "MotorTaxonomia",
+      "Kind": 0
     }
   ]
 }

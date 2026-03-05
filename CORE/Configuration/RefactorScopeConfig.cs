@@ -55,6 +55,6 @@ namespace RefactorScope.Core.Configuration
 
         public FitnessGateConfig FitnessGates { get; set; } = new();
 
-        public ZombieDetectionOptions ZombieDetection { get; set; } = new();
+        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();
     }
 }

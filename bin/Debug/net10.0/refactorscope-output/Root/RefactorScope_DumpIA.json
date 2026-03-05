@@ -11,39 +11,88 @@
   "Referencias": [
     {
       "FromType": "Program",
-      "ToType": "RaizComposicao"
+      "ToType": "VerificadorLimbic",
+      "Kind": 2
     },
     {
       "FromType": "Program",
-      "ToType": "OrquestradorNucleo"
+      "ToType": "VerificadorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "Etograma"
+      "ToType": "RaizComposicao",
+      "Kind": 2
     },
     {
       "FromType": "Program",
-      "ToType": "ExportadorBaselineElencoLegacyJson"
+      "ToType": "RaizComposicao",
+      "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "ExportadorBaselineEtograma"
+      "ToType": "LeitorFountain",
+      "Kind": 1
     },
     {
       "FromType": "Program",
-      "ToType": "ExportadorExcelModular"
+      "ToType": "LeitorFountain",
+      "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "IExportadorScriptome"
+      "ToType": "OrquestradorNucleo",
+      "Kind": 1
     },
     {
       "FromType": "Program",
-      "ToType": "VerificadorLimbic"
+      "ToType": "OrquestradorNucleo",
+      "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "LeitorFountain"
+      "ToType": "ExportadorExcelModular",
+      "Kind": 1
+    },
+    {
+      "FromType": "Program",
+      "ToType": "IExportadorScriptome",
+      "Kind": 6
+    },
+    {
+      "FromType": "Program",
+      "ToType": "IExportadorScriptome",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
+      "ToType": "ExportadorExcelModular",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
+      "ToType": "ExportadorBaselineElencoLegacyJson",
+      "Kind": 2
+    },
+    {
+      "FromType": "Program",
+      "ToType": "ExportadorBaselineElencoLegacyJson",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
+      "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
+      "ToType": "ExportadorBaselineEtograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "Program",
+      "ToType": "ExportadorBaselineEtograma",
+      "Kind": 0
     }
   ]
 }

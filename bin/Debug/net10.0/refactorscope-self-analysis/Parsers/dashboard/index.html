@@ -6,14 +6,18 @@
 <title>RefactorScope Dashboard</title>
 <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+
 <style>
 body { background:#111; color:#eee; font-family:Arial; }
-.container { display:flex; flex-wrap:wrap; }
-.card { background:#1b1b1b; margin:20px; padding:20px; border-radius:8px; width:45%; }
 
-.confirmed {
-    color:#ff4c4c;
-    font-weight:bold;
+.container { display:flex; flex-wrap:wrap; }
+
+.card {
+    background:#1b1b1b;
+    margin:20px;
+    padding:20px;
+    border-radius:8px;
+    width:45%;
 }
 
 .section {
@@ -28,29 +32,85 @@ body { background:#111; color:#eee; font-family:Arial; }
     font-weight:bold;
 }
 
+.unresolved {
+    color:#ff4c4c;
+    font-weight:bold;
+}
+
+.pattern {
+    color:#06d6a0;
+}
+
 </style>
+
 </head>
 <body>
 
 <h1>RefactorScope Dashboard</h1>
 
 <div class='section'>
-<h2>Zombie Classification (ADR-EXP-007)</h2>
-<p class='count'>Confirmed Zombies: <span style='color:#ff4c4c'>10</span></p>
-<p class='count'>Structural Candidates: 37</p>
+<h2>Structural Candidate Analysis (ADR-EXP-007)</h2>
 
-<h3>Confirmed Zombies</h3>
+<p class='count'>Structural Candidates: 41</p>
+
+<p class='count'>
+Pattern Similarity: 
+<span style='color:#06d6a0'>40</span>
+</p>
+
+<p class='count'>
+Unresolved: 
+<span style='color:#ff4c4c'>1</span>
+</p>
+
+<h3>Unresolved Candidates</h3>
 <ul>
-<li class='confirmed'>SelfAnalysisSelector</li>
-<li class='confirmed'>ConfigLoader</li>
-<li class='confirmed'>ConfigValidator</li>
-<li class='confirmed'>TerminalRenderer</li>
-<li class='confirmed'>AnalysisContextExtensions</li>
-<li class='confirmed'>FitnessGateEvaluator</li>
-<li class='confirmed'>AnalysisOrchestrator</li>
-<li class='confirmed'>ReportConsolidator</li>
-<li class='confirmed'>ScopeFilteredFileDiscovery</li>
-<li class='confirmed'>CSharpRegexParser</li>
+<li class='unresolved'>FakeZombieService</li>
+
+</ul>
+
+<h3>Pattern Similarity</h3>
+<ul>
+<li class='pattern'>ArchitecturalClassificationAnalyzer</li>
+<li class='pattern'>CoreIsolationAnalyzer</li>
+<li class='pattern'>CouplingAnalyzer</li>
+<li class='pattern'>EntryPointHeuristicAnalyzer</li>
+<li class='pattern'>FitnessGateAnalyzer</li>
+<li class='pattern'>ProjectStructureAnalyzer</li>
+<li class='pattern'>StructuralCandidateAnalyzer</li>
+<li class='pattern'>StructuralCandidateRefinementAnalyzer</li>
+<li class='pattern'>ParserSelector</li>
+<li class='pattern'>SelfAnalysisSelector</li>
+<li class='pattern'>DatasetExporter</li>
+<li class='pattern'>DumpAnaliseExporter</li>
+<li class='pattern'>DumpIaExporter</li>
+<li class='pattern'>FitnessGateCsvExporter</li>
+<li class='pattern'>HtmlDashboardExporter</li>
+<li class='pattern'>MarkdownReportExporter</li>
+<li class='pattern'>ProjectStructureExporter</li>
+<li class='pattern'>StructuralInventoryExporter</li>
+<li class='pattern'>ConfigLoader</li>
+<li class='pattern'>ConfigValidator</li>
+<li class='pattern'>CrashLogger</li>
+<li class='pattern'>TerminalRenderer</li>
+<li class='pattern'>SolidAnalyzer</li>
+<li class='pattern'>FitnessGateConfigResolver</li>
+<li class='pattern'>AnalysisContextExtensions</li>
+<li class='pattern'>ArchitecturalHealthDatasetBuilder</li>
+<li class='pattern'>GlobalMetricsDatasetBuilder</li>
+<li class='pattern'>GlobalTypesDatasetBuilder</li>
+<li class='pattern'>ModuleContributionDatasetBuilder</li>
+<li class='pattern'>StructuralOverviewDatasetBuilder</li>
+<li class='pattern'>StructuralScoreDatasetBuilder</li>
+<li class='pattern'>StructuralTrendDatasetBuilder</li>
+<li class='pattern'>TypeContributionDatasetBuilder</li>
+<li class='pattern'>FitnessGateEvaluator</li>
+<li class='pattern'>AnalysisOrchestrator</li>
+<li class='pattern'>ReportConsolidator</li>
+<li class='pattern'>ConsolidatedReportExtensions</li>
+<li class='pattern'>StructuralBreakdownExtensions</li>
+<li class='pattern'>ScopeFilteredFileDiscovery</li>
+<li class='pattern'>DumpStrategyResolver</li>
 
 </ul>
 
@@ -61,7 +121,10 @@ body { background:#111; color:#eee; font-family:Arial; }
 <li>CouplingAnalyzer</li>
 <li>EntryPointHeuristicAnalyzer</li>
 <li>FitnessGateAnalyzer</li>
-<li>ZombieAnalyzer</li>
+<li>ProjectStructureAnalyzer</li>
+<li>StructuralCandidateAnalyzer</li>
+<li>StructuralCandidateRefinementAnalyzer</li>
+<li>ParserSelector</li>
 <li>SelfAnalysisSelector</li>
 <li>FakeZombieService</li>
 <li>DatasetExporter</li>
@@ -69,9 +132,12 @@ body { background:#111; color:#eee; font-family:Arial; }
 <li>DumpIaExporter</li>
 <li>FitnessGateCsvExporter</li>
 <li>HtmlDashboardExporter</li>
+<li>MarkdownReportExporter</li>
 <li>ProjectStructureExporter</li>
+<li>StructuralInventoryExporter</li>
 <li>ConfigLoader</li>
 <li>ConfigValidator</li>
+<li>CrashLogger</li>
 <li>TerminalRenderer</li>
 <li>SolidAnalyzer</li>
 <li>FitnessGateConfigResolver</li>
@@ -86,27 +152,28 @@ body { background:#111; color:#eee; font-family:Arial; }
 <li>TypeContributionDatasetBuilder</li>
 <li>FitnessGateEvaluator</li>
 <li>AnalysisOrchestrator</li>
-<li>MarkdownReportExporter</li>
 <li>ReportConsolidator</li>
-<li>StructuralInventoryExporter</li>
-<li>ZombieRefinementAnalyzer</li>
+<li>ConsolidatedReportExtensions</li>
+<li>StructuralBreakdownExtensions</li>
 <li>ScopeFilteredFileDiscovery</li>
 <li>DumpStrategyResolver</li>
-<li>CSharpRegexParser</li>
 
 </ul>
+
 </div>
 
 <div class='container'>
 <div class='card'>
 <canvas id='radarChart'></canvas>
 </div>
+
 <div class='card'>
 <canvas id='heatChart'></canvas>
 </div>
 </div>
 
 <script>
+
 function loadCSV(path, callback) {
     Papa.parse(path, {
         download: true,
@@ -118,7 +185,7 @@ function loadCSV(path, callback) {
 loadCSV('../dataset_arch_health.csv', data => {
 
     const modules = data.map(x => x.Module);
-    const zombies = data.map(x => parseFloat(x.ZombieRate));
+    const candidates = data.map(x => parseFloat(x.CandidateRate));
     const isolation = data.map(x => parseFloat(x.IsolationRate));
 
     new Chart(document.getElementById('radarChart'), {
@@ -126,7 +193,7 @@ loadCSV('../dataset_arch_health.csv', data => {
         data: {
             labels: modules,
             datasets: [
-                { label: 'Zombie Rate', data: zombies },
+                { label: 'Structural Candidates', data: candidates },
                 { label: 'Isolation', data: isolation }
             ]
         }
@@ -137,12 +204,13 @@ loadCSV('../dataset_arch_health.csv', data => {
         data: {
             labels: modules,
             datasets: [
-                { label: 'Zombie Heat', data: zombies }
+                { label: 'Candidate Density', data: candidates }
             ]
         }
     });
 
 });
+
 </script>
 
 </body>

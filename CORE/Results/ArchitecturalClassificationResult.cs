@@ -1,4 +1,5 @@
 ﻿using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
 
 namespace RefactorScope.Core.Results
 {

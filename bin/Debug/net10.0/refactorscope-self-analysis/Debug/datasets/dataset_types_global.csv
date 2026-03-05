@@ -1,2 +1,2 @@
-﻿Type,Module,Layer,Usage,StructuralStatus,IsZombie,IsIsolated,IsEntryPoint
-FakeZombieService,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
+FakeZombieService,RefactorScope,Aplicação,0,DriftArquitetural,1,1,0,0

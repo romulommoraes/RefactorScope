@@ -1,5 +1,6 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Orchestration
 {
@@ -43,7 +44,7 @@ namespace RefactorScope.Core.Orchestration
 
             // 🔥 Threshold oficial da análise
             var zombieThreshold =
-                context.Config.ZombieDetection.MinZombieProbabilityThreshold;
+                context.Config.StructuralCandidateDetection.MinUnresolvedProbabilityThreshold;
 
             return new ConsolidatedReport(
                 activeResults,

@@ -4,17 +4,20 @@ using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Datasets;
+using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
-using RefactorScope.Parsers.CSharpRegex;
+using RefactorScope.Parsers.CsharpParsers;
 using Spectre.Console;
 
 Console.WriteLine();
+
 // 🔬 TESTE DI CONTROLADO (linha textual apenas)
 var __fake = "services.AddScoped<FakeZombieService>();";
+
 
 // =====================================================
 // 🔹 FLUXO PRINCIPAL
@@ -24,14 +27,14 @@ if (!TryRunConfiguration(out var config)) return;
 if (!TryRunParsing(config, out var context)) return;
 if (!TryRunAnalysis(context, out var report)) return;
 
-// 🔥 DEBUG — Zombie Breakdown
-var breakdown = report.GetZombieBreakdown();
+// 🔥 DEBUG — Structural Candidate Breakdown
+var breakdown = report.GetStructuralCandidateBreakdown();
 
 AnsiConsole.WriteLine();
-AnsiConsole.MarkupLine("[bold cyan]Zombie Analysis Breakdown[/]");
+AnsiConsole.MarkupLine("[bold cyan]Structural Candidates Analysis Breakdown[/]");
 AnsiConsole.WriteLine($"Structural Candidates : {breakdown.StructuralCandidates}");
-AnsiConsole.WriteLine($"Probabilistic Confirmed (≥ {report.ZombieProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
-AnsiConsole.WriteLine($"Absolved : {breakdown.Absolved}");
+AnsiConsole.WriteLine($"Probabilistic Confirmed (≥ {report.UnresolvedProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
+AnsiConsole.WriteLine($"Absolved : {breakdown.PatternSimilarity}");
 AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
 AnsiConsole.WriteLine();
 
@@ -39,6 +42,7 @@ if (!TryRunExport(config, context, report)) return;
 
 RunVisualization(report);
 ApplyCiExitCode(report);
+
 
 
 // =====================================================
@@ -79,9 +83,11 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NA CONFIGURAÇÃO]: {ex.Message}");
+        CrashLogger.Log(ex, "CONFIGURATION");
         return false;
     }
 }
+
 
 
 // =====================================================
@@ -90,14 +96,22 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
 static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext context)
 {
     context = null!;
+
     try
     {
-        IParserCodigo parser = new CSharpRegexParser();
+        bool enableParserSelector = true;
 
-        var model = TerminalRenderer.WithSpinner("Parsing código...",
+        IParserCodigo parser = RefactorScope.CLI.ParserSelector
+            .ResolveParser(enableParserSelector);
+
+        var model = TerminalRenderer.WithSpinner(
+            "Parsing código...",
             () => parser.Parse(config.RootPath, config.Include, config.Exclude));
 
         TerminalRenderer.Success("Parsing concluído");
+
+        // 🔎 SANITY CHECK — apenas detecta duplicatas
+        WarnDuplicateTipos(model.Tipos);
 
         context = new AnalysisContext(config, model);
         return true;
@@ -105,9 +119,26 @@ static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext contex
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NO PARSING]: {ex.Message}");
+        CrashLogger.Log(ex, "PARSING");
         return false;
     }
 }
+
+static void WarnDuplicateTipos(IEnumerable<TipoInfo> tipos)
+{
+    var duplicates = tipos
+        .GroupBy(t => $"{t.Namespace}.{t.Name}")
+        .Where(g => g.Count() > 1)
+        .ToList();
+
+    foreach (var dup in duplicates)
+    {
+        TerminalRenderer.Warn(
+            $"Tipo duplicado detectado: {dup.Key} (ocorrências: {dup.Count()})"
+        );
+    }
+}
+
 
 
 // =====================================================
@@ -116,30 +147,21 @@ static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext contex
 static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport report)
 {
     report = null!;
+
     try
     {
         var analyzers = new List<IAnalyzer>();
+        analyzers.Add(new ProjectStructureAnalyzer());
 
-        // ===============================
-        // 🔹 Zombie estrutural
-        // ===============================
         if (IsEnabled(context, "zombie"))
-        {
-            analyzers.Add(new ZombieAnalyzer());
-        }
+            analyzers.Add(new StructuralCandidateAnalyzer());
 
-        // ===============================
-        // 🔹 Zombie probabilístico
-        // ===============================
         if (IsEnabled(context, "zombieRefinement") &&
-            context.Config.ZombieDetection.EnableRefinement)
+            context.Config.StructuralCandidateDetection.EnableRefinement)
         {
-            analyzers.Add(new ZombieRefinementAnalyzer());
+            analyzers.Add(new StructuralCandidateRefinementAnalyzer());
         }
 
-        // ===============================
-        // 🔹 Demais analisadores
-        // ===============================
         if (IsEnabled(context, "architecture"))
             analyzers.Add(new ArchitecturalClassificationAnalyzer());
 
@@ -155,7 +177,6 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
         if (IsEnabled(context, "solid"))
             analyzers.Add(new SolidAnalyzer());
 
-        // ⚠ FitnessGate SEMPRE por último
         analyzers.Add(new FitnessGateAnalyzer(context.Config.FitnessGates));
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
@@ -174,12 +195,15 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NA ANÁLISE]: {ex.Message}");
+        CrashLogger.Log(ex, "ANALYSIS");
         return false;
     }
 }
 
+
+
 // =====================================================
-// 🔹 BLOCO 4 — EXPORTAÇÃO + RELATÓRIO MD
+// 🔹 BLOCO 4 — EXPORTAÇÃO
 // =====================================================
 static bool TryRunExport(
     RefactorScopeConfig config,
@@ -216,7 +240,6 @@ static bool TryRunExport(
 
         strategy.Execute(context, report, exporters);
 
-        // 🔹 GARANTE que tudo vá para o mesmo OutputPath
         GenerateMarkdownReport(report, config.OutputPath);
         GenerateStructuralDashboard(report, config.OutputPath);
 
@@ -227,12 +250,14 @@ static bool TryRunExport(
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NA EXPORTAÇÃO]: {ex.Message}");
+        CrashLogger.Log(ex, "EXPORT");
         return false;
     }
 }
 
+
 // =====================================================
-// 🔹 BLOCO 5 — RELATÓRIO MARKDOWN e HTML DASHBOARD
+// 🔹 BLOCO 5 — RELATÓRIOS
 // =====================================================
 static void GenerateMarkdownReport(
     ConsolidatedReport report,
@@ -254,8 +279,10 @@ static void GenerateMarkdownReport(
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO AO GERAR MD]: {ex.Message}");
+        CrashLogger.Log(ex, "MARKDOWN_EXPORT");
     }
 }
+
 
 static void GenerateStructuralDashboard(
     ConsolidatedReport report,
@@ -273,8 +300,10 @@ static void GenerateStructuralDashboard(
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO AO GERAR DASHBOARD]: {ex.Message}");
+        CrashLogger.Log(ex, "DASHBOARD_EXPORT");
     }
 }
+
 
 
 // =====================================================
@@ -293,22 +322,14 @@ static void RunVisualization(ConsolidatedReport report)
     var isolated = report.GetResult<CoreIsolationResult>();
     var coupling = report.GetResult<CouplingResult>();
 
-    // 🔥 Fonte oficial de zombies
-    //var zombieThreshold = 0.60; // fallback seguro
-    var configZombieThreshold = report
-        .GetResult<FitnessGateResult>(); // não temos config aqui
-
-    //// Melhor solução: usar constante ou mover config para report futuramente
-    //zombieThreshold = 0.60;
-
-    var effectiveZombies = report.GetEffectiveZombieTypes();
+    var effectiveUnresolved = report.GetEffectiveUnresolvedCandidates();
 
     foreach (var module in modules)
     {
         var total = module.Count();
         if (total == 0) continue;
 
-        var zombieCount = effectiveZombies
+        var zombieCount = effectiveUnresolved
             .Count(z => module.Any(m => m.TypeName == z));
 
         var isolatedCount = isolated?.IsolatedCoreTypes
@@ -346,6 +367,7 @@ static void RunVisualization(ConsolidatedReport report)
 }
 
 
+
 // =====================================================
 // 🔹 BLOCO 7 — FITNESS GATES
 // =====================================================
@@ -378,14 +400,11 @@ static void RenderFitnessGates(ConsolidatedReport report)
     }
 
     if (gates.HasFailure)
-    {
         AnsiConsole.MarkupLine("[bold red]Arquitetura NÃO pronta para CI/CD[/]");
-    }
     else
-    {
         AnsiConsole.MarkupLine("[bold green]Arquitetura pronta para CI/CD[/]");
-    }
 }
+
 
 
 // =====================================================
@@ -412,8 +431,40 @@ static void ApplyCiExitCode(ConsolidatedReport report)
     }
 }
 
+
+
+// =====================================================
+// 🔹 HELPERS
+// =====================================================
 static bool IsEnabled(AnalysisContext context, string analyzerName)
 {
     return context.Config.Analyzers.TryGetValue(analyzerName, out var enabled)
            && enabled;
 }
+
+
+
+// =====================================================
+// 🔹 CRASH LOGGER
+// =====================================================
+/// <summary>
+/// Sistema simples de logging de falhas para RefactorScope.
+///
+/// Objetivo:
+/// Preservar Stack Trace completa sem poluir a interface do terminal.
+///
+/// Estratégia:
+/// - Console mostra apenas mensagem amigável
+/// - Arquivo físico armazena detalhes completos
+///
+/// Arquivo gerado:
+///     refactorscope-crash.log
+///
+/// Conteúdo:
+///     Timestamp
+///     Fase da execução
+///     Stack Trace completa
+///
+/// Isso facilita diagnosticar falhas ocorridas
+/// em repositórios externos ou ambientes CI.
+/// </summary>

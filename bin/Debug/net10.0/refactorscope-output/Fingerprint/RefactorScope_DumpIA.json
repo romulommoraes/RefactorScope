@@ -107,19 +107,7 @@
       "Name": "IMotorEtograma",
       "Namespace": "Scriptome.Fingerprint.Interfaces",
       "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtograma.cs",
-      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorEtograma\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n        ///\r\n        /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n        /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n        ///\r\n        /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n        /// - MotorEtogramaHeuristico\r\n        /// - MotorEtogramaVetorial (futuro)\r\n        /// - MotorEtogramaProbabilistico (futuro)\r\n        /// \u003C/summary\u003E\r\n        public interface IMotorEtograma\r\n        {\r\n            string Nome { get; }\r\n\r\n            Etograma GerarEtograma(PerfilPersonagem personagem);\r\n        }\r\n    }\r\n}\r\n"
-    },
-    {
-      "Name": "permite",
-      "Namespace": "Scriptome.Fingerprint.Interfaces",
-      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtograma.cs",
-      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorEtograma\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n        ///\r\n        /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n        /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n        ///\r\n        /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n        /// - MotorEtogramaHeuristico\r\n        /// - MotorEtogramaVetorial (futuro)\r\n        /// - MotorEtogramaProbabilistico (futuro)\r\n        /// \u003C/summary\u003E\r\n        public interface IMotorEtograma\r\n        {\r\n            string Nome { get; }\r\n\r\n            Etograma GerarEtograma(PerfilPersonagem personagem);\r\n        }\r\n    }\r\n}\r\n"
-    },
-    {
-      "Name": "IMotorEtograma",
-      "Namespace": "Scriptome.Fingerprint.Interfaces",
-      "File": "AvaliaRoteiro\\Fingerprint\\Interfaces\\IMotorEtograma.cs",
-      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    public interface IMotorEtograma\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n        ///\r\n        /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n        /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n        ///\r\n        /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n        /// - MotorEtogramaHeuristico\r\n        /// - MotorEtogramaVetorial (futuro)\r\n        /// - MotorEtogramaProbabilistico (futuro)\r\n        /// \u003C/summary\u003E\r\n        public interface IMotorEtograma\r\n        {\r\n            string Nome { get; }\r\n\r\n            Etograma GerarEtograma(PerfilPersonagem personagem);\r\n        }\r\n    }\r\n}\r\n"
+      "Code": "using Scriptome.Nucleo.Modelos.Analise;\r\nusing Scriptome.Fingerprint.Modelos;\r\n\r\nnamespace Scriptome.Fingerprint.Interfaces\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Interface para motores de gera\u00E7\u00E3o do Etograma.\r\n    ///\r\n    /// Um motor de Etograma recebe um PerfilPersonagem (DERIVA \u002B Limbic)\r\n    /// e produz um Etograma contendo classifica\u00E7\u00F5es comportamentais.\r\n    ///\r\n    /// Essa interface permite m\u00FAltiplas estrat\u00E9gias:\r\n    /// - MotorEtogramaHeuristico\r\n    /// - MotorEtogramaVetorial (futuro)\r\n    /// - MotorEtogramaProbabilistico (futuro)\r\n    /// \u003C/summary\u003E\r\n    public interface IMotorEtograma\r\n    {\r\n        string Nome { get; }\r\n\r\n        Etograma GerarEtograma(PerfilPersonagem personagem);\r\n    }\r\n}"
     },
     {
       "Name": "IMotorEtogramaCartesiano",
@@ -407,695 +395,1043 @@
   "Referencias": [
     {
       "FromType": "MotorDeIdentidade",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 3
     },
     {
       "FromType": "MotorDeIdentidade",
-      "ToType": "IMotorEtogramaCartesiano"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "MotorDeIdentidade",
-      "ToType": "Etograma"
+      "ToType": "IMotorEtogramaCartesiano",
+      "Kind": 6
     },
     {
       "FromType": "MotorDeIdentidade",
-      "ToType": "PerfilPersonagem"
+      "ToType": "IMotorEtogramaCartesiano",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "Etograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "Etograma",
+      "Kind": 2
     },
     {
       "FromType": "MotorTaxonomia",
-      "ToType": "Cluster"
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 3
     },
     {
       "FromType": "MotorTaxonomia",
-      "ToType": "PerfilPersonagemConsolidado"
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 0
     },
     {
-      "FromType": "Cluster",
-      "ToType": "MotorTaxonomia"
+      "FromType": "MotorTaxonomia",
+      "ToType": "Cluster",
+      "Kind": 0
     },
     {
-      "FromType": "Cluster",
-      "ToType": "PerfilPersonagemConsolidado"
+      "FromType": "MotorTaxonomia",
+      "ToType": "Cluster",
+      "Kind": 3
     },
     {
-      "FromType": "InfoArquetipo",
-      "ToType": "BibliotecaArquetipos"
+      "FromType": "MotorTaxonomia",
+      "ToType": "Cluster",
+      "Kind": 6
     },
     {
       "FromType": "BibliotecaArquetipos",
-      "ToType": "InfoArquetipo"
+      "ToType": "InfoArquetipo",
+      "Kind": 0
+    },
+    {
+      "FromType": "BibliotecaArquetipos",
+      "ToType": "InfoArquetipo",
+      "Kind": 1
     },
     {
       "FromType": "DivergenceLogger",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "DivergenceLogger",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "DivergenceScore",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "DivergenceScore",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorBiometrico",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorBiometrico",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorColetivo",
-      "ToType": "IClassificadorBiometrico"
+      "ToType": "IClassificadorBiometrico",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorColetivo",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "IClassificadorColetivo",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorEtogramaV2",
-      "ToType": "ParcialEtograma"
+      "ToType": "ParcialEtograma",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorEtogramaV2",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorIndividual",
-      "ToType": "IClassificadorBiometrico"
+      "ToType": "IClassificadorBiometrico",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorIndividual",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorIndividual",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorJungV2",
-      "ToType": "ResultadoJung"
+      "ToType": "ResultadoJung",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorJungV2",
-      "ToType": "RnaBruto"
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "IClassificadorJungV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
     },
     {
       "FromType": "IClassificadorLacanianoV2",
-      "ToType": "ResultadoLacaniano"
+      "ToType": "ResultadoLacaniano",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorLacanianoV2",
-      "ToType": "RnaBruto"
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "IClassificadorLacanianoV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
     },
     {
       "FromType": "IClassificadorMBTIV2",
-      "ToType": "ResultadoMBTI"
+      "ToType": "ResultadoMBTI",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorMBTIV2",
-      "ToType": "RnaBruto"
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "IClassificadorMBTIV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
     },
     {
       "FromType": "IClassificadorNarrativaV2",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "ExpressaoNarrativa",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorNarrativaV2",
-      "ToType": "ExpressaoNarrativa"
+      "ToType": "RnaBruto",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorNarrativaV2",
-      "ToType": "ExpressaoPsicodinamica"
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
     },
     {
       "FromType": "IClassificadorNarrativaV2",
-      "ToType": "RnaBruto"
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
     },
     {
       "FromType": "IExtratorEtograma",
-      "ToType": "VetorEtograma3D"
+      "ToType": "VetorEtograma3D",
+      "Kind": 0
     },
     {
       "FromType": "IExtratorEtograma",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IMotorEtograma",
-      "ToType": "permite"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "IMotorEtograma",
-      "ToType": "Etograma"
-    },
-    {
-      "FromType": "IMotorEtograma",
-      "ToType": "MotorEtogramaHeuristico"
-    },
-    {
-      "FromType": "IMotorEtograma",
-      "ToType": "PerfilPersonagem"
-    },
-    {
-      "FromType": "permite",
-      "ToType": "IMotorEtograma"
-    },
-    {
-      "FromType": "permite",
-      "ToType": "Etograma"
-    },
-    {
-      "FromType": "permite",
-      "ToType": "MotorEtogramaHeuristico"
-    },
-    {
-      "FromType": "permite",
-      "ToType": "PerfilPersonagem"
-    },
-    {
-      "FromType": "IMotorEtograma",
-      "ToType": "permite"
-    },
-    {
-      "FromType": "IMotorEtograma",
-      "ToType": "Etograma"
-    },
-    {
-      "FromType": "IMotorEtograma",
-      "ToType": "MotorEtogramaHeuristico"
-    },
-    {
-      "FromType": "IMotorEtograma",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IMotorEtogramaCartesiano",
-      "ToType": "Etograma"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "IMotorEtogramaCartesiano",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "IMotorIdentidadeRNA",
-      "ToType": "ResultadoIdentidadeConsolidada"
+      "ToType": "ResultadoIdentidadeConsolidada",
+      "Kind": 0
     },
     {
       "FromType": "IMotorIdentidadeRNA",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "RnaBruto",
+      "Kind": 0
     },
     {
       "FromType": "IMotorIdentidadeRNA",
-      "ToType": "ExpressaoPsicodinamica"
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
     },
     {
       "FromType": "IMotorIdentidadeRNA",
-      "ToType": "RnaBruto"
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
     },
     {
       "FromType": "IMotorIntencional",
-      "ToType": "ExpressaoIntencional"
+      "ToType": "ExpressaoIntencional",
+      "Kind": 0
     },
     {
       "FromType": "IMotorIntencional",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "BibliotecaCentroidesEtograma",
-      "ToType": "VetorEtograma3D"
+      "ToType": "VetorEtograma3D",
+      "Kind": 0
     },
     {
       "FromType": "BlocoNarrativoFingerprint",
-      "ToType": "TurnoDialogoFingerprint"
+      "ToType": "TurnoDialogoFingerprint",
+      "Kind": 3
+    },
+    {
+      "FromType": "BlocoNarrativoFingerprint",
+      "ToType": "TurnoDialogoFingerprint",
+      "Kind": 0
     },
     {
       "FromType": "ContextoIdentidadeFingerprint",
-      "ToType": "ContextoNarrativoFingerprint"
-    },
-    {
-      "FromType": "ContextoIdentidadeFingerprint",
-      "ToType": "EstatisticasRoteiro"
-    },
-    {
-      "FromType": "ContextoIdentidadeFingerprint",
-      "ToType": "PerfilPersonagem"
-    },
-    {
-      "FromType": "ContextoIdentidadeFingerprint",
-      "ToType": "ResultadoBaseLinguistico"
+      "ToType": "ContextoNarrativoFingerprint",
+      "Kind": 0
     },
     {
       "FromType": "ContextoNarrativo",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
     },
     {
       "FromType": "ContextoNarrativo",
-      "ToType": "ExpressaoPsicodinamica"
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
     },
     {
       "FromType": "ContextoNarrativo",
-      "ToType": "ResultadoBaseLinguistico"
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
     },
     {
       "FromType": "ContextoNarrativoFingerprint",
-      "ToType": "BlocoNarrativoFingerprint"
+      "ToType": "BlocoNarrativoFingerprint",
+      "Kind": 3
+    },
+    {
+      "FromType": "ContextoNarrativoFingerprint",
+      "ToType": "BlocoNarrativoFingerprint",
+      "Kind": 0
     },
     {
       "FromType": "RegraArquetipo",
-      "ToType": "ContextoNarrativo"
+      "ToType": "ContextoNarrativo",
+      "Kind": 0
     },
     {
       "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ResultadoJung"
+      "ToType": "ResultadoJung",
+      "Kind": 0
     },
     {
       "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ResultadoLacaniano"
+      "ToType": "ResultadoMBTI",
+      "Kind": 0
     },
     {
       "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ResultadoMBTI"
+      "ToType": "ResultadoLacaniano",
+      "Kind": 0
     },
     {
       "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ExpressaoNarrativa"
+      "ToType": "ExpressaoNarrativa",
+      "Kind": 0
     },
     {
       "FromType": "TurnoDialogoFingerprint",
-      "ToType": "TokenFingerprint"
+      "ToType": "TokenFingerprint",
+      "Kind": 3
     },
     {
-      "FromType": "VetorEtograma3D",
-      "ToType": "Etograma"
-    },
-    {
-      "FromType": "ModuloEtogramaV2",
-      "ToType": "IMotorIntencional"
-    },
-    {
-      "FromType": "ModuloEtogramaV2",
-      "ToType": "ResultadoEtograma"
+      "FromType": "TurnoDialogoFingerprint",
+      "ToType": "TokenFingerprint",
+      "Kind": 0
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "MotorEtogramaV2"
+      "ToType": "IModuloAnalise",
+      "Kind": 0
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "ExpressaoIntencional"
+      "ToType": "MotorEtogramaV2",
+      "Kind": 6
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "IModuloAnalise"
+      "ToType": "MotorEtogramaV2",
+      "Kind": 0
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "IMotorIntencional",
+      "Kind": 0
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Roteiro",
+      "Kind": 0
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "Roteiro"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "ResultadoEtograma",
+      "Kind": 0
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorJungV2"
+      "ToType": "IMotorIdentidadeRNA",
+      "Kind": 0
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorLacanianoV2"
+      "ToType": "IClassificadorJungV2",
+      "Kind": 6
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorMBTIV2"
+      "ToType": "IClassificadorJungV2",
+      "Kind": 0
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorNarrativaV2"
+      "ToType": "IClassificadorMBTIV2",
+      "Kind": 6
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "IMotorIdentidadeRNA"
+      "ToType": "IClassificadorMBTIV2",
+      "Kind": 0
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "ResultadoIdentidadeConsolidada"
+      "ToType": "IClassificadorLacanianoV2",
+      "Kind": 6
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "IClassificadorLacanianoV2",
+      "Kind": 0
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "ExpressaoPsicodinamica"
+      "ToType": "IClassificadorNarrativaV2",
+      "Kind": 6
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "RnaBruto"
+      "ToType": "IClassificadorNarrativaV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ResultadoIdentidadeConsolidada",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "ResultadoIdentidadeConsolidada",
+      "Kind": 1
     },
     {
       "FromType": "ExtratorEtogramaDeriva6",
-      "ToType": "IExtratorEtograma"
+      "ToType": "IExtratorEtograma",
+      "Kind": 0
     },
     {
       "FromType": "ExtratorEtogramaDeriva6",
-      "ToType": "VetorEtograma3D"
+      "ToType": "VetorEtograma3D",
+      "Kind": 0
     },
     {
       "FromType": "ExtratorEtogramaDeriva6",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "IExtratorEtograma"
+      "ToType": "IMotorEtogramaCartesiano",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "IMotorEtogramaCartesiano"
+      "ToType": "IExtratorEtograma",
+      "Kind": 6
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "Etograma"
+      "ToType": "IExtratorEtograma",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "ClassificadorEtogramaCartesiano"
+      "ToType": "ClassificadorEtogramaCartesiano",
+      "Kind": 6
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "PerfilPersonagem"
+      "ToType": "ClassificadorEtogramaCartesiano",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "Etograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "Etograma",
+      "Kind": 2
     },
     {
       "FromType": "MotorEtogramaHeuristico",
-      "ToType": "IMotorEtograma"
+      "ToType": "IMotorEtograma",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaHeuristico",
-      "ToType": "Etograma"
+      "ToType": "ClassificadorScriptome",
+      "Kind": 6
     },
     {
       "FromType": "MotorEtogramaHeuristico",
-      "ToType": "ClassificadorScriptome"
+      "ToType": "ClassificadorScriptome",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaHeuristico",
-      "ToType": "PerfilPersonagem"
+      "ToType": "ClassificadorScriptome",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "Etograma",
+      "Kind": 1
     },
     {
       "FromType": "MotorEtogramaV2",
-      "ToType": "BibliotecaArquetipos"
+      "ToType": "IClassificadorEtogramaV2",
+      "Kind": 3
     },
     {
       "FromType": "MotorEtogramaV2",
-      "ToType": "IClassificadorEtogramaV2"
+      "ToType": "IClassificadorEtogramaV2",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaV2",
-      "ToType": "ParcialEtograma"
+      "ToType": "ResultadoEtograma",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaV2",
-      "ToType": "ResultadoEtograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "MotorEtogramaV2",
-      "ToType": "PerfilPersonagem"
+      "ToType": "ParcialEtograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "ParcialEtograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "ResultadoEtograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 2
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 0
     },
     {
       "FromType": "MotorVetorialV2",
-      "ToType": "ExpressaoVetorial"
+      "ToType": "ExpressaoVetorial",
+      "Kind": 0
     },
     {
       "FromType": "MotorVetorialV2",
-      "ToType": "ResultadoBaseLinguistico"
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorVetorialV2",
+      "ToType": "ExpressaoVetorial",
+      "Kind": 1
     },
     {
       "FromType": "MotorIntencionalV1",
-      "ToType": "IMotorIntencional"
+      "ToType": "IMotorIntencional",
+      "Kind": 0
     },
     {
       "FromType": "MotorIntencionalV1",
-      "ToType": "ExpressaoIntencional"
+      "ToType": "ExpressaoIntencional",
+      "Kind": 0
     },
     {
       "FromType": "MotorIntencionalV1",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIntencionalV1",
+      "ToType": "ExpressaoIntencional",
+      "Kind": 1
     },
     {
       "FromType": "ClassificadorJung",
-      "ToType": "EstatisticaForense"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorJung",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorJung",
-      "ToType": "Etograma"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorJung",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "EstatisticaForense",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "EstatisticaForense",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "Etograma",
+      "Kind": 2
     },
     {
       "FromType": "ClassificadorJungV2",
-      "ToType": "IClassificadorJungV2"
+      "ToType": "IClassificadorJungV2",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorJungV2",
-      "ToType": "ResultadoJung"
+      "ToType": "IMotorSplicing",
+      "Kind": 6
     },
     {
       "FromType": "ClassificadorJungV2",
-      "ToType": "IMotorSplicing"
+      "ToType": "IMotorSplicing",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorJungV2",
-      "ToType": "RnaBruto"
+      "ToType": "ResultadoJung",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "ResultadoJung",
+      "Kind": 1
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
     },
     {
       "FromType": "ClassificadorEtogramaCartesiano",
-      "ToType": "VetorEtograma3D"
+      "ToType": "VetorEtograma3D",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorEnergia_V2",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorEnergia_V2",
-      "ToType": "ResultadoBaseLinguistico"
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorEnergia_V2",
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 1
     },
     {
       "FromType": "ClassificadorIntensidade",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorIntensidade",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorIntensidade",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorTermico",
-      "ToType": "EstatisticaForense"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorTermico",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorTermico",
-      "ToType": "Etograma"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorTermico",
-      "ToType": "PerfilPersonagem"
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "EstatisticaForense",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "EstatisticaForense",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "Etograma",
+      "Kind": 2
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "BibliotecaArquetipos"
+      "ToType": "IClassificadorNarrativaV2",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "IClassificadorNarrativaV2"
+      "ToType": "RegraArquetipo",
+      "Kind": 3
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ContextoNarrativo"
+      "ToType": "RegraArquetipo",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "RegraArquetipo"
+      "ToType": "IMotorSplicing",
+      "Kind": 6
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "IMotorSplicing"
+      "ToType": "IMotorSplicing",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "ExpressaoNarrativa",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoNarrativa"
+      "ToType": "RnaBruto",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoPsicodinamica"
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ResultadoBaseLinguistico"
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "RnaBruto"
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ContextoNarrativo",
+      "Kind": 1
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ContextoNarrativo",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "ExpressaoNarrativa",
+      "Kind": 1
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorScriptome",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorScriptome",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorScriptome",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ContextoNarrativoRNA",
-      "ToType": "ExpressaoEnergetica"
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
     },
     {
       "FromType": "ContextoNarrativoRNA",
-      "ToType": "ExpressaoPsicodinamica"
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorHibrido",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorHibrido",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorHibrido",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacaniano",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacaniano",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacaniano",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2",
-      "ToType": "IClassificadorLacanianoV2"
+      "ToType": "IClassificadorLacanianoV2",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2",
-      "ToType": "ResultadoLacaniano"
+      "ToType": "IMotorSplicing",
+      "Kind": 6
     },
     {
       "FromType": "ClassificadorLacanianoV2",
-      "ToType": "IMotorSplicing"
+      "ToType": "IMotorSplicing",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2",
-      "ToType": "RnaBruto"
+      "ToType": "ResultadoLacaniano",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "ResultadoLacaniano",
+      "Kind": 1
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
-      "ToType": "IClassificadorEtogramaV2"
+      "ToType": "IClassificadorEtogramaV2",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
-      "ToType": "ParcialEtograma"
+      "ToType": "ParcialEtograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
-      "ToType": "MotorEtogramaV2"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
-      "ToType": "PerfilPersonagem"
+      "ToType": "ParcialEtograma",
+      "Kind": 1
     },
     {
       "FromType": "ClassificadorMBTI",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorMBTI",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorMBTI",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorMBTIV2",
-      "ToType": "IClassificadorMBTIV2"
+      "ToType": "IClassificadorMBTIV2",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorMBTIV2",
-      "ToType": "ResultadoMBTI"
+      "ToType": "IMotorSplicing",
+      "Kind": 6
     },
     {
       "FromType": "ClassificadorMBTIV2",
-      "ToType": "IMotorSplicing"
+      "ToType": "IMotorSplicing",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorMBTIV2",
-      "ToType": "RnaBruto"
+      "ToType": "ResultadoMBTI",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "ResultadoMBTI",
+      "Kind": 1
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
     },
     {
       "FromType": "ClassificadorPsicodinamico",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorPsicodinamico",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorPsicodinamico",
-      "ToType": "ClassificadorPsicodinamicoAvancado"
-    },
-    {
-      "FromType": "ClassificadorPsicodinamico",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "IClassificadorIndividual"
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "Etograma"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "ClassificadorPsicodinamico"
-    },
-    {
-      "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "PerfilPersonagem"
+      "ToType": "Etograma",
+      "Kind": 0
     }
   ]
 }

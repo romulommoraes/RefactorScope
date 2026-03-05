@@ -4,7 +4,6 @@ namespace RefactorScope.Infrastructure
 {
     public static class TerminalRenderer
     {
-
         public static void Warn(string message)
         {
             AnsiConsole.MarkupLine($"[yellow][WARN][/]: {message}");
@@ -37,15 +36,15 @@ namespace RefactorScope.Infrastructure
             );
         }
 
-        public static void TableSummary(int zombies, int isolated, int entryPoints)
+        public static void TableSummary(int unresolved, int isolated, int entryPoints)
         {
             var table = new Table();
 
-            table.AddColumn("Métrica");
-            table.AddColumn("Valor");
+            table.AddColumn("Metric");
+            table.AddColumn("Value");
 
-            table.AddRow("Zombies", zombies.ToString());
-            table.AddRow("Core Isolado", isolated.ToString());
+            table.AddRow("Unresolved Candidates", unresolved.ToString());
+            table.AddRow("Isolated Core Types", isolated.ToString());
             table.AddRow("Entry Points", entryPoints.ToString());
 
             AnsiConsole.Write(table);
@@ -54,37 +53,37 @@ namespace RefactorScope.Infrastructure
         public static void ModuleHealth(
             string module,
             double score,
-            string zombie,
+            string unresolved,
             double coupling,
             double isolation)
         {
             var moduleColor = ResolveModuleColor(module);
             var scoreColor = ResolveScoreColor(score);
-            var zombieColor = zombie.StartsWith("0") ? "green" : "red";
+            var unresolvedColor = unresolved.StartsWith("0") ? "green" : "red";
 
             AnsiConsole.MarkupLine(
                 $"[{moduleColor}]{module,-15}[/] " +
                 $"| Score: [{scoreColor} bold]{score:0.0}[/] " +
-                $"| Zombie: [{zombieColor}]{zombie}[/] " +
+                $"| Unresolved: [{unresolvedColor}]{unresolved}[/] " +
                 $"| Coupling: {coupling:0.00} " +
                 $"| Isolation: {isolation:0.00}"
             );
         }
 
         private static string ResolveModuleColor(string module)
+        {
+            return module.ToLower() switch
             {
-                return module.ToLower() switch
-                {
-                    "core" => "cyan",
-                    "nucleo" => "cyan",
-                    "limbic" => "magenta",
-                    "fingerprint" => "blue",
-                    "infrastructure" => "yellow",
-                    "infra" => "yellow",
-                    "ui" => "purple",
-                    _ => "white"
-                };
-            }
+                "core" => "cyan",
+                "nucleo" => "cyan",
+                "limbic" => "magenta",
+                "fingerprint" => "blue",
+                "infrastructure" => "yellow",
+                "infra" => "yellow",
+                "ui" => "purple",
+                _ => "white"
+            };
+        }
 
         private static string ResolveScoreColor(double score)
         {

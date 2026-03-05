@@ -1,6 +1,5 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 using System.Text;
 
@@ -17,25 +16,31 @@ namespace RefactorScope.Exporters
 
             var htmlPath = Path.Combine(dashboardDir, "index.html");
 
-            var confirmed = report.GetEffectiveZombieTypes();
+            var unresolved = report.GetEffectiveUnresolvedCandidates();
             var structural = report.GetStructuralCandidates();
+            var patternSimilarity = report.GetPatternSimilarityCandidates();
 
-            var html = BuildHtml(confirmed, structural);
+            var html = BuildHtml(unresolved, structural, patternSimilarity);
 
             File.WriteAllText(htmlPath, html);
         }
 
         private string BuildHtml(
-            IReadOnlyList<string> confirmed,
-            IReadOnlyList<string> structural)
+            IReadOnlyList<string> unresolved,
+            IReadOnlyList<string> structural,
+            IReadOnlyList<string> patternSimilarity)
         {
-            var confirmedList = new StringBuilder();
-            foreach (var z in confirmed)
-                confirmedList.AppendLine($"<li class='confirmed'>{z}</li>");
+            var unresolvedList = new StringBuilder();
+            foreach (var item in unresolved)
+                unresolvedList.AppendLine($"<li class='unresolved'>{item}</li>");
 
             var structuralList = new StringBuilder();
-            foreach (var z in structural)
-                structuralList.AppendLine($"<li>{z}</li>");
+            foreach (var item in structural)
+                structuralList.AppendLine($"<li>{item}</li>");
+
+            var patternSimilarityList = new StringBuilder();
+            foreach (var item in patternSimilarity)
+                patternSimilarityList.AppendLine($"<li class='pattern'>{item}</li>");
 
             return $@"
 <!DOCTYPE html>
@@ -45,14 +50,18 @@ namespace RefactorScope.Exporters
 <title>RefactorScope Dashboard</title>
 <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+
 <style>
 body {{ background:#111; color:#eee; font-family:Arial; }}
-.container {{ display:flex; flex-wrap:wrap; }}
-.card {{ background:#1b1b1b; margin:20px; padding:20px; border-radius:8px; width:45%; }}
 
-.confirmed {{
-    color:#ff4c4c;
-    font-weight:bold;
+.container {{ display:flex; flex-wrap:wrap; }}
+
+.card {{
+    background:#1b1b1b;
+    margin:20px;
+    padding:20px;
+    border-radius:8px;
+    width:45%;
 }}
 
 .section {{
@@ -67,38 +76,66 @@ body {{ background:#111; color:#eee; font-family:Arial; }}
     font-weight:bold;
 }}
 
+.unresolved {{
+    color:#ff4c4c;
+    font-weight:bold;
+}}
+
+.pattern {{
+    color:#06d6a0;
+}}
+
 </style>
+
 </head>
 <body>
 
 <h1>RefactorScope Dashboard</h1>
 
 <div class='section'>
-<h2>Zombie Classification (ADR-EXP-007)</h2>
-<p class='count'>Confirmed Zombies: <span style='color:#ff4c4c'>{confirmed.Count}</span></p>
+<h2>Structural Candidate Analysis (ADR-EXP-007)</h2>
+
 <p class='count'>Structural Candidates: {structural.Count}</p>
 
-<h3>Confirmed Zombies</h3>
+<p class='count'>
+Pattern Similarity: 
+<span style='color:#06d6a0'>{patternSimilarity.Count}</span>
+</p>
+
+<p class='count'>
+Unresolved: 
+<span style='color:#ff4c4c'>{unresolved.Count}</span>
+</p>
+
+<h3>Unresolved Candidates</h3>
 <ul>
-{confirmedList}
+{unresolvedList}
+</ul>
+
+<h3>Pattern Similarity</h3>
+<ul>
+{patternSimilarityList}
 </ul>
 
 <h3>All Structural Candidates</h3>
 <ul>
 {structuralList}
 </ul>
+
 </div>
 
 <div class='container'>
 <div class='card'>
 <canvas id='radarChart'></canvas>
 </div>
+
 <div class='card'>
 <canvas id='heatChart'></canvas>
 </div>
 </div>
 
 <script>
+
 function loadCSV(path, callback) {{
     Papa.parse(path, {{
         download: true,
@@ -110,7 +147,7 @@ function loadCSV(path, callback) {{
 loadCSV('../dataset_arch_health.csv', data => {{
 
     const modules = data.map(x => x.Module);
-    const zombies = data.map(x => parseFloat(x.ZombieRate));
+    const candidates = data.map(x => parseFloat(x.CandidateRate));
     const isolation = data.map(x => parseFloat(x.IsolationRate));
 
     new Chart(document.getElementById('radarChart'), {{
@@ -118,7 +155,7 @@ loadCSV('../dataset_arch_health.csv', data => {{
         data: {{
             labels: modules,
             datasets: [
-                {{ label: 'Zombie Rate', data: zombies }},
+                {{ label: 'Structural Candidates', data: candidates }},
                 {{ label: 'Isolation', data: isolation }}
             ]
         }}
@@ -129,12 +166,13 @@ loadCSV('../dataset_arch_health.csv', data => {{
         data: {{
             labels: modules,
             datasets: [
-                {{ label: 'Zombie Heat', data: zombies }}
+                {{ label: 'Candidate Density', data: candidates }}
             ]
         }}
     }});
 
 }});
+
 </script>
 
 </body>

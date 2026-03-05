@@ -40,7 +40,10 @@ namespace RefactorScope.Analyzers
             {
                 // Mapeia usage por nome
                 var usageMap = architecture.Items
-                    .ToDictionary(i => i.TypeName, i => i.UsageCount);
+                    .ToDictionary(
+                        i => $"{i.Namespace}.{i.TypeName}",
+                        i => i.UsageCount
+                    );
 
                 foreach (var tipo in context.Model.Tipos)
                 {

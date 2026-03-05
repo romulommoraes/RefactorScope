@@ -1,14 +1,22 @@
 ﻿using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Datasets
 {
     /// <summary>
-    /// Dataset de métricas globais.
-    /// 
-    /// Ideal para KPI dashboards e gauges.
-    /// Representa a saúde estrutural do escopo analisado.
+    /// Global structural metrics dataset.
+    ///
+    /// Designed for KPI dashboards and gauges representing
+    /// overall architectural health of the analyzed scope.
+    ///
+    /// ⚠ Source of Truth:
+    /// Unresolved candidates are obtained through
+    /// ConsolidatedReport.GetEffectiveUnresolvedCandidates().
+    ///
+    /// Legacy compatibility:
+    /// The metric name "ZombieRate" is preserved for compatibility
+    /// with historical datasets and dashboards.
+    /// Conceptually it now represents the rate of Unresolved Candidates.
     /// </summary>
     public class GlobalMetricsDatasetBuilder : IAnalyticalDatasetBuilder
     {
@@ -24,11 +32,13 @@ namespace RefactorScope.Core.Datasets
             AnalysisContext context,
             ConsolidatedReport report)
         {
-            var coupling = report.Results.OfType<CouplingResult>().FirstOrDefault();
-            var zombies = report.Results.OfType<ZombieResult>().FirstOrDefault();
-            var entries = report.Results.OfType<EntryPointHeuristicResult>().FirstOrDefault();
-            var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
-            var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
+            var coupling = report.GetResult<CouplingResult>();
+            var entries = report.GetResult<EntryPointHeuristicResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var arch = report.GetResult<ArchitecturalClassificationResult>();
+
+            var structuralCandidates = report.GetStructuralCandidates();
+            var unresolvedCandidates = report.GetEffectiveUnresolvedCandidates();
 
             var tipos = context.Model.Tipos;
             var total = tipos.Count;
@@ -37,24 +47,41 @@ namespace RefactorScope.Core.Datasets
                 yield break;
 
             var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;
-            var zombieRate = zombies?.ZombieTypes.Count / (double)total ?? 0;
-            var isolationRate = isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;
-            var entryDensity = entries?.EntryPoints.Count / (double)total ?? 0;
-            var coreDensity = arch?.Items.Count(i => i.Layer == "Core") / (double)total ?? 0;
 
-            yield return new[] { "Coupling", Normalize(totalFanOut, total).ToString("0.00") };
-            yield return new[] { "ZombieRate", zombieRate.ToString("0.00") };
+            var normalizedCoupling = Normalize(totalFanOut, total);
+
+            // Legacy ZombieRate now represents unresolved candidate density
+            var unresolvedRate = unresolvedCandidates.Count / (double)total;
+
+            var isolationRate =
+                isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;
+
+            var entryDensity =
+                entries?.EntryPoints.Count / (double)total ?? 0;
+
+            var coreDensity =
+                arch?.Items.Count(i => i.Layer == "Core") / (double)total ?? 0;
+
+            yield return new[] { "Coupling", normalizedCoupling.ToString("0.00") };
+
+            // Legacy name preserved for compatibility
+            yield return new[] { "ZombieRate", unresolvedRate.ToString("0.00") };
+
             yield return new[] { "IsolationRate", isolationRate.ToString("0.00") };
+
             yield return new[] { "EntryPointDensity", entryDensity.ToString("0.00") };
+
             yield return new[] { "CoreDensity", coreDensity.ToString("0.00") };
         }
 
         /// <summary>
-        /// Normaliza FanOut por tipo.
+        /// Normalizes FanOut by total number of types.
         /// </summary>
         private static double Normalize(int fanOut, int totalTipos)
         {
-            if (totalTipos == 0) return 0;
+            if (totalTipos == 0)
+                return 0;
+
             return fanOut / (double)totalTipos;
         }
     }

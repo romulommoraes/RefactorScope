@@ -23,11 +23,11 @@
 
   "zombieDetection": {
     "enableRefinement": true,
-    "globalRateThreshold_DI": 0.10,
-    "globalRateThreshold_Interface": 0.08,
-    "diProbability": 0.10,
+    "globalRateThreshold_DI": 0.25,
+    "globalRateThreshold_Interface": 0.20,
+    "diProbability": 0.15,
     "interfaceProbability": 0.20,
-    "minZombieProbabilityThreshold": 0.30
+    "minUnresolvedProbabilityThreshold": 0.30
   },
 
   "layerRules": {

@@ -20,7 +20,7 @@
     "globalRateThreshold_Interface": 0.08,
     "diProbability": 0.10,
     "interfaceProbability": 0.20,
-    "minZombieProbabilityThreshold": 0.30
+    "minUnresolvedProbabilityThreshold": 0.30
   },
 
   "layerRules": {

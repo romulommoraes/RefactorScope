@@ -1,20 +1,20 @@
 ﻿using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Datasets
 {
     /// <summary>
-    /// Dataset global tabular por tipo.
+    /// Global per-type dataset.
     ///
-    /// Cada linha representa um tipo do sistema.
-    /// Ideal para:
+    /// Each row represents a system type.
+    ///
+    /// Ideal for:
     /// - Heatmaps
     /// - Scatter plots
     /// - Rankings
-    /// - Drill-down BI
+    /// - BI drill-down
     ///
-    /// Funciona corretamente em análises parciais.
+    /// Fully compatible with partial analyses.
     /// </summary>
     public class GlobalTypesDatasetBuilder : IAnalyticalDatasetBuilder
     {
@@ -27,7 +27,8 @@ namespace RefactorScope.Core.Datasets
             "Layer",
             "Usage",
             "StructuralStatus",
-            "IsZombie",
+            "IsStructuralCandidate",
+            "IsUnresolved",
             "IsIsolated",
             "IsEntryPoint"
         };
@@ -36,16 +37,30 @@ namespace RefactorScope.Core.Datasets
             AnalysisContext context,
             ConsolidatedReport report)
         {
-            var zombies = report.Results.OfType<ZombieResult>().FirstOrDefault();
-            var entries = report.Results.OfType<EntryPointHeuristicResult>().FirstOrDefault();
-            var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
-            var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
+            var structuralCandidates = report.GetStructuralCandidates();
+            var unresolvedCandidates = report.GetEffectiveUnresolvedCandidates();
+
+            var entries = report.GetResult<EntryPointHeuristicResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var arch = report.GetResult<ArchitecturalClassificationResult>();
 
             var tipos = context.Model.Tipos;
 
             foreach (var tipo in tipos)
             {
                 var archItem = arch?.Items.FirstOrDefault(a => a.TypeName == tipo.Name);
+
+                var isStructuralCandidate =
+                    structuralCandidates.Contains(tipo.Name);
+
+                var isUnresolved =
+                    unresolvedCandidates.Contains(tipo.Name);
+
+                var isIsolated =
+                    isolated?.IsolatedCoreTypes.Contains(tipo.Name) == true;
+
+                var isEntryPoint =
+                    entries?.EntryPoints.Contains(tipo.Name) == true;
 
                 yield return new[]
                 {
@@ -54,15 +69,16 @@ namespace RefactorScope.Core.Datasets
                     archItem?.Layer ?? "Unknown",
                     archItem?.UsageCount.ToString() ?? "0",
                     archItem?.StructuralStatus ?? "Unknown",
-                    zombies?.ZombieTypes.Contains(tipo.Name) == true ? "1" : "0",
-                    isolated?.IsolatedCoreTypes.Contains(tipo.Name) == true ? "1" : "0",
-                    entries?.EntryPoints.Contains(tipo.Name) == true ? "1" : "0"
+                    isStructuralCandidate ? "1" : "0",
+                    isUnresolved ? "1" : "0",
+                    isIsolated ? "1" : "0",
+                    isEntryPoint ? "1" : "0"
                 };
             }
         }
 
         /// <summary>
-        /// Extrai o módulo físico do caminho do arquivo.
+        /// Extracts the top-level module folder from the file path.
         /// </summary>
         private static string ExtractTopFolder(string path)
         {

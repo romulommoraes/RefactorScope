@@ -1,11 +1,17 @@
 ﻿using RefactorScope.Core.Model;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Analyzers
 {
     public sealed class ArchitecturalHygieneAnalyzer
     {
+        /// <summary>
+        /// Strict Namespace Alignment:
+        /// Namespace must exactly match the folder structure.
+        /// </summary>
+        public const string NamespaceDriftTooltip =
+            "Strict rule: Namespace must match the folder structure under the project root.";
+
         public HygieneReport Analyze(ConsolidatedReport report)
         {
             var architecture = report.GetResult<ArchitecturalClassificationResult>();
@@ -21,24 +27,34 @@ namespace RefactorScope.Core.Analyzers
 
             var globalNamespace = items.Count(i => i.Namespace == "Global");
 
-            int namespaceDrift = architecture.Items.Count(i =>
+            int namespaceDrift = 0;
+
+            foreach (var i in items)
             {
                 if (string.IsNullOrWhiteSpace(i.Namespace))
-                    return true;
+                {
+                    namespaceDrift++;
+                    continue;
+                }
 
-                if (string.IsNullOrWhiteSpace(i.Folder))
-                    return false;
+                var folderSource = !string.IsNullOrWhiteSpace(i.FolderHierarchy)
+                    ? i.FolderHierarchy
+                    : i.Folder;
 
-                var expectedSuffix = i.Folder
-                    .Replace("\\", ".")
-                    .Replace("/", ".");
+                if (string.IsNullOrWhiteSpace(folderSource))
+                    continue;
 
-                return !i.Namespace.EndsWith(expectedSuffix);
-            });
+                var folderNamespace = NormalizeFolder(folderSource);
+
+                if (!NamespaceMatchesFolder(i.Namespace, folderNamespace))
+                    namespaceDrift++;
+            }
 
             var isolatedCoreCount = isolated?.IsolatedCoreTypes.Count ?? 0;
 
-            var entropy = ComputeEntropy(items);
+            // Structural Entropy temporarily disabled.
+            // Future versions may introduce dependency-based entropy instead of folder distribution.
+            const double entropy = 0;
 
             return new HygieneReport(
                 total,
@@ -50,26 +66,32 @@ namespace RefactorScope.Core.Analyzers
             );
         }
 
-        private static double ComputeEntropy(IReadOnlyList<ArchitecturalClassificationItem> items)
+        private static bool NamespaceMatchesFolder(string ns, string folderNamespace)
         {
-            var groups = items.GroupBy(i => i.Folder).ToList();
-            var total = items.Count;
+            if (string.IsNullOrWhiteSpace(folderNamespace))
+                return true;
 
-            if (total == 0 || groups.Count <= 1)
-                return 0;
+            var nsSegments = ns.Split('.');
+            var folderSegments = folderNamespace.Split('.');
 
-            double entropy = 0;
+            if (folderSegments.Length > nsSegments.Length)
+                return false;
 
-            foreach (var group in groups)
+            for (int i = 1; i <= folderSegments.Length; i++)
             {
-                var p = group.Count() / (double)total;
-                if (p > 0)
-                    entropy -= p * Math.Log(p, 2);
+                if (!nsSegments[^i].Equals(folderSegments[^i], StringComparison.Ordinal))
+                    return false;
             }
 
-            var maxEntropy = Math.Log(groups.Count, 2);
+            return true;
+        }
 
-            return maxEntropy == 0 ? 0 : entropy / maxEntropy;
+        private static string NormalizeFolder(string folder)
+        {
+            return folder
+                .Replace("\\", ".")
+                .Replace("/", ".")
+                .Trim('.');
         }
     }
 }

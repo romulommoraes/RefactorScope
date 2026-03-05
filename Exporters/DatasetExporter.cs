@@ -1,9 +1,9 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Datasets;
 using System.Globalization;
 using System.Text;
+using RefactorScope.Core.Results;
 
 namespace RefactorScope.Exporters
 {

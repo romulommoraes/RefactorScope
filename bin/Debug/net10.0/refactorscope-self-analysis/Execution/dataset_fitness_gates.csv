@@ -1,2 +1,2 @@
 ﻿GateName,Status,Message
-UnreferencedTypes,Fail,Structural Unreferenced rate alto: 20%
+UnreferencedTypes,Pass,Structural Unreferenced controlado: 0%

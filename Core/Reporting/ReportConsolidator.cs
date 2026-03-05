@@ -1,4 +1,4 @@
-﻿using RefactorScope.Core.Orchestration;
+﻿using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Reporting
 {

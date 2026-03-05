@@ -1,6 +1,5 @@
 ﻿namespace RefactorScope.Core.Governance
 {
-    using RefactorScope.Core.Orchestration;
     using RefactorScope.Core.Results;
 
     public static class FitnessGateEvaluator

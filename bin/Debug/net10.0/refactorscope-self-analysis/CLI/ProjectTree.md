@@ -14,11 +14,13 @@
 │   │   │   ├── Governance
 │   │   │   ├── Model
 │   │   │   ├── Orchestration
+│   │   │   ├── Patterns
 │   │   │   ├── Reporting
 │   │   │   ├── Results
 │   │   │   ├── Scope
 │   │   │   ├── Structure
 │   │   ├── Debug
+│   │   ├── Docs
 │   │   ├── Execution
 │   │   │   ├── Dump
 │   │   │   │   ├── Segmentation
@@ -26,4 +28,4 @@
 │   │   ├── Exporters
 │   │   ├── Infrastructure
 │   │   ├── Parsers
-│   │   │   ├── CSharpRegex
+│   │   │   ├── CsharpParsers

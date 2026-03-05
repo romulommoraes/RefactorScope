@@ -6,26 +6,156 @@
 <title>RefactorScope Dashboard</title>
 <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+
 <style>
 body { background:#111; color:#eee; font-family:Arial; }
+
 .container { display:flex; flex-wrap:wrap; }
-.card { background:#1b1b1b; margin:20px; padding:20px; border-radius:8px; width:45%; }
+
+.card {
+    background:#1b1b1b;
+    margin:20px;
+    padding:20px;
+    border-radius:8px;
+    width:45%;
+}
+
+.section {
+    margin:20px;
+    padding:20px;
+    background:#1b1b1b;
+    border-radius:8px;
+}
+
+.count {
+    font-size:20px;
+    font-weight:bold;
+}
+
+.unresolved {
+    color:#ff4c4c;
+    font-weight:bold;
+}
+
+.pattern {
+    color:#06d6a0;
+}
+
 </style>
+
 </head>
 <body>
 
 <h1>RefactorScope Dashboard</h1>
 
+<div class='section'>
+<h2>Structural Candidate Analysis (ADR-EXP-007)</h2>
+
+<p class='count'>Structural Candidates: 32</p>
+
+<p class='count'>
+Pattern Similarity: 
+<span style='color:#06d6a0'>13</span>
+</p>
+
+<p class='count'>
+Unresolved: 
+<span style='color:#ff4c4c'>19</span>
+</p>
+
+<h3>Unresolved Candidates</h3>
+<ul>
+<li class='unresolved'>ConfigService</li>
+<li class='unresolved'>DivergenceScore</li>
+<li class='unresolved'>EstadoIdentidade</li>
+<li class='unresolved'>ModuloEtogramaV2</li>
+<li class='unresolved'>LeitorBaseline</li>
+<li class='unresolved'>ExecutorValidacaoJung</li>
+<li class='unresolved'>CalculadoraTensao</li>
+<li class='unresolved'>CalculadoraModalidade</li>
+<li class='unresolved'>LematizadorCatalyst</li>
+<li class='unresolved'>LematizadorVerbal</li>
+<li class='unresolved'>CarregadorLimbic</li>
+<li class='unresolved'>ConfiguradorLimbic</li>
+<li class='unresolved'>InfoPalavra</li>
+<li class='unresolved'>AdaptadorDiagnostico</li>
+<li class='unresolved'>EspecialistaDinamica</li>
+<li class='unresolved'>EspecialistaProducao</li>
+<li class='unresolved'>RnaCartesiano</li>
+<li class='unresolved'>ResultadoModuloLimbic</li>
+<li class='unresolved'>Transicao</li>
+
+</ul>
+
+<h3>Pattern Similarity</h3>
+<ul>
+<li class='pattern'>PathResolver</li>
+<li class='pattern'>DivergenceLogger</li>
+<li class='pattern'>MotorEtogramaHeuristico</li>
+<li class='pattern'>MotorIntencionalV1</li>
+<li class='pattern'>ExportadorBaselineJung</li>
+<li class='pattern'>ScriptomeDashboardPipeline</li>
+<li class='pattern'>ClassificadorHibrido</li>
+<li class='pattern'>ClassificadorLacaniano</li>
+<li class='pattern'>ClassificadorLacanianoV2Legado</li>
+<li class='pattern'>ClassificadorMBTI</li>
+<li class='pattern'>ClassificadorPsicodinamicoAvancado</li>
+<li class='pattern'>AppConfig</li>
+<li class='pattern'>AbaEstrutura</li>
+
+</ul>
+
+<h3>All Structural Candidates</h3>
+<ul>
+<li>ConfigService</li>
+<li>PathResolver</li>
+<li>DivergenceLogger</li>
+<li>DivergenceScore</li>
+<li>EstadoIdentidade</li>
+<li>ModuloEtogramaV2</li>
+<li>MotorEtogramaHeuristico</li>
+<li>MotorIntencionalV1</li>
+<li>LeitorBaseline</li>
+<li>ExecutorValidacaoJung</li>
+<li>ExportadorBaselineJung</li>
+<li>CalculadoraTensao</li>
+<li>CalculadoraModalidade</li>
+<li>LematizadorCatalyst</li>
+<li>LematizadorVerbal</li>
+<li>CarregadorLimbic</li>
+<li>ConfiguradorLimbic</li>
+<li>InfoPalavra</li>
+<li>AdaptadorDiagnostico</li>
+<li>EspecialistaDinamica</li>
+<li>EspecialistaProducao</li>
+<li>ScriptomeDashboardPipeline</li>
+<li>ClassificadorHibrido</li>
+<li>ClassificadorLacaniano</li>
+<li>ClassificadorLacanianoV2Legado</li>
+<li>ClassificadorMBTI</li>
+<li>ClassificadorPsicodinamicoAvancado</li>
+<li>AppConfig</li>
+<li>RnaCartesiano</li>
+<li>ResultadoModuloLimbic</li>
+<li>Transicao</li>
+<li>AbaEstrutura</li>
+
+</ul>
+
+</div>
+
 <div class='container'>
 <div class='card'>
 <canvas id='radarChart'></canvas>
 </div>
+
 <div class='card'>
 <canvas id='heatChart'></canvas>
 </div>
 </div>
 
 <script>
+
 function loadCSV(path, callback) {
     Papa.parse(path, {
         download: true,
@@ -37,7 +167,7 @@ function loadCSV(path, callback) {
 loadCSV('../dataset_arch_health.csv', data => {
 
     const modules = data.map(x => x.Module);
-    const zombies = data.map(x => parseFloat(x.ZombieRate));
+    const candidates = data.map(x => parseFloat(x.CandidateRate));
     const isolation = data.map(x => parseFloat(x.IsolationRate));
 
     new Chart(document.getElementById('radarChart'), {
@@ -45,7 +175,7 @@ loadCSV('../dataset_arch_health.csv', data => {
         data: {
             labels: modules,
             datasets: [
-                { label: 'Zombie Rate', data: zombies },
+                { label: 'Structural Candidates', data: candidates },
                 { label: 'Isolation', data: isolation }
             ]
         }
@@ -56,12 +186,13 @@ loadCSV('../dataset_arch_health.csv', data => {
         data: {
             labels: modules,
             datasets: [
-                { label: 'Zombie Heat', data: zombies }
+                { label: 'Candidate Density', data: candidates }
             ]
         }
     });
 
 });
+
 </script>
 
 </body>

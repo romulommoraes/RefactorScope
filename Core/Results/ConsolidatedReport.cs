@@ -1,19 +1,17 @@
 ﻿using RefactorScope.Core.Abstractions;
-using RefactorScope.Core.Results;
-using RefactorScope.Core.Model;
 
-namespace RefactorScope.Core.Orchestration
+namespace RefactorScope.Core.Results
 {
     /// <summary>
     /// Representa o relatório consolidado da execução.
     ///
-    /// 🔒 Fonte Única de Verdade para classificação de Zombies.
+    /// 🔒 Fonte Única de Verdade para classificação de Unresolveds.
     ///
     /// Separação formal:
     /// - Structural Candidates (ausência estrutural)
-    /// - Confirmed Zombies (após threshold probabilístico)
+    /// - Confirmed Unresolveds (após threshold probabilístico)
     /// - Suspicious (candidatos abaixo do threshold)
-    /// - Absolved (candidatos estruturais não confirmados)
+    /// - PatternSimilarity (candidatos estruturais não confirmados)
     /// </summary>
     public class ConsolidatedReport
     {
@@ -24,18 +22,18 @@ namespace RefactorScope.Core.Orchestration
         /// <summary>
         /// Threshold aplicado para confirmação probabilística.
         /// </summary>
-        public double ZombieProbabilityThreshold { get; }
+        public double UnresolvedProbabilityThreshold { get; }
 
         public ConsolidatedReport(
             IReadOnlyCollection<IAnalysisResult> results,
             DateTime executionTime,
             string targetScope,
-            double zombieProbabilityThreshold)
+            double unresolvedProbabilityThreshold)
         {
             Results = results;
             ExecutionTime = executionTime;
             TargetScope = targetScope;
-            ZombieProbabilityThreshold = zombieProbabilityThreshold;
+            UnresolvedProbabilityThreshold = unresolvedProbabilityThreshold;
         }
 
         // ==========================================================
@@ -51,23 +49,23 @@ namespace RefactorScope.Core.Orchestration
 
         public IReadOnlyList<string> GetStructuralCandidates()
         {
-            var structural = GetResult<ZombieResult>();
-            return structural?.ZombieTypes ?? new List<string>();
+            var structural = GetResult<StructuralCandidateResult>();
+            return structural?.StructuralCandidateTypes ?? new List<string>();
         }
 
         // ==========================================================
-        // 🔹 Camada 2 — Confirmed Zombies
+        // 🔹 Camada 2 — Unresolved
         // ==========================================================
 
-        public IReadOnlyList<string> GetConfirmedZombies()
+        public IReadOnlyList<string> GetUnresolvedCandidates()
         {
-            var probabilistic = GetResult<ZombieProbabilityResult>();
+            var probabilistic = GetResult<StructuralCandidateProbabilityResult>();
 
             if (probabilistic == null)
                 return new List<string>();
 
             return probabilistic
-                .ConfirmedZombies(ZombieProbabilityThreshold)
+                .Unresolved(UnresolvedProbabilityThreshold)
                 .Select(x => x.TypeName)
                 .ToList();
         }
@@ -75,34 +73,34 @@ namespace RefactorScope.Core.Orchestration
         /// <summary>
         /// Compatibilidade retroativa.
         /// </summary>
-        public IReadOnlyList<string> GetEffectiveZombieTypes()
-            => GetConfirmedZombies();
+        public IReadOnlyList<string> GetEffectiveUnresolvedCandidates()
+            => GetUnresolvedCandidates();
 
         // ==========================================================
         // 🔹 Camada 3 — Suspicious
         // ==========================================================
 
-        public IReadOnlyList<string> GetSuspiciousZombies()
+        public IReadOnlyList<string> GetPatternSimilarityCandidates()
         {
-            var probabilistic = GetResult<ZombieProbabilityResult>();
+            var probabilistic = GetResult<StructuralCandidateProbabilityResult>();
 
             if (probabilistic == null)
                 return new List<string>();
 
             return probabilistic.Items
-                .Where(i => i.Probability < ZombieProbabilityThreshold)
+                .Where(i => i.Probability < UnresolvedProbabilityThreshold)
                 .Select(i => i.TypeName)
                 .ToList();
         }
 
         // ==========================================================
-        // 🔹 Camada 4 — Absolved
+        // 🔹 Camada 4 — PatternSimilarity
         // ==========================================================
 
-        public IReadOnlyList<string> GetAbsolvedZombies()
+        public IReadOnlyList<string> GetPatternSimilarity()
         {
             var structural = GetStructuralCandidates();
-            var confirmed = GetConfirmedZombies();
+            var confirmed = GetUnresolvedCandidates();
 
             return structural
                 .Where(s => !confirmed.Contains(s))
@@ -113,30 +111,30 @@ namespace RefactorScope.Core.Orchestration
         // 🔹 Breakdown Oficial
         // ==========================================================
 
-        public ZombieAnalysisBreakdown GetZombieBreakdown()
+        public StructuralCandidateAnalysisBreakdown GetStructuralCandidateBreakdown()
         {
             var structural = GetStructuralCandidates();
-            var confirmed = GetConfirmedZombies();
-            var suspicious = GetSuspiciousZombies();
-            var absolved = GetAbsolvedZombies();
+            var confirmed = GetUnresolvedCandidates();
+            var suspicious = GetPatternSimilarityCandidates();
+            var patternSimilarity = GetPatternSimilarity();
 
             var reduction = structural.Count == 0
                 ? 0
                 : (structural.Count - confirmed.Count) / (double)structural.Count;
 
-            return new ZombieAnalysisBreakdown(
+            return new StructuralCandidateAnalysisBreakdown(
                 structural.Count,
                 confirmed.Count,
                 suspicious.Count,
-                absolved.Count,
+                patternSimilarity.Count,
                 reduction
             );
         }
 
-        public double GetZombieRate(int totalTypes)
+        public double GetUnresolvedCandidatesRate(int totalTypes)
         {
             if (totalTypes == 0) return 0;
-            return GetConfirmedZombies().Count / (double)totalTypes;
+            return GetUnresolvedCandidates().Count / (double)totalTypes;
         }
     }
 }

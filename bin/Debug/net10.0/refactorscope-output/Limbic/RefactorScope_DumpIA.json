@@ -227,431 +227,678 @@
   "Referencias": [
     {
       "FromType": "HeuristicaContextual",
-      "ToType": "ParametrosVader"
+      "ToType": "Token",
+      "Kind": 3
     },
     {
       "FromType": "HeuristicaContextual",
-      "ToType": "Token"
+      "ToType": "Token",
+      "Kind": 0
+    },
+    {
+      "FromType": "HeuristicaContextual",
+      "ToType": "ParametrosVader",
+      "Kind": 0
+    },
+    {
+      "FromType": "HeuristicaContextual",
+      "ToType": "Token",
+      "Kind": 6
     },
     {
       "FromType": "MotorDeriva6",
-      "ToType": "HeuristicaContextual"
+      "ToType": "IMotorDeriva",
+      "Kind": 0
     },
     {
       "FromType": "MotorDeriva6",
-      "ToType": "ParametrosVader"
+      "ToType": "IServicoVocabulario",
+      "Kind": 6
     },
     {
       "FromType": "MotorDeriva6",
-      "ToType": "IMotorDeriva"
+      "ToType": "IServicoVocabulario",
+      "Kind": 0
     },
     {
       "FromType": "MotorDeriva6",
-      "ToType": "IServicoVocabulario"
+      "ToType": "ParametrosVader",
+      "Kind": 6
     },
     {
       "FromType": "MotorDeriva6",
-      "ToType": "Token"
+      "ToType": "ParametrosVader",
+      "Kind": 0
     },
     {
       "FromType": "MotorDeriva6",
-      "ToType": "ResultadoDeriva"
+      "ToType": "ParametrosVader",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "ResultadoDeriva",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "Token",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "ResultadoDeriva",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "HeuristicaContextual",
+      "Kind": 2
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "HeuristicaContextual",
+      "Kind": 0
     },
     {
       "FromType": "BancoDeDadosLexico",
-      "ToType": "RepositorioLexicoUnificado"
+      "ToType": "IServicoVocabulario",
+      "Kind": 0
     },
     {
       "FromType": "BancoDeDadosLexico",
-      "ToType": "IServicoVocabulario"
+      "ToType": "RepositorioLexicoUnificado",
+      "Kind": 6
     },
     {
       "FromType": "BancoDeDadosLexico",
-      "ToType": "TermoLexical"
+      "ToType": "RepositorioLexicoUnificado",
+      "Kind": 0
+    },
+    {
+      "FromType": "BancoDeDadosLexico",
+      "ToType": "RepositorioLexicoUnificado",
+      "Kind": 1
+    },
+    {
+      "FromType": "BancoDeDadosLexico",
+      "ToType": "TermoLexical",
+      "Kind": 0
     },
     {
       "FromType": "ConfiguradorLimbic",
-      "ToType": "ParametrosVader"
+      "ToType": "ParametrosVader",
+      "Kind": 0
+    },
+    {
+      "FromType": "ConfiguradorLimbic",
+      "ToType": "ParametrosVader",
+      "Kind": 1
+    },
+    {
+      "FromType": "ConfiguradorLimbic",
+      "ToType": "ParametrosVader",
+      "Kind": 3
     },
     {
       "FromType": "RepositorioLexicoUnificado",
-      "ToType": "TermoLexical"
+      "ToType": "TermoLexical",
+      "Kind": 3
+    },
+    {
+      "FromType": "RepositorioLexicoUnificado",
+      "ToType": "TermoLexical",
+      "Kind": 0
     },
     {
       "FromType": "ILimbicAnalyzer",
-      "ToType": "EntradaLimbic"
+      "ToType": "ResultadoLimbic",
+      "Kind": 0
     },
     {
       "FromType": "ILimbicAnalyzer",
-      "ToType": "ResultadoLimbic"
+      "ToType": "EntradaLimbic",
+      "Kind": 0
     },
     {
       "FromType": "IMotorDeriva",
-      "ToType": "Token"
+      "ToType": "ResultadoDeriva",
+      "Kind": 0
     },
     {
       "FromType": "IMotorDeriva",
-      "ToType": "ResultadoDeriva"
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "IMotorDeriva",
+      "ToType": "Token",
+      "Kind": 0
     },
     {
       "FromType": "IMotorLexico",
-      "ToType": "TokenPontuado"
+      "ToType": "TokenPontuado",
+      "Kind": 3
+    },
+    {
+      "FromType": "IMotorLexico",
+      "ToType": "TokenPontuado",
+      "Kind": 0
     },
     {
       "FromType": "IMotorLimbic",
-      "ToType": "ResultadoLimbic"
+      "ToType": "ResultadoLimbic",
+      "Kind": 0
     },
     {
       "FromType": "IMotorLimbic",
-      "ToType": "RnaLimbic"
-    },
-    {
-      "FromType": "Token",
-      "ToType": "IPipelineLinguistico"
+      "ToType": "RnaLimbic",
+      "Kind": 0
     },
     {
       "FromType": "IPipelineLinguistico",
-      "ToType": "Token"
+      "ToType": "Token",
+      "Kind": 3
     },
     {
-      "FromType": "LematizadorHibrido",
-      "ToType": "MotorLimbic"
-    },
-    {
-      "FromType": "ProcessadorLinguistico",
-      "ToType": "Token"
-    },
-    {
-      "FromType": "ProcessadorLinguistico",
-      "ToType": "IPipelineLinguistico"
+      "FromType": "IPipelineLinguistico",
+      "ToType": "Token",
+      "Kind": 0
     },
     {
       "FromType": "ProcessadorLinguistico",
-      "ToType": "LematizadorHibrido"
+      "ToType": "IPipelineLinguistico",
+      "Kind": 0
     },
     {
-      "FromType": "EntradaLimbic",
-      "ToType": "Cena"
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "LematizadorHibrido",
+      "Kind": 6
     },
     {
-      "FromType": "ResultadoDeriva",
-      "ToType": "permite"
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "LematizadorHibrido",
+      "Kind": 0
     },
     {
-      "FromType": "ResultadoLimbic",
-      "ToType": "MotorLimbic"
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "LematizadorHibrido",
+      "Kind": 1
     },
     {
-      "FromType": "MotorLimbic",
-      "ToType": "IMotorDeriva"
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "Token",
+      "Kind": 3
     },
     {
-      "FromType": "MotorLimbic",
-      "ToType": "IMotorLimbic"
-    },
-    {
-      "FromType": "MotorLimbic",
-      "ToType": "IServicoVocabulario"
-    },
-    {
-      "FromType": "MotorLimbic",
-      "ToType": "Token"
-    },
-    {
-      "FromType": "MotorLimbic",
-      "ToType": "ResultadoDeriva"
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "Token",
+      "Kind": 0
     },
     {
       "FromType": "MotorLimbic",
-      "ToType": "ResultadoLimbic"
+      "ToType": "IMotorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "MotorLimbic",
-      "ToType": "RnaLimbic"
+      "ToType": "IServicoVocabulario",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "IServicoVocabulario",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "IMotorDeriva",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "IMotorDeriva",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "ResultadoLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "RnaLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "ResultadoDeriva",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "ResultadoDeriva",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorLimbic",
+      "ToType": "Token",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "MotorLimbic"
+      "ToType": "MotorLimbic",
+      "Kind": 6
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "ImpactoVetorial"
+      "ToType": "MotorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "ContextoLimbic"
+      "ToType": "MotorDeTranscricao",
+      "Kind": 6
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "BaseImutavel"
+      "ToType": "MotorDeTranscricao",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "GeneDiscursivo"
+      "ToType": "ImpactoVetorial",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "MotorDeTranscricao"
+      "ToType": "Acao",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorContextual",
-      "ToType": "Acao"
+      "ToType": "ContextoLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "GeneDiscursivo",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "GeneDiscursivo",
+      "Kind": 0
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "BaseImutavel",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "BaseImutavel",
+      "Kind": 0
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "ImpactoVetorial",
+      "Kind": 1
     },
     {
       "FromType": "AnalisadorLexico",
-      "ToType": "MotorLimbic"
+      "ToType": "MotorLimbic",
+      "Kind": 6
     },
     {
       "FromType": "AnalisadorLexico",
-      "ToType": "ContextoLimbic"
+      "ToType": "MotorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorLexico",
-      "ToType": "BaseImutavel"
+      "ToType": "MotorDeTranscricao",
+      "Kind": 6
     },
     {
       "FromType": "AnalisadorLexico",
-      "ToType": "GeneDiscursivo"
+      "ToType": "MotorDeTranscricao",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorLexico",
-      "ToType": "MotorDeTranscricao"
+      "ToType": "Dialogo",
+      "Kind": 0
     },
     {
       "FromType": "AnalisadorLexico",
-      "ToType": "Dialogo"
+      "ToType": "ContextoLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "AnalisadorLexico",
+      "ToType": "GeneDiscursivo",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorLexico",
+      "ToType": "GeneDiscursivo",
+      "Kind": 0
+    },
+    {
+      "FromType": "AnalisadorLexico",
+      "ToType": "BaseImutavel",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorLexico",
+      "ToType": "BaseImutavel",
+      "Kind": 0
     },
     {
       "FromType": "ConstrutorDeCena",
-      "ToType": "ContextoLimbic"
+      "ToType": "Cena",
+      "Kind": 0
     },
     {
       "FromType": "ConstrutorDeCena",
-      "ToType": "EstatisticasCena"
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
     },
     {
       "FromType": "ConstrutorDeCena",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "ContextoLimbic",
+      "Kind": 0
     },
     {
       "FromType": "ConstrutorDeCena",
-      "ToType": "Cena"
+      "ToType": "EstatisticasCena",
+      "Kind": 0
     },
     {
       "FromType": "ConstrutorDeCena",
-      "ToType": "Dialogo"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "ResultadoIdentidadeConsolidada"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "MotorLimbic"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "AcumuladorForense"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "ContextoLimbic"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "EstatisticasCena"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "RnaBruto"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "Cena"
-    },
-    {
-      "FromType": "ImpactoVetorial",
-      "ToType": "Dialogo"
+      "ToType": "Dialogo",
+      "Kind": 0
     },
     {
       "FromType": "AcumuladorForense",
-      "ToType": "ResultadoIdentidadeConsolidada"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "MotorLimbic"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "ImpactoVetorial"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "ContextoLimbic"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "EstatisticasCena"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "RnaBruto"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "Cena"
-    },
-    {
-      "FromType": "AcumuladorForense",
-      "ToType": "Dialogo"
+      "ToType": "ImpactoVetorial",
+      "Kind": 0
     },
     {
       "FromType": "ContextoLimbic",
-      "ToType": "ResultadoIdentidadeConsolidada"
+      "ToType": "AcumuladorForense",
+      "Kind": 0
     },
     {
       "FromType": "ContextoLimbic",
-      "ToType": "MotorLimbic"
+      "ToType": "EstatisticasCena",
+      "Kind": 0
     },
     {
       "FromType": "ContextoLimbic",
-      "ToType": "ImpactoVetorial"
+      "ToType": "RnaBruto",
+      "Kind": 0
     },
     {
       "FromType": "ContextoLimbic",
-      "ToType": "AcumuladorForense"
+      "ToType": "ResultadoIdentidadeConsolidada",
+      "Kind": 0
     },
     {
       "FromType": "ContextoLimbic",
-      "ToType": "EstatisticasCena"
-    },
-    {
-      "FromType": "ContextoLimbic",
-      "ToType": "RnaBruto"
-    },
-    {
-      "FromType": "ContextoLimbic",
-      "ToType": "Cena"
-    },
-    {
-      "FromType": "ContextoLimbic",
-      "ToType": "Dialogo"
+      "ToType": "AcumuladorForense",
+      "Kind": 1
     },
     {
       "FromType": "MotorDeFusao",
-      "ToType": "AcumuladorForense"
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
     },
     {
       "FromType": "MotorDeFusao",
-      "ToType": "PerfilPersonagem"
+      "ToType": "AcumuladorForense",
+      "Kind": 0
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "MotorLimbic"
+      "ToType": "ConstrutorDeCena",
+      "Kind": 6
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "AnalisadorContextual"
+      "ToType": "ConstrutorDeCena",
+      "Kind": 0
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "AnalisadorLexico"
+      "ToType": "AnalisadorLexico",
+      "Kind": 6
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "ConstrutorDeCena"
+      "ToType": "AnalisadorLexico",
+      "Kind": 0
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "ContextoLimbic"
+      "ToType": "AnalisadorContextual",
+      "Kind": 6
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "EstatisticasRoteiro"
+      "ToType": "AnalisadorContextual",
+      "Kind": 0
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "MotorDeTranscricao"
+      "ToType": "MotorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "Cena"
+      "ToType": "MotorDeTranscricao",
+      "Kind": 0
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "Dialogo"
+      "ToType": "ConstrutorDeCena",
+      "Kind": 1
     },
     {
       "FromType": "PipelineLimbic",
-      "ToType": "Acao"
+      "ToType": "AnalisadorLexico",
+      "Kind": 1
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "AnalisadorContextual",
+      "Kind": 1
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "Cena",
+      "Kind": 0
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "ContextoLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "Dialogo",
+      "Kind": 0
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "Acao",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "MotorDeriva6"
+      "ToType": "BancoDeDadosLexico",
+      "Kind": 1
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "BancoDeDadosLexico"
+      "ToType": "IServicoVocabulario",
+      "Kind": 6
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "ParametrosVader"
+      "ToType": "IServicoVocabulario",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "IMotorDeriva"
+      "ToType": "BancoDeDadosLexico",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "IMotorLimbic"
+      "ToType": "ParametrosVader",
+      "Kind": 1
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "IServicoVocabulario"
+      "ToType": "ParametrosVader",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "ProcessadorLinguistico"
+      "ToType": "MotorDeriva6",
+      "Kind": 1
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "ResultadoDeriva"
+      "ToType": "IMotorDeriva",
+      "Kind": 6
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "ResultadoLimbic"
+      "ToType": "IMotorDeriva",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "MotorLimbic"
+      "ToType": "MotorDeriva6",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "VerificadorDerivaCompleto"
+      "ToType": "MotorLimbic",
+      "Kind": 1
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "BaseImutavel"
+      "ToType": "IMotorLimbic",
+      "Kind": 6
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "GeneDiscursivo"
+      "ToType": "IMotorLimbic",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorLimbic",
-      "ToType": "MotorDeTranscricao"
+      "ToType": "MotorLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "VerificadorDerivaCompleto",
+      "Kind": 2
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "VerificadorDerivaCompleto",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "ResultadoDeriva",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "ResultadoLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "MotorDeTranscricao",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "MotorDeTranscricao",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "GeneDiscursivo",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "GeneDiscursivo",
+      "Kind": 0
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "BaseImutavel",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "BaseImutavel",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorDerivaCompleto",
-      "ToType": "IMotorDeriva"
+      "ToType": "IMotorDeriva",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorDerivaCompleto",
-      "ToType": "ProcessadorLinguistico"
+      "ToType": "ResultadoDeriva",
+      "Kind": 0
     },
     {
       "FromType": "VerificadorDerivaCompleto",
-      "ToType": "ResultadoDeriva"
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorDerivaCompleto",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 0
     }
   ]
 }

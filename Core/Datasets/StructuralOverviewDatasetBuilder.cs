@@ -1,5 +1,4 @@
 ﻿using RefactorScope.Core.Context;
-using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Results;
 
 namespace RefactorScope.Core.Datasets
@@ -34,7 +33,7 @@ namespace RefactorScope.Core.Datasets
             AnalysisContext context,
             ConsolidatedReport report)
         {
-            var zombies = report.Results.OfType<ZombieResult>().FirstOrDefault();
+            var zombies = report.Results.OfType<StructuralCandidateResult>().FirstOrDefault();
             var entries = report.Results.OfType<EntryPointHeuristicResult>().FirstOrDefault();
             var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
             var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
@@ -54,7 +53,7 @@ namespace RefactorScope.Core.Datasets
                     module.Key,
                     tiposDoModulo.Count.ToString(),
                     tiposDoModulo.Count(t => arch?.Items.Any(a => a.TypeName == t.Name && a.Layer == "Core") == true).ToString(),
-                    zombies?.ZombieTypes.Count(z => tiposDoModulo.Any(t => t.Name == z)).ToString() ?? "0",
+                    zombies?.StructuralCandidateTypes.Count(z => tiposDoModulo.Any(t => t.Name == z)).ToString() ?? "0",
                     entries?.EntryPoints.Count(e => tiposDoModulo.Any(t => t.Name == e)).ToString() ?? "0",
                     isolated?.IsolatedCoreTypes.Count(i => tiposDoModulo.Any(t => t.Name == i)).ToString() ?? "0"
                 };

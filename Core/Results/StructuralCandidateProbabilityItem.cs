@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RefactorScope.Core.Results
 {
-    public class ZombieProbabilityItem
+    public class StructuralCandidateProbabilityItem
     {
         public string TypeName { get; }
 
@@ -16,7 +16,7 @@ namespace RefactorScope.Core.Results
 
         public bool InterfaceDetected { get; }
 
-        public ZombieProbabilityItem(
+        public StructuralCandidateProbabilityItem(
             string typeName,
             double probability,
             string confidenceLevel,

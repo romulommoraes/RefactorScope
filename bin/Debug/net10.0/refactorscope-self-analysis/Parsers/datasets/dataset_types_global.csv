@@ -1,2 +1,4 @@
-﻿Type,Module,Layer,Usage,StructuralStatus,IsZombie,IsIsolated,IsEntryPoint
-CSharpRegexParser,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0
+﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
+CSharpRegexParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+HigienizadorLexico,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+CSharpTextualParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
