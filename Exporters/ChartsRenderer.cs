@@ -10,23 +10,33 @@ namespace RefactorScope.Exporters
 {
     public class ChartsRenderer
     {
+        const int ChartSize = 320;
+
         public string RenderRadarSvg(
-                                    HygieneReport h,
-                                    StructuralCandidateAnalysisBreakdown breakdown,
-                                    SolidResult? solid)
+            HygieneReport h,
+            StructuralCandidateAnalysisBreakdown breakdown,
+            SolidResult? solid,
+            ImplicitCouplingResult? implicitCoupling)
         {
             double Normalize(int value, int total) => total == 0 ? 0 : value / (double)total;
             string Fmt(double val) => val.ToString(CultureInfo.InvariantCulture);
+
             var solidAlerts = solid?.Alerts.Count ?? 0;
 
-                var values = new[]
-                        {
+            double couplingScore =
+                implicitCoupling == null
+                ? 0
+                : Normalize(implicitCoupling.Suspicions.Count, h.TotalClasses);
+
+            var values = new[]
+            {
                 Normalize(breakdown.StructuralCandidates, h.TotalClasses),
                 Normalize(breakdown.PatternSimilarity, h.TotalClasses),
                 Normalize(breakdown.ProbabilisticConfirmed, h.TotalClasses),
                 Normalize(h.NamespaceDriftCount, h.TotalClasses),
                 Normalize(h.GlobalNamespaceCount, h.TotalClasses),
                 Normalize(h.IsolatedCoreCount, h.TotalClasses),
+                couplingScore,
                 Math.Min(1.0, Normalize(solidAlerts, h.TotalClasses) * 5)
             };
 
@@ -37,16 +47,24 @@ namespace RefactorScope.Exporters
                 "Unresolved",
                 "Namespace Drift",
                 "Global Namespace",
-                "Isolation",
+                "Core Isolation",
+                "Implicit Coupling",
                 "SOLID Alerts"
             };
 
-            int size = 320;
+            int size = ChartSize;
             int center = size / 2;
             int radius = 110;
             int levels = 4;
 
             var sb = new StringBuilder();
+
+            sb.AppendLine("<div class='chart-container'>");
+            sb.AppendLine("<h3>Architectural Risk Radar</h3>");
+
+            sb.AppendLine(
+            "<div class='tooltip'>");
+
             sb.AppendLine($"<svg width='{size}' height='{size}' style='background:#161b22;border-radius:12px'>");
 
             for (int l = 1; l <= levels; l++)
@@ -63,10 +81,13 @@ namespace RefactorScope.Exporters
 
                 sb.AppendLine($"<line x1='{center}' y1='{center}' x2='{Fmt(x)}' y2='{Fmt(y)}' stroke='#30363d' />");
 
-                double lx = center + (radius + 20) * Math.Cos(angle);
-                double ly = center + (radius + 20) * Math.Sin(angle);
+                double lx = center + (radius + 22) * Math.Cos(angle);
+                double ly = center + (radius + 22) * Math.Sin(angle);
 
-                sb.AppendLine($"<text x='{Fmt(lx)}' y='{Fmt(ly)}' fill='#e6edf3' font-size='12' text-anchor='middle'>{labels[i]}</text>");
+                sb.AppendLine(
+                $"<text x='{Fmt(lx)}' y='{Fmt(ly)}' fill='#e6edf3' font-size='11' text-anchor='middle'>" +
+                $"<title>{labels[i]} — {(values[i] * 100):0}% of classes</title>" +
+                $"{labels[i]}</text>");
             }
 
             var points = new List<string>();
@@ -81,234 +102,98 @@ namespace RefactorScope.Exporters
                 points.Add($"{Fmt(x)},{Fmt(y)}");
             }
 
-            sb.AppendLine($"<polygon points='{string.Join(" ", points)}' fill='rgba(255,99,132,0.4)' stroke='#ff6384' stroke-width='2'/>");
-            sb.AppendLine("</svg>");
-
-            return sb.ToString();
-        }
-
-        public string RenderFunnelChart(StructuralCandidateAnalysisBreakdown breakdown)
-        {
-            var max = breakdown.StructuralCandidates;
-
-            double Scale(int v) => max == 0 ? 0 : (v / (double)max) * 200;
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Candidate Refinement</h3>");
-            sb.AppendLine("<svg width='240' height='160'>");
-
-            int y = 20;
-
-            void Bar(string label, int value)
-            {
-                var w = Scale(value);
-
-                sb.AppendLine($"<rect x='20' y='{y}' width='{w}' height='20' fill='#ff6384'/>");
-                sb.AppendLine($"<text x='25' y='{y + 15}' fill='#fff' font-size='11'>{label} ({value})</text>");
-
-                y += 35;
-            }
-
-            Bar("Candidates", breakdown.StructuralCandidates);
-            Bar("Pattern Match", breakdown.PatternSimilarity);
-            Bar("Unresolved", breakdown.ProbabilisticConfirmed);
+            sb.AppendLine(
+            $"<polygon points='{string.Join(" ", points)}' fill='rgba(255,99,132,0.35)' stroke='#ff6384' stroke-width='2'/>");
 
             sb.AppendLine("</svg>");
+
+            sb.AppendLine(
+            @"<span class='tooltiptext'>
+Radar summarizing architectural risk indicators.
+
+Higher values indicate larger concentration of potential structural issues:
+• Dead code candidates
+• Pattern similarity clusters
+• Namespace drift
+• Hidden coupling
+• SOLID violations
+</span>");
+
+            sb.AppendLine("</div>");
             sb.AppendLine("</div>");
 
             return sb.ToString();
         }
 
-        public string RenderLayerDistribution(IReadOnlyList<ArchitecturalClassificationItem> items)
+        public string RenderArchitecturalGalaxy(CouplingResult coupling)
         {
-            var groups = items
-                .GroupBy(i => i.Layer ?? "Unknown")
-                .OrderByDescending(g => g.Count());
+            string Fmt(double val) => val.ToString(CultureInfo.InvariantCulture);
 
-            int max = groups.Max(g => g.Count());
-
-            double Scale(int v) => (v / (double)max) * 200;
+            int width = ChartSize;
+            int height = ChartSize;
+            int margin = 35;
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Layer Distribution</h3>");
-            sb.AppendLine("<svg width='260' height='200'>");
+            sb.AppendLine("<div class='chart-container'>");
+            sb.AppendLine("<h3>Architectural Galaxy (A/I Distribution)</h3>");
 
-            int y = 20;
+            sb.AppendLine("<div class='tooltip'>");
 
-            foreach (var g in groups)
+            sb.AppendLine($"<svg width='{width}' height='{height}' style='background:#161b22;border-radius:12px'>");
+
+            sb.AppendLine($"<line x1='{margin}' y1='{height - margin}' x2='{width - margin}' y2='{height - margin}' stroke='#30363d'/>");
+            sb.AppendLine($"<line x1='{margin}' y1='{height - margin}' x2='{margin}' y2='{margin}' stroke='#30363d'/>");
+
+            sb.AppendLine($"<text x='{width - 80}' y='{height - 8}' fill='#e6edf3' font-size='11'>Instability</text>");
+            sb.AppendLine($"<text x='5' y='20' fill='#e6edf3' font-size='11'>Abstractness</text>");
+
+            sb.AppendLine($"<line x1='{margin}' y1='{margin}' x2='{width - margin}' y2='{height - margin}' stroke='#444' stroke-dasharray='4,4'/>");
+
+            foreach (var module in coupling.AbstractnessByModule.Keys)
             {
-                var w = Scale(g.Count());
+                double A = coupling.AbstractnessByModule[module];
+                double I = coupling.InstabilityByModule.GetValueOrDefault(module);
 
-                sb.AppendLine($"<rect x='20' y='{y}' width='{w}' height='18' fill='#4dabf7'/>");
-                sb.AppendLine($"<text x='25' y='{y + 14}' fill='#fff' font-size='11'>{g.Key} ({g.Count()})</text>");
+                int couplingStrength = coupling.ModuleFanOut.GetValueOrDefault(module);
 
-                y += 28;
+                double x = margin + (width - margin * 2) * I;
+                double y = (height - margin) - (height - margin * 2) * A;
+
+                double size = 4 + Math.Min(10, couplingStrength / 3.0);
+
+                string color = "#58a6ff";
+
+                if (couplingStrength > 20)
+                    color = "#ff6b6b";
+                else if (couplingStrength > 10)
+                    color = "#ffd166";
+
+                sb.AppendLine(
+                    $"<circle cx='{Fmt(x)}' cy='{Fmt(y)}' r='{Fmt(size)}' fill='{color}' opacity='0.9'>" +
+                    $"<title>{module}\nAbstractness: {A:0.00}\nInstability: {I:0.00}\nFanOut: {couplingStrength}</title>" +
+                    $"</circle>");
             }
 
             sb.AppendLine("</svg>");
+
+            sb.AppendLine(
+            @"<span class='tooltiptext'>
+Architectural Galaxy visualizes module positioning based on
+Robert Martin's A/I model.
+
+A = Abstractness
+I = Instability
+
+Modules should ideally lie near the Main Sequence (A + I = 1).
+Points far from this line indicate architectural tension.
+Circle size represents coupling intensity.
+</span>");
+
+            sb.AppendLine("</div>");
             sb.AppendLine("</div>");
 
             return sb.ToString();
         }
-
-        public string RenderModuleHeatmap(IReadOnlyList<ArchitecturalClassificationItem> items)
-        {
-            string GetModule(string ns)
-            {
-                if (string.IsNullOrWhiteSpace(ns))
-                    return "Unknown";
-
-                return ns.Split('.').First();
-            }
-
-            var modules = items
-                .GroupBy(i => GetModule(i.Namespace))
-                .Select(g => new
-                {
-                    Module = g.Key,
-                    Unresolved = g.Count(x => x.Status == "Sem Referência Estrutural")
-                })
-                .OrderByDescending(x => x.Unresolved);
-
-            int max = modules.Max(m => m.Unresolved);
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Unresolved × Module</h3>");
-            sb.AppendLine("<svg width='240' height='200'>");
-
-            int y = 20;
-
-            foreach (var m in modules)
-            {
-                double intensity = max == 0 ? 0 : m.Unresolved / (double)max;
-
-                int r = (int)(255 * intensity);
-                int g = (int)(80 * (1 - intensity));
-
-                string color = $"rgb({r},{g},60)";
-
-                sb.AppendLine($"<rect x='20' y='{y}' width='160' height='18' fill='{color}'/>");
-                sb.AppendLine($"<text x='25' y='{y + 14}' fill='#fff' font-size='11'>{m.Module} ({m.Unresolved})</text>");
-
-                y += 26;
-            }
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
-        public string RenderDependencyGravity(IReadOnlyList<ArchitecturalClassificationItem> items)
-        {
-            var top = items
-                .OrderByDescending(i => i.UsageCount)
-                .Take(8)
-                .ToList();
-
-            int max = top.Max(i => i.UsageCount);
-
-            double Scale(int v) => max == 0 ? 0 : (v / (double)max) * 180;
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Dependency Gravity</h3>");
-            sb.AppendLine("<svg width='260' height='200'>");
-
-            int y = 20;
-
-            foreach (var i in top)
-            {
-                var w = Scale(i.UsageCount);
-
-                sb.AppendLine($"<rect x='20' y='{y}' width='{w}' height='16' fill='#ffd166'/>");
-                sb.AppendLine($"<text x='25' y='{y + 12}' fill='#fff' font-size='10'>{i.TypeName} ({i.UsageCount})</text>");
-
-                y += 24;
-            }
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
-        public string RenderModuleHeatmapIntensity(
-    IReadOnlyList<ArchitecturalClassificationItem> items,
-    HashSet<string> pattern,
-    HashSet<string> unresolved)
-        {
-            string GetModule(string ns)
-                => string.IsNullOrWhiteSpace(ns)
-                    ? "Global"
-                    : ns.Split('.').First();
-
-            var modules = items
-                .GroupBy(i => GetModule(i.Namespace))
-                .Select(g => new
-                {
-                    Module = g.Key,
-                    Structural = g.Count(x => x.Status == "Sem Referência Estrutural"),
-                    Pattern = g.Count(x => pattern.Contains(x.TypeName)),
-                    Unresolved = g.Count(x => unresolved.Contains(x.TypeName))
-                })
-                .OrderByDescending(x => x.Unresolved)
-                .ToList();
-
-            int max = modules.Max(m =>
-                Math.Max(m.Structural,
-                Math.Max(m.Pattern, m.Unresolved)));
-
-            string Color(int value)
-            {
-                double t = max == 0 ? 0 : value / (double)max;
-
-                int r = (int)(239 * t);
-                int g = (int)(68 * (1 - t));
-                int b = (int)(246 * (1 - t));
-
-                return $"rgb({r},{g},{b})";
-            }
-
-            var sb = new StringBuilder();
-
-            int cellW = 70;
-            int cellH = 24;
-            int startX = 120;
-            int y = 30;
-
-            sb.AppendLine("<div>");
-            sb.AppendLine("<h3>Module × Candidate Heatmap</h3>");
-            sb.AppendLine("<svg width='420' height='240'>");
-
-            // headers
-            sb.AppendLine($"<text x='{startX}' y='20' fill='#e6edf3'>Structural</text>");
-            sb.AppendLine($"<text x='{startX + cellW}' y='20' fill='#e6edf3'>Pattern</text>");
-            sb.AppendLine($"<text x='{startX + cellW * 2}' y='20' fill='#e6edf3'>Unresolved</text>");
-
-            foreach (var m in modules)
-            {
-                sb.AppendLine($"<text x='10' y='{y + 16}' fill='#e6edf3'>{m.Module}</text>");
-
-                sb.AppendLine($"<rect x='{startX}' y='{y}' width='{cellW}' height='{cellH}' fill='{Color(m.Structural)}'/>");
-                sb.AppendLine($"<rect x='{startX + cellW}' y='{y}' width='{cellW}' height='{cellH}' fill='{Color(m.Pattern)}'/>");
-                sb.AppendLine($"<rect x='{startX + cellW * 2}' y='{y}' width='{cellW}' height='{cellH}' fill='{Color(m.Unresolved)}'/>");
-
-                y += cellH + 6;
-            }
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
     }
 }

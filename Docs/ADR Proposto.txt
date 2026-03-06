@@ -1,0 +1,207 @@
+1️⃣ ADR — Code DERIVA Engine
+ADR-EXP-011 — Code DERIVA Engine (Architectural Phenotype)
+
+Status
+Proposed
+
+Context
+
+RefactorScope atualmente utiliza um conjunto de analyzers independentes
+para medir diferentes aspectos estruturais do código:
+
+- CouplingAnalyzer
+- ImplicitCouplingAnalyzer
+- StructuralCandidateAnalyzer
+- SOLID Analyzer
+- CoreIsolationAnalyzer
+
+Esses analyzers produzem métricas fragmentadas.
+
+Durante a evolução do projeto foi observado que muitas dessas métricas
+representam dimensões diferentes do mesmo fenômeno:
+
+Arquitetura estrutural do sistema.
+
+O projeto Scriptome utiliza um modelo chamado DERIVA,
+onde múltiplas dimensões são combinadas em um vetor interpretável.
+
+A mesma lógica pode ser aplicada à arquitetura de software.
+
+Decision
+
+Criar um motor chamado:
+
+CodeDerivaEngine
+
+Responsável por calcular um vetor arquitetural do sistema
+a partir das métricas existentes.
+
+O motor não substituirá os analyzers existentes inicialmente.
+Ele atuará como uma camada agregadora.
+
+O resultado produzido será:
+
+ResultadoDerivaCodigo
+
+Contendo um vetor arquitetural composto por dimensões estruturais.
+
+Proposed Architectural Dimensions
+
+C — Coupling
+Mede dependências entre módulos.
+
+I — Instability
+Baseado em Robert Martin (Ce / (Ce + Ca)).
+
+A — Abstractness
+Proporção de interfaces / abstrações.
+
+D — DistanceFromMainSequence
+Distância da linha arquitetural ideal.
+
+S — SOLID Pressure
+Pressão estrutural derivada de violações SOLID detectadas.
+
+E — Erudição Arquitetural
+Uso de padrões arquiteturais sofisticados.
+
+Exemplos de sinais de erudição:
+
+Strategy pattern em vez de condicionais extensivos
+Pipelines de processamento
+Arquitetura modular
+Uso consistente de interfaces
+Separação clara de camadas
+
+A detecção pode ser heurística e evoluir com o tempo.
+
+Example Vector
+
+DerivaCodigoVector:
+
+C = 0.45
+I = 0.32
+A = 0.18
+D = 0.12
+S = 0.05
+E = 0.40
+
+Esse vetor representa o "fenótipo arquitetural" do sistema.
+
+Consequences
+
+Benefícios:
+
+Permite comparação arquitetural entre commits
+Permite clustering de projetos
+Permite visualizações arquiteturais avançadas
+Unifica métricas estruturais em um modelo coerente
+
+Trade-offs:
+
+Camada adicional de abstração
+Necessidade de calibrar heurísticas (especialmente Erudição)
+
+Future Work
+
+Visualizações fenotípicas
+Comparação entre versões
+Histórico evolutivo da arquitetura
+
+
+
+ADR-EXP-012 — Main Sequence Architecture Metrics
+
+Status
+Accepted
+
+Context
+
+Robert C. Martin introduziu um modelo arquitetural baseado em duas métricas:
+
+Abstractness (A)
+Instability (I)
+
+Essas métricas definem um espaço arquitetural bidimensional.
+
+A linha ideal nesse espaço é chamada:
+
+Main Sequence
+
+Definida por:
+
+A + I = 1
+
+Arquiteturas saudáveis tendem a se posicionar próximas dessa linha.
+
+Arquiteturas distantes da linha indicam problemas estruturais.
+
+Decision
+
+Adicionar ao RefactorScope as métricas:
+
+Abstractness
+Instability
+Distance from Main Sequence
+
+Essas métricas serão calculadas por módulo.
+
+Fórmulas
+
+Abstractness
+
+A = Na / Nc
+
+Na = número de interfaces + classes abstratas
+Nc = número total de classes no módulo
+
+Instability
+
+I = Ce / (Ce + Ca)
+
+Ce = dependências que saem do módulo
+Ca = dependências que entram no módulo
+
+Distance from Main Sequence
+
+D = | A + I − 1 |
+
+Interpretação
+
+D ≈ 0
+
+Arquitetura equilibrada
+
+D > 0.5
+
+Arquitetura potencialmente problemática
+
+Arquiteturas podem cair em duas zonas clássicas:
+
+Zone of Pain
+
+Baixa abstração
+Baixa instabilidade
+
+Código concreto e extremamente rígido.
+
+Zone of Uselessness
+
+Alta abstração
+Alta instabilidade
+
+Arquitetura super abstrata mas sem utilidade real.
+
+Consequences
+
+Permite diagnósticos arquiteturais robustos.
+
+Permite visualizações arquiteturais avançadas.
+
+Permite observar evolução arquitetural ao longo do tempo.
+
+Future Work
+
+Main Sequence Diagram (A vs I)
+Visualização temporal da arquitetura
+Classificação automática de módulos

@@ -34,6 +34,27 @@
         /// Caminho completo do arquivo onde o tipo está definido.
         /// Necessário para geração do Dump IA.
         /// </summary>
+        /// 
+          // -------------------------------------------------
+        // Propriedades derivadas
+        // -------------------------------------------------
+
+        /// <summary>
+        /// Indica se o tipo é uma interface.
+        /// </summary>
+        public bool IsInterface =>
+            Kind.Equals("interface", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Indica se o tipo é abstrato.
+        /// </summary>
+        /// Observação:
+        /// O parser atual não diferencia "abstract class",
+        /// portanto apenas interfaces são tratadas como abstratas.
+        /// </summary>
+        public bool IsAbstract =>
+            Kind.Equals("interface", StringComparison.OrdinalIgnoreCase);
+
 
         public string FilePath { get; set; } = string.Empty;
 

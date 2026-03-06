@@ -179,35 +179,48 @@ function sortTable(n) {
                 $"<span class='tooltiptext'>Namespace Drift (Strict Rule): Exact correspondence to folder structure</span>" +
                 $"</div>");
 
-            sb.AppendLine($"<div class='card'>Global Namespace<br><b>{hygiene.GlobalNamespaceCount}</b></div>");
-            sb.AppendLine($"<div class='card tooltip'>Isolated Core<br><b>{hygiene.IsolatedCoreCount}</b> <span class='tooltiptext'>Number of Core types that remain structurally independent from the rest of the system. These elements represent stable architectural foundations. If the value is low, the Core may be leaking responsibilities or depending on outer layers.</span></div>");
+            sb.AppendLine($@"<div class='card tooltip'>
+                Global Namespace<br>
+                <b>{hygiene.GlobalNamespaceCount}</b>
+                <span class='tooltiptext'>
+                Number of classes declared without a namespace.
 
-            //sb.AppendLine($@"<div class='card tooltip'>
-            //Structural Entropy<br>
-            //<b>{hygiene.StructuralEntropy:0.000}</b>
-            //<span class='tooltiptext'>Measures how classes are distributed across folders/modules.
-            //    Low entropy:
-            //    Most code concentrated in a few modules.
-            //    Moderate entropy:
-            //    Balanced modular distribution.
-            //    High entropy:
-            //    Classes spread across many small modules,
-            //    which may indicate architectural fragmentation.
-            //    Note:
-            //    This metric reflects structural layout only,
-            //    not dependency coupling.</span>
-            //</div>");
+                Using the global namespace reduces architectural clarity
+                and weakens modular organization.
+
+                Well-structured projects usually avoid global namespace usage.
+                </span></div>");
+            sb.AppendLine($"<div class='card tooltip'>Isolated Core<br><b>{hygiene.IsolatedCoreCount}</b> <span class='tooltiptext'>Number of Core types that remain structurally independent from the rest of the system. These elements represent stable architectural foundations. If the value is low, the Core may be leaking responsibilities or depending on outer layers.</span></div>");
 
             sb.AppendLine($@"<div class='card tooltip'>
             Smell Index<br>
             <b>{hygiene.SmellIndex:0.0}</b>
-            <span class='tooltiptext'>Composite hygiene indicator</span>
+            <span class='tooltiptext'>
+            Composite structural smell indicator.
+
+            Components:
+            • Dead Code Ratio (Unreferenced classes)
+            • Namespace Drift Ratio (namespace vs folder misalignment)
+            • Global Namespace Ratio (legacy structural usage)
+            • Core Isolation Ratio (core architectural boundary integrity)
+            • Structural Entropy (distribution disorder across modules)
+
+            Higher values indicate architectural degradation
+            and increased maintenance risk.
+            </span>
             </div>");
 
             sb.AppendLine($@"<div class='card tooltip'>
             Hygiene Level<br>
             <b>{hygiene.HygieneLevel}</b>
-            <span class='tooltiptext'>Overall structural health</span>
+            <span class='tooltiptext'>
+            Overall structural health classification derived
+            from the SmellIndex score.
+
+            Evaluates architectural hygiene considering
+            dead code probability, legacy structure,
+            core isolation and structural entropy.
+            </span>
             </div>");
 
             if (solid != null)
@@ -226,6 +239,94 @@ function sortTable(n) {
             </div>");
             }
 
+            // ------------------------------------------------------
+            // Coupling Suspicion KPI
+            // ------------------------------------------------------
+
+            var implicitCoupling = report.Results
+                .OfType<ImplicitCouplingResult>()
+                .FirstOrDefault();
+
+            var couplingSuspects = implicitCoupling?.Suspicions.Count ?? 0;
+
+            sb.AppendLine($@"<div class='card tooltip warning'>
+            Implicit Coupling<br>
+            <b>{couplingSuspects}</b>
+            <span class='tooltiptext'>
+            Classes whose dependencies concentrate strongly toward a single module.
+
+            Detection considers:
+            • Fan-out asymmetry
+            • Dominant dependency direction
+            • Structural concentration of references
+
+            These signals highlight potential architectural coupling hotspots,
+            but do not necessarily indicate design violations.
+            </span></div>");
+
+            // ------------------------------------------------------
+            // Robert Martin Metrics KPI
+            // ------------------------------------------------------
+
+            var coupling = report.Results
+                .OfType<CouplingResult>()
+                .FirstOrDefault();
+
+            double avgAbstractness = 0;
+            double avgInstability = 0;
+            double avgDistance = 0;
+
+            if (coupling != null && coupling.AbstractnessByModule.Any())
+            {
+                avgAbstractness = coupling.AbstractnessByModule.Values.Average();
+                avgInstability = coupling.InstabilityByModule.Values.Average();
+                avgDistance = coupling.DistanceByModule.Values.Average();
+            }
+
+            sb.AppendLine($@"<div class='card tooltip'>
+            Abstractness (A)<br>
+            <b>{avgAbstractness:0.00}</b>
+            <span class='tooltiptext'>
+            Architectural abstraction ratio.
+
+            A = Na / Nc
+
+            Where:
+            Na = number of abstract types
+            Nc = total types in module
+
+            Higher values indicate greater use of abstraction.
+            </span></div>");
+
+                        sb.AppendLine($@"<div class='card tooltip'>
+            Instability (I)<br>
+            <b>{avgInstability:0.00}</b>
+            <span class='tooltiptext'>
+            Architectural instability.
+
+            I = Ce / (Ce + Ca)
+
+            Where:
+            Ce = outgoing dependencies
+            Ca = incoming dependencies
+
+            Values closer to 1 indicate modules
+            that depend heavily on other modules.
+            </span></div>");
+
+                        sb.AppendLine($@"<div class='card tooltip'>
+            Distance (D)<br>
+            <b>{avgDistance:0.00}</b>
+            <span class='tooltiptext'>
+            Distance from Main Sequence.
+
+            D = | A + I − 1 |
+
+            Measures how far a module is from the
+            ideal architectural balance between
+            abstraction and stability.
+            </span></div>");
+
             sb.AppendLine("</div>");
 
             #endregion
@@ -233,14 +334,14 @@ function sortTable(n) {
             #region RADAR
 
             sb.AppendLine("<div style='margin-top:40px;'>");
-            sb.AppendLine("<h2>📡 Architectural Radar</h2>");
-            sb.AppendLine(RenderCharts(
+              sb.AppendLine(RenderCharts(
                items,
                breakdown,
                hygiene,
                suspicious.ToHashSet(),
                confirmed.ToHashSet(),
-               solid));
+               solid,
+               implicitCoupling, coupling));
             sb.AppendLine("</div>");
 
             #endregion
@@ -303,6 +404,58 @@ function sortTable(n) {
             }
 
             sb.AppendLine("</table>");
+
+            #endregion
+
+            #region IMPLICIT COUPLING TABLE
+
+            if (implicitCoupling != null && implicitCoupling.Suspicions.Any())
+            {
+                sb.AppendLine("<h2 style='margin-top:50px;'>⚠ Implicit Coupling Candidates</h2>");
+
+                sb.AppendLine("<table>");
+                sb.AppendLine("<tr>");
+                sb.AppendLine("<th>Type</th>");
+                sb.AppendLine("<th>Module</th>");
+                sb.AppendLine("<th>Target Module</th>");
+                sb.AppendLine("<th>Fan-Out</th>");
+                sb.AppendLine("<th>Fan-In</th>");
+                sb.AppendLine("<th>Dominance</th>");
+                sb.AppendLine("<th>Volume</th>");
+                sb.AppendLine("</tr>");
+
+                foreach (var s in implicitCoupling.Suspicions)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendLine($"<td>{s.TypeName}</td>");
+                    sb.AppendLine($"<td>{s.Module}</td>");
+                    sb.AppendLine($"<td>{s.TargetModule}</td>");
+                    sb.AppendLine($"<td>{s.FanOut}</td>");
+                    sb.AppendLine($"<td>{s.FanIn}</td>");
+                    sb.AppendLine($"<td>{s.Dominance:0.00}</td>");
+                    sb.AppendLine($"<td>{s.Volume}</td>");
+                    sb.AppendLine("</tr>");
+                }
+
+                sb.AppendLine("</table>");
+                    sb.AppendLine(@"
+                    <div style='margin-top:8px;font-size:12px;color:#9aa4b2;max-width:800px;'>
+
+                    <b>Metric Definitions</b><br>
+
+                    <b>Fan-Out</b> — Number of outgoing dependencies from the module.<br>
+
+                    <b>Fan-In</b> — Number of incoming dependencies targeting the module.<br>
+
+                    <b>Dominance</b> — Relative structural influence derived from Fan-Out versus Fan-In. 
+                    Higher values indicate modules exerting stronger control over other modules.<br>
+
+                    <b>Volume</b> — Total dependency interaction involving the module 
+                    (Fan-In + Fan-Out), representing the structural traffic of the component.
+
+                    </div>");
+
+            }
 
             #endregion
 
@@ -383,7 +536,31 @@ function sortTable(n) {
                 This analysis operates purely at the static structural level.
                 Runtime mechanisms such as reflection, dependency injection, or framework behavior may produce false positives.
                 Final architectural decisions should always involve human review.
+
+                    <br><br>
+                    <b>Implicit Coupling</b><br>
+                    Implicit coupling highlights classes whose dependencies concentrate toward a single module or subsystem.
+                    This signal may reveal architectural hotspots such as orchestration layers,
+                    integration adapters, or hidden dependency concentration.
+
+                    These detections are heuristic and should be interpreted as architectural signals rather than definitive issues.
+
+                    <br><br>
+                    <b>Architectural Stability Metrics (Robert Martin)</b><br>
+
+                    Abstractness (A) measures how much of a module consists of abstractions.
+
+                    Instability (I) measures how dependent a module is on other modules.
+
+                    Distance from Main Sequence (D) measures how far a module is from the ideal balance
+                    between abstraction and stability.
+
+                    Architectures close to the main sequence tend to be easier to evolve and maintain.
+
+                    These metrics are widely used in architectural analysis tools such as NDepend.
                 </div>");
+
+
 
             #endregion
 
@@ -397,42 +574,80 @@ function sortTable(n) {
             StructuralCandidateAnalysisBreakdown breakdown,
             HygieneReport hygiene,
             HashSet<string> suspicious,
-            HashSet<string> confirmed, SolidResult? solid)
+            HashSet<string> confirmed, SolidResult? solid, ImplicitCouplingResult implicitCoupling, CouplingResult coupling)
         {
             var sb = new StringBuilder();
             var render = new ChartsRenderer();
+
             var coreDiagnosis =
                 hygiene.IsolatedCoreCount == 0
-                    ? "Core may be coupled with outer layers."
-                    : "Core isolation detected.";
+                    ? "Core layer may be coupled with infrastructure or outer layers."
+                    : hygiene.IsolatedCoreCount < 3
+                        ? "Core partially isolated but with limited structural protection."
+                        : "Core isolation detected. Architectural boundaries appear preserved.";
 
             var namespaceDiagnosis =
                 hygiene.NamespaceDriftCount > hygiene.TotalClasses * 0.15
-                    ? "High namespace drift detected."
-                    : "Namespace structure aligned with folder hierarchy.";
+                    ? "High namespace drift detected. Folder structure may not reflect architectural boundaries."
+                    : hygiene.NamespaceDriftCount > hygiene.TotalClasses * 0.05
+                        ? "Moderate namespace drift detected. Minor structural inconsistencies present."
+                        : "Namespace hierarchy aligned with project structure.";
 
             var globalNamespaceDiagnosis =
                 hygiene.GlobalNamespaceCount > 0
-                    ? "Global namespace usage detected."
+                    ? "Global namespace usage detected. This may indicate legacy code or architectural leakage."
                     : "No global namespace usage detected.";
 
             var unresolvedDiagnosis =
                 breakdown.ProbabilisticConfirmed > 0
-                    ? "Potential dead code detected."
-                    : "No unresolved structural candidates.";
+                    ? "Potential dead or orphaned code detected through structural analysis."
+                    : "No unresolved structural candidates detected.";
 
             var solidDiagnosis =
-                (solid?.Alerts.Count ?? 0) > 0
-                    ? "SOLID design alerts detected."
-                    : "No SOLID design alerts detected.";
+                (solid?.Alerts.Count ?? 0) > 5
+                    ? "Multiple SOLID violations detected. Design refactoring recommended."
+                    : (solid?.Alerts.Count ?? 0) > 0
+                        ? "Minor SOLID design alerts detected."
+                        : "No SOLID design alerts detected.";
+
+            double couplingRating =
+                hygiene.TotalClasses == 0
+                    ? 0
+                    : implicitCoupling.Suspicions.Count / (double)hygiene.TotalClasses;
+            var implicitCouplingDiagnosis =
+    couplingRating switch
+    {
+        <= 0.02 =>
+            "Implicit coupling is minimal. Modules appear structurally independent.",
+
+        <= 0.05 =>
+            "Minor implicit coupling patterns detected. Monitor for architectural drift.",
+
+        <= 0.10 =>
+            "Implicit coupling emerging between modules. Architectural boundaries may be weakening.",
+
+        <= 0.20 =>
+            "Significant implicit coupling detected. Hidden dependencies may reduce modularity.",
+
+        _ =>
+            "Critical implicit coupling detected. System architecture may be entangled."
+    };
+
             sb.AppendLine("<div style='display:flex; gap:40px; flex-wrap:wrap;'>");
-            sb.AppendLine(render.RenderRadarSvg(hygiene, breakdown, solid));
+            sb.AppendLine(render.RenderRadarSvg(hygiene, breakdown, solid, implicitCoupling));
+
+            if (implicitCoupling != null)
+            {
+                sb.AppendLine(render.RenderArchitecturalGalaxy(coupling));
+
+            }
             sb.AppendLine("<ul>");
             sb.AppendLine($"<li>{coreDiagnosis}</li>");
             sb.AppendLine($"<li>{namespaceDiagnosis}</li>");
             sb.AppendLine($"<li>{globalNamespaceDiagnosis}</li>");
             sb.AppendLine($"<li>{unresolvedDiagnosis}</li>");
             sb.AppendLine($"<li>{solidDiagnosis}</li>");
+            sb.AppendLine($"<li>{implicitCouplingDiagnosis}</li>");
             sb.AppendLine("</ul>");
             sb.AppendLine("</div>");
 

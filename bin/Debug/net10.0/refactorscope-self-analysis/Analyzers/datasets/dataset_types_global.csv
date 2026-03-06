@@ -5,6 +5,7 @@ CoreIsolationAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 CouplingAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 EntryPointHeuristicAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 FitnessGateAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
+ImplicitCouplingAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 ProjectStructureAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 StructuralCandidateAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 StructuralCandidateRefinementAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0

@@ -1,13 +1,15 @@
 ﻿using RefactorScope.Core.Context;
-
-public class SegmentScope
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    public string Name { get; }
-    public AnalysisContext Context { get; }
-
-    public SegmentScope(string name, AnalysisContext context)
+    public class SegmentScope
     {
-        Name = name;
-        Context = context;
+        public string Name { get; }
+        public AnalysisContext Context { get; }
+
+        public SegmentScope(string name, AnalysisContext context)
+        {
+            Name = name;
+            Context = context;
+        }
     }
 }

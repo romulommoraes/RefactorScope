@@ -1,39 +1,44 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Execution.Dump.Segmentation;
 
-public class SegmentedDumpStrategy : IDumpStrategy
-{
-    private readonly ISegmentationResolver _resolver;
 
-    public SegmentedDumpStrategy(ISegmentationResolver resolver)
+namespace RefactorScope.Execution.Dump.Strategies
+{ 
+    public class SegmentedDumpStrategy : IDumpStrategy
     {
-        _resolver = resolver;
-    }
+        private readonly ISegmentationResolver _resolver;
 
-    public void Execute(
-        AnalysisContext context,
-        ConsolidatedReport report,
-        IEnumerable<IExporter> exporters)
-    {
-        var segments = _resolver.Resolve(context);
-
-        foreach (var segment in segments)
+        public SegmentedDumpStrategy(ISegmentationResolver resolver)
         {
-            var path = Path.Combine(
-                context.Config.OutputPath,
-                segment.Name
-            );
+            _resolver = resolver;
+        }
 
-            Directory.CreateDirectory(path);
+        public void Execute(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IEnumerable<IExporter> exporters)
+        {
+            var segments = _resolver.Resolve(context);
 
-            foreach (var exporter in exporters)
+            foreach (var segment in segments)
             {
-                exporter.Export(
-                    segment.Context,
-                    report,
-                    path
+                var path = Path.Combine(
+                    context.Config.OutputPath,
+                    segment.Name
                 );
+
+                Directory.CreateDirectory(path);
+
+                foreach (var exporter in exporters)
+                {
+                    exporter.Export(
+                        segment.Context,
+                        report,
+                        path
+                    );
+                }
             }
         }
     }

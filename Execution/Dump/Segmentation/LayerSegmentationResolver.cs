@@ -1,31 +1,33 @@
 ﻿using RefactorScope.Core.Context;
 using RefactorScope.Core.Model;
 using RefactorScope.Infrastructure;
-
-public class LayerSegmentationResolver : ISegmentationResolver
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    public IEnumerable<SegmentScope> Resolve(AnalysisContext context)
-    {
-        var groups = context.Model.Tipos
-            .GroupBy(t => LayerRuleEvaluator.ResolveLayer(t, context.Config.LayerRules));
-
-        foreach (var group in groups)
+            public class LayerSegmentationResolver : ISegmentationResolver
         {
-            var tipos = group.ToList();
+            public IEnumerable<SegmentScope> Resolve(AnalysisContext context)
+            {
+                var groups = context.Model.Tipos
+                    .GroupBy(t => LayerRuleEvaluator.ResolveLayer(t, context.Config.LayerRules));
 
-            var filteredModel = new ModeloEstrutural(
-                context.Model.RootPath,
-                context.Model.Arquivos.Where(a =>
-                    a.Tipos.Any(t => tipos.Contains(t))).ToList(),
-                tipos,
-                context.Model.Referencias.Where(r =>
-                    tipos.Any(t => t.Name == r.FromType)).ToList()
-            );
+                foreach (var group in groups)
+                {
+                    var tipos = group.ToList();
 
-            yield return new SegmentScope(
-                group.Key,
-                new AnalysisContext(context.Config, filteredModel)
-            );
+                    var filteredModel = new ModeloEstrutural(
+                        context.Model.RootPath,
+                        context.Model.Arquivos.Where(a =>
+                            a.Tipos.Any(t => tipos.Contains(t))).ToList(),
+                        tipos,
+                        context.Model.Referencias.Where(r =>
+                            tipos.Any(t => t.Name == r.FromType)).ToList()
+                    );
+
+                    yield return new SegmentScope(
+                        group.Key,
+                        new AnalysisContext(context.Config, filteredModel)
+                    );
+                }
+            }
         }
     }
-}

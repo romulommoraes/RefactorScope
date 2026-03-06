@@ -2,19 +2,22 @@
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
 
-public class GlobalDumpStrategy : IDumpStrategy
+namespace RefactorScope.Execution.Dump.Strategies
 {
-    public void Execute(
-        AnalysisContext context,
-        ConsolidatedReport report,
-        IEnumerable<IExporter> exporters)
+    public class GlobalDumpStrategy : IDumpStrategy
     {
-        var output = context.Config.OutputPath;
-        Directory.CreateDirectory(output);
-
-        foreach (var exporter in exporters)
+        public void Execute(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IEnumerable<IExporter> exporters)
         {
-            exporter.Export(context, report, output);
+            var output = context.Config.OutputPath;
+            Directory.CreateDirectory(output);
+
+            foreach (var exporter in exporters)
+            {
+                exporter.Export(context, report, output);
+            }
         }
     }
 }

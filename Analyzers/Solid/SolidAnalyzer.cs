@@ -26,6 +26,7 @@ namespace RefactorScope.Analyzers.Solid
             {
                 new PublicZeroUsageOmissionRule()
             };
+
         }
 
         public string Name => "SOLID";
@@ -41,6 +42,7 @@ namespace RefactorScope.Analyzers.Solid
                 .Where(s => !_absolutionRules.Any(r => r.ShouldPardon(s, context)))
                 .ToList();
 
+
             return new SolidResult(suspicions);
         }
 
@@ -51,7 +53,7 @@ namespace RefactorScope.Analyzers.Solid
             var coupling = context.Results
                 .OfType<CouplingResult>()
                 .FirstOrDefault();
-
+            Console.WriteLine($"[SOLID] Coupling result found: {coupling != null}");
             if (coupling == null)
                 return result;
 

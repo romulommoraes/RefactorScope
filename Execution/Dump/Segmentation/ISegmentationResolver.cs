@@ -1,6 +1,8 @@
 ﻿using RefactorScope.Core.Context;
-
-public interface ISegmentationResolver
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    IEnumerable<SegmentScope> Resolve(AnalysisContext context);
+        public interface ISegmentationResolver
+    {
+        IEnumerable<SegmentScope> Resolve(AnalysisContext context);
+    }
 }

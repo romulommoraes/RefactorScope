@@ -1,6 +1,6 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
-IAnalysisResult,RefactorScope,Core,26,Coerente,0,0,0,0
-IAnalyzer,RefactorScope,Core,11,Coerente,0,0,0,0
+IAnalysisResult,RefactorScope,Core,28,Coerente,0,0,0,0
+IAnalyzer,RefactorScope,Core,12,Coerente,0,0,0,0
 IExporter,RefactorScope,Core,12,Coerente,0,0,0,0
 IParserCodigo,RefactorScope,Core,3,Coerente,0,0,0,0
 DumpStrategyConfig,RefactorScope,Core,1,Coerente,0,0,0,0
@@ -11,7 +11,7 @@ CoreIsolationGateConfig,RefactorScope,Core,3,Coerente,0,0,0,0
 FitnessGateConfigResolver,RefactorScope,Core,0,Coerente,1,0,1,0
 RefactorScopeConfig,RefactorScope,Core,5,Coerente,0,0,0,0
 StructuralCandidateDetectionOptions,RefactorScope,Core,1,Coerente,0,0,0,0
-AnalysisContext,RefactorScope,Core,42,Coerente,0,0,0,0
+AnalysisContext,RefactorScope,Core,43,Coerente,0,0,0,0
 AnalysisContextExtensions,RefactorScope,Core,0,Coerente,1,0,1,0
 LayerRuleConfig,RefactorScope,Core,2,Coerente,0,0,0,0
 ArchitecturalHealthDatasetBuilder,RefactorScope,Core,0,Coerente,1,0,1,0
@@ -24,8 +24,10 @@ StructuralScoreDatasetBuilder,RefactorScope,Core,0,Coerente,1,0,1,0
 StructuralTrendDatasetBuilder,RefactorScope,Core,0,Coerente,1,0,1,0
 TypeContributionDatasetBuilder,RefactorScope,Core,0,Coerente,1,0,1,0
 FitnessGateEvaluator,RefactorScope,Core,0,Coerente,1,0,1,0
-ArchitecturalClassificationItem,RefactorScope,Core,8,Coerente,0,0,0,0
+ArchitecturalScoreCalculator,RefactorScope,Core,2,Coerente,0,0,0,0
+ArchitecturalClassificationItem,RefactorScope,Core,6,Coerente,0,0,0,0
 ArquivoInfo,RefactorScope,Core,8,Coerente,0,0,0,0
+CouplingSuspicion,RefactorScope,Core,5,Coerente,0,0,0,0
 HygieneReport,RefactorScope,Core,4,Coerente,0,0,0,0
 ModeloEstrutural,RefactorScope,Core,10,Coerente,0,0,0,0
 ReferenciaInfo,RefactorScope,Core,10,Coerente,0,0,0,0
@@ -40,10 +42,11 @@ ArchitecturalClassificationResult,RefactorScope,Core,24,Coerente,0,0,0,0
 ConsolidatedReport,RefactorScope,Core,28,Coerente,0,0,0,0
 ConsolidatedReportExtensions,RefactorScope,Core,0,Coerente,1,0,1,0
 CoreIsolationResult,RefactorScope,Core,20,Coerente,0,0,0,0
-CouplingResult,RefactorScope,Core,16,Coerente,0,0,0,0
+CouplingResult,RefactorScope,Core,19,Coerente,0,0,0,0
 EntryPointHeuristicResult,RefactorScope,Core,14,Coerente,0,0,0,0
 FitnessGateResult,RefactorScope,Core,8,Coerente,0,0,0,0
 FitnessGateStatus,RefactorScope,Core,4,Coerente,0,0,0,0
+ImplicitCouplingResult,RefactorScope,Core,7,Coerente,0,0,0,0
 ProjectStructureResult,RefactorScope,Core,4,Coerente,0,0,0,0
 StructuralBreakdownExtensions,RefactorScope,Core,0,Coerente,1,0,1,0
 StructuralCandidateAnalysisBreakdown,RefactorScope,Core,8,Coerente,0,0,0,0

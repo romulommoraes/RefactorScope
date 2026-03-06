@@ -1,2 +1,9 @@
 ﻿Metric,Module,AbsoluteValue,ContributionWithinScope
-Coupling,RefactorScope,426,1,00
+Coupling,Analyzers,91,0,42
+Coupling,CLI,5,0,02
+Coupling,Debug,0,0,00
+Coupling,Exporters,61,0,28
+Coupling,Infrastructure,5,0,02
+Coupling,Core,0,0,00
+Coupling,Execution,25,0,12
+Coupling,Parsers,30,0,14

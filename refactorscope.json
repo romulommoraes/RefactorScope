@@ -11,7 +11,9 @@
     "zombieRefinement": true,
     "architecture": true,
     "coreIsolation": true,
-    "entrypoints": true
+    "entrypoints": true,
+    "coupling": true,
+    "solid": true
   },
 
   "zombieDetection": {
