@@ -14,23 +14,33 @@ namespace RefactorScope.Exporters
 {
     public class ChartsRenderer
     {
+        const int ChartSize = 320;
+
         public string RenderRadarSvg(
-                                    HygieneReport h,
-                                    StructuralCandidateAnalysisBreakdown breakdown,
-                                    SolidResult? solid)
+            HygieneReport h,
+            StructuralCandidateAnalysisBreakdown breakdown,
+            SolidResult? solid,
+            ImplicitCouplingResult? implicitCoupling)
         {
             double Normalize(int value, int total) => total == 0 ? 0 : value / (double)total;
             string Fmt(double val) => val.ToString(CultureInfo.InvariantCulture);
+
             var solidAlerts = solid?.Alerts.Count ?? 0;
 
-                var values = new[]
-                        {
+            double couplingScore =
+                implicitCoupling == null
+                ? 0
+                : Normalize(implicitCoupling.Suspicions.Count, h.TotalClasses);
+
+            var values = new[]
+            {
                 Normalize(breakdown.StructuralCandidates, h.TotalClasses),
                 Normalize(breakdown.PatternSimilarity, h.TotalClasses),
                 Normalize(breakdown.ProbabilisticConfirmed, h.TotalClasses),
                 Normalize(h.NamespaceDriftCount, h.TotalClasses),
                 Normalize(h.GlobalNamespaceCount, h.TotalClasses),
                 Normalize(h.IsolatedCoreCount, h.TotalClasses),
+                couplingScore,
                 Math.Min(1.0, Normalize(solidAlerts, h.TotalClasses) * 5)
             };
 
@@ -41,16 +51,24 @@ namespace RefactorScope.Exporters
                 "Unresolved",
                 "Namespace Drift",
                 "Global Namespace",
-                "Isolation",
+                "Core Isolation",
+                "Implicit Coupling",
                 "SOLID Alerts"
             };
 
-            int size = 320;
+            int size = ChartSize;
             int center = size / 2;
             int radius = 110;
             int levels = 4;
 
             var sb = new StringBuilder();
+
+            sb.AppendLine("<div class='chart-container'>");
+            sb.AppendLine("<h3>Architectural Risk Radar</h3>");
+
+            sb.AppendLine(
+            "<div class='tooltip'>");
+
             sb.AppendLine($"<svg width='{size}' height='{size}' style='background:#161b22;border-radius:12px'>");
 
             for (int l = 1; l <= levels; l++)
@@ -67,10 +85,13 @@ namespace RefactorScope.Exporters
 
                 sb.AppendLine($"<line x1='{center}' y1='{center}' x2='{Fmt(x)}' y2='{Fmt(y)}' stroke='#30363d' />");
 
-                double lx = center + (radius + 20) * Math.Cos(angle);
-                double ly = center + (radius + 20) * Math.Sin(angle);
+                double lx = center + (radius + 22) * Math.Cos(angle);
+                double ly = center + (radius + 22) * Math.Sin(angle);
 
-                sb.AppendLine($"<text x='{Fmt(lx)}' y='{Fmt(ly)}' fill='#e6edf3' font-size='12' text-anchor='middle'>{labels[i]}</text>");
+                sb.AppendLine(
+                $"<text x='{Fmt(lx)}' y='{Fmt(ly)}' fill='#e6edf3' font-size='11' text-anchor='middle'>" +
+                $"<title>{labels[i]} — {(values[i] * 100):0}% of classes</title>" +
+                $"{labels[i]}</text>");
             }
 
             var points = new List<string>();
@@ -85,238 +106,101 @@ namespace RefactorScope.Exporters
                 points.Add($"{Fmt(x)},{Fmt(y)}");
             }
 
-            sb.AppendLine($"<polygon points='{string.Join(" ", points)}' fill='rgba(255,99,132,0.4)' stroke='#ff6384' stroke-width='2'/>");
-            sb.AppendLine("</svg>");
-
-            return sb.ToString();
-        }
-
-        public string RenderFunnelChart(StructuralCandidateAnalysisBreakdown breakdown)
-        {
-            var max = breakdown.StructuralCandidates;
-
-            double Scale(int v) => max == 0 ? 0 : (v / (double)max) * 200;
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Candidate Refinement</h3>");
-            sb.AppendLine("<svg width='240' height='160'>");
-
-            int y = 20;
-
-            void Bar(string label, int value)
-            {
-                var w = Scale(value);
-
-                sb.AppendLine($"<rect x='20' y='{y}' width='{w}' height='20' fill='#ff6384'/>");
-                sb.AppendLine($"<text x='25' y='{y + 15}' fill='#fff' font-size='11'>{label} ({value})</text>");
-
-                y += 35;
-            }
-
-            Bar("Candidates", breakdown.StructuralCandidates);
-            Bar("Pattern Match", breakdown.PatternSimilarity);
-            Bar("Unresolved", breakdown.ProbabilisticConfirmed);
+            sb.AppendLine(
+            $"<polygon points='{string.Join(" ", points)}' fill='rgba(255,99,132,0.35)' stroke='#ff6384' stroke-width='2'/>");
 
             sb.AppendLine("</svg>");
+
+            sb.AppendLine(
+            @"<span class='tooltiptext'>
+Radar summarizing architectural risk indicators.
+
+Higher values indicate larger concentration of potential structural issues:
+• Dead code candidates
+• Pattern similarity clusters
+• Namespace drift
+• Hidden coupling
+• SOLID violations
+</span>");
+
+            sb.AppendLine("</div>");
             sb.AppendLine("</div>");
 
             return sb.ToString();
         }
 
-        public string RenderLayerDistribution(IReadOnlyList<ArchitecturalClassificationItem> items)
+        public string RenderArchitecturalGalaxy(CouplingResult coupling)
         {
-            var groups = items
-                .GroupBy(i => i.Layer ?? "Unknown")
-                .OrderByDescending(g => g.Count());
+            string Fmt(double val) => val.ToString(CultureInfo.InvariantCulture);
 
-            int max = groups.Max(g => g.Count());
-
-            double Scale(int v) => (v / (double)max) * 200;
+            int width = ChartSize;
+            int height = ChartSize;
+            int margin = 35;
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Layer Distribution</h3>");
-            sb.AppendLine("<svg width='260' height='200'>");
+            sb.AppendLine("<div class='chart-container'>");
+            sb.AppendLine("<h3>Architectural Galaxy (A/I Distribution)</h3>");
 
-            int y = 20;
+            sb.AppendLine("<div class='tooltip'>");
 
-            foreach (var g in groups)
+            sb.AppendLine($"<svg width='{width}' height='{height}' style='background:#161b22;border-radius:12px'>");
+
+            sb.AppendLine($"<line x1='{margin}' y1='{height - margin}' x2='{width - margin}' y2='{height - margin}' stroke='#30363d'/>");
+            sb.AppendLine($"<line x1='{margin}' y1='{height - margin}' x2='{margin}' y2='{margin}' stroke='#30363d'/>");
+
+            sb.AppendLine($"<text x='{width - 80}' y='{height - 8}' fill='#e6edf3' font-size='11'>Instability</text>");
+            sb.AppendLine($"<text x='5' y='20' fill='#e6edf3' font-size='11'>Abstractness</text>");
+
+            sb.AppendLine($"<line x1='{margin}' y1='{margin}' x2='{width - margin}' y2='{height - margin}' stroke='#444' stroke-dasharray='4,4'/>");
+
+            foreach (var module in coupling.AbstractnessByModule.Keys)
             {
-                var w = Scale(g.Count());
+                double A = coupling.AbstractnessByModule[module];
+                double I = coupling.InstabilityByModule.GetValueOrDefault(module);
 
-                sb.AppendLine($"<rect x='20' y='{y}' width='{w}' height='18' fill='#4dabf7'/>");
-                sb.AppendLine($"<text x='25' y='{y + 14}' fill='#fff' font-size='11'>{g.Key} ({g.Count()})</text>");
+                int couplingStrength = coupling.ModuleFanOut.GetValueOrDefault(module);
 
-                y += 28;
+                double x = margin + (width - margin * 2) * I;
+                double y = (height - margin) - (height - margin * 2) * A;
+
+                double size = 4 + Math.Min(10, couplingStrength / 3.0);
+
+                string color = "#58a6ff";
+
+                if (couplingStrength > 20)
+                    color = "#ff6b6b";
+                else if (couplingStrength > 10)
+                    color = "#ffd166";
+
+                sb.AppendLine(
+                    $"<circle cx='{Fmt(x)}' cy='{Fmt(y)}' r='{Fmt(size)}' fill='{color}' opacity='0.9'>" +
+                    $"<title>{module}\nAbstractness: {A:0.00}\nInstability: {I:0.00}\nFanOut: {couplingStrength}</title>" +
+                    $"</circle>");
             }
 
             sb.AppendLine("</svg>");
+
+            sb.AppendLine(
+            @"<span class='tooltiptext'>
+Architectural Galaxy visualizes module positioning based on
+Robert Martin's A/I model.
+
+A = Abstractness
+I = Instability
+
+Modules should ideally lie near the Main Sequence (A + I = 1).
+Points far from this line indicate architectural tension.
+Circle size represents coupling intensity.
+</span>");
+
+            sb.AppendLine("</div>");
             sb.AppendLine("</div>");
 
             return sb.ToString();
         }
-
-        public string RenderModuleHeatmap(IReadOnlyList<ArchitecturalClassificationItem> items)
-        {
-            string GetModule(string ns)
-            {
-                if (string.IsNullOrWhiteSpace(ns))
-                    return "Unknown";
-
-                return ns.Split('.').First();
-            }
-
-            var modules = items
-                .GroupBy(i => GetModule(i.Namespace))
-                .Select(g => new
-                {
-                    Module = g.Key,
-                    Unresolved = g.Count(x => x.Status == "Sem Referência Estrutural")
-                })
-                .OrderByDescending(x => x.Unresolved);
-
-            int max = modules.Max(m => m.Unresolved);
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Unresolved × Module</h3>");
-            sb.AppendLine("<svg width='240' height='200'>");
-
-            int y = 20;
-
-            foreach (var m in modules)
-            {
-                double intensity = max == 0 ? 0 : m.Unresolved / (double)max;
-
-                int r = (int)(255 * intensity);
-                int g = (int)(80 * (1 - intensity));
-
-                string color = $"rgb({r},{g},60)";
-
-                sb.AppendLine($"<rect x='20' y='{y}' width='160' height='18' fill='{color}'/>");
-                sb.AppendLine($"<text x='25' y='{y + 14}' fill='#fff' font-size='11'>{m.Module} ({m.Unresolved})</text>");
-
-                y += 26;
-            }
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
-        public string RenderDependencyGravity(IReadOnlyList<ArchitecturalClassificationItem> items)
-        {
-            var top = items
-                .OrderByDescending(i => i.UsageCount)
-                .Take(8)
-                .ToList();
-
-            int max = top.Max(i => i.UsageCount);
-
-            double Scale(int v) => max == 0 ? 0 : (v / (double)max) * 180;
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div style='background:#161b22;padding:20px;border-radius:10px;'>");
-            sb.AppendLine("<h3>Dependency Gravity</h3>");
-            sb.AppendLine("<svg width='260' height='200'>");
-
-            int y = 20;
-
-            foreach (var i in top)
-            {
-                var w = Scale(i.UsageCount);
-
-                sb.AppendLine($"<rect x='20' y='{y}' width='{w}' height='16' fill='#ffd166'/>");
-                sb.AppendLine($"<text x='25' y='{y + 12}' fill='#fff' font-size='10'>{i.TypeName} ({i.UsageCount})</text>");
-
-                y += 24;
-            }
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
-        public string RenderModuleHeatmapIntensity(
-    IReadOnlyList<ArchitecturalClassificationItem> items,
-    HashSet<string> pattern,
-    HashSet<string> unresolved)
-        {
-            string GetModule(string ns)
-                => string.IsNullOrWhiteSpace(ns)
-                    ? "Global"
-                    : ns.Split('.').First();
-
-            var modules = items
-                .GroupBy(i => GetModule(i.Namespace))
-                .Select(g => new
-                {
-                    Module = g.Key,
-                    Structural = g.Count(x => x.Status == "Sem Referência Estrutural"),
-                    Pattern = g.Count(x => pattern.Contains(x.TypeName)),
-                    Unresolved = g.Count(x => unresolved.Contains(x.TypeName))
-                })
-                .OrderByDescending(x => x.Unresolved)
-                .ToList();
-
-            int max = modules.Max(m =>
-                Math.Max(m.Structural,
-                Math.Max(m.Pattern, m.Unresolved)));
-
-            string Color(int value)
-            {
-                double t = max == 0 ? 0 : value / (double)max;
-
-                int r = (int)(239 * t);
-                int g = (int)(68 * (1 - t));
-                int b = (int)(246 * (1 - t));
-
-                return $"rgb({r},{g},{b})";
-            }
-
-            var sb = new StringBuilder();
-
-            int cellW = 70;
-            int cellH = 24;
-            int startX = 120;
-            int y = 30;
-
-            sb.AppendLine("<div>");
-            sb.AppendLine("<h3>Module × Candidate Heatmap</h3>");
-            sb.AppendLine("<svg width='420' height='240'>");
-
-            // headers
-            sb.AppendLine($"<text x='{startX}' y='20' fill='#e6edf3'>Structural</text>");
-            sb.AppendLine($"<text x='{startX + cellW}' y='20' fill='#e6edf3'>Pattern</text>");
-            sb.AppendLine($"<text x='{startX + cellW * 2}' y='20' fill='#e6edf3'>Unresolved</text>");
-
-            foreach (var m in modules)
-            {
-                sb.AppendLine($"<text x='10' y='{y + 16}' fill='#e6edf3'>{m.Module}</text>");
-
-                sb.AppendLine($"<rect x='{startX}' y='{y}' width='{cellW}' height='{cellH}' fill='{Color(m.Structural)}'/>");
-                sb.AppendLine($"<rect x='{startX + cellW}' y='{y}' width='{cellW}' height='{cellH}' fill='{Color(m.Pattern)}'/>");
-                sb.AppendLine($"<rect x='{startX + cellW * 2}' y='{y}' width='{cellW}' height='{cellH}' fill='{Color(m.Unresolved)}'/>");
-
-                y += cellH + 6;
-            }
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
-        }
-
     }
 }
-
 
 
 ==========================================
@@ -829,8 +713,9 @@ loadCSV('../dataset_arch_health.csv', data => {{
 ARQUIVO: MarkdownReportExporter.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\MarkdownReportExporter.cs
 ==========================================
-using System.Text;
+using RefactorScope.Core.Metrics;
 using RefactorScope.Core.Results;
+using System.Text;
 
 namespace RefactorScope.Exporters
 {
@@ -856,6 +741,7 @@ namespace RefactorScope.Exporters
             var architecture = report.GetResult<ArchitecturalClassificationResult>();
             var isolated = report.GetResult<CoreIsolationResult>();
             var coupling = report.GetResult<CouplingResult>();
+            var implicitCoupling = report.GetResult<ImplicitCouplingResult>();
             var fitness = report.GetResult<FitnessGateResult>();
             var structure = report.GetResult<ProjectStructureResult>();
 
@@ -938,12 +824,13 @@ namespace RefactorScope.Exporters
                 var couplingRate = fanOut / (double)total;
                 var coreDensity = module.Count(t => t.Layer == "Core") / (double)total;
 
-                var score =
-                    100
-                    - (couplingRate * 30)
-                    - (candidateRate * 25)
-                    - (isolationRate * 20)
-                    + (coreDensity * 15);
+                var score = ArchitecturalScoreCalculator.Calculate(
+                    module.Key,
+                    total,
+                    unresolvedCount,
+                    isolatedCount,
+                    fanOut,
+                    module.Count(t => t.Layer == "Core"));
 
                 score = Math.Max(0, Math.Min(100, score));
 
@@ -958,6 +845,58 @@ namespace RefactorScope.Exporters
                 sb.AppendLine($"- **Coupling:** {couplingRate:0.00}");
                 sb.AppendLine($"- **Isolation:** {isolationRate:0.00}");
                 sb.AppendLine($"- **Core Density:** {coreDensity:0.00}");
+                sb.AppendLine();
+            }
+
+            // =====================================================
+            // Implicit Coupling Analysis
+            // =====================================================
+
+            if (implicitCoupling != null && implicitCoupling.Suspicions.Any())
+            {
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine("## ? Implicit Coupling Suspicion");
+                sb.AppendLine();
+
+                sb.AppendLine("| Type | Module | Target Module | Fan-Out | Fan-In | Dominance | Volume |");
+                sb.AppendLine("|------|--------|---------------|--------|--------|-----------|--------|");
+
+                foreach (var s in implicitCoupling.Suspicions)
+                {
+                    sb.AppendLine(
+                        $"| {s.TypeName} | {s.Module} | {s.TargetModule} | {s.FanOut} | {s.FanIn} | {s.Dominance:0.00} | {s.Volume} |");
+                }
+
+                sb.AppendLine();
+                sb.AppendLine("Possible architectural coupling detected based on structural heuristics.");
+                sb.AppendLine("Manual inspection is recommended.");
+                sb.AppendLine();
+            }
+
+            // =====================================================
+            // Architectural Stability Metrics (Robert Martin)
+            // =====================================================
+
+            if (coupling != null)
+            {
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine("## ?? Architectural Stability Metrics (Robert Martin)");
+                sb.AppendLine();
+
+                sb.AppendLine("| Module | Abstractness (A) | Instability (I) | Distance (D) |");
+                sb.AppendLine("|--------|------------------|-----------------|--------------|");
+
+                foreach (var module in coupling.AbstractnessByModule.Keys)
+                {
+                    var a = coupling.AbstractnessByModule.GetValueOrDefault(module);
+                    var i = coupling.InstabilityByModule.GetValueOrDefault(module);
+                    var d = coupling.DistanceByModule.GetValueOrDefault(module);
+
+                    sb.AppendLine($"| {module} | {a:0.00} | {i:0.00} | {d:0.00} |");
+                }
+
                 sb.AppendLine();
             }
 
@@ -1048,6 +987,79 @@ namespace RefactorScope.Exporters
             sb.AppendLine("- Core density bonus");
             sb.AppendLine();
             sb.AppendLine("The score is normalized and intended as a heuristic indicator, not a formal proof.");
+
+            // =====================================================
+            // Architectural Stability Metrics (Robert Martin)
+            // =====================================================
+
+            sb.AppendLine();
+            sb.AppendLine("**Architectural Stability Metrics (Robert Martin)**  ");
+            sb.AppendLine("The following metrics are derived from the architectural model proposed by Robert C. Martin.");
+            sb.AppendLine("They are intended as structural indicators rather than strict architectural rules.");
+            sb.AppendLine();
+
+            sb.AppendLine("**Abstractness (A)**  ");
+            sb.AppendLine("Represents the proportion of abstractions within a module.");
+            sb.AppendLine();
+            sb.AppendLine("A = Na / Nc");
+            sb.AppendLine();
+            sb.AppendLine("Where:");
+            sb.AppendLine("- Na = number of abstract types (interfaces or abstract classes)");
+            sb.AppendLine("- Nc = total number of types in the module.");
+            sb.AppendLine();
+            sb.AppendLine("Higher values indicate a more abstract module.");
+            sb.AppendLine();
+
+            sb.AppendLine("**Instability (I)**  ");
+            sb.AppendLine("Measures how dependent a module is on other modules.");
+            sb.AppendLine();
+            sb.AppendLine("I = Ce / (Ce + Ca)");
+            sb.AppendLine();
+            sb.AppendLine("Where:");
+            sb.AppendLine("- Ce = outgoing dependencies");
+            sb.AppendLine("- Ca = incoming dependencies");
+            sb.AppendLine();
+            sb.AppendLine("Values closer to 1 indicate modules that depend heavily on other modules.");
+            sb.AppendLine();
+
+            sb.AppendLine("**Distance from Main Sequence (D)**  ");
+            sb.AppendLine();
+            sb.AppendLine("D = | A + I - 1 |");
+            sb.AppendLine();
+            sb.AppendLine("This metric measures how far a module is from the architectural equilibrium line between abstraction and stability.");
+            sb.AppendLine();
+            sb.AppendLine("Values close to 0 indicate balanced architecture.");
+            sb.AppendLine();
+            sb.AppendLine("Higher values indicate architectural tension such as:");
+            sb.AppendLine("- overly concrete and rigid modules");
+            sb.AppendLine("- overly abstract but unstable modules");
+            sb.AppendLine();
+            sb.AppendLine("These metrics should be interpreted as architectural signals, not strict violations.");
+            sb.AppendLine();
+
+
+            // =====================================================
+            // Implicit Coupling Detection
+            // =====================================================
+
+            sb.AppendLine();
+            sb.AppendLine("**Implicit Coupling Detection**  ");
+            sb.AppendLine("Implicit Coupling identifies classes whose dependencies concentrate towards a specific module or subsystem.");
+            sb.AppendLine();
+            sb.AppendLine("This heuristic analyzes structural patterns such as:");
+            sb.AppendLine("- strong directional dependency concentration");
+            sb.AppendLine("- high fan-out towards a single module");
+            sb.AppendLine("- asymmetric dependency flows between modules");
+            sb.AppendLine();
+            sb.AppendLine("A flagged class does not necessarily represent a design problem.");
+            sb.AppendLine();
+            sb.AppendLine("Typical legitimate cases include:");
+            sb.AppendLine("- orchestrators");
+            sb.AppendLine("- adapters between subsystems");
+            sb.AppendLine("- integration layers");
+            sb.AppendLine();
+            sb.AppendLine("These signals are intended to highlight areas that may benefit from architectural review.");
+            sb.AppendLine();
 
             sb.AppendLine("_Generated by RefactorScope_");
 
@@ -1311,35 +1323,48 @@ function sortTable(n) {
                 $"<span class='tooltiptext'>Namespace Drift (Strict Rule): Exact correspondence to folder structure</span>" +
                 $"</div>");
 
-            sb.AppendLine($"<div class='card'>Global Namespace<br><b>{hygiene.GlobalNamespaceCount}</b></div>");
-            sb.AppendLine($"<div class='card tooltip'>Isolated Core<br><b>{hygiene.IsolatedCoreCount}</b> <span class='tooltiptext'>Number of Core types that remain structurally independent from the rest of the system. These elements represent stable architectural foundations. If the value is low, the Core may be leaking responsibilities or depending on outer layers.</span></div>");
+            sb.AppendLine($@"<div class='card tooltip'>
+                Global Namespace<br>
+                <b>{hygiene.GlobalNamespaceCount}</b>
+                <span class='tooltiptext'>
+                Number of classes declared without a namespace.
 
-            //sb.AppendLine($@"<div class='card tooltip'>
-            //Structural Entropy<br>
-            //<b>{hygiene.StructuralEntropy:0.000}</b>
-            //<span class='tooltiptext'>Measures how classes are distributed across folders/modules.
-            //    Low entropy:
-            //    Most code concentrated in a few modules.
-            //    Moderate entropy:
-            //    Balanced modular distribution.
-            //    High entropy:
-            //    Classes spread across many small modules,
-            //    which may indicate architectural fragmentation.
-            //    Note:
-            //    This metric reflects structural layout only,
-            //    not dependency coupling.</span>
-            //</div>");
+                Using the global namespace reduces architectural clarity
+                and weakens modular organization.
+
+                Well-structured projects usually avoid global namespace usage.
+                </span></div>");
+            sb.AppendLine($"<div class='card tooltip'>Isolated Core<br><b>{hygiene.IsolatedCoreCount}</b> <span class='tooltiptext'>Number of Core types that remain structurally independent from the rest of the system. These elements represent stable architectural foundations. If the value is low, the Core may be leaking responsibilities or depending on outer layers.</span></div>");
 
             sb.AppendLine($@"<div class='card tooltip'>
             Smell Index<br>
             <b>{hygiene.SmellIndex:0.0}</b>
-            <span class='tooltiptext'>Composite hygiene indicator</span>
+            <span class='tooltiptext'>
+            Composite structural smell indicator.
+
+            Components:
+            • Dead Code Ratio (Unreferenced classes)
+            • Namespace Drift Ratio (namespace vs folder misalignment)
+            • Global Namespace Ratio (legacy structural usage)
+            • Core Isolation Ratio (core architectural boundary integrity)
+            • Structural Entropy (distribution disorder across modules)
+
+            Higher values indicate architectural degradation
+            and increased maintenance risk.
+            </span>
             </div>");
 
             sb.AppendLine($@"<div class='card tooltip'>
             Hygiene Level<br>
             <b>{hygiene.HygieneLevel}</b>
-            <span class='tooltiptext'>Overall structural health</span>
+            <span class='tooltiptext'>
+            Overall structural health classification derived
+            from the SmellIndex score.
+
+            Evaluates architectural hygiene considering
+            dead code probability, legacy structure,
+            core isolation and structural entropy.
+            </span>
             </div>");
 
             if (solid != null)
@@ -1358,6 +1383,94 @@ function sortTable(n) {
             </div>");
             }
 
+            // ------------------------------------------------------
+            // Coupling Suspicion KPI
+            // ------------------------------------------------------
+
+            var implicitCoupling = report.Results
+                .OfType<ImplicitCouplingResult>()
+                .FirstOrDefault();
+
+            var couplingSuspects = implicitCoupling?.Suspicions.Count ?? 0;
+
+            sb.AppendLine($@"<div class='card tooltip warning'>
+            Implicit Coupling<br>
+            <b>{couplingSuspects}</b>
+            <span class='tooltiptext'>
+            Classes whose dependencies concentrate strongly toward a single module.
+
+            Detection considers:
+            • Fan-out asymmetry
+            • Dominant dependency direction
+            • Structural concentration of references
+
+            These signals highlight potential architectural coupling hotspots,
+            but do not necessarily indicate design violations.
+            </span></div>");
+
+            // ------------------------------------------------------
+            // Robert Martin Metrics KPI
+            // ------------------------------------------------------
+
+            var coupling = report.Results
+                .OfType<CouplingResult>()
+                .FirstOrDefault();
+
+            double avgAbstractness = 0;
+            double avgInstability = 0;
+            double avgDistance = 0;
+
+            if (coupling != null && coupling.AbstractnessByModule.Any())
+            {
+                avgAbstractness = coupling.AbstractnessByModule.Values.Average();
+                avgInstability = coupling.InstabilityByModule.Values.Average();
+                avgDistance = coupling.DistanceByModule.Values.Average();
+            }
+
+            sb.AppendLine($@"<div class='card tooltip'>
+            Abstractness (A)<br>
+            <b>{avgAbstractness:0.00}</b>
+            <span class='tooltiptext'>
+            Architectural abstraction ratio.
+
+            A = Na / Nc
+
+            Where:
+            Na = number of abstract types
+            Nc = total types in module
+
+            Higher values indicate greater use of abstraction.
+            </span></div>");
+
+                        sb.AppendLine($@"<div class='card tooltip'>
+            Instability (I)<br>
+            <b>{avgInstability:0.00}</b>
+            <span class='tooltiptext'>
+            Architectural instability.
+
+            I = Ce / (Ce + Ca)
+
+            Where:
+            Ce = outgoing dependencies
+            Ca = incoming dependencies
+
+            Values closer to 1 indicate modules
+            that depend heavily on other modules.
+            </span></div>");
+
+                        sb.AppendLine($@"<div class='card tooltip'>
+            Distance (D)<br>
+            <b>{avgDistance:0.00}</b>
+            <span class='tooltiptext'>
+            Distance from Main Sequence.
+
+            D = | A + I - 1 |
+
+            Measures how far a module is from the
+            ideal architectural balance between
+            abstraction and stability.
+            </span></div>");
+
             sb.AppendLine("</div>");
 
             #endregion
@@ -1365,14 +1478,14 @@ function sortTable(n) {
             #region RADAR
 
             sb.AppendLine("<div style='margin-top:40px;'>");
-            sb.AppendLine("<h2>?? Architectural Radar</h2>");
-            sb.AppendLine(RenderCharts(
+              sb.AppendLine(RenderCharts(
                items,
                breakdown,
                hygiene,
                suspicious.ToHashSet(),
                confirmed.ToHashSet(),
-               solid));
+               solid,
+               implicitCoupling, coupling));
             sb.AppendLine("</div>");
 
             #endregion
@@ -1435,6 +1548,58 @@ function sortTable(n) {
             }
 
             sb.AppendLine("</table>");
+
+            #endregion
+
+            #region IMPLICIT COUPLING TABLE
+
+            if (implicitCoupling != null && implicitCoupling.Suspicions.Any())
+            {
+                sb.AppendLine("<h2 style='margin-top:50px;'>? Implicit Coupling Candidates</h2>");
+
+                sb.AppendLine("<table>");
+                sb.AppendLine("<tr>");
+                sb.AppendLine("<th>Type</th>");
+                sb.AppendLine("<th>Module</th>");
+                sb.AppendLine("<th>Target Module</th>");
+                sb.AppendLine("<th>Fan-Out</th>");
+                sb.AppendLine("<th>Fan-In</th>");
+                sb.AppendLine("<th>Dominance</th>");
+                sb.AppendLine("<th>Volume</th>");
+                sb.AppendLine("</tr>");
+
+                foreach (var s in implicitCoupling.Suspicions)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendLine($"<td>{s.TypeName}</td>");
+                    sb.AppendLine($"<td>{s.Module}</td>");
+                    sb.AppendLine($"<td>{s.TargetModule}</td>");
+                    sb.AppendLine($"<td>{s.FanOut}</td>");
+                    sb.AppendLine($"<td>{s.FanIn}</td>");
+                    sb.AppendLine($"<td>{s.Dominance:0.00}</td>");
+                    sb.AppendLine($"<td>{s.Volume}</td>");
+                    sb.AppendLine("</tr>");
+                }
+
+                sb.AppendLine("</table>");
+                    sb.AppendLine(@"
+                    <div style='margin-top:8px;font-size:12px;color:#9aa4b2;max-width:800px;'>
+
+                    <b>Metric Definitions</b><br>
+
+                    <b>Fan-Out</b> — Number of outgoing dependencies from the module.<br>
+
+                    <b>Fan-In</b> — Number of incoming dependencies targeting the module.<br>
+
+                    <b>Dominance</b> — Relative structural influence derived from Fan-Out versus Fan-In. 
+                    Higher values indicate modules exerting stronger control over other modules.<br>
+
+                    <b>Volume</b> — Total dependency interaction involving the module 
+                    (Fan-In + Fan-Out), representing the structural traffic of the component.
+
+                    </div>");
+
+            }
 
             #endregion
 
@@ -1515,7 +1680,31 @@ function sortTable(n) {
                 This analysis operates purely at the static structural level.
                 Runtime mechanisms such as reflection, dependency injection, or framework behavior may produce false positives.
                 Final architectural decisions should always involve human review.
+
+                    <br><br>
+                    <b>Implicit Coupling</b><br>
+                    Implicit coupling highlights classes whose dependencies concentrate toward a single module or subsystem.
+                    This signal may reveal architectural hotspots such as orchestration layers,
+                    integration adapters, or hidden dependency concentration.
+
+                    These detections are heuristic and should be interpreted as architectural signals rather than definitive issues.
+
+                    <br><br>
+                    <b>Architectural Stability Metrics (Robert Martin)</b><br>
+
+                    Abstractness (A) measures how much of a module consists of abstractions.
+
+                    Instability (I) measures how dependent a module is on other modules.
+
+                    Distance from Main Sequence (D) measures how far a module is from the ideal balance
+                    between abstraction and stability.
+
+                    Architectures close to the main sequence tend to be easier to evolve and maintain.
+
+                    These metrics are widely used in architectural analysis tools such as NDepend.
                 </div>");
+
+
 
             #endregion
 
@@ -1529,42 +1718,80 @@ function sortTable(n) {
             StructuralCandidateAnalysisBreakdown breakdown,
             HygieneReport hygiene,
             HashSet<string> suspicious,
-            HashSet<string> confirmed, SolidResult? solid)
+            HashSet<string> confirmed, SolidResult? solid, ImplicitCouplingResult implicitCoupling, CouplingResult coupling)
         {
             var sb = new StringBuilder();
             var render = new ChartsRenderer();
+
             var coreDiagnosis =
                 hygiene.IsolatedCoreCount == 0
-                    ? "Core may be coupled with outer layers."
-                    : "Core isolation detected.";
+                    ? "Core layer may be coupled with infrastructure or outer layers."
+                    : hygiene.IsolatedCoreCount < 3
+                        ? "Core partially isolated but with limited structural protection."
+                        : "Core isolation detected. Architectural boundaries appear preserved.";
 
             var namespaceDiagnosis =
                 hygiene.NamespaceDriftCount > hygiene.TotalClasses * 0.15
-                    ? "High namespace drift detected."
-                    : "Namespace structure aligned with folder hierarchy.";
+                    ? "High namespace drift detected. Folder structure may not reflect architectural boundaries."
+                    : hygiene.NamespaceDriftCount > hygiene.TotalClasses * 0.05
+                        ? "Moderate namespace drift detected. Minor structural inconsistencies present."
+                        : "Namespace hierarchy aligned with project structure.";
 
             var globalNamespaceDiagnosis =
                 hygiene.GlobalNamespaceCount > 0
-                    ? "Global namespace usage detected."
+                    ? "Global namespace usage detected. This may indicate legacy code or architectural leakage."
                     : "No global namespace usage detected.";
 
             var unresolvedDiagnosis =
                 breakdown.ProbabilisticConfirmed > 0
-                    ? "Potential dead code detected."
-                    : "No unresolved structural candidates.";
+                    ? "Potential dead or orphaned code detected through structural analysis."
+                    : "No unresolved structural candidates detected.";
 
             var solidDiagnosis =
-                (solid?.Alerts.Count ?? 0) > 0
-                    ? "SOLID design alerts detected."
-                    : "No SOLID design alerts detected.";
+                (solid?.Alerts.Count ?? 0) > 5
+                    ? "Multiple SOLID violations detected. Design refactoring recommended."
+                    : (solid?.Alerts.Count ?? 0) > 0
+                        ? "Minor SOLID design alerts detected."
+                        : "No SOLID design alerts detected.";
+
+            double couplingRating =
+                hygiene.TotalClasses == 0
+                    ? 0
+                    : implicitCoupling.Suspicions.Count / (double)hygiene.TotalClasses;
+            var implicitCouplingDiagnosis =
+    couplingRating switch
+    {
+        <= 0.02 =>
+            "Implicit coupling is minimal. Modules appear structurally independent.",
+
+        <= 0.05 =>
+            "Minor implicit coupling patterns detected. Monitor for architectural drift.",
+
+        <= 0.10 =>
+            "Implicit coupling emerging between modules. Architectural boundaries may be weakening.",
+
+        <= 0.20 =>
+            "Significant implicit coupling detected. Hidden dependencies may reduce modularity.",
+
+        _ =>
+            "Critical implicit coupling detected. System architecture may be entangled."
+    };
+
             sb.AppendLine("<div style='display:flex; gap:40px; flex-wrap:wrap;'>");
-            sb.AppendLine(render.RenderRadarSvg(hygiene, breakdown, solid));
+            sb.AppendLine(render.RenderRadarSvg(hygiene, breakdown, solid, implicitCoupling));
+
+            if (implicitCoupling != null)
+            {
+                sb.AppendLine(render.RenderArchitecturalGalaxy(coupling));
+
+            }
             sb.AppendLine("<ul>");
             sb.AppendLine($"<li>{coreDiagnosis}</li>");
             sb.AppendLine($"<li>{namespaceDiagnosis}</li>");
             sb.AppendLine($"<li>{globalNamespaceDiagnosis}</li>");
             sb.AppendLine($"<li>{unresolvedDiagnosis}</li>");
             sb.AppendLine($"<li>{solidDiagnosis}</li>");
+            sb.AppendLine($"<li>{implicitCouplingDiagnosis}</li>");
             sb.AppendLine("</ul>");
             sb.AppendLine("</div>");
 

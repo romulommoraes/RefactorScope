@@ -49,14 +49,16 @@ using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Datasets;
+using RefactorScope.Core.Metrics;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
+using RefactorScope.Execution.Dump;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
-using RefactorScope.Parsers.CsharpParsers;
 using Spectre.Console;
+
 
 Console.WriteLine();
 
@@ -218,6 +220,9 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
 
         if (IsEnabled(context, "coupling"))
             analyzers.Add(new CouplingAnalyzer());
+
+        if (IsEnabled(context, "coupling"))
+            analyzers.Add(new ImplicitCouplingAnalyzer());
 
         if (IsEnabled(context, "solid"))
             analyzers.Add(new SolidAnalyzer());
@@ -390,14 +395,15 @@ static void RunVisualization(ConsolidatedReport report)
 
         var zombieDisplay = $"{zombieCount} ({zombieRate:0%})";
 
-        var score =
-            100
-            - (couplingRate * 30)
-            - (zombieRate * 25)
-            - (isolationRate * 20)
-            + (coreDensity * 15);
+        var coreTypes = module.Count(t => t.Layer == "Core");
 
-        score = Math.Max(0, Math.Min(100, score));
+        var score = ArchitecturalScoreCalculator.Calculate(
+            module.Key,
+            total,
+            zombieCount,
+            isolatedCount,
+            fanOut,
+            coreTypes);
 
         TerminalRenderer.ModuleHealth(
             module.Key,

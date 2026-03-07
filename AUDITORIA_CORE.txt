@@ -1179,6 +1179,167 @@ namespace RefactorScope.Core.Governance
 
 
 ==========================================
+ARQUIVO: ArchitecturalScoreCalculator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalScoreCalculator.cs
+==========================================
+namespace RefactorScope.Core.Metrics;
+
+/// <summary>
+/// Calcula o score arquitetural de um módulo.
+///
+/// O score é um indicador heurístico (0–100) baseado em:
+///
+/// - Coupling (fan-out inter-módulo)
+/// - Zombie candidates (classes potencialmente mortas)
+/// - Isolation (core não referenciado)
+/// - Core density (bônus estrutural)
+///
+/// O cálculo também aplica atenuações para tipos especiais de módulo:
+///
+/// Composition Root
+///     Normalmente possui alto fan-out (registro de dependências).
+///     Penalidade de coupling é fortemente reduzida.
+///
+/// Infrastructure
+///     Naturalmente depende de múltiplos módulos.
+///     Penalidade de coupling é parcialmente reduzida.
+///
+/// A normalização de tipos evita explosões em módulos pequenos
+/// (ex: Program.cs com apenas 1 classe).
+/// </summary>
+public static class ArchitecturalScoreCalculator
+{
+    public static double Calculate(
+        string module,
+        int totalTypes,
+        int unresolvedCount,
+        int isolatedCount,
+        int fanOut,
+        int coreTypes)
+    {
+        if (totalTypes == 0)
+            return 100;
+
+        // -------------------------------------------------
+        // Normalização estrutural
+        // -------------------------------------------------
+        // Evita explosões de penalidade em módulos com poucas classes.
+        // Exemplo clássico: Program.cs (1 tipo, alto fan-out).
+        // -------------------------------------------------
+
+        double normalizedTypes = Math.Max(totalTypes, 3);
+
+        double zombieRate = unresolvedCount / normalizedTypes;
+        double isolationRate = isolatedCount / normalizedTypes;
+        double couplingRate = fanOut / normalizedTypes;
+        double coreDensity = coreTypes / normalizedTypes;
+
+        // -------------------------------------------------
+        // Ajustes estruturais por tipo de módulo
+        // -------------------------------------------------
+
+        if (IsCompositionRoot(module))
+        {
+            // Composition roots registram dependências,
+            // portanto fan-out alto é esperado.
+            couplingRate *= 0.10;
+
+            // Zombie detection também é menos relevante aqui
+            zombieRate *= 0.50;
+        }
+        else if (IsInfrastructure(module))
+        {
+            // Infraestrutura depende naturalmente de outros módulos
+            couplingRate *= 0.50;
+        }
+
+        // -------------------------------------------------
+        // Penalidades base
+        // -------------------------------------------------
+
+        double couplingPenalty = couplingRate * 30;
+        double zombiePenalty = zombieRate * 25;
+        double isolationPenalty = isolationRate * 20;
+
+        // -------------------------------------------------
+        // Bônus estrutural
+        // -------------------------------------------------
+
+        double coreBonus = coreDensity * 15;
+
+        // -------------------------------------------------
+        // Score final
+        // -------------------------------------------------
+
+        var score =
+            100
+            - couplingPenalty
+            - zombiePenalty
+            - isolationPenalty
+            + coreBonus;
+
+        return Math.Max(0, Math.Min(100, score));
+    }
+
+    // -------------------------------------------------
+    // Heurísticas de identificação de módulos
+    // -------------------------------------------------
+
+    /// <summary>
+    /// Detecta Composition Roots.
+    ///
+    /// Exemplos:
+    /// Program
+    /// Program.cs
+    /// RaizComposicao
+    /// CompositionRoot
+    /// Bootstrap
+    /// Startup
+    ///
+    /// Esses módulos normalmente:
+    /// - possuem alto fan-out
+    /// - possuem baixo fan-in
+    /// - registram dependências (DI)
+    /// </summary>
+    private static bool IsCompositionRoot(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        module = module.Trim();
+
+        return module.Contains("Program", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Raiz", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Composicao", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Composition", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Bootstrap", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Startup", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Detecta módulos de infraestrutura.
+    ///
+    /// Infraestrutura normalmente:
+    /// - depende de múltiplos módulos
+    /// - contém adaptadores, exportadores, IO
+    /// - não representa domínio central
+    ///
+    /// Penalidade de coupling é reduzida.
+    /// </summary>
+    private static bool IsInfrastructure(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        module = module.Trim();
+
+        return module.Equals("Infrastructure", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Infra", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+
+==========================================
 ARQUIVO: ArchitecturalClassificationItem.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ArchitecturalClassificationItem.cs
 ==========================================
@@ -1260,71 +1421,187 @@ namespace RefactorScope.Core.Model
 
 
 ==========================================
+ARQUIVO: CouplingSuspicion.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\CouplingSuspicion.cs
+==========================================
+using System;
+
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa uma suspeita de acoplamento arquitetural implícito.
+    /// 
+    /// Detectada por heurísticas como:
+    /// - fan-out elevado
+    /// - fan-in baixo
+    /// - dominância de dependência
+    /// </summary>
+    public sealed class CouplingSuspicion
+    {
+        public string TypeName { get; }
+
+        public string Module { get; }
+
+        public string TargetModule { get; }
+
+        public int FanOut { get; }
+
+        public int FanIn { get; }
+
+        public double Dominance { get; }
+
+        public int Volume { get; }
+
+        public CouplingSuspicion(
+            string typeName,
+            string module,
+            string targetModule,
+            int fanOut,
+            int fanIn,
+            double dominance,
+            int volume)
+        {
+            TypeName = typeName;
+            Module = module;
+            TargetModule = targetModule;
+            FanOut = fanOut;
+            FanIn = fanIn;
+            Dominance = dominance;
+            Volume = volume;
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: HygieneReport.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\HygieneReport.cs
 ==========================================
+/// <summary>
+/// Aggregated architectural hygiene report for a project.
+///
+/// The SmellIndex (0–100) is a composite indicator representing the
+/// overall structural health of the codebase.
+///
+/// Current calculation uses only metrics intrinsic to HygieneReport,
+/// ensuring the model remains self-contained and independent from
+/// external analyzers.
+///
+/// Current components:
+/// 
+/// • Dead Code Ratio (Unreferenced classes)
+/// • Namespace Drift Ratio (namespace vs folder misalignment)
+/// • Global Namespace Ratio (legacy structural usage)
+/// • Core Isolation Ratio (core architectural boundary integrity)
+/// • Structural Entropy (distribution disorder across modules)
+///
+/// These signals represent fundamental structural hygiene indicators.
+/// The index is intentionally lightweight to provide a stable baseline
+/// metric for the RefactorScope MVP.
+///
+/// Future extensions may incorporate additional architectural signals
+/// without breaking the current implementation. Examples include:
+///
+/// • Coupling metrics (fan-out / instability)
+/// • SOLID design alerts
+/// • Pattern similarity clusters
+/// • Unresolved structural candidates
+/// • Architectural tension (distance from Main Sequence)
+///
+/// These can be integrated as additional weighted components,
+/// preserving backward compatibility with the existing index.
+///
+/// Example future formula:
+///
+/// SmellIndex =
+///     BaseHygieneScore
+///     + CouplingScore
+///     + DesignQualityScore
+///
+/// Where BaseHygieneScore corresponds to the current calculation.
+/// </summary>
+
+
 namespace RefactorScope.Core.Model
 {
-        public sealed class HygieneReport
-        {
-            public int TotalClasses { get; }
+    public sealed class HygieneReport
+    {
+        public int TotalClasses { get; }
 
-            public int UnreferencedCount { get; }
+        public int UnreferencedCount { get; }
 
-            public int GlobalNamespaceCount { get; }
+        public int GlobalNamespaceCount { get; }
 
-            public int NamespaceDriftCount { get; }
+        public int NamespaceDriftCount { get; }
 
-            public int IsolatedCoreCount { get; }
+        public int IsolatedCoreCount { get; }
 
-            /// <summary>
-            /// Shannon entropy normalizada (0–1)
-            /// </summary>
-            public double StructuralEntropy { get; }
+        /// <summary>
+        /// Shannon entropy normalizada (0–1)
+        /// </summary>
+        public double StructuralEntropy { get; }
 
-            /// <summary>
-            /// Índice composto (0–100)
-            /// </summary>
-            public double SmellIndex { get; }
+        /// <summary>
+        /// Índice composto (0–100)
+        /// </summary>
+        public double SmellIndex { get; }
 
-            public string HygieneLevel =>
-                SmellIndex switch
-                {
-                    <= 20 => "?? Healthy",
-                    <= 40 => "?? Stable",
-                    <= 60 => "?? Degrading",
-                    <= 80 => "?? Critical",
-                    _ => "?? Structural Risk"
-                };
-
-            public HygieneReport(
-                int totalClasses,
-                int unreferencedCount,
-                int globalNamespaceCount,
-                int namespaceDriftCount,
-                int isolatedCoreCount,
-                double structuralEntropy)
+        public string HygieneLevel =>
+            SmellIndex switch
             {
-                TotalClasses = totalClasses;
-                UnreferencedCount = unreferencedCount;
-                GlobalNamespaceCount = globalNamespaceCount;
-                NamespaceDriftCount = namespaceDriftCount;
-                IsolatedCoreCount = isolatedCoreCount;
-                StructuralEntropy = structuralEntropy;
+                <= 20 => "?? Healthy",
+                <= 40 => "?? Stable",
+                <= 60 => "?? Degrading",
+                <= 80 => "?? Critical",
+                _ => "?? Structural Risk"
+            };
 
-                var deadRatio = totalClasses == 0 ? 0 : unreferencedCount / (double)totalClasses;
-                var driftRatio = totalClasses == 0 ? 0 : namespaceDriftCount / (double)totalClasses;
-                var isolationRatio = totalClasses == 0 ? 0 : isolatedCoreCount / (double)totalClasses;
+        public HygieneReport(
+            int totalClasses,
+            int unreferencedCount,
+            int globalNamespaceCount,
+            int namespaceDriftCount,
+            int isolatedCoreCount,
+            double structuralEntropy)
+        {
+            TotalClasses = totalClasses;
+            UnreferencedCount = unreferencedCount;
+            GlobalNamespaceCount = globalNamespaceCount;
+            NamespaceDriftCount = namespaceDriftCount;
+            IsolatedCoreCount = isolatedCoreCount;
 
-                SmellIndex =
-                    (deadRatio * 40)
-                    + (driftRatio * 20)
-                    + (isolationRatio * 20)
-                    + (structuralEntropy * 20);
-            }
+            StructuralEntropy = Math.Clamp(structuralEntropy, 0, 1);
+
+            double deadRatio =
+                totalClasses == 0 ? 0 :
+                unreferencedCount / (double)totalClasses;
+
+            double driftRatio =
+                totalClasses == 0 ? 0 :
+                namespaceDriftCount / (double)totalClasses;
+
+            double globalRatio =
+                totalClasses == 0 ? 0 :
+                globalNamespaceCount / (double)totalClasses;
+
+            double isolationRatio =
+                totalClasses == 0 ? 0 :
+                isolatedCoreCount / (double)totalClasses;
+
+            SmellIndex = Math.Clamp(
+
+                (deadRatio * 35) +
+                (driftRatio * 20) +
+                (globalRatio * 10) +
+                (isolationRatio * 15) +
+                (StructuralEntropy * 20),
+
+                0,
+                100
+            );
         }
     }
-
+}
 
 
 ==========================================
@@ -1512,6 +1789,27 @@ namespace RefactorScope.Core.Model
         /// Caminho completo do arquivo onde o tipo está definido.
         /// Necessário para geração do Dump IA.
         /// </summary>
+        /// 
+          // -------------------------------------------------
+        // Propriedades derivadas
+        // -------------------------------------------------
+
+        /// <summary>
+        /// Indica se o tipo é uma interface.
+        /// </summary>
+        public bool IsInterface =>
+            Kind.Equals("interface", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Indica se o tipo é abstrato.
+        /// </summary>
+        /// Observação:
+        /// O parser atual não diferencia "abstract class",
+        /// portanto apenas interfaces são tratadas como abstratas.
+        /// </summary>
+        public bool IsAbstract =>
+            Kind.Equals("interface", StringComparison.OrdinalIgnoreCase);
+
 
         public string FilePath { get; set; } = string.Empty;
 
@@ -2169,19 +2467,75 @@ namespace RefactorScope.Core.Results
 {
     /// <summary>
     /// Resultado do cálculo de acoplamento estrutural.
+    ///
+    /// Contém métricas em dois níveis:
+    ///
+    /// Classe:
+    /// - FanOutTotal
+    /// - FanIn
+    /// - Instability
+    ///
+    /// Arquitetura:
+    /// - FanOutInterModule
+    /// - Abstractness
+    /// - Instability (module)
+    /// - Distance from Main Sequence
     /// </summary>
     public class CouplingResult : IAnalysisResult
     {
+        // -------------------------------------------------
+        // Arquitetura
+        // -------------------------------------------------
+
         public IReadOnlyDictionary<string, int> ModuleFanOut { get; }
 
         public IReadOnlyDictionary<string, Dictionary<string, int>> TypeFanOutByModule { get; }
 
+        // -------------------------------------------------
+        // Classe
+        // -------------------------------------------------
+
+        public IReadOnlyDictionary<string, int> FanOutTotalByType { get; }
+
+        public IReadOnlyDictionary<string, int> FanInByType { get; }
+
+        public IReadOnlyDictionary<string, double> InstabilityByType { get; }
+
+        // -------------------------------------------------
+        // Arquitetura avançada
+        // -------------------------------------------------
+
+        public IReadOnlyDictionary<string, double> AbstractnessByModule { get; }
+
+        public IReadOnlyDictionary<string, double> InstabilityByModule { get; }
+
+        public IReadOnlyDictionary<string, double> DistanceByModule { get; }
+
         public CouplingResult(
             Dictionary<string, int> moduleFanOut,
-            Dictionary<string, Dictionary<string, int>> typeFanOutByModule)
+            Dictionary<string, Dictionary<string, int>> typeFanOutByModule,
+            Dictionary<string, int> fanOutTotalByType,
+            Dictionary<string, int> fanInByType,
+            Dictionary<string, double> instabilityByType,
+            Dictionary<string, double> abstractnessByModule,
+            Dictionary<string, double> instabilityByModule,
+            Dictionary<string, double> distanceByModule)
         {
             ModuleFanOut = moduleFanOut;
+
             TypeFanOutByModule = typeFanOutByModule;
+
+            FanOutTotalByType = fanOutTotalByType;
+
+            FanInByType = fanInByType;
+
+            InstabilityByType = instabilityByType;
+
+            AbstractnessByModule = abstractnessByModule;
+
+            InstabilityByModule = instabilityByModule;
+
+            DistanceByModule = distanceByModule;
         }
     }
 }
@@ -2251,6 +2605,44 @@ namespace RefactorScope.Core.Results
         Pass,
         Warn,
         Fail
+    }
+}
+
+
+==========================================
+ARQUIVO: ImplicitCouplingResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ImplicitCouplingResult.cs
+==========================================
+using System.Collections.Generic;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da análise de acoplamento implícito.
+    ///
+    /// Detecta possíveis hubs arquiteturais ou dependências
+    /// concentradas que podem indicar:
+    ///
+    /// - God Classes
+    /// - Orchestrators ocultos
+    /// - Acoplamento estrutural forte
+    ///
+    /// Baseado em heurísticas:
+    /// - Fan-in
+    /// - Fan-out
+    /// - Dominance
+    /// - Volume de dependências
+    /// </summary>
+    public sealed class ImplicitCouplingResult : IAnalysisResult
+    {
+        public IReadOnlyList<CouplingSuspicion> Suspicions { get; }
+
+        public ImplicitCouplingResult(List<CouplingSuspicion> suspicions)
+        {
+            Suspicions = suspicions;
+        }
     }
 }
 

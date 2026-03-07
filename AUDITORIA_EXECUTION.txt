@@ -3,35 +3,43 @@ ARQUIVO: DumpStrategyResolver.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\DumpStrategyResolver.cs
 ==========================================
 using RefactorScope.Core.Configuration;
+using RefactorScope.Execution.Dump.Strategies;
+using RefactorScope.Execution.Dump.Segmentation;
 
-public static class DumpStrategyResolver
-{
-    public static IDumpStrategy Resolve(RefactorScopeConfig config)
+
+
+    namespace RefactorScope.Execution.Dump
+    { 
+    public static class DumpStrategyResolver
     {
-        if (config.DumpStrategy.Mode == "global")
-            return new GlobalDumpStrategy();
-
-        if (config.DumpStrategy.Mode == "segmented")
+        public static IDumpStrategy Resolve(RefactorScopeConfig config)
         {
-            var segmentation = ResolveSegmentation(config);
-            return new SegmentedDumpStrategy(segmentation);
+            if (config.DumpStrategy.Mode == "global")
+                return new GlobalDumpStrategy();
+
+            if (config.DumpStrategy.Mode == "segmented")
+            {
+                var segmentation = ResolveSegmentation(config);
+                return new SegmentedDumpStrategy(segmentation);
+            }
+
+            throw new Exception("Invalid dumpStrategy.mode");
         }
 
-        throw new Exception("Invalid dumpStrategy.mode");
-    }
-
-    private static ISegmentationResolver ResolveSegmentation(RefactorScopeConfig config)
-    {
-        var splitBy = config.DumpStrategy.SplitBy ?? "topFolder";
-
-        return splitBy switch
+        private static ISegmentationResolver ResolveSegmentation(RefactorScopeConfig config)
         {
-            "topFolder" => new TopFolderSegmentationResolver(),
-            "layer" => new LayerSegmentationResolver(),
-            _ => throw new Exception("Invalid dumpStrategy.splitBy")
-        };
+            var splitBy = config.DumpStrategy.SplitBy ?? "topFolder";
+
+            return splitBy switch
+            {
+                "topFolder" => new TopFolderSegmentationResolver(),
+                "layer" => new LayerSegmentationResolver(),
+                _ => throw new Exception("Invalid dumpStrategy.splitBy")
+            };
+        }
     }
 }
+
 
 
 ==========================================
@@ -39,10 +47,12 @@ ARQUIVO: ISegmentationResolver.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\Segmentation\ISegmentationResolver.cs
 ==========================================
 using RefactorScope.Core.Context;
-
-public interface ISegmentationResolver
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    IEnumerable<SegmentScope> Resolve(AnalysisContext context);
+        public interface ISegmentationResolver
+    {
+        IEnumerable<SegmentScope> Resolve(AnalysisContext context);
+    }
 }
 
 
@@ -53,34 +63,36 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Model;
 using RefactorScope.Infrastructure;
-
-public class LayerSegmentationResolver : ISegmentationResolver
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    public IEnumerable<SegmentScope> Resolve(AnalysisContext context)
-    {
-        var groups = context.Model.Tipos
-            .GroupBy(t => LayerRuleEvaluator.ResolveLayer(t, context.Config.LayerRules));
-
-        foreach (var group in groups)
+            public class LayerSegmentationResolver : ISegmentationResolver
         {
-            var tipos = group.ToList();
+            public IEnumerable<SegmentScope> Resolve(AnalysisContext context)
+            {
+                var groups = context.Model.Tipos
+                    .GroupBy(t => LayerRuleEvaluator.ResolveLayer(t, context.Config.LayerRules));
 
-            var filteredModel = new ModeloEstrutural(
-                context.Model.RootPath,
-                context.Model.Arquivos.Where(a =>
-                    a.Tipos.Any(t => tipos.Contains(t))).ToList(),
-                tipos,
-                context.Model.Referencias.Where(r =>
-                    tipos.Any(t => t.Name == r.FromType)).ToList()
-            );
+                foreach (var group in groups)
+                {
+                    var tipos = group.ToList();
 
-            yield return new SegmentScope(
-                group.Key,
-                new AnalysisContext(context.Config, filteredModel)
-            );
+                    var filteredModel = new ModeloEstrutural(
+                        context.Model.RootPath,
+                        context.Model.Arquivos.Where(a =>
+                            a.Tipos.Any(t => tipos.Contains(t))).ToList(),
+                        tipos,
+                        context.Model.Referencias.Where(r =>
+                            tipos.Any(t => t.Name == r.FromType)).ToList()
+                    );
+
+                    yield return new SegmentScope(
+                        group.Key,
+                        new AnalysisContext(context.Config, filteredModel)
+                    );
+                }
+            }
         }
     }
-}
 
 
 ==========================================
@@ -88,16 +100,18 @@ ARQUIVO: SegmentScope.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\Segmentation\SegmentScope.cs
 ==========================================
 using RefactorScope.Core.Context;
-
-public class SegmentScope
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    public string Name { get; }
-    public AnalysisContext Context { get; }
-
-    public SegmentScope(string name, AnalysisContext context)
+    public class SegmentScope
     {
-        Name = name;
-        Context = context;
+        public string Name { get; }
+        public AnalysisContext Context { get; }
+
+        public SegmentScope(string name, AnalysisContext context)
+        {
+            Name = name;
+            Context = context;
+        }
     }
 }
 
@@ -109,75 +123,79 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Model;
 
-public class TopFolderSegmentationResolver : ISegmentationResolver
+
+namespace RefactorScope.Execution.Dump.Segmentation
 {
-    public IEnumerable<SegmentScope> Resolve(AnalysisContext context)
+    public class TopFolderSegmentationResolver : ISegmentationResolver
     {
-        var projectDir = FindProjectDirectory(context.Model.RootPath);
-
-        var moduleFolders = projectDir
-            .GetDirectories()
-            .Where(d => !IsIgnoredFolder(d.Name))
-            .Select(d => d.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var groups = context.Model.Tipos
-            .GroupBy(t => ResolveModuleFolder(t.DeclaredInFile, moduleFolders));
-
-        foreach (var group in groups)
+        public IEnumerable<SegmentScope> Resolve(AnalysisContext context)
         {
-            var tipos = group.ToList();
+            var projectDir = FindProjectDirectory(context.Model.RootPath);
 
-            var filteredModel = new ModeloEstrutural(
-                context.Model.RootPath,
-                context.Model.Arquivos.Where(a =>
-                    a.Tipos.Any(t => tipos.Contains(t))).ToList(),
-                tipos,
-                context.Model.Referencias.Where(r =>
-                    tipos.Any(t => t.Name == r.FromType)).ToList()
-            );
+            var moduleFolders = projectDir
+                .GetDirectories()
+                .Where(d => !IsIgnoredFolder(d.Name))
+                .Select(d => d.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            yield return new SegmentScope(
-                group.Key,
-                new AnalysisContext(context.Config, filteredModel)
-            );
+            var groups = context.Model.Tipos
+                .GroupBy(t => ResolveModuleFolder(t.DeclaredInFile, moduleFolders));
+
+            foreach (var group in groups)
+            {
+                var tipos = group.ToList();
+
+                var filteredModel = new ModeloEstrutural(
+                    context.Model.RootPath,
+                    context.Model.Arquivos.Where(a =>
+                        a.Tipos.Any(t => tipos.Contains(t))).ToList(),
+                    tipos,
+                    context.Model.Referencias.Where(r =>
+                        tipos.Any(t => t.Name == r.FromType)).ToList()
+                );
+
+                yield return new SegmentScope(
+                    group.Key,
+                    new AnalysisContext(context.Config, filteredModel)
+                );
+            }
         }
-    }
 
-    private DirectoryInfo FindProjectDirectory(string rootPath)
-    {
-        var root = new DirectoryInfo(rootPath);
+        private DirectoryInfo FindProjectDirectory(string rootPath)
+        {
+            var root = new DirectoryInfo(rootPath);
 
-        var projectDir = root
-            .GetDirectories("*", SearchOption.AllDirectories)
-            .FirstOrDefault(d => d.GetFiles("*.csproj").Any());
+            var projectDir = root
+                .GetDirectories("*", SearchOption.AllDirectories)
+                .FirstOrDefault(d => d.GetFiles("*.csproj").Any());
 
-        return projectDir ?? root;
-    }
+            return projectDir ?? root;
+        }
 
-    private string ResolveModuleFolder(string relativePath, HashSet<string> modules)
-    {
-        if (string.IsNullOrWhiteSpace(relativePath))
+        private string ResolveModuleFolder(string relativePath, HashSet<string> modules)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+                return "Root";
+
+            var parts = relativePath
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var part in parts)
+            {
+                if (modules.Contains(part))
+                    return part;
+            }
+
             return "Root";
-
-        var parts = relativePath
-            .Replace("\\", "/")
-            .Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var part in parts)
-        {
-            if (modules.Contains(part))
-                return part;
         }
 
-        return "Root";
-    }
-
-    private bool IsIgnoredFolder(string name)
-    {
-        return name.Equals("bin", StringComparison.OrdinalIgnoreCase)
-            || name.Equals("obj", StringComparison.OrdinalIgnoreCase)
-            || name.Equals(".git", StringComparison.OrdinalIgnoreCase);
+        private bool IsIgnoredFolder(string name)
+        {
+            return name.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("obj", StringComparison.OrdinalIgnoreCase)
+                || name.Equals(".git", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
 
@@ -190,19 +208,22 @@ using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
 
-public class GlobalDumpStrategy : IDumpStrategy
+namespace RefactorScope.Execution.Dump.Strategies
 {
-    public void Execute(
-        AnalysisContext context,
-        ConsolidatedReport report,
-        IEnumerable<IExporter> exporters)
+    public class GlobalDumpStrategy : IDumpStrategy
     {
-        var output = context.Config.OutputPath;
-        Directory.CreateDirectory(output);
-
-        foreach (var exporter in exporters)
+        public void Execute(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IEnumerable<IExporter> exporters)
         {
-            exporter.Export(context, report, output);
+            var output = context.Config.OutputPath;
+            Directory.CreateDirectory(output);
+
+            foreach (var exporter in exporters)
+            {
+                exporter.Export(context, report, output);
+            }
         }
     }
 }
@@ -216,14 +237,16 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
-
-public interface IDumpStrategy
+namespace RefactorScope.Execution.Dump.Strategies
 {
-    void Execute(
-        AnalysisContext context,
-        ConsolidatedReport report,
-        IEnumerable<IExporter> exporters
-    );
+    public interface IDumpStrategy
+    {
+        void Execute(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IEnumerable<IExporter> exporters
+        );
+    }
 }
 
 
@@ -234,42 +257,48 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Execution\Dump\
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Execution.Dump.Segmentation;
 
-public class SegmentedDumpStrategy : IDumpStrategy
-{
-    private readonly ISegmentationResolver _resolver;
 
-    public SegmentedDumpStrategy(ISegmentationResolver resolver)
+namespace RefactorScope.Execution.Dump.Strategies
+{ 
+    public class SegmentedDumpStrategy : IDumpStrategy
     {
-        _resolver = resolver;
-    }
+        private readonly ISegmentationResolver _resolver;
 
-    public void Execute(
-        AnalysisContext context,
-        ConsolidatedReport report,
-        IEnumerable<IExporter> exporters)
-    {
-        var segments = _resolver.Resolve(context);
-
-        foreach (var segment in segments)
+        public SegmentedDumpStrategy(ISegmentationResolver resolver)
         {
-            var path = Path.Combine(
-                context.Config.OutputPath,
-                segment.Name
-            );
+            _resolver = resolver;
+        }
 
-            Directory.CreateDirectory(path);
+        public void Execute(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IEnumerable<IExporter> exporters)
+        {
+            var segments = _resolver.Resolve(context);
 
-            foreach (var exporter in exporters)
+            foreach (var segment in segments)
             {
-                exporter.Export(
-                    segment.Context,
-                    report,
-                    path
+                var path = Path.Combine(
+                    context.Config.OutputPath,
+                    segment.Name
                 );
+
+                Directory.CreateDirectory(path);
+
+                foreach (var exporter in exporters)
+                {
+                    exporter.Export(
+                        segment.Context,
+                        report,
+                        path
+                    );
+                }
             }
         }
     }
 }
+
 
 
