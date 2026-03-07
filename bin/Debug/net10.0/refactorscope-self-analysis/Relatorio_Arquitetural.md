@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-06 05:19 UTC  
+📅 **Execution Time:** 2026-03-07 05:37 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -23,6 +23,7 @@
 │   │   │   ├── Metrics
 │   │   │   ├── Model
 │   │   │   ├── Orchestration
+│   │   │   ├── Parsing
 │   │   │   ├── Patterns
 │   │   │   ├── Reporting
 │   │   │   ├── Results
@@ -38,15 +39,20 @@
 │   │   ├── Infrastructure
 │   │   ├── Parsers
 │   │   │   ├── CsharpParsers
+│   │   │   │   ├── Hybrid
+│   │   │   ├── Results
+│   │   ├── Statistics
+│   │   │   ├── Engines
+│   │   │   ├── Models
 ```
 
 ---
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 42
+- **Structural Candidates:** 43
 - **Pattern Similarity:** 41
-- **Unresolved:** 1
+- **Unresolved:** 2
 
 ---
 
@@ -60,11 +66,11 @@
 - **Isolation:** 0,53
 - **Core Density:** 1,00
 
-### 🟡 CLI
+### 🔴 CLI
 
-- **Score:** `50,0`
+- **Score:** `0,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 2,50
+- **Coupling:** 5,50
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -80,7 +86,7 @@
 
 - **Score:** `0,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 6,78
+- **Coupling:** 5,92
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -96,9 +102,9 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 0,00
+- **Coupling:** 0,02
 - **Isolation:** 0,26
-- **Core Density:** 0,98
+- **Core Density:** 0,97
 
 ### 🔴 Execution
 
@@ -112,7 +118,15 @@
 
 - **Score:** `0,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 10,00
+- **Coupling:** 9,00
+- **Isolation:** 0,00
+- **Core Density:** 0,00
+
+### 🔴 Statistics
+
+- **Score:** `31,7`
+- **Unresolved Candidates:** 🔴 1 (100%)
+- **Coupling:** 6,00
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -123,7 +137,6 @@
 | Type | Module | Target Module | Fan-Out | Fan-In | Dominance | Volume |
 |------|--------|---------------|--------|--------|-----------|--------|
 | ArchitecturalClassificationAnalyzer | Analyzers | Core | 11 | 0 | 1,00 | 11 |
-| ArchitecturalHygieneAnalyzer | Analyzers | Core | 7 | 2 | 0,78 | 7 |
 | CoreIsolationAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
 | CouplingAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
 | EntryPointHeuristicAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
@@ -132,20 +145,25 @@
 | ProjectStructureAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
 | StructuralCandidateAnalyzer | Analyzers | Core | 6 | 0 | 1,00 | 6 |
 | StructuralCandidateRefinementAnalyzer | Analyzers | Core | 11 | 0 | 1,00 | 11 |
-| ParserSelector | CLI | Parsers | 5 | 0 | 1,00 | 5 |
+| ParserSelector | CLI | Parsers | 11 | 0 | 1,00 | 11 |
 | DatasetExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
 | DumpAnaliseExporter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | FitnessGateCsvExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
 | MarkdownReportExporter | Exporters | Core | 15 | 0 | 1,00 | 15 |
-| StructuralInventoryExporter | Exporters | Core | 17 | 0 | 1,00 | 17 |
+| StructuralInventoryExporter | Exporters | Core | 18 | 1 | 0,95 | 18 |
+| misuse | Exporters | Core | 11 | 1 | 0,92 | 11 |
 | SolidAnalyzer | Analyzers | Core | 22 | 0 | 1,00 | 22 |
 | DumpStrategyResolver | Execution | Core | 11 | 0 | 1,00 | 11 |
-| CSharpRegexParser | Parsers | Core | 15 | 2 | 0,88 | 15 |
-| CSharpTextualParser | Parsers | Core | 17 | 2 | 0,89 | 17 |
+| CSharpRegexParser | Parsers | Core | 18 | 2 | 0,90 | 18 |
+| HigienizadorLexico | Parsers | Core | 9 | 2 | 0,82 | 9 |
+| CSharpTextualParser | Parsers | Core | 20 | 3 | 0,87 | 20 |
+| ValidationEngine | Statistics | Core | 6 | 0 | 1,00 | 6 |
 | PublicZeroUsageOmissionRule | Analyzers | Core | 6 | 2 | 0,75 | 6 |
 | LayerSegmentationResolver | Execution | Core | 10 | 2 | 0,83 | 10 |
 | TopFolderSegmentationResolver | Execution | Core | 8 | 2 | 0,80 | 8 |
 | SegmentedDumpStrategy | Execution | Core | 7 | 2 | 0,78 | 7 |
+| HybridAdaptiveParser | Parsers | Core | 8 | 2 | 0,80 | 8 |
+| HybridIncrementalParser | Parsers | Core | 8 | 2 | 0,80 | 8 |
 
 Possible architectural coupling detected based on structural heuristics.
 Manual inspection is recommended.
@@ -156,14 +174,15 @@ Manual inspection is recommended.
 
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
-| Analyzers | 0,11 | 0,71 | 0,19 |
+| Analyzers | 0,11 | 0,69 | 0,20 |
 | CLI | 0,00 | 1,00 | 0,00 |
 | Debug | 0,00 | 0,00 | 1,00 |
-| Exporters | 0,00 | 0,97 | 0,03 |
+| Exporters | 0,08 | 0,91 | 0,01 |
 | Infrastructure | 0,00 | 0,45 | 0,55 |
-| Core | 0,09 | 0,00 | 0,91 |
+| Core | 0,10 | 0,00 | 0,89 |
 | Execution | 0,25 | 0,51 | 0,24 |
-| Parsers | 0,00 | 0,83 | 0,17 |
+| Parsers | 0,00 | 0,74 | 0,26 |
+| Statistics | 0,00 | 1,00 | 0,00 |
 
 ---
 

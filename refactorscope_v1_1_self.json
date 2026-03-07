@@ -11,6 +11,18 @@
     "refactorscope-self-analysis"
   ],
 
+  "parser": "HybridFailover",
+
+  "parserOptions": {
+    "enableInteractiveSelector": true,
+    "enableStatistics": true,
+    "logParsingBreakdown": true
+  },
+
+  "statistics": {
+    "enabled": true
+  },
+
   "analyzers": {
     "zombie": true,
     "zombieRefinement": true,
@@ -32,22 +44,24 @@
 
   "layerRules": {
     "UI": {
+      "nameStartsWith": [ "Aba" ],
       "namespaceContains": [ "Reporting", "CLI" ]
     },
+
     "Core": {
-      "namespaceContains": [ "Core", "Analyzers", "Model" ]
+      "namespaceContains": [ "Core", "Analyzers", "Model", "Nucleo", "Limbic" ]
     },
+
     "Infra": {
       "namespaceContains": [ "Infrastructure" ],
       "nameEquals": [ "Program" ]
     }
   },
 
-  "parser": "CSharpRegex",
-
   "exporters": [
     "htmlDashboard",
-    "dumpAnalysis"
+    "dumpAnalysis",
+    "dumpIA"
   ],
 
   "dumpStrategy": {
@@ -60,17 +74,21 @@
       "warnAbove": 0.05,
       "failAbove": 0.10
     },
+
     "coupling": {
       "warnAbove": 4,
       "failAbove": 8
     },
+
     "coreIsolation": {
       "failIfAny": true
     },
+
     "solidAlerts": {
       "warnAbove": 5,
       "failAbove": 15
     },
+
     "smellIndex": {
       "warnAbove": 40,
       "failAbove": 65

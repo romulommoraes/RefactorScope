@@ -6,6 +6,18 @@
   "include": [],
   "exclude": [],
 
+  "parser": "HybridFailover",
+
+  "parserOptions": {
+    "enableInteractiveSelector": true,
+    "enableStatistics": true,
+    "logParsingBreakdown": true
+  },
+
+  "statistics": {
+    "enabled": true
+  },
+
   "analyzers": {
     "zombie": true,
     "zombieRefinement": true,
@@ -18,30 +30,31 @@
 
   "zombieDetection": {
     "enableRefinement": true,
-    "globalRateThreshold_DI": 0.10,
-    "globalRateThreshold_Interface": 0.08,
-    "diProbability": 0.10,
+    "globalRateThreshold_DI": 0.25,
+    "globalRateThreshold_Interface": 0.20,
+    "diProbability": 0.15,
     "interfaceProbability": 0.20,
     "minUnresolvedProbabilityThreshold": 0.30
   },
 
   "layerRules": {
     "UI": {
-      "nameStartsWith": [ "Aba" ]
+      "nameStartsWith": [ "Aba" ],
+      "namespaceContains": [ "Reporting", "CLI" ]
     },
     "Core": {
-      "namespaceContains": [ "Nucleo", "Limbic" ]
+      "namespaceContains": [ "Nucleo", "Limbic", "Core", "Analyzers", "Model" ]
     },
     "Infra": {
+      "namespaceContains": [ "Infrastructure" ],
       "nameEquals": [ "Program" ]
     }
   },
 
-  "parser": "CSharpRegex",
-
   "exporters": [
     "dumpAnalysis",
-    "dumpIA"
+    "dumpIA",
+    "htmlDashboard"
   ],
 
   "dumpStrategy": {
@@ -51,15 +64,27 @@
 
   "fitnessGates": {
     "deadCode": {
-      "warnAbove": 0.10,
-      "failAbove": 0.20
+      "warnAbove": 0.05,
+      "failAbove": 0.10
     },
+
     "coupling": {
-      "warnAbove": 3,
-      "failAbove": 5
+      "warnAbove": 4,
+      "failAbove": 8
     },
+
     "coreIsolation": {
       "failIfAny": true
+    },
+
+    "solidAlerts": {
+      "warnAbove": 5,
+      "failAbove": 15
+    },
+
+    "smellIndex": {
+      "warnAbove": 40,
+      "failAbove": 65
     }
   }
 }

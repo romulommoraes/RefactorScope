@@ -119,12 +119,17 @@
   "Referencias": [
     {
       "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "IAnalyzer",
+      "ToType": "LayerRuleEvaluator",
       "Kind": 0
     },
     {
       "FromType": "ArchitecturalClassificationAnalyzer",
       "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "ArchitecturalClassificationAnalyzer",
+      "ToType": "IAnalyzer",
       "Kind": 0
     },
     {
@@ -135,46 +140,26 @@
     {
       "FromType": "ArchitecturalClassificationAnalyzer",
       "ToType": "ArchitecturalClassificationItem",
-      "Kind": 3
-    },
-    {
-      "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "ArchitecturalClassificationItem",
-      "Kind": 0
-    },
-    {
-      "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "LayerRuleEvaluator",
-      "Kind": 2
-    },
-    {
-      "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "LayerRuleEvaluator",
-      "Kind": 0
-    },
-    {
-      "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "StructuralAlignmentEvaluator",
-      "Kind": 2
-    },
-    {
-      "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "StructuralAlignmentEvaluator",
       "Kind": 0
     },
     {
       "FromType": "ArchitecturalClassificationAnalyzer",
       "ToType": "ArchitecturalClassificationResult",
-      "Kind": 1
+      "Kind": 0
     },
     {
       "FromType": "ArchitecturalClassificationAnalyzer",
-      "ToType": "ArchitecturalClassificationResult",
+      "ToType": "StructuralAlignmentEvaluator",
       "Kind": 0
     },
     {
       "FromType": "ArchitecturalHygieneAnalyzer",
       "ToType": "HygieneReport",
+      "Kind": 0
+    },
+    {
+      "FromType": "ArchitecturalHygieneAnalyzer",
+      "ToType": "ArchitecturalClassificationResult",
       "Kind": 0
     },
     {
@@ -184,23 +169,398 @@
     },
     {
       "FromType": "ArchitecturalHygieneAnalyzer",
+      "ToType": "CoreIsolationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationAnalyzer",
+      "ToType": "LayerRuleEvaluator",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationAnalyzer",
+      "ToType": "CoreIsolationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingAnalyzer",
+      "ToType": "CouplingResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "EntryPointHeuristicAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "EntryPointHeuristicAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "EntryPointHeuristicAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "EntryPointHeuristicAnalyzer",
+      "ToType": "EntryPointHeuristicResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "FitnessGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "DesignPatternSignatureLibrary",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "FitnessGateResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateAnalyzer",
+      "ToType": "FitnessGateStatus",
+      "Kind": 0
+    },
+    {
+      "FromType": "ImplicitCouplingAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "ImplicitCouplingAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "ImplicitCouplingAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "ImplicitCouplingAnalyzer",
+      "ToType": "CouplingSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "ImplicitCouplingAnalyzer",
+      "ToType": "ImplicitCouplingResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "ProjectStructureAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "ProjectStructureAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "ProjectStructureAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "ProjectStructureAnalyzer",
+      "ToType": "ProjectStructureResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateAnalyzer",
+      "ToType": "TipoInfo",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateAnalyzer",
+      "ToType": "StructuralCandidateResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "TipoInfo",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "StructuralCandidateProbabilityItem",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "StructuralCandidateProbabilityResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralCandidateRefinementAnalyzer",
+      "ToType": "StructuralCandidateResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "SolidConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "SolidResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "IAnalyzer",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "CouplingResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "CoreDependencyAbsolutionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "IAbsolutionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "IOmissionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "OrchestratorAbsolutionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidAnalyzer",
+      "ToType": "PublicZeroUsageOmissionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidResult",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "SolidResult",
+      "ToType": "IAnalysisResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreDependencyAbsolutionRule",
+      "ToType": "SolidConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreDependencyAbsolutionRule",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreDependencyAbsolutionRule",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreDependencyAbsolutionRule",
+      "ToType": "IAbsolutionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "IAbsolutionRule",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "IAbsolutionRule",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "IOmissionRule",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "IOmissionRule",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "OrchestratorAbsolutionRule",
+      "ToType": "SolidConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "OrchestratorAbsolutionRule",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "OrchestratorAbsolutionRule",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "OrchestratorAbsolutionRule",
+      "ToType": "IAbsolutionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "PublicZeroUsageOmissionRule",
+      "ToType": "SolidSuspicion",
+      "Kind": 0
+    },
+    {
+      "FromType": "PublicZeroUsageOmissionRule",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "PublicZeroUsageOmissionRule",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "PublicZeroUsageOmissionRule",
+      "ToType": "IOmissionRule",
+      "Kind": 0
+    },
+    {
+      "FromType": "ArchitecturalClassificationAnalyzer",
+      "ToType": "ArchitecturalClassificationItem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArchitecturalClassificationAnalyzer",
+      "ToType": "LayerRuleEvaluator",
+      "Kind": 2
+    },
+    {
+      "FromType": "ArchitecturalClassificationAnalyzer",
+      "ToType": "StructuralAlignmentEvaluator",
+      "Kind": 2
+    },
+    {
+      "FromType": "ArchitecturalClassificationAnalyzer",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 1
+    },
+    {
+      "FromType": "ArchitecturalHygieneAnalyzer",
       "ToType": "ArchitecturalClassificationResult",
       "Kind": 3
     },
     {
       "FromType": "ArchitecturalHygieneAnalyzer",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "ArchitecturalHygieneAnalyzer",
       "ToType": "CoreIsolationResult",
       "Kind": 3
-    },
-    {
-      "FromType": "ArchitecturalHygieneAnalyzer",
-      "ToType": "CoreIsolationResult",
-      "Kind": 0
     },
     {
       "FromType": "ArchitecturalHygieneAnalyzer",
@@ -209,53 +569,13 @@
     },
     {
       "FromType": "CoreIsolationAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreIsolationAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreIsolationAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreIsolationAnalyzer",
       "ToType": "LayerRuleEvaluator",
       "Kind": 2
     },
     {
       "FromType": "CoreIsolationAnalyzer",
-      "ToType": "LayerRuleEvaluator",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreIsolationAnalyzer",
       "ToType": "CoreIsolationResult",
       "Kind": 1
-    },
-    {
-      "FromType": "CoreIsolationAnalyzer",
-      "ToType": "CoreIsolationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "CouplingAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "CouplingAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "CouplingAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
     },
     {
       "FromType": "CouplingAnalyzer",
@@ -263,39 +583,9 @@
       "Kind": 1
     },
     {
-      "FromType": "CouplingAnalyzer",
-      "ToType": "CouplingResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "EntryPointHeuristicAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "EntryPointHeuristicAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "EntryPointHeuristicAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
       "FromType": "EntryPointHeuristicAnalyzer",
       "ToType": "EntryPointHeuristicResult",
       "Kind": 1
-    },
-    {
-      "FromType": "EntryPointHeuristicAnalyzer",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
     },
     {
       "FromType": "FitnessGateAnalyzer",
@@ -304,38 +594,13 @@
     },
     {
       "FromType": "FitnessGateAnalyzer",
-      "ToType": "FitnessGateConfig",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
       "ToType": "FitnessGateStatus",
       "Kind": 3
     },
     {
       "FromType": "FitnessGateAnalyzer",
-      "ToType": "FitnessGateStatus",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
       "ToType": "ArchitecturalClassificationResult",
       "Kind": 3
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
     },
     {
       "FromType": "FitnessGateAnalyzer",
@@ -344,33 +609,8 @@
     },
     {
       "FromType": "FitnessGateAnalyzer",
-      "ToType": "DesignPatternSignatureLibrary",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
       "ToType": "FitnessGateResult",
       "Kind": 1
-    },
-    {
-      "FromType": "FitnessGateAnalyzer",
-      "ToType": "FitnessGateResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "ImplicitCouplingAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "ImplicitCouplingAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "ImplicitCouplingAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
     },
     {
       "FromType": "ImplicitCouplingAnalyzer",
@@ -380,11 +620,6 @@
     {
       "FromType": "ImplicitCouplingAnalyzer",
       "ToType": "CouplingSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "ImplicitCouplingAnalyzer",
-      "ToType": "CouplingSuspicion",
       "Kind": 1
     },
     {
@@ -393,84 +628,14 @@
       "Kind": 1
     },
     {
-      "FromType": "ImplicitCouplingAnalyzer",
-      "ToType": "ImplicitCouplingResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "ProjectStructureAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "ProjectStructureAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "ProjectStructureAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
       "FromType": "ProjectStructureAnalyzer",
       "ToType": "ProjectStructureResult",
       "Kind": 1
     },
     {
-      "FromType": "ProjectStructureAnalyzer",
-      "ToType": "ProjectStructureResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
       "FromType": "StructuralCandidateAnalyzer",
       "ToType": "StructuralCandidateResult",
       "Kind": 1
-    },
-    {
-      "FromType": "StructuralCandidateAnalyzer",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateAnalyzer",
-      "ToType": "TipoInfo",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "TipoInfo",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
     },
     {
       "FromType": "StructuralCandidateRefinementAnalyzer",
@@ -484,23 +649,8 @@
     },
     {
       "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "StructuralCandidateProbabilityResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "StructuralCandidateProbabilityItem",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
       "ToType": "StructuralCandidateResult",
       "Kind": 3
-    },
-    {
-      "FromType": "StructuralCandidateRefinementAnalyzer",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 0
     },
     {
       "FromType": "StructuralCandidateRefinementAnalyzer",
@@ -509,38 +659,18 @@
     },
     {
       "FromType": "SolidAnalyzer",
-      "ToType": "IAnalyzer",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
       "ToType": "SolidConfig",
       "Kind": 6
     },
     {
       "FromType": "SolidAnalyzer",
-      "ToType": "SolidConfig",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
       "ToType": "IAbsolutionRule",
       "Kind": 3
     },
     {
       "FromType": "SolidAnalyzer",
-      "ToType": "IAbsolutionRule",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
       "ToType": "IOmissionRule",
       "Kind": 3
-    },
-    {
-      "FromType": "SolidAnalyzer",
-      "ToType": "IOmissionRule",
-      "Kind": 0
     },
     {
       "FromType": "SolidAnalyzer",
@@ -554,18 +684,8 @@
     },
     {
       "FromType": "SolidAnalyzer",
-      "ToType": "OrchestratorAbsolutionRule",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
       "ToType": "CoreDependencyAbsolutionRule",
       "Kind": 1
-    },
-    {
-      "FromType": "SolidAnalyzer",
-      "ToType": "CoreDependencyAbsolutionRule",
-      "Kind": 0
     },
     {
       "FromType": "SolidAnalyzer",
@@ -574,38 +694,13 @@
     },
     {
       "FromType": "SolidAnalyzer",
-      "ToType": "PublicZeroUsageOmissionRule",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
       "ToType": "SolidResult",
       "Kind": 1
     },
     {
       "FromType": "SolidAnalyzer",
-      "ToType": "SolidResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidAnalyzer",
       "ToType": "SolidSuspicion",
       "Kind": 3
-    },
-    {
-      "FromType": "SolidAnalyzer",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
     },
     {
       "FromType": "SolidAnalyzer",
@@ -613,29 +708,9 @@
       "Kind": 3
     },
     {
-      "FromType": "SolidAnalyzer",
-      "ToType": "CouplingResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "SolidResult",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
       "FromType": "SolidResult",
       "ToType": "SolidSuspicion",
       "Kind": 3
-    },
-    {
-      "FromType": "SolidResult",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreDependencyAbsolutionRule",
-      "ToType": "IAbsolutionRule",
-      "Kind": 0
     },
     {
       "FromType": "CoreDependencyAbsolutionRule",
@@ -643,49 +718,9 @@
       "Kind": 6
     },
     {
-      "FromType": "CoreDependencyAbsolutionRule",
-      "ToType": "SolidConfig",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreDependencyAbsolutionRule",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "CoreDependencyAbsolutionRule",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "IAbsolutionRule",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "IAbsolutionRule",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
       "FromType": "IOmissionRule",
       "ToType": "SolidSuspicion",
       "Kind": 3
-    },
-    {
-      "FromType": "IOmissionRule",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "IOmissionRule",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrchestratorAbsolutionRule",
-      "ToType": "IAbsolutionRule",
-      "Kind": 0
     },
     {
       "FromType": "OrchestratorAbsolutionRule",
@@ -693,49 +728,14 @@
       "Kind": 6
     },
     {
-      "FromType": "OrchestratorAbsolutionRule",
-      "ToType": "SolidConfig",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrchestratorAbsolutionRule",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrchestratorAbsolutionRule",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "PublicZeroUsageOmissionRule",
-      "ToType": "IOmissionRule",
-      "Kind": 0
-    },
-    {
       "FromType": "PublicZeroUsageOmissionRule",
       "ToType": "SolidSuspicion",
       "Kind": 3
     },
     {
       "FromType": "PublicZeroUsageOmissionRule",
-      "ToType": "SolidSuspicion",
-      "Kind": 0
-    },
-    {
-      "FromType": "PublicZeroUsageOmissionRule",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "PublicZeroUsageOmissionRule",
       "ToType": "ArchitecturalClassificationResult",
       "Kind": 3
-    },
-    {
-      "FromType": "PublicZeroUsageOmissionRule",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
     }
   ]
 }

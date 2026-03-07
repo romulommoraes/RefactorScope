@@ -1,12 +1,9 @@
 {
   "StructuralCandidates": [
-    "ConfigService",
-    "PathResolver",
     "DivergenceLogger",
     "DivergenceScore",
     "EstadoIdentidade",
     "ModuloEtogramaV2",
-    "MotorEtogramaHeuristico",
     "MotorIntencionalV1",
     "LeitorBaseline",
     "ExecutorValidacaoJung",
@@ -23,33 +20,23 @@
     "EspecialistaProducao",
     "ScriptomeDashboardPipeline",
     "ClassificadorHibrido",
-    "ClassificadorLacaniano",
     "ClassificadorLacanianoV2Legado",
-    "ClassificadorMBTI",
-    "ClassificadorPsicodinamicoAvancado",
     "AppConfig",
     "RnaCartesiano",
     "ResultadoModuloLimbic",
-    "Transicao",
     "AbaEstrutura"
   ],
   "PatternSimilarity": [
-    "PathResolver",
     "DivergenceLogger",
-    "MotorEtogramaHeuristico",
     "MotorIntencionalV1",
     "ExportadorBaselineJung",
     "ScriptomeDashboardPipeline",
     "ClassificadorHibrido",
-    "ClassificadorLacaniano",
     "ClassificadorLacanianoV2Legado",
-    "ClassificadorMBTI",
-    "ClassificadorPsicodinamicoAvancado",
     "AppConfig",
     "AbaEstrutura"
   ],
   "Unresolved": [
-    "ConfigService",
     "DivergenceScore",
     "EstadoIdentidade",
     "ModuloEtogramaV2",
@@ -66,10 +53,10 @@
     "EspecialistaDinamica",
     "EspecialistaProducao",
     "RnaCartesiano",
-    "ResultadoModuloLimbic",
-    "Transicao"
+    "ResultadoModuloLimbic"
   ],
   "IsolatedCoreTypes": [
+    "EstadoIdentidade",
     "CalculadoraTensao",
     "CalculadoraModalidade",
     "LematizadorCatalyst",
@@ -85,8 +72,7 @@
     "IMotorDeTranscricao",
     "AppConfig",
     "RnaCartesiano",
-    "ResultadoModuloLimbic",
-    "Transicao"
+    "ResultadoModuloLimbic"
   ],
   "EntryPoints": [
     "Program",

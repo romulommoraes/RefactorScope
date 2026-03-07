@@ -12,6 +12,8 @@ using RefactorScope.Core.Results;
 using RefactorScope.Execution.Dump;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Statistics.Engines;
 using Spectre.Console;
 
 
@@ -21,13 +23,38 @@ Console.WriteLine();
 var __fake = "services.AddScoped<FakeZombieService>();";
 
 
+IParserResult? parsingResult = null;
 // =====================================================
 // 🔹 FLUXO PRINCIPAL
 // =====================================================
 
 if (!TryRunConfiguration(out var config)) return;
-if (!TryRunParsing(config, out var context)) return;
-if (!TryRunAnalysis(context, out var report)) return;
+if (!TryRunParsing(
+        config,
+        out var context,
+        out parsingResult)) return; if (!TryRunAnalysis(context, out var report)) return;
+
+// =====================================================
+// 🔹 BLOCO OPCIONAL — VALIDAÇÃO ESTATÍSTICA
+// =====================================================
+if (config.Statistics?.Enabled == true)
+{
+    TerminalRenderer.Step("Executando camada de validação estatística...");
+
+    var statsReport = ValidationEngine.RunSafely(
+        context,
+        report,
+        (ex, phase) => CrashLogger.Log(ex, phase)
+    );
+
+    if (statsReport != null)
+    {
+        TerminalRenderer.Success(
+            $"Validação concluída (Confiança do Parser: {statsReport.Confidence.ClassesPerFile:0.00} classes/arquivo)"
+        );
+    }
+}
+
 
 // 🔥 DEBUG — Structural Candidate Breakdown
 var breakdown = report.GetStructuralCandidateBreakdown();
@@ -40,8 +67,7 @@ AnsiConsole.WriteLine($"Absolved : {breakdown.PatternSimilarity}");
 AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
 AnsiConsole.WriteLine();
 
-if (!TryRunExport(config, context, report)) return;
-
+if (!TryRunExport(config, context, report, parsingResult)) return;
 RunVisualization(report);
 ApplyCiExitCode(report);
 
@@ -95,33 +121,137 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
 // =====================================================
 // 🔹 BLOCO 2 — PARSING
 // =====================================================
-static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext context)
+/// <summary>
+/// Executa a fase de parsing do RefactorScope.
+///
+/// Responsabilidades:
+/// 1. Selecionar o parser apropriado (ParserSelector).
+/// 2. Executar o parsing dentro de um spinner visual.
+/// 3. Validar falhas críticas.
+/// 4. Exibir observabilidade da estratégia de parsing.
+/// 5. Detectar inconsistências estruturais básicas.
+/// 6. Construir o AnalysisContext para a fase de análise.
+/// </summary>
+static bool TryRunParsing(
+    RefactorScopeConfig config,
+    out AnalysisContext context,
+    out IParserResult? parsingResult)
 {
     context = null!;
+    parsingResult = null;
 
     try
     {
+        // -------------------------------------------------
+        // 1️⃣ Seleção de Parser
+        // -------------------------------------------------
         bool enableParserSelector = true;
 
-        IParserCodigo parser = RefactorScope.CLI.ParserSelector
-            .ResolveParser(enableParserSelector);
+        IParserCodigo parser =
+            RefactorScope.CLI.ParserSelector.ResolveParser(
+                config.Parser,
+                enableParserSelector);
 
-        var model = TerminalRenderer.WithSpinner(
-            "Parsing código...",
-            () => parser.Parse(config.RootPath, config.Include, config.Exclude));
 
-        TerminalRenderer.Success("Parsing concluído");
+        // -------------------------------------------------
+        // 2️⃣ Execução do Parsing
+        // -------------------------------------------------
+        IParserResult result =
+            TerminalRenderer.WithSpinner(
+                "Parsing código...",
+                () => parser.Parse(
+                    config.RootPath,
+                    config.Include,
+                    config.Exclude));
 
-        // 🔎 SANITY CHECK — apenas detecta duplicatas
-        WarnDuplicateTipos(model.Tipos);
+        parsingResult = result;
 
-        context = new AnalysisContext(config, model);
+
+        // -------------------------------------------------
+        // 3️⃣ Validação de Falha Crítica
+        // -------------------------------------------------
+        if (result.Status == ParseStatus.Failed || result.Model == null)
+        {
+            Console.WriteLine(
+                $"[ERRO CRÍTICO NO PARSING]: O parser {result.ParserName} falhou.");
+
+            if (result.Error != null)
+                CrashLogger.Log(result.Error, "PARSING_CRITICAL");
+
+            return false;
+        }
+
+
+        // -------------------------------------------------
+        // 4️⃣ Observabilidade da Estratégia
+        // -------------------------------------------------
+        TerminalRenderer.ParsingStrategy(result.ParserName);
+
+        if (result.UsedFallback)
+        {
+            TerminalRenderer.ParsingFallback("Primary", "Fallback");
+        }
+
+        if (result.ParserName.Contains("Merge"))
+        {
+            TerminalRenderer.ParsingMerge();
+        }
+
+
+        // -------------------------------------------------
+        // 5️⃣ Parsing Summary
+        // -------------------------------------------------
+        TerminalRenderer.ParsingSummary(
+            result.Model.Arquivos.Count,
+            result.Model.Tipos.Count,
+            result.Model.Referencias.Count,
+            result.Stats?.ExecutionTime ?? TimeSpan.Zero
+        );
+
+
+        // -------------------------------------------------
+        // 6️⃣ Confirmação de Execução
+        // -------------------------------------------------
+        TerminalRenderer.Success(
+            $"Parsing concluído em {result.Stats?.ExecutionTime.TotalMilliseconds:F0}ms usando {result.ParserName}"
+        );
+
+
+        // -------------------------------------------------
+        // 7️⃣ Avisos heurísticos
+        // -------------------------------------------------
+        if (result.UsedFallback)
+        {
+            TerminalRenderer.Warn(
+                "Atenção: O parser primário falhou. O resultado foi garantido pelo fallback.");
+        }
+        else if (result.Status == ParseStatus.PlausibilityWarning)
+        {
+            TerminalRenderer.Warn(
+                $"Aviso: O modelo extraído apresentou anomalias heurísticas. Confiança: {result.Confidence:P0}");
+        }
+
+
+        // -------------------------------------------------
+        // 8️⃣ Sanity Check de Tipos
+        // -------------------------------------------------
+        WarnDuplicateTipos(result.Model.Tipos);
+
+
+        // -------------------------------------------------
+        // 9️⃣ Construção do Contexto
+        // -------------------------------------------------
+        context = new AnalysisContext(config, result.Model);
+
         return true;
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[ERRO NO PARSING]: {ex.Message}");
-        CrashLogger.Log(ex, "PARSING");
+        Console.WriteLine(
+            $"[ERRO NÃO TRATADO NO PARSING]: {ex.Message}");
+
+        CrashLogger.Log(ex, "PARSING_UNHANDLED");
+
         return false;
     }
 }
@@ -213,12 +343,16 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
 static bool TryRunExport(
     RefactorScopeConfig config,
     AnalysisContext context,
-    ConsolidatedReport report)
+    ConsolidatedReport report,
+    IParserResult? parsingResult)
 {
     try
     {
-        TerminalRenderer.Step("Gerando dumps e datasets...");
+        TerminalRenderer.Step("Gerando dumps, datasets e dashboards...");
 
+        // -------------------------------------------------
+        // 1️⃣ Dataset Builders
+        // -------------------------------------------------
         var datasetBuilders = new List<IAnalyticalDatasetBuilder>
         {
             new GlobalTypesDatasetBuilder(),
@@ -231,6 +365,10 @@ static bool TryRunExport(
             new StructuralTrendDatasetBuilder()
         };
 
+
+        // -------------------------------------------------
+        // 2️⃣ Exporters estruturais
+        // -------------------------------------------------
         var exporters = new List<IExporter>
         {
             new DumpAnaliseExporter(),
@@ -241,25 +379,50 @@ static bool TryRunExport(
             new HtmlDashboardExporter()
         };
 
+
+        // -------------------------------------------------
+        // 3️⃣ Execução da estratégia de dump
+        // -------------------------------------------------
         var strategy = DumpStrategyResolver.Resolve(config);
 
         strategy.Execute(context, report, exporters);
 
+
+        // -------------------------------------------------
+        // 4️⃣ Relatórios principais
+        // -------------------------------------------------
         GenerateMarkdownReport(report, config.OutputPath);
+
         GenerateStructuralDashboard(report, config.OutputPath);
 
-        TerminalRenderer.Success("Dumps e relatório gerados com sucesso");
+
+        // -------------------------------------------------
+        // 5️⃣ Parsing Dashboard
+        // -------------------------------------------------
+        if (parsingResult != null)
+        {
+            var parsingDashboard = new ParsingDashboardExporter();
+
+            parsingDashboard.Export(
+                parsingResult,
+                config.OutputPath);
+        }
+
+
+        TerminalRenderer.Success(
+            "Dumps, datasets e dashboards gerados com sucesso");
 
         return true;
     }
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NA EXPORTAÇÃO]: {ex.Message}");
+
         CrashLogger.Log(ex, "EXPORT");
+
         return false;
     }
 }
-
 
 // =====================================================
 // 🔹 BLOCO 5 — RELATÓRIOS

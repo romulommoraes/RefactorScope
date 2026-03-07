@@ -1,4 +1,7 @@
 ﻿using RefactorScope.Core.Context;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Statistics.Engines;
+
 
 namespace RefactorScope.Core.Configuration
 {
@@ -56,5 +59,7 @@ namespace RefactorScope.Core.Configuration
         public FitnessGateConfig FitnessGates { get; set; } = new();
 
         public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();
+
+        public StatisticsConfig Statistics { get; set; } = new();
     }
 }

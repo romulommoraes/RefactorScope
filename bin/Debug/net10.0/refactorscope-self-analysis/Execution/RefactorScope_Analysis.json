@@ -18,8 +18,8 @@
     "FitnessGateCsvExporter",
     "HtmlDashboardExporter",
     "MarkdownReportExporter",
+    "ParsingDashboardExporter",
     "ProjectStructureExporter",
-    "StructuralInventoryExporter",
     "ConfigLoader",
     "ConfigValidator",
     "CrashLogger",
@@ -41,7 +41,8 @@
     "ConsolidatedReportExtensions",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
-    "DumpStrategyResolver"
+    "DumpStrategyResolver",
+    "ValidationEngine"
   ],
   "PatternSimilarity": [
     "ArchitecturalClassificationAnalyzer",
@@ -61,8 +62,8 @@
     "FitnessGateCsvExporter",
     "HtmlDashboardExporter",
     "MarkdownReportExporter",
+    "ParsingDashboardExporter",
     "ProjectStructureExporter",
-    "StructuralInventoryExporter",
     "ConfigLoader",
     "ConfigValidator",
     "CrashLogger",
@@ -87,7 +88,8 @@
     "DumpStrategyResolver"
   ],
   "Unresolved": [
-    "FakeZombieService"
+    "FakeZombieService",
+    "ValidationEngine"
   ],
   "IsolatedCoreTypes": [
     "ArchitecturalClassificationAnalyzer",

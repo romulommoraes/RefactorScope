@@ -23,7 +23,13 @@
       "Name": "IParserCodigo",
       "Namespace": "RefactorScope.Core.Abstractions",
       "File": "RefactorScope\\Core\\Abstractions\\IParserCodigo.cs",
-      "Code": "using RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Abstractions\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Define o contrato para parsers de c\u00F3digo.\r\n    /// Converte c\u00F3digo fonte em Modelo Estrutural agn\u00F3stico.\r\n    /// \r\n    /// O parser recebe instru\u00E7\u00F5es de escopo (include/exclude),\r\n    /// mas n\u00E3o conhece a configura\u00E7\u00E3o diretamente,\r\n    /// preservando o isolamento arquitetural.\r\n    /// \u003C/summary\u003E\r\n    public interface IParserCodigo\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser (ex: CSharpRegex, Roslyn).\r\n        /// \u003C/summary\u003E\r\n        string Name { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Constr\u00F3i o modelo estrutural a partir do caminho alvo.\r\n        /// \r\n        /// Include e Exclude permitem restringir o escopo de an\u00E1lise\r\n        /// sem acoplar o parser ao sistema de configura\u00E7\u00E3o.\r\n        /// \u003C/summary\u003E\r\n        /// \u003Cparam name=\u0022rootPath\u0022\u003ERaiz do escopo de an\u00E1lise.\u003C/param\u003E\r\n        /// \u003Cparam name=\u0022include\u0022\u003EPastas ou caminhos a incluir.\u003C/param\u003E\r\n        /// \u003Cparam name=\u0022exclude\u0022\u003EPastas ou caminhos a excluir.\u003C/param\u003E\r\n        /// \u003Creturns\u003EModelo estrutural gerado.\u003C/returns\u003E\r\n        ModeloEstrutural Parse(\r\n            string rootPath,\r\n            IEnumerable\u003Cstring\u003E? include = null,\r\n            IEnumerable\u003Cstring\u003E? exclude = null\r\n        );\r\n    }\r\n}"
+      "Code": "using System.Collections.Generic;\r\n\r\nnamespace RefactorScope.Core.Abstractions;\r\n\r\n/// \u003Csummary\u003E\r\n/// Contrato base para todos os parsers de c\u00F3digo do sistema.\r\n/// \u003C/summary\u003E\r\npublic interface IParserCodigo\r\n{\r\n    /// \u003Csummary\u003ENome identificador do parser.\u003C/summary\u003E\r\n    string Name { get; }\r\n\r\n    /// \u003Csummary\u003E\r\n    /// Executa a an\u00E1lise do c\u00F3digo e retorna um envelope observ\u00E1vel contendo o modelo e as m\u00E9tricas.\r\n    /// \u003C/summary\u003E\r\n    /// \u003Cparam name=\u0022rootPath\u0022\u003ECaminho raiz do projeto a ser analisado.\u003C/param\u003E\r\n    /// \u003Cparam name=\u0022include\u0022\u003EFiltros de inclus\u00E3o de arquivos (opcional).\u003C/param\u003E\r\n    /// \u003Cparam name=\u0022exclude\u0022\u003EFiltros de exclus\u00E3o de arquivos (opcional).\u003C/param\u003E\r\n    /// \u003Creturns\u003EUm IParserResult contendo o estado, m\u00E9tricas e o modelo gerado.\u003C/returns\u003E\r\n    IParserResult Parse(\r\n        string rootPath,\r\n        IEnumerable\u003Cstring\u003E? include = null,\r\n        IEnumerable\u003Cstring\u003E? exclude = null);\r\n}"
+    },
+    {
+      "Name": "IParserResult",
+      "Namespace": "RefactorScope.Core.Abstractions",
+      "File": "RefactorScope\\Core\\Abstractions\\IParserResult.cs",
+      "Code": "using RefactorScope.Core.Model;\nusing RefactorScope.Core.Parsing;\nusing System;\n\nnamespace RefactorScope.Core.Abstractions;\n\n/// \u003Csummary\u003E\n/// Contrato global para o envelope de retorno de qualquer parser do sistema.\n/// \n/// O objetivo deste contrato \u00E9 fornecer observabilidade completa do processo\n/// de parsing, incluindo m\u00E9tricas de execu\u00E7\u00E3o, confian\u00E7a do resultado e\n/// tratamento seguro de falhas.\n/// \u003C/summary\u003E\npublic interface IParserResult\n{\n    /// \u003Csummary\u003E\n    /// Nome identificador do parser que gerou este resultado.\n    /// Exemplo: \u0022CSharpRegex\u0022, \u0022CSharpTextual\u0022, \u0022HybridParser\u0022.\n    /// \u003C/summary\u003E\n    string ParserName { get; }\n\n    /// \u003Csummary\u003E\n    /// Status final da opera\u00E7\u00E3o de parsing.\n    /// \u003C/summary\u003E\n    ParseStatus Status { get; }\n\n    /// \u003Csummary\u003E\n    /// \u00CDndice de confian\u00E7a da extra\u00E7\u00E3o estrutural (0.0 a 1.0).\n    /// \u003C/summary\u003E\n    double Confidence { get; }\n\n    /// \u003Csummary\u003E\n    /// Indica se o modelo gerado passou na avalia\u00E7\u00E3o heur\u00EDstica de plausibilidade.\n    /// \u003C/summary\u003E\n    bool IsPlausible { get; }\n\n    /// \u003Csummary\u003E\n    /// Modelo estrutural extra\u00EDdo do c\u00F3digo.\n    /// Pode ser null em caso de falha total do parser.\n    /// \u003C/summary\u003E\n    ModeloEstrutural? Model { get; }\n\n    /// \u003Csummary\u003E\n    /// Estat\u00EDsticas de execu\u00E7\u00E3o do parser.\n    /// Cont\u00E9m m\u00E9tricas como tempo de execu\u00E7\u00E3o e mem\u00F3ria estimada.\n    /// \u003C/summary\u003E\n    ParserExecutionStats? Stats { get; }\n\n    /// \u003Csummary\u003E\n    /// Exce\u00E7\u00E3o capturada caso o parser tenha falhado com erro cr\u00EDtico.\n    /// \u003C/summary\u003E\n    Exception? Error { get; }\r\n\r\n    bool UsedFallback { get; }\n}"
     },
     {
       "Name": "DumpStrategyConfig",
@@ -65,7 +71,13 @@
       "Name": "RefactorScopeConfig",
       "Namespace": "RefactorScope.Core.Configuration",
       "File": "RefactorScope\\Core\\Configuration\\RefactorScopeConfig.cs",
-      "Code": "using RefactorScope.Core.Context;\r\n\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a configura\u00E7\u00E3o de execu\u00E7\u00E3o do RefactorScope.\r\n    /// Define escopo de an\u00E1lise, analisadores ativos e exporta\u00E7\u00F5es.\r\n    /// \u003C/summary\u003E\r\n    public class RefactorScopeConfig\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho raiz do escopo de an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public string RootPath { get; set; } = string.Empty;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a incluir na an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Include { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a excluir da an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exclude { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Define quais analisadores est\u00E3o habilitados.\r\n        /// A chave deve corresponder ao Name do analisador.\r\n        /// \u003C/summary\u003E\r\n        public Dictionary\u003Cstring, bool\u003E Analyzers { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser a ser utilizado.\r\n        /// \u003C/summary\u003E\r\n        public string Parser { get; set; } = \u0022CSharpRegex\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Exportadores ativos.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exporters { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Camadas / Modulos do sistema e suas regras de depend\u00EAncia.\r\n        /// \u003C/summary\u003E\r\n\r\n        public Dictionary\u003Cstring, LayerRuleConfig\u003E? LayerRules { get; set; }\r\n\r\n        public string OutputPath { get; set; } = \u0022refactorscope-output\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Config do strategy para exporta\u00E7\u00E3o do dump otimizado para IA.\r\n        /// \u003C/summary\u003E\r\n\r\n        public DumpStrategyConfig DumpStrategy { get; set; } = new();\r\n\r\n        public FitnessGateConfig FitnessGates { get; set; } = new();\r\n\r\n        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();\r\n    }\r\n}"
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Statistics.Models;\r\nusing RefactorScope.Statistics.Engines;\r\n\r\n\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a configura\u00E7\u00E3o de execu\u00E7\u00E3o do RefactorScope.\r\n    /// Define escopo de an\u00E1lise, analisadores ativos e exporta\u00E7\u00F5es.\r\n    /// \u003C/summary\u003E\r\n    public class RefactorScopeConfig\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho raiz do escopo de an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public string RootPath { get; set; } = string.Empty;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a incluir na an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Include { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a excluir da an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exclude { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Define quais analisadores est\u00E3o habilitados.\r\n        /// A chave deve corresponder ao Name do analisador.\r\n        /// \u003C/summary\u003E\r\n        public Dictionary\u003Cstring, bool\u003E Analyzers { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser a ser utilizado.\r\n        /// \u003C/summary\u003E\r\n        public string Parser { get; set; } = \u0022CSharpRegex\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Exportadores ativos.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exporters { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Camadas / Modulos do sistema e suas regras de depend\u00EAncia.\r\n        /// \u003C/summary\u003E\r\n\r\n        public Dictionary\u003Cstring, LayerRuleConfig\u003E? LayerRules { get; set; }\r\n\r\n        public string OutputPath { get; set; } = \u0022refactorscope-output\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Config do strategy para exporta\u00E7\u00E3o do dump otimizado para IA.\r\n        /// \u003C/summary\u003E\r\n\r\n        public DumpStrategyConfig DumpStrategy { get; set; } = new();\r\n\r\n        public FitnessGateConfig FitnessGates { get; set; } = new();\r\n\r\n        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();\r\n\r\n        public StatisticsConfig Statistics { get; set; } = new();\r\n    }\r\n}"
+    },
+    {
+      "Name": "StatisticsConfig",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\StatisticsConfig.cs",
+      "Code": "// ==========================================\r\n// ARQUIVO: StatisticsConfig.cs\r\n// CAMINHO: RefactorScope\\Core\\Configuration\\StatisticsConfig.cs\r\n// ==========================================\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Configura\u00E7\u00E3o para o m\u00F3dulo de valida\u00E7\u00E3o estat\u00EDstica (Self-Validation Layer).\r\n    /// \u003C/summary\u003E\r\n    public class StatisticsConfig\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Define se a camada estat\u00EDstica observacional deve ser executada.\r\n        /// Padr\u00E3o: true.\r\n        /// \u003C/summary\u003E\r\n        public bool Enabled { get; set; } = true;\r\n    }\r\n}"
     },
     {
       "Name": "StructuralCandidateDetectionOptions",
@@ -177,7 +189,7 @@
     },
     {
       "Name": "HygieneReport",
-      "Namespace": "RefactorScope.Core.Model",
+      "Namespace": "vs",
       "File": "RefactorScope\\Core\\Model\\HygieneReport.cs",
       "Code": "/// \u003Csummary\u003E\r\n/// Aggregated architectural hygiene report for a project.\r\n///\r\n/// The SmellIndex (0\u2013100) is a composite indicator representing the\r\n/// overall structural health of the codebase.\r\n///\r\n/// Current calculation uses only metrics intrinsic to HygieneReport,\r\n/// ensuring the model remains self-contained and independent from\r\n/// external analyzers.\r\n///\r\n/// Current components:\r\n/// \r\n/// \u2022 Dead Code Ratio (Unreferenced classes)\r\n/// \u2022 Namespace Drift Ratio (namespace vs folder misalignment)\r\n/// \u2022 Global Namespace Ratio (legacy structural usage)\r\n/// \u2022 Core Isolation Ratio (core architectural boundary integrity)\r\n/// \u2022 Structural Entropy (distribution disorder across modules)\r\n///\r\n/// These signals represent fundamental structural hygiene indicators.\r\n/// The index is intentionally lightweight to provide a stable baseline\r\n/// metric for the RefactorScope MVP.\r\n///\r\n/// Future extensions may incorporate additional architectural signals\r\n/// without breaking the current implementation. Examples include:\r\n///\r\n/// \u2022 Coupling metrics (fan-out / instability)\r\n/// \u2022 SOLID design alerts\r\n/// \u2022 Pattern similarity clusters\r\n/// \u2022 Unresolved structural candidates\r\n/// \u2022 Architectural tension (distance from Main Sequence)\r\n///\r\n/// These can be integrated as additional weighted components,\r\n/// preserving backward compatibility with the existing index.\r\n///\r\n/// Example future formula:\r\n///\r\n/// SmellIndex =\r\n///     BaseHygieneScore\r\n///     \u002B CouplingScore\r\n///     \u002B DesignQualityScore\r\n///\r\n/// Where BaseHygieneScore corresponds to the current calculation.\r\n/// \u003C/summary\u003E\r\n\r\n\r\nnamespace RefactorScope.Core.Model\r\n{\r\n    public sealed class HygieneReport\r\n    {\r\n        public int TotalClasses { get; }\r\n\r\n        public int UnreferencedCount { get; }\r\n\r\n        public int GlobalNamespaceCount { get; }\r\n\r\n        public int NamespaceDriftCount { get; }\r\n\r\n        public int IsolatedCoreCount { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Shannon entropy normalizada (0\u20131)\r\n        /// \u003C/summary\u003E\r\n        public double StructuralEntropy { get; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// \u00CDndice composto (0\u2013100)\r\n        /// \u003C/summary\u003E\r\n        public double SmellIndex { get; }\r\n\r\n        public string HygieneLevel =\u003E\r\n            SmellIndex switch\r\n            {\r\n                \u003C= 20 =\u003E \u0022\uD83D\uDFE2 Healthy\u0022,\r\n                \u003C= 40 =\u003E \u0022\uD83D\uDFE1 Stable\u0022,\r\n                \u003C= 60 =\u003E \u0022\uD83D\uDFE0 Degrading\u0022,\r\n                \u003C= 80 =\u003E \u0022\uD83D\uDD34 Critical\u0022,\r\n                _ =\u003E \u0022\uD83D\uDD25 Structural Risk\u0022\r\n            };\r\n\r\n        public HygieneReport(\r\n            int totalClasses,\r\n            int unreferencedCount,\r\n            int globalNamespaceCount,\r\n            int namespaceDriftCount,\r\n            int isolatedCoreCount,\r\n            double structuralEntropy)\r\n        {\r\n            TotalClasses = totalClasses;\r\n            UnreferencedCount = unreferencedCount;\r\n            GlobalNamespaceCount = globalNamespaceCount;\r\n            NamespaceDriftCount = namespaceDriftCount;\r\n            IsolatedCoreCount = isolatedCoreCount;\r\n\r\n            StructuralEntropy = Math.Clamp(structuralEntropy, 0, 1);\r\n\r\n            double deadRatio =\r\n                totalClasses == 0 ? 0 :\r\n                unreferencedCount / (double)totalClasses;\r\n\r\n            double driftRatio =\r\n                totalClasses == 0 ? 0 :\r\n                namespaceDriftCount / (double)totalClasses;\r\n\r\n            double globalRatio =\r\n                totalClasses == 0 ? 0 :\r\n                globalNamespaceCount / (double)totalClasses;\r\n\r\n            double isolationRatio =\r\n                totalClasses == 0 ? 0 :\r\n                isolatedCoreCount / (double)totalClasses;\r\n\r\n            SmellIndex = Math.Clamp(\r\n\r\n                (deadRatio * 35) \u002B\r\n                (driftRatio * 20) \u002B\r\n                (globalRatio * 10) \u002B\r\n                (isolationRatio * 15) \u002B\r\n                (StructuralEntropy * 20),\r\n\r\n                0,\r\n                100\r\n            );\r\n        }\r\n    }\r\n}"
     },
@@ -206,19 +218,13 @@
       "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\n\r\nnamespace RefactorScope.Core.Orchestration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Respons\u00E1vel por executar os analisadores habilitados\r\n    /// e consolidar seus resultados.\r\n    ///\r\n    /// \uD83D\uDD12 Importante:\r\n    /// O threshold probabil\u00EDstico de zombie passa a fazer parte\r\n    /// do estado consolidado da an\u00E1lise (ConsolidatedReport).\r\n    /// \u003C/summary\u003E\r\n    public class AnalysisOrchestrator\r\n    {\r\n        private readonly IEnumerable\u003CIAnalyzer\u003E _analyzers;\r\n\r\n        public AnalysisOrchestrator(IEnumerable\u003CIAnalyzer\u003E analyzers)\r\n        {\r\n            _analyzers = analyzers;\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Executa os analisadores ativos conforme configura\u00E7\u00E3o.\r\n        /// Atualiza o contexto incrementalmente para suportar\r\n        /// depend\u00EAncia entre analisadores (two-pass model).\r\n        /// \u003C/summary\u003E\r\n        public ConsolidatedReport Execute(AnalysisContext context)\r\n        {\r\n            var activeResults = new List\u003CIAnalysisResult\u003E();\r\n\r\n            foreach (var analyzer in _analyzers)\r\n            {\r\n                if (!IsAnalyzerEnabled(context, analyzer))\r\n                    continue;\r\n\r\n                var result = analyzer.Analyze(context);\r\n\r\n                // \uD83D\uDD25 Atualiza contexto incrementalmente\r\n                activeResults.Add(result);\r\n                context.Results = activeResults;\r\n            }\r\n\r\n            // \uD83D\uDD25 Threshold oficial da an\u00E1lise\r\n            var zombieThreshold =\r\n                context.Config.StructuralCandidateDetection.MinUnresolvedProbabilityThreshold;\r\n\r\n            return new ConsolidatedReport(\r\n                activeResults,\r\n                context.ExecutionTime,\r\n                context.Config.RootPath,\r\n                zombieThreshold\r\n            );\r\n        }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Verifica se o analisador est\u00E1 habilitado na configura\u00E7\u00E3o.\r\n        /// Se n\u00E3o houver configura\u00E7\u00E3o expl\u00EDcita, assume habilitado.\r\n        /// \u003C/summary\u003E\r\n        private bool IsAnalyzerEnabled(\r\n            AnalysisContext context,\r\n            IAnalyzer analyzer)\r\n        {\r\n            if (context.Config.Analyzers == null)\r\n                return true;\r\n\r\n            if (!context.Config.Analyzers\r\n                .TryGetValue(analyzer.Name, out var enabled))\r\n                return true;\r\n\r\n            return enabled;\r\n        }\r\n    }\r\n}"
     },
     {
+      "Name": "PlausibilityEvaluator",
+      "Namespace": "RefactorScope.Core.Parsing",
+      "File": "RefactorScope\\Core\\Parsing\\PlausibilityEvaluator.cs",
+      "Code": "using RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Core.Model;\r\nusing System.Linq;\r\n\r\nnamespace RefactorScope.Core.Parsing;\r\n\r\n/// \u003Csummary\u003E\r\n/// Avaliador heur\u00EDstico projetado para detectar falhas silenciosas em parsers \r\n/// (ex: retornar um modelo v\u00E1lido, por\u00E9m vazio ou estatisticamente improv\u00E1vel).\r\n/// \u003C/summary\u003E\r\npublic static class PlausibilityEvaluator\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Avalia se o modelo estrutural gerado faz sentido considerando o volume de c\u00F3digo processado.\r\n    /// \u003C/summary\u003E\r\n    /// \u003Cparam name=\u0022model\u0022\u003EO modelo estrutural a ser avaliado.\u003C/param\u003E\r\n    /// \u003Creturns\u003ETrue se o modelo \u00E9 plaus\u00EDvel; False se parece ser lixo silencioso.\u003C/returns\u003E\r\n    public static bool Evaluate(ModeloEstrutural model)\r\n    {\r\n        if (model == null || model.Arquivos == null || !model.Arquivos.Any())\r\n            return false;\r\n\r\n        int totalLines = 0;\r\n        int totalTipos = model.Tipos?.Count ?? 0;\r\n\r\n        foreach (var arquivo in model.Arquivos)\r\n        {\r\n            if (!string.IsNullOrEmpty(arquivo.SourceCode))\r\n            {\r\n                // Otimiza\u00E7\u00E3o: Evita aloca\u00E7\u00F5es massivas na LOH (Large Object Heap) que ocorreriam com .Split(\u0027\\n\u0027)\r\n                totalLines \u002B= arquivo.SourceCode.Count(c =\u003E c == \u0027\\n\u0027) \u002B 1;\r\n            }\r\n        }\r\n\r\n        // Heur\u00EDstica de exemplo: Se tem mais de 500 linhas de c\u00F3digo e 0 tipos extra\u00EDdos, \r\n        // o parser (provavelmente regex) engoliu o c\u00F3digo sem quebrar, mas falhou na extra\u00E7\u00E3o.\r\n        if (totalLines \u003E 500 \u0026\u0026 totalTipos == 0)\r\n        {\r\n            return false;\r\n        }\r\n\r\n        return true;\r\n    }\r\n}"
+    },
+    {
       "Name": "DesignPatternSignatureLibrary",
-      "Namespace": "RefactorScope.Core.Patterns",
-      "File": "RefactorScope\\Core\\Patterns\\PatternSignatureLibrary.cs",
-      "Code": "using RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Patterns\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Biblioteca central de reconhecimento de padr\u00F5es estruturais\r\n    /// baseada em assinaturas nominais e heur\u00EDsticas leves.\r\n    ///\r\n    /// Objetivo:\r\n    /// reduzir falsos positivos de \u0022Unresolved\u0022\r\n    /// identificando padr\u00F5es arquiteturais comuns.\r\n    /// \u003C/summary\u003E\r\n    public static class DesignPatternSignatureLibrary\r\n    {\r\n        private static readonly IReadOnlyList\u003CPatternRule\u003E _rules =\r\n            new List\u003CPatternRule\u003E\r\n            {\r\n                // ==============================\r\n                // DESIGN PATTERNS\r\n                // ==============================\r\n\r\n                new(\u0022Strategy\u0022, t =\u003E t.Name.EndsWith(\u0022Strategy\u0022)),\r\n                new(\u0022Factory\u0022, t =\u003E t.Name.EndsWith(\u0022Factory\u0022)),\r\n                new(\u0022Builder\u0022, t =\u003E t.Name.EndsWith(\u0022Builder\u0022)),\r\n                new(\u0022Adapter\u0022, t =\u003E t.Name.EndsWith(\u0022Adapter\u0022)),\r\n\r\n                // ==============================\r\n                // ARQUITETURA / INFRA\r\n                // ==============================\r\n\r\n                new(\u0022Repository\u0022, t =\u003E t.Name.EndsWith(\u0022Repository\u0022)),\r\n                new(\u0022Service\u0022, t =\u003E t.Name.EndsWith(\u0022Service\u0022)),\r\n                new(\u0022Provider\u0022, t =\u003E t.Name.EndsWith(\u0022Provider\u0022)),\r\n                new(\u0022Manager\u0022, t =\u003E t.Name.EndsWith(\u0022Manager\u0022)),\r\n                new(\u0022Dispatcher\u0022, t =\u003E t.Name.EndsWith(\u0022Dispatcher\u0022)),\r\n                new(\u0022Handler\u0022, t =\u003E t.Name.EndsWith(\u0022Handler\u0022)),\r\n                new(\u0022Mapper\u0022, t =\u003E t.Name.EndsWith(\u0022Mapper\u0022)),\r\n                new(\u0022Resolver\u0022, t =\u003E t.Name.EndsWith(\u0022Resolver\u0022)),\r\n                new(\u0022Registry\u0022, t =\u003E t.Name.EndsWith(\u0022Registry\u0022)),\r\n                new(\u0022ServiceLocator\u0022, t =\u003E t.Name.EndsWith(\u0022ServiceLocator\u0022)),\r\n\r\n                // ==============================\r\n                // FRAMEWORK / TOOLING\r\n                // ==============================\r\n\r\n                new(\u0022Analyzer\u0022, t =\u003E t.Name.EndsWith(\u0022Analyzer\u0022)),\r\n                new(\u0022Exporter\u0022, t =\u003E t.Name.EndsWith(\u0022Exporter\u0022)),\r\n                new(\u0022Controller\u0022, t =\u003E t.Name.EndsWith(\u0022Controller\u0022)),\r\n                new(\u0022Middleware\u0022, t =\u003E t.Name.EndsWith(\u0022Middleware\u0022)),\r\n                new(\u0022Rule\u0022, t =\u003E t.Name.EndsWith(\u0022Rule\u0022)),\r\n\r\n                // ==============================\r\n                // INFRASTRUCTURE UTILITIES\r\n                // ==============================\r\n\r\n                new(\u0022Validator\u0022, t =\u003E t.Name.EndsWith(\u0022Validator\u0022)),\r\n                new(\u0022Selector\u0022, t =\u003E t.Name.EndsWith(\u0022Selector\u0022)),\r\n                new(\u0022Loader\u0022, t =\u003E t.Name.EndsWith(\u0022Loader\u0022)),\r\n                new(\u0022Consolidator\u0022, t =\u003E t.Name.EndsWith(\u0022Consolidator\u0022)),\r\n                new(\u0022Renderer\u0022, t =\u003E t.Name.EndsWith(\u0022Renderer\u0022)),\r\n\r\n                // ==============================\r\n                // DATA STRUCTURES\r\n                // ==============================\r\n\r\n                new(\u0022DTO\u0022, t =\u003E t.Name.EndsWith(\u0022Dto\u0022)),\r\n                new(\u0022Converter\u0022, t =\u003E t.Name.EndsWith(\u0022Converter\u0022)),\r\n                new(\u0022Options\u0022, t =\u003E t.Name.EndsWith(\u0022Options\u0022)),\r\n                new(\u0022Configuration\u0022, t =\u003E t.Name.EndsWith(\u0022Configuration\u0022)),\r\n\r\n                // ==============================\r\n                // MESSAGING / CQRS\r\n                // ==============================\r\n\r\n                new(\u0022Event\u0022, t =\u003E t.Name.EndsWith(\u0022Event\u0022)),\r\n                new(\u0022Command\u0022, t =\u003E t.Name.EndsWith(\u0022Command\u0022)),\r\n                new(\u0022Query\u0022, t =\u003E t.Name.EndsWith(\u0022Query\u0022)),\r\n                new(\u0022Request\u0022, t =\u003E t.Name.EndsWith(\u0022Request\u0022)),\r\n                new(\u0022Response\u0022, t =\u003E t.Name.EndsWith(\u0022Response\u0022)),\r\n\r\n                // ==============================\r\n                // ERROR TYPES\r\n                // ==============================\r\n\r\n                new(\u0022Exception\u0022, t =\u003E t.Name.EndsWith(\u0022Exception\u0022))\r\n            };\r\n\r\n\r\n        public static PatternSignatureResult Evaluate(TipoInfo tipo)\r\n        {\r\n            // 1\uFE0F\u20E3 Nome\r\n            foreach (var rule in _rules)\r\n            {\r\n                if (rule.Match(tipo))\r\n                    return PatternSignatureResult.Match(rule.PatternName);\r\n            }\r\n\r\n            // 2\uFE0F\u20E3 Heur\u00EDsticas estruturais\r\n            var heuristic = StructuralHeuristicLibrary.Evaluate(tipo);\r\n            if (heuristic.IsMatch)\r\n                return heuristic;\r\n\r\n            return PatternSignatureResult.None();\r\n        }\r\n    }\r\n\r\n    internal sealed record PatternRule(\r\n        string PatternName,\r\n        Func\u003CTipoInfo, bool\u003E Match\r\n    );\r\n\r\n    public sealed record PatternSignatureResult(\r\n        bool IsMatch,\r\n        string? PatternName)\r\n    {\r\n        public static PatternSignatureResult Match(string name)\r\n            =\u003E new(true, name);\r\n\r\n        public static PatternSignatureResult None()\r\n            =\u003E new(false, null);\r\n    }\r\n}"
-    },
-    {
-      "Name": "PatternRule",
-      "Namespace": "RefactorScope.Core.Patterns",
-      "File": "RefactorScope\\Core\\Patterns\\PatternSignatureLibrary.cs",
-      "Code": "using RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Patterns\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Biblioteca central de reconhecimento de padr\u00F5es estruturais\r\n    /// baseada em assinaturas nominais e heur\u00EDsticas leves.\r\n    ///\r\n    /// Objetivo:\r\n    /// reduzir falsos positivos de \u0022Unresolved\u0022\r\n    /// identificando padr\u00F5es arquiteturais comuns.\r\n    /// \u003C/summary\u003E\r\n    public static class DesignPatternSignatureLibrary\r\n    {\r\n        private static readonly IReadOnlyList\u003CPatternRule\u003E _rules =\r\n            new List\u003CPatternRule\u003E\r\n            {\r\n                // ==============================\r\n                // DESIGN PATTERNS\r\n                // ==============================\r\n\r\n                new(\u0022Strategy\u0022, t =\u003E t.Name.EndsWith(\u0022Strategy\u0022)),\r\n                new(\u0022Factory\u0022, t =\u003E t.Name.EndsWith(\u0022Factory\u0022)),\r\n                new(\u0022Builder\u0022, t =\u003E t.Name.EndsWith(\u0022Builder\u0022)),\r\n                new(\u0022Adapter\u0022, t =\u003E t.Name.EndsWith(\u0022Adapter\u0022)),\r\n\r\n                // ==============================\r\n                // ARQUITETURA / INFRA\r\n                // ==============================\r\n\r\n                new(\u0022Repository\u0022, t =\u003E t.Name.EndsWith(\u0022Repository\u0022)),\r\n                new(\u0022Service\u0022, t =\u003E t.Name.EndsWith(\u0022Service\u0022)),\r\n                new(\u0022Provider\u0022, t =\u003E t.Name.EndsWith(\u0022Provider\u0022)),\r\n                new(\u0022Manager\u0022, t =\u003E t.Name.EndsWith(\u0022Manager\u0022)),\r\n                new(\u0022Dispatcher\u0022, t =\u003E t.Name.EndsWith(\u0022Dispatcher\u0022)),\r\n                new(\u0022Handler\u0022, t =\u003E t.Name.EndsWith(\u0022Handler\u0022)),\r\n                new(\u0022Mapper\u0022, t =\u003E t.Name.EndsWith(\u0022Mapper\u0022)),\r\n                new(\u0022Resolver\u0022, t =\u003E t.Name.EndsWith(\u0022Resolver\u0022)),\r\n                new(\u0022Registry\u0022, t =\u003E t.Name.EndsWith(\u0022Registry\u0022)),\r\n                new(\u0022ServiceLocator\u0022, t =\u003E t.Name.EndsWith(\u0022ServiceLocator\u0022)),\r\n\r\n                // ==============================\r\n                // FRAMEWORK / TOOLING\r\n                // ==============================\r\n\r\n                new(\u0022Analyzer\u0022, t =\u003E t.Name.EndsWith(\u0022Analyzer\u0022)),\r\n                new(\u0022Exporter\u0022, t =\u003E t.Name.EndsWith(\u0022Exporter\u0022)),\r\n                new(\u0022Controller\u0022, t =\u003E t.Name.EndsWith(\u0022Controller\u0022)),\r\n                new(\u0022Middleware\u0022, t =\u003E t.Name.EndsWith(\u0022Middleware\u0022)),\r\n                new(\u0022Rule\u0022, t =\u003E t.Name.EndsWith(\u0022Rule\u0022)),\r\n\r\n                // ==============================\r\n                // INFRASTRUCTURE UTILITIES\r\n                // ==============================\r\n\r\n                new(\u0022Validator\u0022, t =\u003E t.Name.EndsWith(\u0022Validator\u0022)),\r\n                new(\u0022Selector\u0022, t =\u003E t.Name.EndsWith(\u0022Selector\u0022)),\r\n                new(\u0022Loader\u0022, t =\u003E t.Name.EndsWith(\u0022Loader\u0022)),\r\n                new(\u0022Consolidator\u0022, t =\u003E t.Name.EndsWith(\u0022Consolidator\u0022)),\r\n                new(\u0022Renderer\u0022, t =\u003E t.Name.EndsWith(\u0022Renderer\u0022)),\r\n\r\n                // ==============================\r\n                // DATA STRUCTURES\r\n                // ==============================\r\n\r\n                new(\u0022DTO\u0022, t =\u003E t.Name.EndsWith(\u0022Dto\u0022)),\r\n                new(\u0022Converter\u0022, t =\u003E t.Name.EndsWith(\u0022Converter\u0022)),\r\n                new(\u0022Options\u0022, t =\u003E t.Name.EndsWith(\u0022Options\u0022)),\r\n                new(\u0022Configuration\u0022, t =\u003E t.Name.EndsWith(\u0022Configuration\u0022)),\r\n\r\n                // ==============================\r\n                // MESSAGING / CQRS\r\n                // ==============================\r\n\r\n                new(\u0022Event\u0022, t =\u003E t.Name.EndsWith(\u0022Event\u0022)),\r\n                new(\u0022Command\u0022, t =\u003E t.Name.EndsWith(\u0022Command\u0022)),\r\n                new(\u0022Query\u0022, t =\u003E t.Name.EndsWith(\u0022Query\u0022)),\r\n                new(\u0022Request\u0022, t =\u003E t.Name.EndsWith(\u0022Request\u0022)),\r\n                new(\u0022Response\u0022, t =\u003E t.Name.EndsWith(\u0022Response\u0022)),\r\n\r\n                // ==============================\r\n                // ERROR TYPES\r\n                // ==============================\r\n\r\n                new(\u0022Exception\u0022, t =\u003E t.Name.EndsWith(\u0022Exception\u0022))\r\n            };\r\n\r\n\r\n        public static PatternSignatureResult Evaluate(TipoInfo tipo)\r\n        {\r\n            // 1\uFE0F\u20E3 Nome\r\n            foreach (var rule in _rules)\r\n            {\r\n                if (rule.Match(tipo))\r\n                    return PatternSignatureResult.Match(rule.PatternName);\r\n            }\r\n\r\n            // 2\uFE0F\u20E3 Heur\u00EDsticas estruturais\r\n            var heuristic = StructuralHeuristicLibrary.Evaluate(tipo);\r\n            if (heuristic.IsMatch)\r\n                return heuristic;\r\n\r\n            return PatternSignatureResult.None();\r\n        }\r\n    }\r\n\r\n    internal sealed record PatternRule(\r\n        string PatternName,\r\n        Func\u003CTipoInfo, bool\u003E Match\r\n    );\r\n\r\n    public sealed record PatternSignatureResult(\r\n        bool IsMatch,\r\n        string? PatternName)\r\n    {\r\n        public static PatternSignatureResult Match(string name)\r\n            =\u003E new(true, name);\r\n\r\n        public static PatternSignatureResult None()\r\n            =\u003E new(false, null);\r\n    }\r\n}"
-    },
-    {
-      "Name": "PatternSignatureResult",
       "Namespace": "RefactorScope.Core.Patterns",
       "File": "RefactorScope\\Core\\Patterns\\PatternSignatureLibrary.cs",
       "Code": "using RefactorScope.Core.Model;\r\n\r\nnamespace RefactorScope.Core.Patterns\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Biblioteca central de reconhecimento de padr\u00F5es estruturais\r\n    /// baseada em assinaturas nominais e heur\u00EDsticas leves.\r\n    ///\r\n    /// Objetivo:\r\n    /// reduzir falsos positivos de \u0022Unresolved\u0022\r\n    /// identificando padr\u00F5es arquiteturais comuns.\r\n    /// \u003C/summary\u003E\r\n    public static class DesignPatternSignatureLibrary\r\n    {\r\n        private static readonly IReadOnlyList\u003CPatternRule\u003E _rules =\r\n            new List\u003CPatternRule\u003E\r\n            {\r\n                // ==============================\r\n                // DESIGN PATTERNS\r\n                // ==============================\r\n\r\n                new(\u0022Strategy\u0022, t =\u003E t.Name.EndsWith(\u0022Strategy\u0022)),\r\n                new(\u0022Factory\u0022, t =\u003E t.Name.EndsWith(\u0022Factory\u0022)),\r\n                new(\u0022Builder\u0022, t =\u003E t.Name.EndsWith(\u0022Builder\u0022)),\r\n                new(\u0022Adapter\u0022, t =\u003E t.Name.EndsWith(\u0022Adapter\u0022)),\r\n\r\n                // ==============================\r\n                // ARQUITETURA / INFRA\r\n                // ==============================\r\n\r\n                new(\u0022Repository\u0022, t =\u003E t.Name.EndsWith(\u0022Repository\u0022)),\r\n                new(\u0022Service\u0022, t =\u003E t.Name.EndsWith(\u0022Service\u0022)),\r\n                new(\u0022Provider\u0022, t =\u003E t.Name.EndsWith(\u0022Provider\u0022)),\r\n                new(\u0022Manager\u0022, t =\u003E t.Name.EndsWith(\u0022Manager\u0022)),\r\n                new(\u0022Dispatcher\u0022, t =\u003E t.Name.EndsWith(\u0022Dispatcher\u0022)),\r\n                new(\u0022Handler\u0022, t =\u003E t.Name.EndsWith(\u0022Handler\u0022)),\r\n                new(\u0022Mapper\u0022, t =\u003E t.Name.EndsWith(\u0022Mapper\u0022)),\r\n                new(\u0022Resolver\u0022, t =\u003E t.Name.EndsWith(\u0022Resolver\u0022)),\r\n                new(\u0022Registry\u0022, t =\u003E t.Name.EndsWith(\u0022Registry\u0022)),\r\n                new(\u0022ServiceLocator\u0022, t =\u003E t.Name.EndsWith(\u0022ServiceLocator\u0022)),\r\n\r\n                // ==============================\r\n                // FRAMEWORK / TOOLING\r\n                // ==============================\r\n\r\n                new(\u0022Analyzer\u0022, t =\u003E t.Name.EndsWith(\u0022Analyzer\u0022)),\r\n                new(\u0022Exporter\u0022, t =\u003E t.Name.EndsWith(\u0022Exporter\u0022)),\r\n                new(\u0022Controller\u0022, t =\u003E t.Name.EndsWith(\u0022Controller\u0022)),\r\n                new(\u0022Middleware\u0022, t =\u003E t.Name.EndsWith(\u0022Middleware\u0022)),\r\n                new(\u0022Rule\u0022, t =\u003E t.Name.EndsWith(\u0022Rule\u0022)),\r\n\r\n                // ==============================\r\n                // INFRASTRUCTURE UTILITIES\r\n                // ==============================\r\n\r\n                new(\u0022Validator\u0022, t =\u003E t.Name.EndsWith(\u0022Validator\u0022)),\r\n                new(\u0022Selector\u0022, t =\u003E t.Name.EndsWith(\u0022Selector\u0022)),\r\n                new(\u0022Loader\u0022, t =\u003E t.Name.EndsWith(\u0022Loader\u0022)),\r\n                new(\u0022Consolidator\u0022, t =\u003E t.Name.EndsWith(\u0022Consolidator\u0022)),\r\n                new(\u0022Renderer\u0022, t =\u003E t.Name.EndsWith(\u0022Renderer\u0022)),\r\n\r\n                // ==============================\r\n                // DATA STRUCTURES\r\n                // ==============================\r\n\r\n                new(\u0022DTO\u0022, t =\u003E t.Name.EndsWith(\u0022Dto\u0022)),\r\n                new(\u0022Converter\u0022, t =\u003E t.Name.EndsWith(\u0022Converter\u0022)),\r\n                new(\u0022Options\u0022, t =\u003E t.Name.EndsWith(\u0022Options\u0022)),\r\n                new(\u0022Configuration\u0022, t =\u003E t.Name.EndsWith(\u0022Configuration\u0022)),\r\n\r\n                // ==============================\r\n                // MESSAGING / CQRS\r\n                // ==============================\r\n\r\n                new(\u0022Event\u0022, t =\u003E t.Name.EndsWith(\u0022Event\u0022)),\r\n                new(\u0022Command\u0022, t =\u003E t.Name.EndsWith(\u0022Command\u0022)),\r\n                new(\u0022Query\u0022, t =\u003E t.Name.EndsWith(\u0022Query\u0022)),\r\n                new(\u0022Request\u0022, t =\u003E t.Name.EndsWith(\u0022Request\u0022)),\r\n                new(\u0022Response\u0022, t =\u003E t.Name.EndsWith(\u0022Response\u0022)),\r\n\r\n                // ==============================\r\n                // ERROR TYPES\r\n                // ==============================\r\n\r\n                new(\u0022Exception\u0022, t =\u003E t.Name.EndsWith(\u0022Exception\u0022))\r\n            };\r\n\r\n\r\n        public static PatternSignatureResult Evaluate(TipoInfo tipo)\r\n        {\r\n            // 1\uFE0F\u20E3 Nome\r\n            foreach (var rule in _rules)\r\n            {\r\n                if (rule.Match(tipo))\r\n                    return PatternSignatureResult.Match(rule.PatternName);\r\n            }\r\n\r\n            // 2\uFE0F\u20E3 Heur\u00EDsticas estruturais\r\n            var heuristic = StructuralHeuristicLibrary.Evaluate(tipo);\r\n            if (heuristic.IsMatch)\r\n                return heuristic;\r\n\r\n            return PatternSignatureResult.None();\r\n        }\r\n    }\r\n\r\n    internal sealed record PatternRule(\r\n        string PatternName,\r\n        Func\u003CTipoInfo, bool\u003E Match\r\n    );\r\n\r\n    public sealed record PatternSignatureResult(\r\n        bool IsMatch,\r\n        string? PatternName)\r\n    {\r\n        public static PatternSignatureResult Match(string name)\r\n            =\u003E new(true, name);\r\n\r\n        public static PatternSignatureResult None()\r\n            =\u003E new(false, null);\r\n    }\r\n}"
@@ -367,10 +373,20 @@
     },
     {
       "FromType": "IParserCodigo",
+      "ToType": "IParserResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "IParserResult",
       "ToType": "ModeloEstrutural",
       "Kind": 0
     },
     {
+      "FromType": "IParserResult",
+      "ToType": "HybridParser",
+      "Kind": 0
+    },
+    {
       "FromType": "FitnessGateConfig",
       "ToType": "DeadCodeGateConfig",
       "Kind": 0
@@ -383,6 +399,51 @@
     {
       "FromType": "FitnessGateConfig",
       "ToType": "CoreIsolationGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "DeadCodeGateConfig",
+      "ToType": "FitnessGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "DeadCodeGateConfig",
+      "ToType": "CouplingGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "DeadCodeGateConfig",
+      "ToType": "CoreIsolationGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingGateConfig",
+      "ToType": "FitnessGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingGateConfig",
+      "ToType": "DeadCodeGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CouplingGateConfig",
+      "ToType": "CoreIsolationGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationGateConfig",
+      "ToType": "FitnessGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationGateConfig",
+      "ToType": "DeadCodeGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "CoreIsolationGateConfig",
+      "ToType": "CouplingGateConfig",
       "Kind": 0
     },
     {
@@ -392,18 +453,8 @@
     },
     {
       "FromType": "FitnessGateConfigResolver",
-      "ToType": "FitnessGateConfig",
-      "Kind": 1
-    },
-    {
-      "FromType": "FitnessGateConfigResolver",
       "ToType": "DeadCodeGateConfig",
       "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateConfigResolver",
-      "ToType": "DeadCodeGateConfig",
-      "Kind": 1
     },
     {
       "FromType": "FitnessGateConfigResolver",
@@ -412,22 +463,7 @@
     },
     {
       "FromType": "FitnessGateConfigResolver",
-      "ToType": "CouplingGateConfig",
-      "Kind": 1
-    },
-    {
-      "FromType": "FitnessGateConfigResolver",
       "ToType": "CoreIsolationGateConfig",
-      "Kind": 0
-    },
-    {
-      "FromType": "FitnessGateConfigResolver",
-      "ToType": "CoreIsolationGateConfig",
-      "Kind": 1
-    },
-    {
-      "FromType": "RefactorScopeConfig",
-      "ToType": "LayerRuleConfig",
       "Kind": 0
     },
     {
@@ -442,7 +478,22 @@
     },
     {
       "FromType": "RefactorScopeConfig",
+      "ToType": "StatisticsConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "RefactorScopeConfig",
       "ToType": "StructuralCandidateDetectionOptions",
+      "Kind": 0
+    },
+    {
+      "FromType": "RefactorScopeConfig",
+      "ToType": "LayerRuleConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "AnalysisContext",
+      "ToType": "IAnalysisResult",
       "Kind": 0
     },
     {
@@ -456,12 +507,7 @@
       "Kind": 0
     },
     {
-      "FromType": "AnalysisContext",
-      "ToType": "IAnalysisResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "AnalysisContext",
+      "FromType": "AnalysisContextExtensions",
       "ToType": "IAnalysisResult",
       "Kind": 0
     },
@@ -471,8 +517,8 @@
       "Kind": 0
     },
     {
-      "FromType": "AnalysisContextExtensions",
-      "ToType": "IAnalysisResult",
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "AnalysisContext",
       "Kind": 0
     },
     {
@@ -482,7 +528,7 @@
     },
     {
       "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "AnalysisContext",
+      "ToType": "ArchitecturalClassificationResult",
       "Kind": 0
     },
     {
@@ -492,18 +538,8 @@
     },
     {
       "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "StructuralCandidateResult",
+      "ToType": "CoreIsolationResult",
       "Kind": 0
-    },
-    {
-      "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 3
     },
     {
       "FromType": "ArchitecturalHealthDatasetBuilder",
@@ -512,22 +548,12 @@
     },
     {
       "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "CoreIsolationResult",
+      "ToType": "StructuralCandidateResult",
       "Kind": 0
     },
     {
-      "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "ArchitecturalHealthDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "AnalysisContext",
       "Kind": 0
     },
     {
@@ -537,7 +563,7 @@
     },
     {
       "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "AnalysisContext",
+      "ToType": "ArchitecturalClassificationResult",
       "Kind": 0
     },
     {
@@ -547,8 +573,8 @@
     },
     {
       "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "CouplingResult",
-      "Kind": 3
+      "ToType": "CoreIsolationResult",
+      "Kind": 0
     },
     {
       "FromType": "GlobalMetricsDatasetBuilder",
@@ -558,36 +584,6 @@
     {
       "FromType": "GlobalMetricsDatasetBuilder",
       "ToType": "EntryPointHeuristicResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "GlobalMetricsDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalTypesDatasetBuilder",
-      "ToType": "IAnalyticalDatasetBuilder",
       "Kind": 0
     },
     {
@@ -597,37 +593,27 @@
     },
     {
       "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder",
+      "Kind": 0
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
       "ToType": "ConsolidatedReport",
       "Kind": 0
     },
     {
       "FromType": "GlobalTypesDatasetBuilder",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "GlobalTypesDatasetBuilder",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalTypesDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "GlobalTypesDatasetBuilder",
       "ToType": "CoreIsolationResult",
       "Kind": 0
     },
     {
       "FromType": "GlobalTypesDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "GlobalTypesDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
+      "ToType": "EntryPointHeuristicResult",
       "Kind": 0
     },
     {
@@ -642,12 +628,12 @@
     },
     {
       "FromType": "ModuleContributionDatasetBuilder",
-      "ToType": "IAnalyticalDatasetBuilder",
+      "ToType": "AnalysisContext",
       "Kind": 0
     },
     {
       "FromType": "ModuleContributionDatasetBuilder",
-      "ToType": "AnalysisContext",
+      "ToType": "IAnalyticalDatasetBuilder",
       "Kind": 0
     },
     {
@@ -658,16 +644,6 @@
     {
       "FromType": "ModuleContributionDatasetBuilder",
       "ToType": "CouplingResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "ModuleContributionDatasetBuilder",
-      "ToType": "CouplingResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "IAnalyticalDatasetBuilder",
       "Kind": 0
     },
     {
@@ -677,23 +653,23 @@
     },
     {
       "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
       "ToType": "ConsolidatedReport",
       "Kind": 0
     },
     {
       "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "StructuralCandidateResult",
+      "ToType": "CoreIsolationResult",
       "Kind": 0
-    },
-    {
-      "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 3
     },
     {
       "FromType": "StructuralOverviewDatasetBuilder",
@@ -702,27 +678,7 @@
     },
     {
       "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralOverviewDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "IAnalyticalDatasetBuilder",
+      "ToType": "StructuralCandidateResult",
       "Kind": 0
     },
     {
@@ -732,33 +688,28 @@
     },
     {
       "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
       "ToType": "ConsolidatedReport",
       "Kind": 0
     },
     {
       "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "CouplingResult",
-      "Kind": 3
+      "ToType": "CoreIsolationResult",
+      "Kind": 0
     },
     {
       "FromType": "StructuralScoreDatasetBuilder",
       "ToType": "CouplingResult",
       "Kind": 0
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "EntryPointHeuristicResult",
-      "Kind": 3
     },
     {
       "FromType": "StructuralScoreDatasetBuilder",
@@ -767,27 +718,7 @@
     },
     {
       "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralScoreDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralTrendDatasetBuilder",
-      "ToType": "IAnalyticalDatasetBuilder",
+      "ToType": "StructuralCandidateResult",
       "Kind": 0
     },
     {
@@ -797,42 +728,27 @@
     },
     {
       "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "IAnalyticalDatasetBuilder",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 0
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
       "ToType": "ConsolidatedReport",
       "Kind": 0
     },
     {
       "FromType": "StructuralTrendDatasetBuilder",
-      "ToType": "CouplingResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralTrendDatasetBuilder",
-      "ToType": "CouplingResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralTrendDatasetBuilder",
-      "ToType": "CoreIsolationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralTrendDatasetBuilder",
       "ToType": "CoreIsolationResult",
       "Kind": 0
     },
     {
       "FromType": "StructuralTrendDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "StructuralTrendDatasetBuilder",
-      "ToType": "ArchitecturalClassificationResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "TypeContributionDatasetBuilder",
-      "ToType": "IAnalyticalDatasetBuilder",
+      "ToType": "CouplingResult",
       "Kind": 0
     },
     {
@@ -842,13 +758,13 @@
     },
     {
       "FromType": "TypeContributionDatasetBuilder",
-      "ToType": "ConsolidatedReport",
+      "ToType": "IAnalyticalDatasetBuilder",
       "Kind": 0
     },
     {
       "FromType": "TypeContributionDatasetBuilder",
-      "ToType": "CouplingResult",
-      "Kind": 3
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
     },
     {
       "FromType": "TypeContributionDatasetBuilder",
@@ -863,17 +779,7 @@
     {
       "FromType": "FitnessGateEvaluator",
       "ToType": "FitnessGateResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "FitnessGateEvaluator",
-      "ToType": "FitnessGateResult",
       "Kind": 0
-    },
-    {
-      "FromType": "ArquivoInfo",
-      "ToType": "TipoInfo",
-      "Kind": 3
     },
     {
       "FromType": "ArquivoInfo",
@@ -883,37 +789,17 @@
     {
       "FromType": "ModeloEstrutural",
       "ToType": "ArquivoInfo",
-      "Kind": 3
-    },
-    {
-      "FromType": "ModeloEstrutural",
-      "ToType": "ArquivoInfo",
       "Kind": 0
     },
     {
       "FromType": "ModeloEstrutural",
-      "ToType": "TipoInfo",
-      "Kind": 3
+      "ToType": "ReferenciaInfo",
+      "Kind": 0
     },
     {
       "FromType": "ModeloEstrutural",
       "ToType": "TipoInfo",
       "Kind": 0
-    },
-    {
-      "FromType": "ModeloEstrutural",
-      "ToType": "ReferenciaInfo",
-      "Kind": 3
-    },
-    {
-      "FromType": "ModeloEstrutural",
-      "ToType": "ReferenciaInfo",
-      "Kind": 0
-    },
-    {
-      "FromType": "TipoInfo",
-      "ToType": "ReferenciaInfo",
-      "Kind": 3
     },
     {
       "FromType": "TipoInfo",
@@ -922,17 +808,12 @@
     },
     {
       "FromType": "AnalysisOrchestrator",
-      "ToType": "IAnalyzer",
-      "Kind": 3
-    },
-    {
-      "FromType": "AnalysisOrchestrator",
-      "ToType": "IAnalyzer",
+      "ToType": "IAnalysisResult",
       "Kind": 0
     },
     {
       "FromType": "AnalysisOrchestrator",
-      "ToType": "ConsolidatedReport",
+      "ToType": "IAnalyzer",
       "Kind": 0
     },
     {
@@ -942,48 +823,18 @@
     },
     {
       "FromType": "AnalysisOrchestrator",
-      "ToType": "IAnalysisResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "AnalysisOrchestrator",
-      "ToType": "IAnalysisResult",
-      "Kind": 0
-    },
-    {
-      "FromType": "AnalysisOrchestrator",
       "ToType": "ConsolidatedReport",
-      "Kind": 1
-    },
-    {
-      "FromType": "DesignPatternSignatureLibrary",
-      "ToType": "PatternRule",
-      "Kind": 3
-    },
-    {
-      "FromType": "DesignPatternSignatureLibrary",
-      "ToType": "PatternRule",
       "Kind": 0
     },
     {
-      "FromType": "DesignPatternSignatureLibrary",
-      "ToType": "PatternSignatureResult",
+      "FromType": "PlausibilityEvaluator",
+      "ToType": "ModeloEstrutural",
       "Kind": 0
     },
     {
       "FromType": "DesignPatternSignatureLibrary",
       "ToType": "TipoInfo",
       "Kind": 0
-    },
-    {
-      "FromType": "DesignPatternSignatureLibrary",
-      "ToType": "PatternSignatureResult",
-      "Kind": 2
-    },
-    {
-      "FromType": "DesignPatternSignatureLibrary",
-      "ToType": "StructuralHeuristicLibrary",
-      "Kind": 2
     },
     {
       "FromType": "DesignPatternSignatureLibrary",
@@ -991,24 +842,9 @@
       "Kind": 0
     },
     {
-      "FromType": "PatternRule",
-      "ToType": "TipoInfo",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralHeuristicLibrary",
-      "ToType": "PatternSignatureResult",
-      "Kind": 0
-    },
-    {
       "FromType": "StructuralHeuristicLibrary",
       "ToType": "TipoInfo",
       "Kind": 0
-    },
-    {
-      "FromType": "StructuralHeuristicLibrary",
-      "ToType": "PatternSignatureResult",
-      "Kind": 2
     },
     {
       "FromType": "ReportConsolidator",
@@ -1023,37 +859,17 @@
     {
       "FromType": "ArchitecturalClassificationResult",
       "ToType": "ArchitecturalClassificationItem",
-      "Kind": 3
-    },
-    {
-      "FromType": "ArchitecturalClassificationResult",
-      "ToType": "ArchitecturalClassificationItem",
       "Kind": 0
     },
     {
       "FromType": "ConsolidatedReport",
       "ToType": "IAnalysisResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "ConsolidatedReport",
-      "ToType": "IAnalysisResult",
       "Kind": 0
     },
     {
       "FromType": "ConsolidatedReport",
-      "ToType": "StructuralCandidateResult",
-      "Kind": 3
-    },
-    {
-      "FromType": "ConsolidatedReport",
-      "ToType": "StructuralCandidateResult",
+      "ToType": "StructuralCandidateAnalysisBreakdown",
       "Kind": 0
-    },
-    {
-      "FromType": "ConsolidatedReport",
-      "ToType": "StructuralCandidateProbabilityResult",
-      "Kind": 3
     },
     {
       "FromType": "ConsolidatedReport",
@@ -1062,17 +878,7 @@
     },
     {
       "FromType": "ConsolidatedReport",
-      "ToType": "StructuralCandidateAnalysisBreakdown",
-      "Kind": 0
-    },
-    {
-      "FromType": "ConsolidatedReport",
-      "ToType": "StructuralCandidateAnalysisBreakdown",
-      "Kind": 1
-    },
-    {
-      "FromType": "ConsolidatedReportExtensions",
-      "ToType": "StructuralCandidateAnalysisBreakdown",
+      "ToType": "StructuralCandidateResult",
       "Kind": 0
     },
     {
@@ -1083,7 +889,7 @@
     {
       "FromType": "ConsolidatedReportExtensions",
       "ToType": "StructuralCandidateAnalysisBreakdown",
-      "Kind": 1
+      "Kind": 0
     },
     {
       "FromType": "CoreIsolationResult",
@@ -1108,22 +914,12 @@
     {
       "FromType": "FitnessGateResult",
       "ToType": "FitnessGateStatus",
-      "Kind": 3
-    },
-    {
-      "FromType": "FitnessGateResult",
-      "ToType": "FitnessGateStatus",
       "Kind": 0
     },
     {
       "FromType": "ImplicitCouplingResult",
       "ToType": "IAnalysisResult",
       "Kind": 0
-    },
-    {
-      "FromType": "ImplicitCouplingResult",
-      "ToType": "CouplingSuspicion",
-      "Kind": 3
     },
     {
       "FromType": "ImplicitCouplingResult",
@@ -1137,28 +933,18 @@
     },
     {
       "FromType": "StructuralBreakdownExtensions",
-      "ToType": "StructuralCandidateAnalysisBreakdown",
-      "Kind": 0
-    },
-    {
-      "FromType": "StructuralBreakdownExtensions",
       "ToType": "ConsolidatedReport",
       "Kind": 0
     },
     {
       "FromType": "StructuralBreakdownExtensions",
       "ToType": "StructuralCandidateAnalysisBreakdown",
-      "Kind": 1
+      "Kind": 0
     },
     {
       "FromType": "StructuralCandidateProbabilityResult",
       "ToType": "IAnalysisResult",
       "Kind": 0
-    },
-    {
-      "FromType": "StructuralCandidateProbabilityResult",
-      "ToType": "StructuralCandidateProbabilityItem",
-      "Kind": 3
     },
     {
       "FromType": "StructuralCandidateProbabilityResult",
@@ -1173,12 +959,262 @@
     {
       "FromType": "ScopeFilteredFileDiscovery",
       "ToType": "ScopeRuleSet",
-      "Kind": 6
+      "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "FitnessGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "DeadCodeGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "CouplingGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "CoreIsolationGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalysisContext",
+      "ToType": "IAnalysisResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "StructuralCandidateResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "CoreIsolationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArchitecturalHealthDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "CouplingResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "CoreIsolationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalMetricsDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "CoreIsolationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalTypesDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModuleContributionDatasetBuilder",
+      "ToType": "CouplingResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "StructuralCandidateResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "CoreIsolationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralOverviewDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "CouplingResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "StructuralCandidateResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "EntryPointHeuristicResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "CoreIsolationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralScoreDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "CouplingResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "CoreIsolationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralTrendDatasetBuilder",
+      "ToType": "ArchitecturalClassificationResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "TypeContributionDatasetBuilder",
+      "ToType": "CouplingResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "FitnessGateEvaluator",
+      "ToType": "FitnessGateResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArquivoInfo",
+      "ToType": "TipoInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "ArquivoInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "TipoInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "ReferenciaInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "TipoInfo",
+      "ToType": "ReferenciaInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "IAnalyzer",
+      "Kind": 3
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "IAnalysisResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "AnalysisOrchestrator",
+      "ToType": "ConsolidatedReport",
+      "Kind": 1
+    },
+    {
+      "FromType": "DesignPatternSignatureLibrary",
+      "ToType": "StructuralHeuristicLibrary",
+      "Kind": 2
+    },
+    {
+      "FromType": "ArchitecturalClassificationResult",
+      "ToType": "ArchitecturalClassificationItem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "IAnalysisResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "StructuralCandidateResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "StructuralCandidateProbabilityResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ConsolidatedReport",
+      "ToType": "StructuralCandidateAnalysisBreakdown",
+      "Kind": 1
+    },
+    {
+      "FromType": "ConsolidatedReportExtensions",
+      "ToType": "StructuralCandidateAnalysisBreakdown",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateResult",
+      "ToType": "FitnessGateStatus",
+      "Kind": 3
+    },
+    {
+      "FromType": "ImplicitCouplingResult",
+      "ToType": "CouplingSuspicion",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralBreakdownExtensions",
+      "ToType": "StructuralCandidateAnalysisBreakdown",
+      "Kind": 1
+    },
+    {
+      "FromType": "StructuralCandidateProbabilityResult",
+      "ToType": "StructuralCandidateProbabilityItem",
+      "Kind": 3
     },
     {
       "FromType": "ScopeFilteredFileDiscovery",
       "ToType": "ScopeRuleSet",
-      "Kind": 0
+      "Kind": 6
     }
   ]
 }

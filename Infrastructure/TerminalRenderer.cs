@@ -94,7 +94,48 @@ namespace RefactorScope.Infrastructure
                 _ => "red"
             };
         }
+        // -------------------------------------------------
+        // Parsing Rendering
+        // -------------------------------------------------
 
+        public static void ParsingStrategy(string parserName)
+        {
+            AnsiConsole.MarkupLine(
+                $"[grey]Parser Strategy[/]: [bold cyan]{parserName}[/]");
+        }
+
+        public static void ParsingFallback(string fromParser, string toParser)
+        {
+            AnsiConsole.MarkupLine(
+                $"[yellow]Fallback[/]: {fromParser} → {toParser}");
+        }
+
+        public static void ParsingMerge()
+        {
+            AnsiConsole.MarkupLine(
+                $"[magenta]Hybrid Merge[/]: combinando estrutura + dependências");
+        }
+
+        public static void ParsingSummary(
+            int files,
+            int types,
+            int references,
+            TimeSpan execution)
+        {
+            AnsiConsole.WriteLine();
+
+            var table = new Table()
+                .Border(TableBorder.Rounded)
+                .AddColumn("[bold]Parsing Metric[/]")
+                .AddColumn("[bold]Value[/]");
+
+            table.AddRow("Files", files.ToString());
+            table.AddRow("Types", types.ToString());
+            table.AddRow("References", references.ToString());
+            table.AddRow("Execution", $"{execution.TotalMilliseconds:0} ms");
+
+            AnsiConsole.Write(table);
+        }
         public static T WithSpinner<T>(string message, Func<T> action)
         {
             return AnsiConsole.Status()

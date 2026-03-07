@@ -1,5 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Scope;
 
@@ -13,6 +19,7 @@ namespace RefactorScope.Parsers.CsharpParsers
     /// ✔ Valida identificador C# válido
     /// ✔ Evita capturar construções "record with"
     /// ✔ Mantém compatibilidade com modelo atual
+    /// ✔ Agora suporta telemetria, medição de tempo e avaliação de plausibilidade
     /// </summary>
     public class CSharpRegexParser : IParserCodigo
     {
@@ -21,11 +28,7 @@ namespace RefactorScope.Parsers.CsharpParsers
         private static readonly Regex NamespaceRegex =
             new(@"namespace\s+([\w\.]+)", RegexOptions.Compiled);
 
-        // 🔒 Exige que após o nome exista:
-        // espaço + {  OU
-        // espaço + :  OU
-        // espaço + where  OU
-        // espaço + < (genérico)
+        // 🔒 Exige que após o nome exista: espaço + { OU espaço + : OU espaço + where OU espaço + < (genérico)
         private static readonly Regex TypeRegex =
             new(@"\b(class|interface|record|struct)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:<|\{|:|where)",
                 RegexOptions.Compiled);
@@ -39,132 +42,162 @@ namespace RefactorScope.Parsers.CsharpParsers
                 "namespace", "class", "interface", "record", "struct"
             };
 
-        public ModeloEstrutural Parse(
+        public IParserResult Parse(
             string rootPath,
             IEnumerable<string>? include = null,
             IEnumerable<string>? exclude = null)
         {
-            var scope = new ScopeRuleSet(include, exclude);
+            var stopwatch = Stopwatch.StartNew();
+            long initialMemory = GC.GetTotalMemory(false);
 
-            var arquivos = new List<ArquivoInfo>();
-            var tipos = new List<TipoInfo>();
-
-            var csFiles = Directory
-                .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
-                .Where(f => scope.IsInScope(rootPath, f))
-                .ToList();
-
-            // =====================================================
-            // 1️⃣ Coletar tipos
-            // =====================================================
-            foreach (var file in csFiles)
+            try
             {
-                var source = File.ReadAllText(file);
-                var relativePath = Path.GetRelativePath(rootPath, file);
+                var scope = new ScopeRuleSet(include, exclude);
 
-                var nsMatch = NamespaceRegex.Match(source);
-                var ns = nsMatch.Success
-                    ? nsMatch.Groups[1].Value
-                    : "Global";
+                var arquivos = new List<ArquivoInfo>();
+                var tipos = new List<TipoInfo>();
 
-                var typeMatches = TypeRegex.Matches(source);
+                var csFiles = Directory
+                    .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
+                    .Where(f => scope.IsInScope(rootPath, f))
+                    .ToList();
 
-                foreach (Match match in typeMatches)
+                // =====================================================
+                // 1️⃣ Coletar tipos
+                // =====================================================
+                foreach (var file in csFiles)
                 {
-                    var kind = match.Groups[1].Value;
-                    var typeName = match.Groups[2].Value;
+                    var source = File.ReadAllText(file);
+                    var relativePath = Path.GetRelativePath(rootPath, file);
 
-                    // 🔒 Ignorar palavras reservadas
-                    if (ReservedKeywords.Contains(typeName))
-                        continue;
+                    var nsMatch = NamespaceRegex.Match(source);
+                    var ns = nsMatch.Success
+                        ? nsMatch.Groups[1].Value
+                        : "Global";
 
-                    // 🔒 Validar identificador C# válido
-                    if (!IsValidIdentifier(typeName))
-                        continue;
+                    var typeMatches = TypeRegex.Matches(source);
 
-                    tipos.Add(new TipoInfo(
-                        typeName,
-                        ns,
-                        kind,
-                        relativePath,
-                        new List<ReferenciaInfo>()
-                    ));
-                }
-            }
-
-            var tipoNames = tipos.Select(t => t.Name).ToHashSet();
-            var referencias = new List<ReferenciaInfo>();
-
-            // =====================================================
-            // 2️⃣ Detectar referências
-            // =====================================================
-            foreach (var file in csFiles)
-            {
-                var source = File.ReadAllText(file);
-                var relativePath = Path.GetRelativePath(rootPath, file);
-
-                foreach (var tipo in tipos.Where(t => t.DeclaredInFile == relativePath))
-                {
-                    foreach (var target in tipoNames)
+                    foreach (Match match in typeMatches)
                     {
-                        if (target == tipo.Name)
+                        var kind = match.Groups[1].Value;
+                        var typeName = match.Groups[2].Value;
+
+                        // 🔒 Ignorar palavras reservadas
+                        if (ReservedKeywords.Contains(typeName))
                             continue;
 
-                        if (Regex.IsMatch(source, $@"\b{target}\b"))
+                        // 🔒 Validar identificador C# válido
+                        if (!IsValidIdentifier(typeName))
+                            continue;
+
+                        tipos.Add(new TipoInfo(
+                            typeName,
+                            ns,
+                            kind,
+                            relativePath,
+                            new List<ReferenciaInfo>()
+                        ));
+                    }
+                }
+
+                var tipoNames = tipos.Select(t => t.Name).ToHashSet();
+                var referencias = new List<ReferenciaInfo>();
+
+                // =====================================================
+                // 2️⃣ Detectar referências
+                // =====================================================
+                foreach (var file in csFiles)
+                {
+                    var source = File.ReadAllText(file);
+                    var relativePath = Path.GetRelativePath(rootPath, file);
+
+                    foreach (var tipo in tipos.Where(t => t.DeclaredInFile == relativePath))
+                    {
+                        foreach (var target in tipoNames)
                         {
-                            referencias.Add(new ReferenciaInfo(tipo.Name, target));
+                            if (target == tipo.Name)
+                                continue;
+
+                            if (Regex.IsMatch(source, $@"\b{target}\b"))
+                            {
+                                referencias.Add(new ReferenciaInfo(tipo.Name, target));
+                            }
                         }
                     }
                 }
-            }
 
-            // =====================================================
-            // 3️⃣ Atualizar referências nos tipos
-            // =====================================================
-            foreach (var tipo in tipos)
-            {
-                var refs = referencias
-                    .Where(r => r.FromType == tipo.Name)
-                    .ToList();
+                // =====================================================
+                // 3️⃣ Atualizar referências nos tipos
+                // =====================================================
+                foreach (var tipo in tipos)
+                {
+                    var refs = referencias
+                        .Where(r => r.FromType == tipo.Name)
+                        .ToList();
 
-                typeof(TipoInfo)
-                    .GetField("<References>k__BackingField",
-                        System.Reflection.BindingFlags.Instance |
-                        System.Reflection.BindingFlags.NonPublic)
-                    ?.SetValue(tipo, refs);
-            }
+                    typeof(TipoInfo)
+                        .GetField("<References>k__BackingField",
+                            System.Reflection.BindingFlags.Instance |
+                            System.Reflection.BindingFlags.NonPublic)
+                        ?.SetValue(tipo, refs);
+                }
 
-            // =====================================================
-            // 4️⃣ Construir ArquivoInfo
-            // =====================================================
-            foreach (var file in csFiles)
-            {
-                var source = File.ReadAllText(file);
-                var relativePath = Path.GetRelativePath(rootPath, file);
+                // =====================================================
+                // 4️⃣ Construir ArquivoInfo
+                // =====================================================
+                foreach (var file in csFiles)
+                {
+                    var source = File.ReadAllText(file);
+                    var relativePath = Path.GetRelativePath(rootPath, file);
 
-                var nsMatch = NamespaceRegex.Match(source);
-                var ns = nsMatch.Success
-                    ? nsMatch.Groups[1].Value
-                    : "Global";
+                    var nsMatch = NamespaceRegex.Match(source);
+                    var ns = nsMatch.Success
+                        ? nsMatch.Groups[1].Value
+                        : "Global";
 
-                var tiposDoArquivo = tipos
-                    .Where(t => t.DeclaredInFile == relativePath)
-                    .ToList();
+                    var tiposDoArquivo = tipos
+                        .Where(t => t.DeclaredInFile == relativePath)
+                        .ToList();
 
-                arquivos.Add(new ArquivoInfo(
-                    relativePath,
-                    ns,
-                    source,
-                    tiposDoArquivo
-                ));
-            }
+                    arquivos.Add(new ArquivoInfo(
+                        relativePath,
+                        ns,
+                        source,
+                        tiposDoArquivo
+                    ));
+                }
 
-            return new ModeloEstrutural(
-                rootPath,
-                arquivos,
-                tipos,
-                referencias
+                var modeloGerado = new ModeloEstrutural(rootPath, arquivos, tipos, referencias);
+
+                // =====================================================
+                // 5️⃣ Finalização e Observabilidade
+                // =====================================================
+                stopwatch.Stop();
+                long memoryUsed = Math.Max(0, GC.GetTotalMemory(false) - initialMemory);
+                bool isPlausible = PlausibilityEvaluator.Evaluate(modeloGerado);
+                var status = isPlausible ? ParseStatus.Success : ParseStatus.PlausibilityWarning;
+
+                var stats = new ParserExecutionStats(stopwatch.Elapsed, memoryUsed, !isPlausible);
+
+                // Confiança base para Regex C#
+                double confidence = isPlausible ? 0.85 : 0.20;
+
+                return new ParserResult(
+                Status: status,
+                IsPlausible: isPlausible,
+                Confidence: confidence,
+                ParserName: Name,
+                Model: modeloGerado,
+                UsedFallback: false,
+                Stats: stats
             );
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                var stats = new ParserExecutionStats(stopwatch.Elapsed, 0, true);
+                return new ParserResult(ParseStatus.Failed, false, 0.0, Name, null, false, stats, ex);
+            }
         }
 
         // =====================================================

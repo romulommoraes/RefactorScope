@@ -134,30 +134,6 @@
       "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing System.Collections.Generic;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresEtograma\r\n{\r\n    public static class BibliotecaCentroidesEtograma\r\n    {\r\n        public static Dictionary\u003CArquetipoNarrativo, VetorEtograma3D\u003E Criar()\r\n        {\r\n            return new Dictionary\u003CArquetipoNarrativo, VetorEtograma3D\u003E\r\n            {\r\n                { ArquetipoNarrativo.HeroiClassico, new VetorEtograma3D{ EgoismoAltruismo=0.8, ImpulsoNorma=-0.4, ConcretoAbstrato=-0.2 } },\r\n                { ArquetipoNarrativo.Tirano, new VetorEtograma3D{ EgoismoAltruismo=-0.8, ImpulsoNorma=0.6, ConcretoAbstrato=0.3 } },\r\n                { ArquetipoNarrativo.Cuidador, new VetorEtograma3D{ EgoismoAltruismo=0.9, ImpulsoNorma=-0.2, ConcretoAbstrato=-0.4 } },\r\n                { ArquetipoNarrativo.Malandro, new VetorEtograma3D{ EgoismoAltruismo=-0.3, ImpulsoNorma=0.7, ConcretoAbstrato=-0.5 } },\r\n                { ArquetipoNarrativo.Cientista, new VetorEtograma3D{ EgoismoAltruismo=0.1, ImpulsoNorma=-0.6, ConcretoAbstrato=0.9 } },\r\n                { ArquetipoNarrativo.Mentor, new VetorEtograma3D{ EgoismoAltruismo=0.6, ImpulsoNorma=-0.8, ConcretoAbstrato=0.8 } },\r\n                { ArquetipoNarrativo.Predador, new VetorEtograma3D{ EgoismoAltruismo=-0.9, ImpulsoNorma=0.2, ConcretoAbstrato=0.1 } }\r\n            };\r\n        }\r\n    }\r\n}\r\n"
     },
     {
-      "Name": "BlocoNarrativoFingerprint",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\BlocoNarrativoFingerprint.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA UMA CENA CONTENDO APENAS OS DI\u00C1LOGOS\r\n    /// DO PERSONAGEM ANALISADO.\r\n    ///\r\n    /// A ordem das cenas \u00E9 preservada.\r\n    /// A ordem dos turnos dentro da cena \u00E9 preservada.\r\n    ///\r\n    /// N\u00C3O cont\u00E9m a\u00E7\u00F5es.\r\n    /// N\u00C3O cont\u00E9m falas de outros personagens.\r\n    /// \u003C/summary\u003E\r\n    public sealed record BlocoNarrativoFingerprint(\r\n        int NumeroCena,\r\n        IReadOnlyList\u003CTurnoDialogoFingerprint\u003E Turnos\r\n    );\r\n}"
-    },
-    {
-      "Name": "ContextoIdentidadeFingerprint",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ContextoIdentidadeFingerprint.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTEXTO COMPLETO DE IDENTIDADE PARA O DOM\u00CDNIO FINGERPRINT.\r\n    ///\r\n    /// Fornece dados suficientes para:\r\n    ///\r\n    /// 1) Classificadores Vetoriais (DERIVA-only)\r\n    /// 2) Classificadores H\u00EDbridos (DERIVA \u002B m\u00E9tricas f\u00EDsicas)\r\n    /// 3) Classificadores Narrativos Estruturais\r\n    /// 4) Classificadores Textuais baseados em tokens\r\n    ///\r\n    /// N\u00C3O depende de:\r\n    /// - PerfilPersonagem\r\n    /// - ResultadoBaseLinguistico\r\n    /// - EstatisticasRoteiro\r\n    /// - Fen\u00F3tipo\r\n    ///\r\n    /// \u00C9 um contrato puro de dom\u00EDnio Fingerprint.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ContextoIdentidadeFingerprint(\r\n\r\n        // ==========================\r\n        // DERIVA - VETORES PRIM\u00C1RIOS\r\n        // ==========================\r\n        double Dominancia,\r\n        double Ego,\r\n        double Racionalidade,\r\n        double Ironia,\r\n        double Volicao,\r\n        double Afeto,\r\n        double Erudicao,\r\n        double Sensorium,\r\n\r\n        // ==========================\r\n        // M\u00C9TRICAS F\u00CDSICAS\r\n        // ==========================\r\n        double BurstMedio,\r\n        int QuantidadeFalas,\r\n\r\n        // ==========================\r\n        // CONTEXTO NARRATIVO\r\n        // ==========================\r\n        ContextoNarrativoFingerprint Narrativa\r\n    );\r\n}"
-    },
-    {
-      "Name": "ContextoNarrativo",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ContextoNarrativo.cs",
-      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ContextoNarrativo(\r\n        ResultadoBaseLinguistico Base,\r\n        ExpressaoEnergetica Energia,\r\n        ExpressaoPsicodinamica Psico)\r\n    {\r\n        public bool IroniaAmarga =\u003E\r\n            Base.ScoreIronia \u003E 0.4 \u0026\u0026 Base.ScoreAfeto \u003C -0.1;\r\n\r\n        public bool ViolenciaFria =\u003E\r\n            Energia.NivelCrueldade \u003E 4 \u0026\u0026 Base.ScoreRacionalidade \u003E 0.5;\r\n\r\n        public bool SeducaoFatal =\u003E\r\n            Energia.NivelErotizacao \u003E 5 \u0026\u0026\r\n            Energia.NivelManipulacao \u003E 4;\r\n    }\r\n}\r\n"
-    },
-    {
-      "Name": "ContextoNarrativoFingerprint",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ContextoNarrativoFingerprint.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// CONTEXTO NARRATIVO ESTRUTURADO.\r\n    ///\r\n    /// Cont\u00E9m as cenas ordenadas temporalmente.\r\n    ///\r\n    /// \u00C9 utilizado por:\r\n    /// - Classificadores estruturais\r\n    /// - Classificadores de progress\u00E3o narrativa\r\n    /// - An\u00E1lises de densidade por cena\r\n    /// \u003C/summary\u003E\r\n    public sealed record ContextoNarrativoFingerprint(\r\n        IReadOnlyList\u003CBlocoNarrativoFingerprint\u003E CenasOrdenadas\r\n    );\r\n}"
-    },
-    {
       "Name": "EstadoIdentidade",
       "Namespace": "Scriptome.Fingerprint.Modelos",
       "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\EstadoIdentidade.cs",
@@ -170,64 +146,10 @@
       "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// O Boletim de Identidade do Personagem.\r\n    /// v4.2: Compat\u00EDvel com Psicodin\u00E2mica tridimensional de Inten\u00E7\u00E3o.\r\n    /// Mant\u00E9m compatibilidade com v4.1.\r\n    /// \u003C/summary\u003E\r\n    public class Etograma\r\n    {\r\n        public bool Processado { get; set; } = false;\r\n\r\n        // --- Camada 1: Psicologia Cl\u00E1ssica ---\r\n        public string ArquetipoJung { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- Camada 2: L\u00F3gica Propriet\u00E1ria ---\r\n        public string ArquetipoScriptome { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- Camada 3: Vetorial Matem\u00E1tica ---\r\n        public string ArquetipoDavm { get; set; } = \u0022Indefinido\u0022;\r\n        public string TipoMbti { get; set; } = \u0022XXXX\u0022;\r\n        public double ConflitoDavm { get; set; }\r\n\r\n        // --- Camada 4: F\u00EDsica Elemental ---\r\n        public string Termodinamica { get; set; } = \u0022Neutro\u0022;\r\n\r\n        // --- Camada 5: B\u00FAssola Moral ---\r\n        public string AlinhamentoMoral { get; set; } = \u0022Neutro\u0022;\r\n\r\n        // --- Camada 6: PSICAN\u00C1LISE LACANIANA (R.S.I.) ---\r\n\r\n        // Intensidade estrutural (0\u201310)\r\n        public double IntensidadeImaginario { get; set; }\r\n        public double IntensidadeSimbolico { get; set; }\r\n        public double IntensidadeReal { get; set; }\r\n\r\n        // Propor\u00E7\u00E3o estrutural (\u224810)\r\n        public double ScoreImaginario { get; set; }\r\n        public double ScoreSimbolico { get; set; }\r\n        public double ScoreReal { get; set; }\r\n\r\n        public string RegistroDominante { get; set; } = \u0022Indefinido\u0022;\r\n        public string EstruturaPsiquica { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- Camada 7: PSICODIN\u00C2MICA ---\r\n\r\n        // INTEN\u00C7\u00C3O TRIDIMENSIONAL (NOVO)\r\n        public double IntencaoCognitiva { get; set; }\r\n        public double IntencaoMotora { get; set; }\r\n        public double IntencaoEmocional { get; set; }\r\n\r\n        // COMPONENTES DA PERVERSIDADE\r\n        public double NivelCrueldade { get; set; }\r\n        public double NivelManipulacao { get; set; }\r\n        public double NivelErotizacao { get; set; }\r\n\r\n        public double IndicePerversidade { get; set; }\r\n        public string ClassificacaoPerversidade { get; set; } = \u0022Neutro\u0022;\r\n\r\n        // --- Camada 8: M\u00E9trica H\u00EDbrida e Intensidade ---\r\n        public double IntensidadeDiscursiva { get; set; }\r\n        public string RegimeDiscursivo { get; set; } = \u0022Indefinido\u0022;\r\n\r\n        // --- CAMADA 9: ENERGIA RELATIVA ---\r\n        public string ClassificacaoIntensidade { get; set; } = \u0022Indefinido\u0022;\r\n        public double IntensidadeZ { get; set; }\r\n\r\n        public string PerfilHibrido { get; set; }\r\n\r\n        // --- CAMADA 10: ARQU\u00C9TIPO NARRATIVO FINAL (NOVO) ---\r\n        // Armazena o veredito final do pipeline de classifica\u00E7\u00E3o\r\n        public ArquetipoNarrativo ArquetipoNarrativoFinal { get; set; } = ArquetipoNarrativo.Indefinido;\r\n    }\r\n}\r\n"
     },
     {
-      "Name": "ExpressaoIdentidade",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ExpressaoIdentidade.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// RESULTADO FINAL DA CLASSIFICA\u00C7\u00C3O DE IDENTIDADE.\r\n    ///\r\n    /// \u00C9 o \u00FAnico objeto que o Fingerprint devolve ao N\u00FAcleo.\r\n    /// \u00C9 imut\u00E1vel.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ExpressaoIdentidade(\r\n        string ArquetipoJung,\r\n        string ArquetipoNarrativo,\r\n        string ArquetipoTermico,\r\n        double IntensidadeDiscursiva,\r\n        string ClassificacaoIntensidade,\r\n        string RegistroDominante,\r\n        string EstruturaPsiquica,\r\n        double NivelCrueldade,\r\n        double NivelManipulacao,\r\n        double NivelErotizacao,\r\n        double IndicePerversidade,\r\n        string ClassificacaoPerversidade\r\n    );\r\n}"
-    },
-    {
-      "Name": "ParcialEtograma",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ParcialEtograma.cs",
-      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ParcialEtograma(\r\n        string? ArquetipoJung = null,\r\n        ArquetipoNarrativo? ArquetipoNarrativoFinal = null,\r\n\r\n        double? IntensidadeImaginario = null,\r\n        double? IntensidadeSimbolico = null,\r\n        double? IntensidadeReal = null,\r\n\r\n        double? ScoreImaginario = null,\r\n        double? ScoreSimbolico = null,\r\n        double? ScoreReal = null,\r\n\r\n        string? RegistroDominante = null,\r\n        string? EstruturaPsiquica = null,\r\n\r\n        double? IntensidadeDiscursiva = null,\r\n        string? ClassificacaoIntensidade = null,\r\n        string? Termodinamica = null,\r\n\r\n        double? NivelCrueldade = null,\r\n        double? NivelManipulacao = null,\r\n        double? NivelErotizacao = null,\r\n        double? IndicePerversidade = null,\r\n        string? ClassificacaoPerversidade = null,\r\n\r\n        string? TipoMbti = null,\r\n        string? PerfilHibrido = null\r\n    );\r\n}\r\n"
-    },
-    {
-      "Name": "RegraArquetipo",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\RegraArquetipo.cs",
-      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record RegraArquetipo(\r\n        ArquetipoNarrativo Arquetipo,\r\n        double Peso,\r\n        Func\u003CContextoNarrativo, bool\u003E Condicao\r\n    );\r\n}\r\n"
-    },
-    {
-      "Name": "ResultadoEtograma",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoEtograma.cs",
-      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoEtograma(\r\n        // =========================\r\n        // IDENTIDADE NARRATIVA\r\n        // =========================\r\n        ArquetipoNarrativo ArquetipoNarrativoFinal,\r\n        string ArquetipoJung,\r\n        string CategoriaNarrativa,\r\n\r\n        // =========================\r\n        // PSICODIN\u00C2MICA (RSI)\r\n        // =========================\r\n        double IntensidadeImaginario,\r\n        double IntensidadeSimbolico,\r\n        double IntensidadeReal,\r\n\r\n        double ScoreImaginario,\r\n        double ScoreSimbolico,\r\n        double ScoreReal,\r\n\r\n        string RegistroDominante,\r\n        string EstruturaPsiquica,\r\n\r\n        // =========================\r\n        // ENERG\u00C9TICO / TERMODIN\u00C2MICO\r\n        // =========================\r\n        double IntensidadeDiscursiva,\r\n        string ClassificacaoIntensidade,\r\n        string Termodinamica,\r\n\r\n        // =========================\r\n        // PERVERSIDADE\r\n        // =========================\r\n        double NivelCrueldade,\r\n        double NivelManipulacao,\r\n        double NivelErotizacao,\r\n        double IndicePerversidade,\r\n        string ClassificacaoPerversidade,\r\n\r\n        // =========================\r\n        // COGNITIVO\r\n        // =========================\r\n        string TipoMbti,\r\n        string PerfilHibrido\r\n    );\r\n}\r\n"
-    },
-    {
-      "Name": "ResultadoIdentidadeConsolidada",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoIdentidadeConsolidada.cs",
-      "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoIdentidadeConsolidada(\r\n        ResultadoJung Jung,\r\n        ResultadoMBTI Mbti,\r\n        ResultadoLacaniano Lacan,\r\n        ExpressaoNarrativa Narrativa\r\n    );\r\n}"
-    },
-    {
       "Name": "ResultadoJung",
       "Namespace": "Scriptome.Fingerprint.Modelos",
       "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoJung.cs",
       "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed class ResultadoJung\r\n    {\r\n        public string Individual { get; }\r\n        public string? Coletivo { get; }\r\n\r\n        public ResultadoJung(string individual, string? coletivo = null)\r\n        {\r\n            Individual = individual;\r\n            Coletivo = coletivo;\r\n        }\r\n    }\r\n}"
-    },
-    {
-      "Name": "ResultadoLacaniano",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoLacaniano.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoLacaniano(\r\n        string EstruturaPsiquica,\r\n        string RegistroDominante,\r\n        double IntensidadeReal,\r\n        double IntensidadeSimbolico,\r\n        double IntensidadeImaginario,\r\n        double ScoreReal,\r\n        double ScoreSimbolico,\r\n        double ScoreImaginario\r\n    );\r\n}"
-    },
-    {
-      "Name": "ResultadoMBTI",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\ResultadoMBTI.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    public sealed record ResultadoMBTI(\r\n        string Tipo,\r\n        double? ScoreEI = null,\r\n        double? ScoreSN = null,\r\n        double? ScoreTF = null,\r\n        double? ScoreJP = null\r\n    );\r\n}"
-    },
-    {
-      "Name": "TokenFingerprint",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\TokenFingerprint.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA\u00C7\u00C3O SIMPLIFICADA DE TOKEN PARA O DOM\u00CDNIO FINGERPRINT.\r\n    ///\r\n    /// Objetivo:\r\n    /// - Permitir classificadores textuais e estruturais\r\n    /// - Evitar depend\u00EAncia direta do m\u00F3dulo Lingu\u00EDstico\r\n    /// - Preservar informa\u00E7\u00F5es relevantes para an\u00E1lise discursiva\r\n    ///\r\n    /// N\u00C3O cont\u00E9m:\r\n    /// - POS Tag\r\n    /// - Depend\u00EAncias sint\u00E1ticas\r\n    /// - Estruturas profundas\r\n    ///\r\n    /// Isso \u00E9 responsabilidade do Limbic.\r\n    /// \u003C/summary\u003E\r\n    public sealed record TokenFingerprint(\r\n        string TextoOriginal,\r\n        string Normalizado,\r\n        string Lema,\r\n        bool EhPontuacao,\r\n        bool EstaEmCaixaAlta\r\n    );\r\n}"
-    },
-    {
-      "Name": "TurnoDialogoFingerprint",
-      "Namespace": "Scriptome.Fingerprint.Modelos",
-      "File": "AvaliaRoteiro\\Fingerprint\\Modelos\\TurnoDialogoFingerprint.cs",
-      "Code": "namespace Scriptome.Fingerprint.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA UM TURNO DE DI\u00C1LOGO DE UM PERSONAGEM.\r\n    ///\r\n    /// Mant\u00E9m:\r\n    /// - Texto original\r\n    /// - Tokens derivados\r\n    /// - Ordem dentro da cena\r\n    ///\r\n    /// O Fingerprint recebe isso j\u00E1 filtrado por personagem.\r\n    /// \u003C/summary\u003E\r\n    public sealed record TurnoDialogoFingerprint(\r\n        int OrdemNoBloco,\r\n        string Texto,\r\n        IReadOnlyList\u003CTokenFingerprint\u003E Tokens\r\n    );\r\n}"
     },
     {
       "Name": "VetorEtograma3D",
@@ -276,12 +198,6 @@
       "Namespace": "Scriptome.Nucleo.Motores",
       "File": "AvaliaRoteiro\\Fingerprint\\MotoresEtograma\\MotorVetorial_V2.cs",
       "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\n\r\nnamespace Scriptome.Nucleo.Motores\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// MOTOR VETORIAL V2 (PURO).\r\n    ///\r\n    /// Calcula posi\u00E7\u00E3o geom\u00E9trica no espa\u00E7o etogram\u00E1tico 3D.\r\n    /// N\u00E3o classifica.\r\n    /// N\u00E3o muta objetos.\r\n    /// N\u00E3o depende de legado.\r\n    /// \u003C/summary\u003E\r\n    public class MotorVetorialV2\r\n    {\r\n        public ExpressaoVetorial Construir(ResultadoBaseLinguistico b)\r\n        {\r\n            // ==============================\r\n            // EIXO X \u2014 Ego\u00EDsmo \u00D7 Altru\u00EDsmo\r\n            // ==============================\r\n            double altruismo =\r\n                (b.ScoreAfeto * 0.7);\r\n\r\n            double egoismo =\r\n                (b.ScoreEgo * 0.5) \u002B\r\n                (b.ScoreDominancia * 0.5);\r\n\r\n            double eixoX = altruismo - egoismo;\r\n\r\n            // ==============================\r\n            // EIXO Y \u2014 Impulso \u00D7 Norma\r\n            // ==============================\r\n            double impulso =\r\n                (b.ScoreVolicao \u002B\r\n                 b.ScoreSensorium \u002B\r\n                 b.ScoreDominancia) / 3.0;\r\n\r\n            double norma =\r\n                (b.ScoreRacionalidade \u002B\r\n                 b.ScoreErudicao) / 2.0;\r\n\r\n            double eixoY = impulso - norma;\r\n\r\n            // ==============================\r\n            // EIXO Z \u2014 Concreto \u00D7 Abstrato\r\n            // ==============================\r\n            double abstrato =\r\n                (b.ScoreRacionalidade \u002B\r\n                 b.ScoreErudicao) / 2.0;\r\n\r\n            double concreto =\r\n                b.ScoreSensorium;\r\n\r\n            double eixoZ = abstrato - concreto;\r\n\r\n            return new ExpressaoVetorial(\r\n                EgoismoAltruismo: Normalizar(eixoX),\r\n                ImpulsoNorma: Normalizar(eixoY),\r\n                ConcretoAbstrato: Normalizar(eixoZ)\r\n            );\r\n        }\r\n\r\n        private double Normalizar(double v)\r\n        {\r\n            return Math.Tanh(v / 3.0);\r\n        }\r\n    }\r\n}"
-    },
-    {
-      "Name": "ExpressaoIntencional",
-      "Namespace": "Scriptome.Fingerprint.MotoresInterpretativos",
-      "File": "AvaliaRoteiro\\Fingerprint\\MotoresInterpretativos\\ExpressaoIntencional.cs",
-      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\n\r\nnamespace Scriptome.Fingerprint.MotoresInterpretativos\r\n{\r\n    public sealed record ExpressaoIntencional(\r\n        double Cognitiva,\r\n        double Motora,\r\n        double Emocional\r\n    );\r\n}\r\n"
     },
     {
       "Name": "MotorIntencionalV1",
@@ -338,12 +254,6 @@
       "Code": "using Scriptome.Fingerprint.Interfaces;\r\nusing Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Analise;\r\nusing System;\r\nusing System.Collections.Generic;\r\nusing System.Linq;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Narrativa\r\n{\r\n    public class ClassificadorScriptome : IClassificadorIndividual\r\n    {\r\n        public string Nome =\u003E \u0022S\u00CDNTESE NARRATIVA SCRIPTOME 6.1 (Ajuste Fino)\u0022;\r\n\r\n        public void Classificar(PerfilPersonagem p, Etograma e)\r\n        {\r\n            // -------------------------------------------------\r\n            // 0 \u2014 PREMISSA: FIGURANTE\r\n            // -------------------------------------------------\r\n            if (p.QuantidadeFalas \u003C= 4)\r\n            {\r\n                e.ArquetipoNarrativoFinal = ArquetipoNarrativo.Figurante;\r\n                return;\r\n            }\r\n\r\n            var scores = InicializarScores();\r\n\r\n            // Vari\u00E1veis Auxiliares\r\n            bool ironiaAmarga = p.ScoreIronia \u003E 0.4 \u0026\u0026 p.ScoreAfeto \u003C -0.1;\r\n            bool violenciaFria = e.NivelCrueldade \u003E 4 \u0026\u0026 p.ScoreRacionalidade \u003E 0.5;\r\n            bool seducaoFatal = e.NivelErotizacao \u003E 5 \u0026\u0026 e.NivelManipulacao \u003E 4;\r\n\r\n            // =================================================================\r\n            // GRUPO 1: PROTAGONISTAS\r\n            // =================================================================\r\n\r\n            // Heroi Cl\u00E1ssico\r\n            if (p.ScoreVolicao \u003E 0.6 \u0026\u0026 p.ScoreAfeto \u003E 0.3)\r\n                scores[ArquetipoNarrativo.HeroiClassico] \u002B= 3.0;\r\n\r\n            // Anti-Her\u00F3i (Ajustado: Baixadinha de 4.0 para 3.0)\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 (ironiaAmarga || e.NivelManipulacao \u003E 3))\r\n                scores[ArquetipoNarrativo.AntiHeroi] \u002B= 3.0;\r\n\r\n            // Sobrevivente\r\n            if (p.ScoreVolicao \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003C 0.5)\r\n                scores[ArquetipoNarrativo.Sobrevivente] \u002B= 4.0;\r\n\r\n            // Buscador\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreSensorium \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Buscador] \u002B= 2.0;\r\n\r\n            // Vision\u00E1rio\r\n            if (p.ScoreVolicao \u003E 0.7 \u0026\u0026 p.ScoreRacionalidade \u003E 0.7)\r\n                scores[ArquetipoNarrativo.Visionario] \u002B= 3.0;\r\n\r\n            // Competidor\r\n            if (p.ScoreDominancia \u003E 0.6 \u0026\u0026 p.ScoreVolicao \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Competidor] \u002B= 3.0;\r\n\r\n            // Bon Vivant\r\n            if (p.ScoreSensorium \u003E 0.7 \u0026\u0026 p.ScoreVolicao \u003C 0.4)\r\n                scores[ArquetipoNarrativo.BonVivant] \u002B= 3.0;\r\n\r\n            // Adrenalista\r\n            if (p.ScoreSensorium \u003E 0.8 \u0026\u0026 p.ScoreVolicao \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Adrenalista] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 2: ANTAGONISTAS\r\n            // =================================================================\r\n\r\n            // Tirano\r\n            if (p.ScoreDominancia \u003E 0.7 \u0026\u0026 p.ScoreAfeto \u003C -0.2)\r\n                scores[ArquetipoNarrativo.Tirano] \u002B= 3.0;\r\n\r\n            // Psicopata\r\n            if (e.NivelCrueldade \u003E 7 \u0026\u0026 Math.Abs(p.ScoreAfeto) \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Psicopata] \u002B= 5.0;\r\n\r\n            // S\u00E1dico\r\n            if (e.NivelCrueldade \u003E 5 \u0026\u0026 (p.ScoreIronia \u003E 0.4 || p.ScoreSensorium \u003E 0.5))\r\n                scores[ArquetipoNarrativo.Sadico] \u002B= 3.0;\r\n\r\n            // Predador\r\n            if (violenciaFria)\r\n                scores[ArquetipoNarrativo.Predador] \u002B= 4.0;\r\n\r\n            // Rival\r\n            if (p.ScoreDominancia \u003E 0.5 \u0026\u0026 p.ScoreVolicao \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Rival] \u002B= 2.0;\r\n\r\n            // Valent\u00E3o\r\n            if (p.ScoreDominancia \u003E 0.6 \u0026\u0026 p.ScoreRacionalidade \u003C 0.4 \u0026\u0026 e.NivelCrueldade \u003E 3)\r\n                scores[ArquetipoNarrativo.Valentao] \u002B= 4.0;\r\n\r\n            // Manipulador\r\n            if (e.NivelManipulacao \u003E 6)\r\n                scores[ArquetipoNarrativo.Manipulador] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 3: MEDIADORES\r\n            // =================================================================\r\n\r\n            // Malandro\r\n            if (p.ScoreIronia \u003E 0.4 \u0026\u0026 e.NivelManipulacao \u003E 4 \u0026\u0026 p.ScoreVolicao \u003E 0.3)\r\n                scores[ArquetipoNarrativo.Malandro] \u002B= 4.0;\r\n\r\n            // Camale\u00E3o\r\n            if (e.NivelManipulacao \u003E 6 \u0026\u0026 p.ScoreDominancia \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Camaleao] \u002B= 3.0;\r\n\r\n            // Rebelde\r\n            if (p.ScoreDominancia \u003E 0.4 \u0026\u0026 p.ScoreIronia \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Rebelde] \u002B= 2.0;\r\n\r\n            // Fora da Lei\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreRacionalidade \u003E 0.4 \u0026\u0026 p.ScoreAfeto \u003C 0.2)\r\n                scores[ArquetipoNarrativo.ForaDaLei] \u002B= 4.0;\r\n\r\n            // Trickster (Requer manipula\u00E7\u00E3o ativa para n\u00E3o ser s\u00F3 um buf\u00E3o)\r\n            if (p.ScoreIronia \u003E 0.7 \u0026\u0026 p.ScoreSensorium \u003E 0.6 \u0026\u0026 e.NivelManipulacao \u003E 5)\r\n                scores[ArquetipoNarrativo.Trickster] \u002B= 3.0;\r\n\r\n            // Enigma\r\n            if (p.ScoreRacionalidade \u003C 0.3 \u0026\u0026 Math.Abs(p.ScoreAfeto) \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Enigma] \u002B= 3.0;\r\n\r\n            // Piv\u00F4 do Caos\r\n            if (p.QuantidadeFalas \u003E 20 \u0026\u0026 p.ScoreVolicao \u003C 0.3 \u0026\u0026 e.NivelErotizacao \u003E 4)\r\n                scores[ArquetipoNarrativo.PivoDoCaos] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 4: MENTORES\r\n            // =================================================================\r\n\r\n            // Mentor\r\n            if (p.ScoreRacionalidade \u003E 0.6 \u0026\u0026 p.ScoreAfeto \u003E 0.1)\r\n                scores[ArquetipoNarrativo.Mentor] \u002B= 3.0;\r\n\r\n            // Juiz\r\n            if (p.ScoreRacionalidade \u003E 0.8 \u0026\u0026 p.ScoreAfeto \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Juiz] \u002B= 3.0;\r\n\r\n            // Patriarca\r\n            if (p.ScoreDominancia \u003E 0.7 \u0026\u0026 p.ScoreAfeto \u003E 0.3)\r\n                scores[ArquetipoNarrativo.Patriarca] \u002B= 3.0;\r\n\r\n            // Matriarca\r\n            if (p.ScoreAfeto \u003E 0.7 \u0026\u0026 p.ScoreDominancia \u003E 0.4)\r\n                scores[ArquetipoNarrativo.Matriarca] \u002B= 4.0;\r\n\r\n            // Cientista\r\n            if (p.ScoreRacionalidade \u003E 0.9)\r\n                scores[ArquetipoNarrativo.Cientista] \u002B= 4.0;\r\n\r\n            // Guru\r\n            if (p.ScoreDominancia \u003E 0.5 \u0026\u0026 p.ScoreIronia \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Guru] \u002B= 2.0;\r\n\r\n            // Idealista\r\n            if (p.ScoreRacionalidade \u003E 0.6 \u0026\u0026 p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreSensorium \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Idealista] \u002B= 2.0;\r\n\r\n            // Soldado\r\n            if (p.ScoreVolicao \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Soldado] \u002B= 2.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 5: RELACIONAIS\r\n            // =================================================================\r\n\r\n            // M\u00E1rtir\r\n            if (p.ScoreAfeto \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003C 0.3)\r\n                scores[ArquetipoNarrativo.Martir] \u002B= 3.0;\r\n\r\n            // Penitente\r\n            if (p.ScoreAfeto \u003C -0.3 \u0026\u0026 p.ScoreVolicao \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Penitente] \u002B= 4.0;\r\n\r\n            // Masoquista\r\n            if (p.ScoreVolicao \u003E 0.5 \u0026\u0026 p.ScoreDominancia \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Masoquista] \u002B= 2.0;\r\n\r\n            // Cuidador\r\n            if (p.ScoreAfeto \u003E 0.8)\r\n                scores[ArquetipoNarrativo.Cuidador] \u002B= 4.0;\r\n\r\n            // Amante\r\n            if (p.ScoreAfeto \u003E 0.5 \u0026\u0026 p.ScoreSensorium \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Amante] \u002B= 2.0;\r\n\r\n            // Sedutor (Ajustado: Baixadinha de 6.0 para 4.5)\r\n            // Ainda requer erotiza\u00E7\u00E3o e manipula\u00E7\u00E3o, mas n\u00E3o garante vit\u00F3ria autom\u00E1tica.\r\n            if (seducaoFatal)\r\n                scores[ArquetipoNarrativo.Sedutor] \u002B= 4.5;\r\n\r\n            // Galante\r\n            if (p.ScoreSensorium \u003E 0.6 \u0026\u0026 p.ScoreDominancia \u003E 0.5)\r\n                scores[ArquetipoNarrativo.Galante] \u002B= 2.0;\r\n\r\n            // Diletante\r\n            if ((p.ScoreSensorium \u003E 0.5 || p.ScoreRacionalidade \u003E 0.5) \u0026\u0026 p.ScoreVolicao \u003C 0.4)\r\n                scores[ArquetipoNarrativo.Diletante] \u002B= 4.0;\r\n\r\n            // Inocente\r\n            if (p.ScoreAfeto \u003E 0.4 \u0026\u0026 p.ScoreIronia \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Inocente] \u002B= 3.0;\r\n\r\n\r\n            // =================================================================\r\n            // GRUPO 6: SOCIAIS\r\n            // =================================================================\r\n\r\n            // Conformista\r\n            if (Math.Abs(p.ScoreDominancia) \u003C 0.2 \u0026\u0026 Math.Abs(p.ScoreIronia) \u003C 0.2)\r\n                scores[ArquetipoNarrativo.Conformista] \u002B= 2.0;\r\n\r\n            // Solit\u00E1rio\r\n            if (p.ScoreAfeto \u003C 0.1 \u0026\u0026 p.ScoreDominancia \u003C 0.3)\r\n                scores[ArquetipoNarrativo.Solitario] \u002B= 3.0;\r\n\r\n            // Rabugento (Captura a ironia amarga, impedindo falso positivo de Buf\u00E3o)\r\n            if (ironiaAmarga)\r\n            {\r\n                scores[ArquetipoNarrativo.Rabugento] \u002B= 4.0;\r\n                scores[ArquetipoNarrativo.Bufao] -= 5.0;\r\n            }\r\n\r\n            // Exc\u00EAntrico\r\n            if (p.ScoreRacionalidade \u003C 0.3 \u0026\u0026 p.ScoreIronia \u003E 0.6)\r\n                scores[ArquetipoNarrativo.Excentrico] \u002B= 3.0;\r\n\r\n            // Buf\u00E3o (Somente se for engra\u00E7ado sem dor/crueldade)\r\n            if (p.ScoreIronia \u003E 0.8 \u0026\u0026 p.ScoreAfeto \u003E -0.1 \u0026\u0026 e.NivelCrueldade \u003C 2)\r\n                scores[ArquetipoNarrativo.Bufao] \u002B= 3.0;\r\n\r\n\r\n            // -------------------------------------------------\r\n            // DECIS\u00C3O FINAL\r\n            // -------------------------------------------------\r\n            var vencedor = scores\r\n                .OrderByDescending(x =\u003E x.Value)\r\n                .First();\r\n\r\n            if (vencedor.Value \u003C 1.0)\r\n                e.ArquetipoNarrativoFinal = ArquetipoNarrativo.Indefinido;\r\n            else\r\n                e.ArquetipoNarrativoFinal = vencedor.Key;\r\n        }\r\n\r\n        private Dictionary\u003CArquetipoNarrativo, double\u003E InicializarScores()\r\n        {\r\n            return Enum.GetValues(typeof(ArquetipoNarrativo))\r\n                .Cast\u003CArquetipoNarrativo\u003E()\r\n                .ToDictionary(a =\u003E a, a =\u003E 0.0);\r\n        }\r\n    }\r\n}"
     },
     {
-      "Name": "ContextoNarrativoRNA",
-      "Namespace": "Scriptome.Fingerprint.Classificadores.Narrativa",
-      "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Narrativa\\ContextoNarrativoRNA.cs",
-      "Code": "using Scriptome.Fingerprint.Modelos;\r\nusing Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\nnamespace Scriptome.Fingerprint.Classificadores.Narrativa\r\n{\r\n    public sealed record ContextoNarrativoRNA(\r\n        double D,\r\n        double E,\r\n        double R,\r\n        double I,\r\n        double V,\r\n        double A,\r\n        double S,\r\n        int Falas,\r\n        ExpressaoEnergetica Energia,\r\n        ExpressaoPsicodinamica Psico)\r\n    {\r\n        public bool IroniaAmarga =\u003E I \u003E 0.4 \u0026\u0026 A \u003C -0.1;\r\n        public bool ViolenciaFria =\u003E Energia.NivelCrueldade \u003E 4 \u0026\u0026 R \u003E 0.5;\r\n        public bool SeducaoFatal =\u003E Energia.NivelErotizacao \u003E 5 \u0026\u0026\r\n                                    Energia.NivelManipulacao \u003E 4;\r\n    }\r\n}"
-    },
-    {
       "Name": "ClassificadorHibrido",
       "Namespace": "Scriptome.Fingerprint.Classificadores.Psique",
       "File": "AvaliaRoteiro\\Fingerprint\\Classificadores\\Psique\\ClassificadorHibrido.cs",
@@ -396,52 +306,27 @@
     {
       "FromType": "MotorDeIdentidade",
       "ToType": "IClassificadorIndividual",
-      "Kind": 3
-    },
-    {
-      "FromType": "MotorDeIdentidade",
-      "ToType": "IClassificadorIndividual",
       "Kind": 0
     },
     {
       "FromType": "MotorDeIdentidade",
       "ToType": "IMotorEtogramaCartesiano",
-      "Kind": 6
+      "Kind": 0
     },
     {
       "FromType": "MotorDeIdentidade",
-      "ToType": "IMotorEtogramaCartesiano",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "MotorDeIdentidade",
       "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "MotorDeIdentidade",
-      "ToType": "PerfilPersonagem",
       "Kind": 0
-    },
-    {
-      "FromType": "MotorDeIdentidade",
-      "ToType": "Etograma",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorDeIdentidade",
-      "ToType": "Etograma",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorDeIdentidade",
-      "ToType": "Etograma",
-      "Kind": 2
     },
     {
       "FromType": "MotorTaxonomia",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
+      "ToType": "Cluster",
+      "Kind": 0
     },
     {
       "FromType": "MotorTaxonomia",
@@ -449,33 +334,23 @@
       "Kind": 0
     },
     {
-      "FromType": "MotorTaxonomia",
-      "ToType": "Cluster",
+      "FromType": "Cluster",
+      "ToType": "MotorTaxonomia",
       "Kind": 0
     },
     {
-      "FromType": "MotorTaxonomia",
-      "ToType": "Cluster",
-      "Kind": 3
+      "FromType": "Cluster",
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 0
     },
     {
-      "FromType": "MotorTaxonomia",
-      "ToType": "Cluster",
-      "Kind": 6
-    },
-    {
-      "FromType": "BibliotecaArquetipos",
-      "ToType": "InfoArquetipo",
+      "FromType": "InfoArquetipo",
+      "ToType": "BibliotecaArquetipos",
       "Kind": 0
     },
     {
       "FromType": "BibliotecaArquetipos",
       "ToType": "InfoArquetipo",
-      "Kind": 1
-    },
-    {
-      "FromType": "DivergenceLogger",
-      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -484,7 +359,7 @@
       "Kind": 0
     },
     {
-      "FromType": "DivergenceScore",
+      "FromType": "DivergenceLogger",
       "ToType": "PerfilPersonagem",
       "Kind": 0
     },
@@ -494,13 +369,18 @@
       "Kind": 0
     },
     {
-      "FromType": "IClassificadorBiometrico",
+      "FromType": "DivergenceScore",
       "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
       "FromType": "IClassificadorBiometrico",
       "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "IClassificadorBiometrico",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -511,16 +391,6 @@
     {
       "FromType": "IClassificadorColetivo",
       "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "IClassificadorColetivo",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "IClassificadorEtogramaV2",
-      "ToType": "ParcialEtograma",
       "Kind": 0
     },
     {
@@ -535,12 +405,12 @@
     },
     {
       "FromType": "IClassificadorIndividual",
-      "ToType": "PerfilPersonagem",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "IClassificadorIndividual",
-      "ToType": "Etograma",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -554,28 +424,8 @@
       "Kind": 0
     },
     {
-      "FromType": "IClassificadorJungV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
-    },
-    {
-      "FromType": "IClassificadorLacanianoV2",
-      "ToType": "ResultadoLacaniano",
-      "Kind": 0
-    },
-    {
       "FromType": "IClassificadorLacanianoV2",
       "ToType": "RnaBruto",
-      "Kind": 0
-    },
-    {
-      "FromType": "IClassificadorLacanianoV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
-    },
-    {
-      "FromType": "IClassificadorMBTIV2",
-      "ToType": "ResultadoMBTI",
       "Kind": 0
     },
     {
@@ -584,28 +434,8 @@
       "Kind": 0
     },
     {
-      "FromType": "IClassificadorMBTIV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
-    },
-    {
-      "FromType": "IClassificadorNarrativaV2",
-      "ToType": "ExpressaoNarrativa",
-      "Kind": 0
-    },
-    {
       "FromType": "IClassificadorNarrativaV2",
       "ToType": "RnaBruto",
-      "Kind": 0
-    },
-    {
-      "FromType": "IClassificadorNarrativaV2",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 0
-    },
-    {
-      "FromType": "IClassificadorNarrativaV2",
-      "ToType": "ExpressaoPsicodinamica",
       "Kind": 0
     },
     {
@@ -625,6 +455,11 @@
     },
     {
       "FromType": "IMotorEtograma",
+      "ToType": "MotorEtogramaHeuristico",
+      "Kind": 0
+    },
+    {
+      "FromType": "IMotorEtograma",
       "ToType": "PerfilPersonagem",
       "Kind": 0
     },
@@ -640,27 +475,7 @@
     },
     {
       "FromType": "IMotorIdentidadeRNA",
-      "ToType": "ResultadoIdentidadeConsolidada",
-      "Kind": 0
-    },
-    {
-      "FromType": "IMotorIdentidadeRNA",
       "ToType": "RnaBruto",
-      "Kind": 0
-    },
-    {
-      "FromType": "IMotorIdentidadeRNA",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 0
-    },
-    {
-      "FromType": "IMotorIdentidadeRNA",
-      "ToType": "ExpressaoPsicodinamica",
-      "Kind": 0
-    },
-    {
-      "FromType": "IMotorIntencional",
-      "ToType": "ExpressaoIntencional",
       "Kind": 0
     },
     {
@@ -674,78 +489,18 @@
       "Kind": 0
     },
     {
-      "FromType": "BlocoNarrativoFingerprint",
-      "ToType": "TurnoDialogoFingerprint",
-      "Kind": 3
-    },
-    {
-      "FromType": "BlocoNarrativoFingerprint",
-      "ToType": "TurnoDialogoFingerprint",
+      "FromType": "VetorEtograma3D",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
-      "FromType": "ContextoIdentidadeFingerprint",
-      "ToType": "ContextoNarrativoFingerprint",
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "IMotorIntencional",
       "Kind": 0
     },
     {
-      "FromType": "ContextoNarrativo",
-      "ToType": "ResultadoBaseLinguistico",
-      "Kind": 0
-    },
-    {
-      "FromType": "ContextoNarrativo",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 0
-    },
-    {
-      "FromType": "ContextoNarrativo",
-      "ToType": "ExpressaoPsicodinamica",
-      "Kind": 0
-    },
-    {
-      "FromType": "ContextoNarrativoFingerprint",
-      "ToType": "BlocoNarrativoFingerprint",
-      "Kind": 3
-    },
-    {
-      "FromType": "ContextoNarrativoFingerprint",
-      "ToType": "BlocoNarrativoFingerprint",
-      "Kind": 0
-    },
-    {
-      "FromType": "RegraArquetipo",
-      "ToType": "ContextoNarrativo",
-      "Kind": 0
-    },
-    {
-      "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ResultadoJung",
-      "Kind": 0
-    },
-    {
-      "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ResultadoMBTI",
-      "Kind": 0
-    },
-    {
-      "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ResultadoLacaniano",
-      "Kind": 0
-    },
-    {
-      "FromType": "ResultadoIdentidadeConsolidada",
-      "ToType": "ExpressaoNarrativa",
-      "Kind": 0
-    },
-    {
-      "FromType": "TurnoDialogoFingerprint",
-      "ToType": "TokenFingerprint",
-      "Kind": 3
-    },
-    {
-      "FromType": "TurnoDialogoFingerprint",
-      "ToType": "TokenFingerprint",
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "MotorEtogramaV2",
       "Kind": 0
     },
     {
@@ -755,17 +510,12 @@
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "MotorEtogramaV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "ModuloEtogramaV2",
-      "ToType": "MotorEtogramaV2",
+      "ToType": "EstatisticasRoteiro",
       "Kind": 0
     },
     {
       "FromType": "ModuloEtogramaV2",
-      "ToType": "IMotorIntencional",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -774,13 +524,23 @@
       "Kind": 0
     },
     {
-      "FromType": "ModuloEtogramaV2",
-      "ToType": "EstatisticasRoteiro",
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorJungV2",
       "Kind": 0
     },
     {
-      "FromType": "ModuloEtogramaV2",
-      "ToType": "ResultadoEtograma",
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorLacanianoV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorMBTIV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorNarrativaV2",
       "Kind": 0
     },
     {
@@ -790,68 +550,8 @@
     },
     {
       "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorJungV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorJungV2",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorMBTIV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorMBTIV2",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorLacanianoV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorLacanianoV2",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorNarrativaV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "IClassificadorNarrativaV2",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "ResultadoIdentidadeConsolidada",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
       "ToType": "RnaBruto",
       "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "ExpressaoPsicodinamica",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIdentidadeRNA",
-      "ToType": "ResultadoIdentidadeConsolidada",
-      "Kind": 1
     },
     {
       "FromType": "ExtratorEtogramaDeriva6",
@@ -866,6 +566,11 @@
     {
       "FromType": "ExtratorEtogramaDeriva6",
       "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "IExtratorEtograma",
       "Kind": 0
     },
     {
@@ -875,43 +580,18 @@
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "IExtratorEtograma",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "IExtratorEtograma",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "ClassificadorEtogramaCartesiano",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "ClassificadorEtogramaCartesiano",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
       "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "ClassificadorEtogramaCartesiano",
       "Kind": 0
     },
     {
       "FromType": "MotorEtogramaCartesiano3D",
       "ToType": "PerfilPersonagem",
       "Kind": 0
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "Etograma",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "Etograma",
-      "Kind": 2
     },
     {
       "FromType": "MotorEtogramaHeuristico",
@@ -920,22 +600,12 @@
     },
     {
       "FromType": "MotorEtogramaHeuristico",
-      "ToType": "ClassificadorScriptome",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorEtogramaHeuristico",
-      "ToType": "ClassificadorScriptome",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "MotorEtogramaHeuristico",
       "ToType": "ClassificadorScriptome",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorEtogramaHeuristico",
-      "ToType": "Etograma",
       "Kind": 0
     },
     {
@@ -944,69 +614,19 @@
       "Kind": 0
     },
     {
-      "FromType": "MotorEtogramaHeuristico",
-      "ToType": "Etograma",
-      "Kind": 1
-    },
-    {
       "FromType": "MotorEtogramaV2",
-      "ToType": "IClassificadorEtogramaV2",
-      "Kind": 3
-    },
-    {
-      "FromType": "MotorEtogramaV2",
-      "ToType": "IClassificadorEtogramaV2",
+      "ToType": "BibliotecaArquetipos",
       "Kind": 0
     },
     {
       "FromType": "MotorEtogramaV2",
-      "ToType": "ResultadoEtograma",
+      "ToType": "IClassificadorEtogramaV2",
       "Kind": 0
     },
     {
       "FromType": "MotorEtogramaV2",
       "ToType": "PerfilPersonagem",
       "Kind": 0
-    },
-    {
-      "FromType": "MotorEtogramaV2",
-      "ToType": "ParcialEtograma",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorEtogramaV2",
-      "ToType": "ParcialEtograma",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorEtogramaV2",
-      "ToType": "ResultadoEtograma",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorEtogramaV2",
-      "ToType": "BibliotecaArquetipos",
-      "Kind": 2
-    },
-    {
-      "FromType": "MotorEtogramaV2",
-      "ToType": "BibliotecaArquetipos",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorVetorialV2",
-      "ToType": "ExpressaoVetorial",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorVetorialV2",
-      "ToType": "ResultadoBaseLinguistico",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorVetorialV2",
-      "ToType": "ExpressaoVetorial",
-      "Kind": 1
     },
     {
       "FromType": "MotorIntencionalV1",
@@ -1015,18 +635,13 @@
     },
     {
       "FromType": "MotorIntencionalV1",
-      "ToType": "ExpressaoIntencional",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorIntencionalV1",
       "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
-      "FromType": "MotorIntencionalV1",
-      "ToType": "ExpressaoIntencional",
-      "Kind": 1
+      "FromType": "ClassificadorJung",
+      "ToType": "EstatisticaForense",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorJung",
@@ -1035,33 +650,13 @@
     },
     {
       "FromType": "ClassificadorJung",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorJung",
       "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorJung",
       "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorJung",
-      "ToType": "EstatisticaForense",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorJung",
-      "ToType": "EstatisticaForense",
       "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorJung",
-      "ToType": "Etograma",
-      "Kind": 2
     },
     {
       "FromType": "ClassificadorJungV2",
@@ -1070,33 +665,18 @@
     },
     {
       "FromType": "ClassificadorJungV2",
-      "ToType": "IMotorSplicing",
-      "Kind": 6
-    },
-    {
-      "FromType": "ClassificadorJungV2",
-      "ToType": "IMotorSplicing",
+      "ToType": "ResultadoJung",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorJungV2",
-      "ToType": "ResultadoJung",
+      "ToType": "IMotorSplicing",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorJungV2",
       "ToType": "RnaBruto",
       "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorJungV2",
-      "ToType": "ResultadoJung",
-      "Kind": 1
-    },
-    {
-      "FromType": "ClassificadorJungV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
     },
     {
       "FromType": "ClassificadorEtogramaCartesiano",
@@ -1104,23 +684,13 @@
       "Kind": 0
     },
     {
-      "FromType": "ClassificadorEnergia_V2",
-      "ToType": "ExpressaoEnergetica",
+      "FromType": "ClassificadorIntensidade",
+      "ToType": "IClassificadorIndividual",
       "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorEnergia_V2",
-      "ToType": "ResultadoBaseLinguistico",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorEnergia_V2",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 1
     },
     {
       "FromType": "ClassificadorIntensidade",
-      "ToType": "IClassificadorIndividual",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
@@ -1129,8 +699,8 @@
       "Kind": 0
     },
     {
-      "FromType": "ClassificadorIntensidade",
-      "ToType": "Etograma",
+      "FromType": "ClassificadorTermico",
+      "ToType": "EstatisticaForense",
       "Kind": 0
     },
     {
@@ -1140,33 +710,18 @@
     },
     {
       "FromType": "ClassificadorTermico",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorTermico",
       "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorTermico",
       "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorTermico",
-      "ToType": "EstatisticaForense",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorTermico",
-      "ToType": "EstatisticaForense",
       "Kind": 0
     },
     {
-      "FromType": "ClassificadorTermico",
-      "ToType": "Etograma",
-      "Kind": 2
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 0
     },
     {
       "FromType": "ClassificadorNarrativaV2",
@@ -1175,27 +730,7 @@
     },
     {
       "FromType": "ClassificadorNarrativaV2",
-      "ToType": "RegraArquetipo",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "RegraArquetipo",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
       "ToType": "IMotorSplicing",
-      "Kind": 6
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "IMotorSplicing",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoNarrativa",
       "Kind": 0
     },
     {
@@ -1204,53 +739,8 @@
       "Kind": 0
     },
     {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoPsicodinamica",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ResultadoBaseLinguistico",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ContextoNarrativo",
-      "Kind": 1
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ContextoNarrativo",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "ExpressaoNarrativa",
-      "Kind": 1
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "BibliotecaArquetipos",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "BibliotecaArquetipos",
-      "Kind": 0
-    },
-    {
       "FromType": "ClassificadorScriptome",
       "ToType": "IClassificadorIndividual",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorScriptome",
-      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -1259,13 +749,8 @@
       "Kind": 0
     },
     {
-      "FromType": "ContextoNarrativoRNA",
-      "ToType": "ExpressaoEnergetica",
-      "Kind": 0
-    },
-    {
-      "FromType": "ContextoNarrativoRNA",
-      "ToType": "ExpressaoPsicodinamica",
+      "FromType": "ClassificadorScriptome",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -1275,12 +760,12 @@
     },
     {
       "FromType": "ClassificadorHibrido",
-      "ToType": "PerfilPersonagem",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorHibrido",
-      "ToType": "Etograma",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -1290,12 +775,12 @@
     },
     {
       "FromType": "ClassificadorLacaniano",
-      "ToType": "PerfilPersonagem",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorLacaniano",
-      "ToType": "Etograma",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -1306,32 +791,12 @@
     {
       "FromType": "ClassificadorLacanianoV2",
       "ToType": "IMotorSplicing",
-      "Kind": 6
-    },
-    {
-      "FromType": "ClassificadorLacanianoV2",
-      "ToType": "IMotorSplicing",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorLacanianoV2",
-      "ToType": "ResultadoLacaniano",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2",
       "ToType": "RnaBruto",
       "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorLacanianoV2",
-      "ToType": "ResultadoLacaniano",
-      "Kind": 1
-    },
-    {
-      "FromType": "ClassificadorLacanianoV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
@@ -1340,18 +805,13 @@
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
-      "ToType": "ParcialEtograma",
+      "ToType": "MotorEtogramaV2",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorLacanianoV2Legado",
       "ToType": "PerfilPersonagem",
       "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorLacanianoV2Legado",
-      "ToType": "ParcialEtograma",
-      "Kind": 1
     },
     {
       "FromType": "ClassificadorMBTI",
@@ -1360,12 +820,12 @@
     },
     {
       "FromType": "ClassificadorMBTI",
-      "ToType": "PerfilPersonagem",
+      "ToType": "Etograma",
       "Kind": 0
     },
     {
       "FromType": "ClassificadorMBTI",
-      "ToType": "Etograma",
+      "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
@@ -1376,16 +836,6 @@
     {
       "FromType": "ClassificadorMBTIV2",
       "ToType": "IMotorSplicing",
-      "Kind": 6
-    },
-    {
-      "FromType": "ClassificadorMBTIV2",
-      "ToType": "IMotorSplicing",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorMBTIV2",
-      "ToType": "ResultadoMBTI",
       "Kind": 0
     },
     {
@@ -1394,44 +844,254 @@
       "Kind": 0
     },
     {
-      "FromType": "ClassificadorMBTIV2",
-      "ToType": "ResultadoMBTI",
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "ClassificadorPsicodinamicoAvancado",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamico",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "IClassificadorIndividual",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "Etograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "ClassificadorPsicodinamico",
+      "Kind": 0
+    },
+    {
+      "FromType": "ClassificadorPsicodinamicoAvancado",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "IClassificadorIndividual",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "IMotorEtogramaCartesiano",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "Etograma",
       "Kind": 1
+    },
+    {
+      "FromType": "MotorDeIdentidade",
+      "ToType": "Etograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "MotorTaxonomia",
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorTaxonomia",
+      "ToType": "Cluster",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorTaxonomia",
+      "ToType": "Cluster",
+      "Kind": 6
+    },
+    {
+      "FromType": "BibliotecaArquetipos",
+      "ToType": "InfoArquetipo",
+      "Kind": 1
+    },
+    {
+      "FromType": "IClassificadorColetivo",
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "IClassificadorJungV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
+    },
+    {
+      "FromType": "IClassificadorLacanianoV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
+    },
+    {
+      "FromType": "IClassificadorMBTIV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModuloEtogramaV2",
+      "ToType": "MotorEtogramaV2",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorJungV2",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorMBTIV2",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorLacanianoV2",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorIdentidadeRNA",
+      "ToType": "IClassificadorNarrativaV2",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "IExtratorEtograma",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "ClassificadorEtogramaCartesiano",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "Etograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaCartesiano3D",
+      "ToType": "Etograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "ClassificadorScriptome",
+      "Kind": 6
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "ClassificadorScriptome",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaHeuristico",
+      "ToType": "Etograma",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "IClassificadorEtogramaV2",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorEtogramaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "EstatisticaForense",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorJung",
+      "ToType": "Etograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "IMotorSplicing",
+      "Kind": 6
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "ResultadoJung",
+      "Kind": 1
+    },
+    {
+      "FromType": "ClassificadorJungV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "EstatisticaForense",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorTermico",
+      "ToType": "Etograma",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "IMotorSplicing",
+      "Kind": 6
+    },
+    {
+      "FromType": "ClassificadorNarrativaV2",
+      "ToType": "BibliotecaArquetipos",
+      "Kind": 2
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "IMotorSplicing",
+      "Kind": 6
+    },
+    {
+      "FromType": "ClassificadorLacanianoV2",
+      "ToType": "RnaBruto",
+      "Kind": 3
+    },
+    {
+      "FromType": "ClassificadorMBTIV2",
+      "ToType": "IMotorSplicing",
+      "Kind": 6
     },
     {
       "FromType": "ClassificadorMBTIV2",
       "ToType": "RnaBruto",
       "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorPsicodinamico",
-      "ToType": "IClassificadorIndividual",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorPsicodinamico",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorPsicodinamico",
-      "ToType": "Etograma",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "IClassificadorIndividual",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "ClassificadorPsicodinamicoAvancado",
-      "ToType": "Etograma",
-      "Kind": 0
     }
   ]
 }

@@ -574,7 +574,10 @@ function sortTable(n) {
             StructuralCandidateAnalysisBreakdown breakdown,
             HygieneReport hygiene,
             HashSet<string> suspicious,
-            HashSet<string> confirmed, SolidResult? solid, ImplicitCouplingResult implicitCoupling, CouplingResult coupling)
+            HashSet<string> confirmed,
+            SolidResult? solid,
+            ImplicitCouplingResult? implicitCoupling,
+            CouplingResult? coupling)
         {
             var sb = new StringBuilder();
             var render = new ChartsRenderer();
@@ -613,7 +616,7 @@ function sortTable(n) {
             double couplingRating =
                 hygiene.TotalClasses == 0
                     ? 0
-                    : implicitCoupling.Suspicions.Count / (double)hygiene.TotalClasses;
+                    : implicitCoupling?.Suspicions.Count ?? 0 / (double)hygiene.TotalClasses;
             var implicitCouplingDiagnosis =
     couplingRating switch
     {
@@ -636,10 +639,9 @@ function sortTable(n) {
             sb.AppendLine("<div style='display:flex; gap:40px; flex-wrap:wrap;'>");
             sb.AppendLine(render.RenderRadarSvg(hygiene, breakdown, solid, implicitCoupling));
 
-            if (implicitCoupling != null)
+            if (coupling != null)
             {
                 sb.AppendLine(render.RenderArchitecturalGalaxy(coupling));
-
             }
             sb.AppendLine("<ul>");
             sb.AppendLine($"<li>{coreDiagnosis}</li>");
