@@ -1,202 +1,161 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
-using RefactorScope.Estimation.Models;
+using RefactorScope.Core.Configuration;
+using RefactorScope.Exporters.Styling;
 using System.Text;
 
 namespace RefactorScope.Exporters
 {
-    public class HtmlDashboardExporter : IExporter
+    /// <summary>
+    /// Exportador do Hub HTML.
+    ///
+    /// Responsabilidade
+    /// ----------------
+    /// Gerar apenas o index.html do hub visual da suíte de dashboards.
+    ///
+    /// Este exporter:
+    /// - garante assets CSS compartilhados
+    /// - resolve o tema visual
+    /// - detecta quais dashboards já foram gerados
+    /// - constrói o ponto central de navegação
+    /// </summary>
+    public sealed class HtmlDashboardExporter : IExporter
     {
-        public string Name => "html-dashboard";
+        public string Name => "html-dashboard-hub";
 
-        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
         {
-            var dashboardDir = Path.Combine(outputPath, "dashboard");
-            Directory.CreateDirectory(dashboardDir);
+            ExportHub(
+                context,
+                report,
+                parsingResult: null,
+                outputPath: outputPath);
+        }
 
-            EnsureVendorAssets(dashboardDir);
+        public void ExportHub(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IParserResult? parsingResult,
+            string outputPath)
+        {
+            Directory.CreateDirectory(outputPath);
 
-            // -------------------------------------------------
-            // 1) Structural dashboard
-            // -------------------------------------------------
-            var structuralExporter = new StructuralInventoryExporter();
-            structuralExporter.Export(report, dashboardDir);
+            var themeFileName = ResolveThemeFileName(context);
 
-            // -------------------------------------------------
-            // 2) Parsing dashboard
-            // -------------------------------------------------
-            string parsingFileName = "ParsingDashboard.html";
+            //legado
+            //EnsureCssAssets(outputPath, themeFileName);
+            //EnsureVendorAssets(outputPath);
 
-            var parserResult = TryGetParserResult(context);
+            DashboardAssetCopier.CopyAll(outputPath, themeFileName);
 
-            if (parserResult != null)
-            {
-                var parsingExporter = new ParsingDashboardExporter();
-                parsingExporter.Export(parserResult, dashboardDir);
-            }
+            var structuralFileName =
+                File.Exists(Path.Combine(outputPath, "StructuralDashboard.html"))
+                    ? "StructuralDashboard.html"
+                    : string.Empty;
 
-            // -------------------------------------------------
-            // 3) Architectural report (markdown for now)
-            // -------------------------------------------------
-            string architecturalFileName = "Relatorio_Arquitetural.md";
-            var markdownPath = Path.Combine(dashboardDir, architecturalFileName);
+            var architecturalFileName =
+                File.Exists(Path.Combine(outputPath, "ArchitecturalDashboard.html"))
+                    ? "ArchitecturalDashboard.html"
+                    : string.Empty;
 
-            var markdownExporter = new MarkdownReportExporter();
-            markdownExporter.Export(report, markdownPath);
+            var architecturalMarkdownFileName =
+                File.Exists(Path.Combine(outputPath, "Relatorio_Arquitetural.md"))
+                    ? "Relatorio_Arquitetural.md"
+                    : string.Empty;
 
-            // -------------------------------------------------
-            // 4) Hub index.html
-            // -------------------------------------------------
+            var parsingFileName =
+                File.Exists(Path.Combine(outputPath, "ParsingDashboard.html"))
+                    ? "ParsingDashboard.html"
+                    : string.Empty;
+
+            var qualityFileName =
+                File.Exists(Path.Combine(outputPath, "QualityDashboard.html"))
+                    ? "QualityDashboard.html"
+                    : string.Empty;
+
             var hubExporter = new HubDashboardExporter();
-
-            var parserName = parserResult?.ParserName ?? "Unknown";
-            var parserConfidence = parserResult?.Confidence ?? 0;
-            var parsingExecution = parserResult?.Stats?.ExecutionTime ?? TimeSpan.Zero;
-            var parsingFiles = parserResult?.Model?.Arquivos.Count ?? 0;
-            var parsingTypes = parserResult?.Model?.Tipos.Count ?? 0;
-            var parsingReferences = parserResult?.Model?.Referencias.Count ?? 0;
-
-            var effort = TryGetEffortEstimate(context);
 
             hubExporter.Export(
                 report,
-                dashboardDir,
-                parserName,
-                parserConfidence,
-                parsingExecution,
-                parsingFiles,
-                parsingTypes,
-                parsingReferences,
-                effort,
-                structuralFileName: "StructuralDashboard.html",
+                outputPath,
+                parserName: parsingResult?.ParserName ?? "Unavailable",
+                parserConfidence: parsingResult?.Confidence ?? 0,
+                parsingExecution: parsingResult?.Stats?.ExecutionTime ?? TimeSpan.Zero,
+                parsingFiles: parsingResult?.Model?.Arquivos.Count ?? 0,
+                parsingTypes: parsingResult?.Model?.Tipos.Count ?? 0,
+                parsingReferences: parsingResult?.Model?.Referencias.Count ?? 0,
+                structuralFileName: structuralFileName,
                 architecturalFileName: architecturalFileName,
                 parsingFileName: parsingFileName,
-                qualityFileName: "QualityDashboard.html");
+                qualityFileName: qualityFileName,
+                architecturalMarkdownFileName: architecturalMarkdownFileName,
+                themeFileName: themeFileName);
         }
 
-        // -------------------------------------------------
-        // Helpers
-        // -------------------------------------------------
-
-        private static void EnsureVendorAssets(string dashboardDir)
-        {
-            var vendorDir = Path.Combine(dashboardDir, "assets", "vendor");
-            Directory.CreateDirectory(vendorDir);
-
-            var chartsCssPath = Path.Combine(vendorDir, "charts.min.css");
-            var augmentedUiPath = Path.Combine(vendorDir, "augmented-ui.min.css");
-
-            // Placeholder local vendor files.
-            // Replace with the real library contents when you add them to the project.
-            if (!File.Exists(chartsCssPath))
-            {
-                File.WriteAllText(chartsCssPath, PlaceholderChartsCss(), Encoding.UTF8);
-            }
-
-            if (!File.Exists(augmentedUiPath))
-            {
-                File.WriteAllText(augmentedUiPath, PlaceholderAugmentedUiCss(), Encoding.UTF8);
-            }
-        }
-
-        private static string PlaceholderChartsCss()
-        {
-            return """
-/* Placeholder Charts.css file.
-   Replace with the official minified Charts.css file for production. */
-
-.charts-css {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.charts-css caption {
-    margin-bottom: 10px;
-}
-
-.charts-css tbody tr {
-    height: 42px;
-}
-
-.charts-css tbody tr th {
-    text-align: left;
-    font-weight: 600;
-    padding-right: 12px;
-    white-space: nowrap;
-}
-
-.charts-css tbody tr td {
-    position: relative;
-    background: rgba(255,255,255,0.03);
-    overflow: hidden;
-}
-
-.charts-css tbody tr td::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    width: calc(var(--size, 0) * 100%);
-    background: var(--color, linear-gradient(180deg, #39d5ff, #2f88ff));
-    opacity: .9;
-}
-
-.charts-css tbody tr td .data {
-    position: relative;
-    z-index: 1;
-    display: inline-block;
-    padding: 10px 12px;
-    color: #fff;
-    font-weight: 700;
-}
-""";
-        }
-
-        private static string PlaceholderAugmentedUiCss()
-        {
-            return """
-/* Placeholder augmented-ui file.
-   Replace with the official augmented-ui CSS file for production. */
-
-[augmented-ui] {
-    clip-path: polygon(
-        10px 0,
-        calc(100% - 10px) 0,
-        100% 10px,
-        100% calc(100% - 10px),
-        calc(100% - 10px) 100%,
-        10px 100%,
-        0 calc(100% - 10px),
-        0 10px
-    );
-}
-""";
-        }
-
-        private static dynamic? TryGetParserResult(AnalysisContext context)
+        private static string ResolveThemeFileName(AnalysisContext context)
         {
             try
             {
-                var prop = context.GetType().GetProperty("ParserResult");
-                return prop?.GetValue(context);
+                var config = context?.Config;
+                var themeName = TryReadDashboardTheme(config);
+                return DashboardThemeSelector.ResolveFileName(themeName);
             }
             catch
             {
-                return null;
+                return DashboardThemeSelector.DefaultTheme;
             }
         }
 
-        private static EffortEstimate? TryGetEffortEstimate(AnalysisContext context)
+        private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
         {
-            try
-            {
-                var prop = context.GetType().GetProperty("EffortEstimate");
-                return prop?.GetValue(context) as EffortEstimate;
-            }
-            catch
-            {
+            if (config == null)
                 return null;
-            }
+
+            var prop = config.GetType().GetProperty("DashboardTheme");
+            if (prop == null)
+                return null;
+
+            return prop.GetValue(config) as string;
         }
+
+        //private static void EnsureCssAssets(string outputPath, string themeFileName)
+        //{
+        //    var cssDir = Path.Combine(outputPath, "assets", "css");
+        //    Directory.CreateDirectory(cssDir);
+
+        //    var baseCssPath = Path.Combine(cssDir, "dashboard-base.css");
+        //    var componentsCssPath = Path.Combine(cssDir, "dashboard-components.css");
+        //    var themeCssPath = Path.Combine(cssDir, themeFileName);
+
+        //    if (!File.Exists(baseCssPath))
+        //        File.WriteAllText(baseCssPath, DashboardBaseCss(), Encoding.UTF8);
+
+        //    if (!File.Exists(componentsCssPath))
+        //        File.WriteAllText(componentsCssPath, DashboardComponentsCss(), Encoding.UTF8);
+
+        //    if (!File.Exists(themeCssPath))
+        //        File.WriteAllText(themeCssPath, ThemeCyberBlueCss(), Encoding.UTF8);
+        //}
+
+        //private static void EnsureVendorAssets(string outputPath)
+        //{
+        //    var vendorDir = Path.Combine(outputPath, "assets", "vendor");
+        //    Directory.CreateDirectory(vendorDir);
+
+        //    var chartsCssPath = Path.Combine(vendorDir, "charts.min.css");
+        //    var augmentedUiPath = Path.Combine(vendorDir, "augmented-ui.min.css");
+
+        //    if (!File.Exists(chartsCssPath))
+        //        File.WriteAllText(chartsCssPath, PlaceholderChartsCss(), Encoding.UTF8);
+
+        //    if (!File.Exists(augmentedUiPath))
+        //        File.WriteAllText(augmentedUiPath, PlaceholderAugmentedUiCss(), Encoding.UTF8);
+        //}
+
+  
     }
 }

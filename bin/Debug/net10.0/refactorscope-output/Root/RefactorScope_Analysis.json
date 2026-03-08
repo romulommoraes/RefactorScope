@@ -21,7 +21,9 @@
     "EspecialistaProducao",
     "ScriptomeDashboardPipeline",
     "ClassificadorHibrido",
+    "ClassificadorLacaniano",
     "ClassificadorLacanianoV2Legado",
+    "ClassificadorMBTI",
     "AppConfig",
     "RnaCartesiano",
     "ResultadoModuloLimbic",
@@ -34,7 +36,9 @@
     "ExportadorBaselineJung",
     "ScriptomeDashboardPipeline",
     "ClassificadorHibrido",
+    "ClassificadorLacaniano",
     "ClassificadorLacanianoV2Legado",
+    "ClassificadorMBTI",
     "AppConfig",
     "AbaEstrutura"
   ],
@@ -58,9 +62,7 @@
     "ResultadoModuloLimbic"
   ],
   "IsolatedCoreTypes": [
-    "ContextoIdentidadeFingerprint",
     "EstadoIdentidade",
-    "ExpressaoIdentidade",
     "InfoPalavra",
     "AdaptadorDiagnostico",
     "EspecialistaDinamica",

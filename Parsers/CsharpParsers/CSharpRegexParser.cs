@@ -1,25 +1,26 @@
-﻿using System.Text.RegularExpressions;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
-using RefactorScope.Core.Scope;
 using RefactorScope.Core.Parsing;
+using RefactorScope.Parsers.Common;
 
 namespace RefactorScope.Parsers.CsharpParsers
 {
     /// <summary>
     /// Parser C# baseado em Regex.
     ///
-    /// Objetivos desta implementação:
-    /// 
-    /// - Preservar compatibilidade com a arquitetura atual do RefactorScope.
-    /// - Utilizar SanitizedSourceProvider para evitar interferência de comentários XML.
-    /// - Evitar múltiplos acessos a disco (cache de conteúdo).
-    /// - Detectar tipos estruturais de forma conservadora.
-    /// - Detectar referências com heurística segura para C#.
+    /// Papel arquitetural:
+    /// - servir como baseline estrutural global do projeto
+    /// - detectar tipos com abordagem conservadora
+    /// - extrair referências com custo baixo e cobertura ampla
     ///
-    /// Este parser NÃO realiza parsing sintático completo (AST).
-    /// Ele extrai apenas a estrutura necessária para análise arquitetural.
+    /// Observações importantes:
+    /// - não realiza parsing sintático completo (AST)
+    /// - utiliza fonte sanitizada pelo PreParser
+    /// - aplica uma segunda limpeza local para reduzir ruído de comentários e strings
+    /// - filtra falsos positivos léxicos através de StructuralTokenGuard
     /// </summary>
     public class CSharpRegexParser : IParserCodigo
     {
@@ -27,93 +28,67 @@ namespace RefactorScope.Parsers.CsharpParsers
 
         private readonly SanitizedSourceProvider _sourceProvider;
 
-        /// <summary>
-        /// Construtor principal utilizado pelo ParserSelector.
-        /// </summary>
         public CSharpRegexParser(SanitizedSourceProvider sourceProvider)
         {
             _sourceProvider = sourceProvider;
         }
 
-        /// <summary>
-        /// Construtor de fallback para cenários de instância direta.
-        /// </summary>
         public CSharpRegexParser()
         {
             _sourceProvider = new SanitizedSourceProvider(
-                new Parsers.Common.CSharpPreParser());
+                new CSharpPreParser());
         }
 
-        /// <summary>
-        /// Regex para detecção de namespace.
-        /// </summary>
         private static readonly Regex NamespaceRegex =
             new(@"namespace\s+([\w\.]+)",
                 RegexOptions.Compiled | RegexOptions.Multiline);
 
         /// <summary>
-        /// Regex restritiva para declaração de tipos C#.
-        /// 
-        /// Exige que após o nome exista:
-        ///     {
-        ///     :
-        ///     <
-        ///     where
-        /// 
-        /// Isso evita capturar identificadores falsos.
+        /// Regex restritiva para declaração de tipos.
+        ///
+        /// Exige que após o nome exista algo estrutural:
+        /// {  :  <  where
+        ///
+        /// Isso reduz captura de identificadores soltos.
         /// </summary>
         private static readonly Regex TypeRegex =
             new(@"\b(class|interface|record|struct)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:<|\{|:|where)",
                 RegexOptions.Compiled | RegexOptions.Multiline);
 
-        /// <summary>
-        /// Palavras reservadas que não devem ser tratadas como tipos.
-        /// </summary>
-        private static readonly HashSet<string> ReservedKeywords =
-            new(StringComparer.OrdinalIgnoreCase)
-            {
-                "with","init","var","new","return",
-                "public","private","protected","internal",
-                "static","void","string","int","bool",
-                "namespace","class","interface","record","struct"
-            };
-
-        /// <summary>
-        /// Método principal de parsing exigido por IParserCodigo.
-        /// </summary>
         public IParserResult Parse(
             string rootPath,
             IEnumerable<string>? include = null,
             IEnumerable<string>? exclude = null)
         {
+            var stopwatch = Stopwatch.StartNew();
+            long initialMemory = GC.GetTotalMemory(false);
+
             try
             {
-                var stopwatch = Stopwatch.StartNew();
-
-                var scope = new ScopeRuleSet(include, exclude);
-
                 var arquivos = new List<ArquivoInfo>();
                 var tipos = new List<TipoInfo>();
                 var referencias = new List<ReferenciaInfo>();
 
+                var scope = new FileSelectionScope(rootPath, include, exclude);
+
                 var csFiles = Directory
                     .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
-                    .Where(f => scope.IsInScope(rootPath, f))
+                    .Where(scope.IsInScope)
                     .ToList();
 
-                /// Cache de conteúdo para evitar múltiplos acessos a disco.
-                var fileContents = new Dictionary<string, string>();
+                var originalSourcesByFile = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var scanSourcesByFile = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 // =====================================================
-                // 1️⃣ Coleta de tipos
+                // 1) Coleta de tipos
                 // =====================================================
                 foreach (var file in csFiles)
                 {
-                    string source;
+                    string sanitizedSource;
 
                     try
                     {
-                        source = _sourceProvider.Read(file);
+                        sanitizedSource = _sourceProvider.Read(file);
                     }
                     catch
                     {
@@ -121,26 +96,25 @@ namespace RefactorScope.Parsers.CsharpParsers
                     }
 
                     var relativePath = Path.GetRelativePath(rootPath, file);
+                    var scanSource = PrepareStructuralScanSource(sanitizedSource);
 
-                    fileContents[relativePath] = source;
+                    originalSourcesByFile[relativePath] = sanitizedSource;
+                    scanSourcesByFile[relativePath] = scanSource;
 
-                    var nsMatch = NamespaceRegex.Match(source);
+                    var nsMatch = NamespaceRegex.Match(scanSource);
 
                     var ns = nsMatch.Success
                         ? nsMatch.Groups[1].Value
                         : "Global";
 
-                    var matches = TypeRegex.Matches(source);
+                    var matches = TypeRegex.Matches(scanSource);
 
                     foreach (Match match in matches)
                     {
                         var kind = match.Groups[1].Value;
                         var typeName = match.Groups[2].Value;
 
-                        if (ReservedKeywords.Contains(typeName))
-                            continue;
-
-                        if (!IsValidIdentifier(typeName))
+                        if (!StructuralTokenGuard.IsValidDeclaredTypeName(typeName))
                             continue;
 
                         tipos.Add(new TipoInfo(
@@ -148,63 +122,71 @@ namespace RefactorScope.Parsers.CsharpParsers
                             ns,
                             kind,
                             relativePath,
-                            new List<ReferenciaInfo>()
-                        ));
+                            new List<ReferenciaInfo>()));
                     }
                 }
 
+                // Evita duplicação de tipos detectados mais de uma vez
+                tipos = tipos
+                    .GroupBy(t => $"{t.Namespace}|{t.Name}|{t.DeclaredInFile}",
+                        StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
                 var tipoNames = tipos
                     .Select(t => t.Name)
-                    .ToHashSet();
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 // =====================================================
-                // 2️⃣ Detecção de referências
+                // 2) Detecção de referências
                 // =====================================================
                 foreach (var file in csFiles)
                 {
                     var relativePath = Path.GetRelativePath(rootPath, file);
 
-                    if (!fileContents.TryGetValue(relativePath, out var source))
+                    if (!scanSourcesByFile.TryGetValue(relativePath, out var scanSource))
                         continue;
 
                     var tiposDoArquivo = tipos
-                        .Where(t => t.DeclaredInFile == relativePath)
+                        .Where(t => t.DeclaredInFile.Equals(relativePath, StringComparison.OrdinalIgnoreCase))
                         .ToList();
 
                     if (tiposDoArquivo.Count == 0)
-                    {
-                        // ainda escanear referências
-                        tiposDoArquivo = new List<TipoInfo>();
-                    }
+                        continue;
 
                     foreach (var target in tipoNames)
                     {
-                        /// Heurística robusta para identificar uso de tipo
-                        /// mesmo em generics, namespaces qualificados e arrays.
-                        var pattern =
-                            $@"(?<![\w\.]){Regex.Escape(target)}(?![\w])";
+                        if (!StructuralTokenGuard.IsValidReferenceTarget(target, tipoNames))
+                            continue;
 
-                        if (!Regex.IsMatch(source, pattern))
+                        var pattern = $@"(?<![\w\.]){Regex.Escape(target)}(?![\w])";
+
+                        if (!Regex.IsMatch(scanSource, pattern))
                             continue;
 
                         foreach (var tipo in tiposDoArquivo)
                         {
-                            if (target == tipo.Name)
+                            if (target.Equals(tipo.Name, StringComparison.OrdinalIgnoreCase))
                                 continue;
 
-                            referencias.Add(
-                                new ReferenciaInfo(
-                                    tipo.Name,
-                                    target,
-                                    TipoReferencia.Mention
-                                )
-                            );
+                            var refInfo = new ReferenciaInfo(
+                                tipo.Name,
+                                target,
+                                TipoReferencia.Mention);
+
+                            if (!referencias.Any(r =>
+                                    r.FromType == refInfo.FromType &&
+                                    r.ToType == refInfo.ToType &&
+                                    r.Kind == refInfo.Kind))
+                            {
+                                referencias.Add(refInfo);
+                            }
                         }
                     }
                 }
 
                 // =====================================================
-                // 3️⃣ Atualização das referências nos tipos
+                // 3) Atualização das referências nos tipos
                 // =====================================================
                 foreach (var tipo in tipos)
                 {
@@ -220,58 +202,66 @@ namespace RefactorScope.Parsers.CsharpParsers
                 }
 
                 // =====================================================
-                // 4️⃣ Construção dos ArquivoInfo
+                // 4) Construção dos ArquivoInfo
                 // =====================================================
                 foreach (var file in csFiles)
                 {
                     var relativePath = Path.GetRelativePath(rootPath, file);
 
-                    if (!fileContents.TryGetValue(relativePath, out var source))
+                    if (!originalSourcesByFile.TryGetValue(relativePath, out var source))
                         continue;
 
-                    var nsMatch = NamespaceRegex.Match(source);
+                    var nsMatch = NamespaceRegex.Match(scanSourcesByFile[relativePath]);
 
                     var ns = nsMatch.Success
                         ? nsMatch.Groups[1].Value
                         : "Global";
 
                     var tiposDoArquivo = tipos
-                        .Where(t => t.DeclaredInFile == relativePath)
+                        .Where(t => t.DeclaredInFile.Equals(relativePath, StringComparison.OrdinalIgnoreCase))
                         .ToList();
 
-                    arquivos.Add(
-                        new ArquivoInfo(
-                            relativePath,
-                            ns,
-                            source,
-                            tiposDoArquivo
-                        )
-                    );
+                    arquivos.Add(new ArquivoInfo(
+                        relativePath,
+                        ns,
+                        source,
+                        tiposDoArquivo));
                 }
 
                 var model = new ModeloEstrutural(
                     rootPath,
                     arquivos,
                     tipos,
-                    referencias
-                );
+                    referencias);
 
                 stopwatch.Stop();
 
-                ParserExecutionStats? stats = null;
+                long memoryUsed = Math.Max(0, GC.GetTotalMemory(false) - initialMemory);
+
+                bool isPlausible = PlausibilityEvaluator.Evaluate(model);
+
+                var status = isPlausible
+                    ? ParseStatus.Success
+                    : ParseStatus.PlausibilityWarning;
+
+                var stats = new ParserExecutionStats(
+                    stopwatch.Elapsed,
+                    memoryUsed,
+                    !isPlausible);
 
                 return new ParserResult(
-                    ParseStatus.Success,
-                    true,
+                    status,
+                    isPlausible,
                     tipos.Count / (double)Math.Max(arquivos.Count, 1),
                     Name,
                     model,
                     false,
-                    stats
-                );
+                    stats);
             }
             catch (Exception ex)
             {
+                stopwatch.Stop();
+
                 return new ParserResult(
                     ParseStatus.Failed,
                     false,
@@ -279,25 +269,173 @@ namespace RefactorScope.Parsers.CsharpParsers
                     Name,
                     null,
                     false,
-                    null,
-                    ex
-                );
+                    new ParserExecutionStats(stopwatch.Elapsed, 0, true),
+                    ex);
             }
         }
 
         /// <summary>
-        /// Validação básica de identificador C#.
+        /// Prepara uma versão do código mais segura para regex estrutural.
+        ///
+        /// Mantém o número de linhas aproximadamente estável, mas remove ruído
+        /// comum que costuma induzir falsos positivos:
+        /// - comentários de linha
+        /// - comentários de bloco
+        /// - strings normais
+        /// - strings verbatim
+        /// - caracteres literais
+        ///
+        /// Não é um lexer completo, mas já reduz bastante artefatos como
+        /// "misuse" vindos de comentários ou texto livre.
         /// </summary>
-        private static bool IsValidIdentifier(string name)
+        private static string PrepareStructuralScanSource(string source)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return false;
+            var sb = new StringBuilder(source.Length);
 
-            if (!char.IsLetter(name[0]) && name[0] != '_')
-                return false;
+            bool inLineComment = false;
+            bool inBlockComment = false;
+            bool inString = false;
+            bool inVerbatimString = false;
+            bool inChar = false;
+            bool escape = false;
 
-            return name.All(c =>
-                char.IsLetterOrDigit(c) || c == '_');
+            for (int i = 0; i < source.Length; i++)
+            {
+                char c = source[i];
+                char next = i + 1 < source.Length ? source[i + 1] : '\0';
+
+                if (inLineComment)
+                {
+                    if (c == '\n')
+                    {
+                        inLineComment = false;
+                        sb.Append('\n');
+                    }
+                    else if (c == '\r')
+                    {
+                        sb.Append('\r');
+                    }
+                    else
+                    {
+                        sb.Append(' ');
+                    }
+
+                    continue;
+                }
+
+                if (inBlockComment)
+                {
+                    if (c == '*' && next == '/')
+                    {
+                        inBlockComment = false;
+                        sb.Append("  ");
+                        i++;
+                    }
+                    else if (c == '\n' || c == '\r')
+                    {
+                        sb.Append(c);
+                    }
+                    else
+                    {
+                        sb.Append(' ');
+                    }
+
+                    continue;
+                }
+
+                if (inString)
+                {
+                    if (!escape && c == '"')
+                    {
+                        inString = false;
+                        sb.Append(' ');
+                        continue;
+                    }
+
+                    escape = !escape && c == '\\';
+
+                    sb.Append(c == '\n' || c == '\r' ? c : ' ');
+                    continue;
+                }
+
+                if (inVerbatimString)
+                {
+                    if (c == '"' && next == '"')
+                    {
+                        sb.Append("  ");
+                        i++;
+                        continue;
+                    }
+
+                    if (c == '"')
+                    {
+                        inVerbatimString = false;
+                        sb.Append(' ');
+                        continue;
+                    }
+
+                    sb.Append(c == '\n' || c == '\r' ? c : ' ');
+                    continue;
+                }
+
+                if (inChar)
+                {
+                    if (!escape && c == '\'')
+                    {
+                        inChar = false;
+                        sb.Append(' ');
+                        continue;
+                    }
+
+                    escape = !escape && c == '\\';
+                    sb.Append(c == '\n' || c == '\r' ? c : ' ');
+                    continue;
+                }
+
+                if (c == '/' && next == '/')
+                {
+                    inLineComment = true;
+                    sb.Append("  ");
+                    i++;
+                    continue;
+                }
+
+                if (c == '/' && next == '*')
+                {
+                    inBlockComment = true;
+                    sb.Append("  ");
+                    i++;
+                    continue;
+                }
+
+                if (c == '@' && next == '"')
+                {
+                    inVerbatimString = true;
+                    sb.Append("  ");
+                    i++;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    inString = true;
+                    escape = false;
+                    sb.Append(' ');
+                    continue;
+                }
+
+                if (c == '\'')
+                {
+                    inChar = true;
+                    escape = false;
+                    sb.Append(' ');
+                    continue;
+                }
+
+                sb.Append(c);
+            }
+
+            return sb.ToString();
         }
     }
 }

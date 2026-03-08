@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>RefactorScope Hub</title>
+<link rel='stylesheet' href='assets/vendor/charts.min.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.min.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/theme-cyberblue.css' />
+</head>
+<body>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Analysis Hub</div>
+        <h1>Structural Command Nexus</h1>
+        <div class="subtitle">Target Project: <b>RefactorScope</b></div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-08 22:41 UTC</div>
+        <div><b>Parser:</b> HybridParser (Incremental → Regex)</div>
+        <div><b>Target Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
+        <div><b>Readiness:</b> Ready</div>
+    </div>
+</div>
+<div class="nav-grid">
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="StructuralDashboard.html">
+    <div class="tag">Module // 01</div>
+    <div class="title">Structural</div>
+    <div class="desc">Dead code candidates, namespace drift, coupling suspicion and removal analysis.</div>
+    <div class="accent"></div>
+</a>
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="ArchitecturalDashboard.html">
+    <div class="tag">Module // 02</div>
+    <div class="title">Architectural</div>
+    <div class="desc">Health by module, score, Robert Martin metrics and architectural balance.</div>
+    <div class="accent"></div>
+</a>
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="ParsingDashboard.html">
+    <div class="tag">Module // 03</div>
+    <div class="title">Parsing</div>
+    <div class="desc">Parser confidence, structural density, throughput and parsed type coverage.</div>
+    <div class="accent"></div>
+</a>
+<a class="nav-card is-disabled" aria-disabled="true" augmented-ui="tr-clip bl-clip border">
+    <div class="tag">Module // 04</div>
+    <div class="title">Quality / Gates</div>
+    <div class="desc">Not generated yet.</div>
+    <div class="accent"></div>
+</a>
+</div>
+<div class="grid-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Total Classes</div>
+        <div class="value">139</div>
+        <div class="hint">Structural inventory</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Structural Candidates</div>
+        <div class="value">45</div>
+        <div class="hint">Zero-reference candidates</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Pattern Similarity</div>
+        <div class="value">43</div>
+        <div class="hint">Pattern-compatible candidates</div>
+    </div>
+
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Unresolved</div>
+        <div class="value">2</div>
+        <div class="hint">Manual inspection required</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Namespace Drift</div>
+        <div class="value">0</div>
+        <div class="hint">Namespace ↔ folder mismatch</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Global Namespace</div>
+        <div class="value">0</div>
+        <div class="hint">Legacy structural smell</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Isolated Core</div>
+        <div class="value">28</div>
+        <div class="hint">Protected boundaries</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Smell Index</div>
+        <div class="value">14,6</div>
+        <div class="hint">Composite hygiene indicator</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Hygiene Level</div>
+        <div class="value" style="font-size:24px;">🟢 Healthy</div>
+        <div class="hint">Structural health classification</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Implicit Coupling</div>
+        <div class="value">34</div>
+        <div class="hint">Directional dependency hotspots</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Run Overview</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Pipeline Telemetry</h3>
+
+    <div class="status-row" style="margin-bottom:14px;">
+        <div class="badge green"><span class="badge-dot"></span> Parser: HybridParser (Incremental → Regex)</div>
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 93%</div>
+        <div class="badge green"><span class="badge-dot"></span> Gates: Ready</div>
+    </div>
+
+    <div class="chart-wrap">
+        <table class="charts-css">
+            <caption>Parsing / Scope / Quality Signals</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Files</th>
+                    <td style="--size: 0.3538;">
+                        <span class="data">150</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Types</th>
+                    <td style="--size: 0.3278;">
+                        <span class="data">139</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Refs</th>
+                    <td style="--size: 1;">
+                        <span class="data">424</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: 0.9267;">
+                        <span class="data">93%</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <ul class="clean" style="margin-top:14px;">
+        <li><b>Execution:</b> 249 ms</li>
+        <li><b>Files:</b> 150 / <b>Types:</b> 139 / <b>References:</b> 424</li>
+        <li><b>Average Abstractness:</b> 0,05</li>
+        <li><b>Average Instability:</b> 0,47</li>
+        <li><b>Average Distance:</b> 0,48</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Analysis</h3>
+    <ul class="clean">
+        <li>Core isolation detected and architectural boundaries appear preserved.</li>
+        <li>Namespace hierarchy aligned with the physical project structure.</li>
+        <li>Remaining structural candidates persist after refinement.</li>
+        <li>Smell index remains in a healthy range.</li>
+        <li>No SOLID alerts detected.</li>
+        <li>Implicit coupling hotspots detected: 34.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 2</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 0</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 0</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 34</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Hub Navigation Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <h3>Available Dashboards</h3>
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Dashboard</th>
+                    <th>Primary Focus</th>
+                    <th>Target Signals</th>
+                    <th>Open</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr>
+    <td>Structural</td>
+    <td>Dead code probability / structural risk</td>
+    <td>Structural Candidates, Pattern Similarity, Unresolved, Namespace Drift</td>
+    <td><a href="StructuralDashboard.html">Open Structural Dashboard</a></td>
+</tr>
+<tr>
+    <td>Architectural</td>
+    <td>Health by module / A-I-D balance</td>
+    <td>Score, Coupling, Isolation, Abstractness, Instability, Distance</td>
+    <td><a href="ArchitecturalDashboard.html">Open Architectural Dashboard</a></td>
+</tr>
+<tr>
+    <td>Architectural Markdown</td>
+    <td>Portable textual companion report</td>
+    <td>Project structure, architectural explanation, metrics narrative</td>
+    <td><a href="Relatorio_Arquitetural.md">Open Markdown Report</a></td>
+</tr>
+<tr>
+    <td>Parsing</td>
+    <td>Parser quality / structural extraction</td>
+    <td>Confidence, Files, Types, References, Time/Class</td>
+    <td><a href="ParsingDashboard.html">Open Parsing Dashboard</a></td>
+</tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Refactor Command Summary</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Code Hygiene</h3>
+    <ul class="clean">
+        <li><b>CodeSmellIndex:</b> 14,6</li>
+        <li><b>Hygiene:</b> 🟢 Healthy</li>
+        <li><b>Dead Code Candidates:</b> 46</li>
+        <li><b>Namespace Drift:</b> 0</li>
+        <li><b>Global Namespace:</b> 0</li>
+        <li><b>Isolated Core:</b> 28</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Refactor Effort Estimation</h3>
+    <ul class="clean">
+        <li><b>RDI:</b> 24</li>
+        <li><b>Difficulty:</b> Low</li>
+        <li><b>Estimated Hours:</b> 9,6</li>
+        <li><b>Confidence:</b> 0,58</li>
+    </ul>
+
+    <div class="chart-wrap" style="margin-top:16px;">
+        <table class="charts-css">
+            <caption>Estimated Refactor Load</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Hours</th>
+                    <td style="--size: 0.12;">
+                        <span class="data">9,6h</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: 0.583;">
+                        <span class="data">0,58</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div></div>
+<div class='footer'>Generated by RefactorScope Hub // Cyberpunk Publication Layout</div>
+</div>
+</body>
+</html>
+

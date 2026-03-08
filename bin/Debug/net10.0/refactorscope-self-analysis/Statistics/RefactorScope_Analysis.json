@@ -19,6 +19,7 @@
     "ProjectStructureExporter",
     "ConfigLoader",
     "ConfigValidator",
+    "CrashLogger",
     "TerminalRenderer",
     "SolidAnalyzer",
     "FitnessGateConfigResolver",
@@ -39,7 +40,11 @@
     "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
-    "DumpStrategyResolver"
+    "DumpStrategyResolver",
+    "ArchitecturalDashboardExporterAdapter",
+    "ParsingDashboardExporterAdapter",
+    "StructuralDashboardExporterAdapter",
+    "HybridParser"
   ],
   "PatternSimilarity": [
     "ArchitecturalClassificationAnalyzer",
@@ -60,6 +65,7 @@
     "ProjectStructureExporter",
     "ConfigLoader",
     "ConfigValidator",
+    "CrashLogger",
     "TerminalRenderer",
     "SolidAnalyzer",
     "FitnessGateConfigResolver",
@@ -80,10 +86,14 @@
     "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
-    "DumpStrategyResolver"
+    "DumpStrategyResolver",
+    "ArchitecturalDashboardExporterAdapter",
+    "ParsingDashboardExporterAdapter",
+    "StructuralDashboardExporterAdapter"
   ],
   "Unresolved": [
-    "FakeZombieService"
+    "FakeZombieService",
+    "HybridParser"
   ],
   "IsolatedCoreTypes": [
     "ArchitecturalClassificationAnalyzer",

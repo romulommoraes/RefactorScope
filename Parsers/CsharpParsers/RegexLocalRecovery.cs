@@ -1,5 +1,5 @@
 ﻿using RefactorScope.Core.Model;
-using System.Collections.Generic;
+using RefactorScope.Parsers.Common;
 using System.Text.RegularExpressions;
 
 namespace RefactorScope.Parsers.CsharpParsers
@@ -8,26 +8,17 @@ namespace RefactorScope.Parsers.CsharpParsers
     /// Estratégia de recuperação local baseada em Regex.
     ///
     /// Utilizada quando o TextualParser perde o escopo da classe
-    /// (geralmente por desbalanceamento de chaves causado por:
-    /// interpolated strings, lambdas, inicializadores complexos, etc).
+    /// por desbalanceamento de chaves ou ruído estrutural.
     ///
-    /// IMPORTANTE
-    /// ----------
-    /// • Atua apenas no trecho da classe atual
-    /// • Não reanalisa o arquivo inteiro
-    /// • Não substitui o parser textual
-    /// • Apenas tenta recuperar referências que podem ter sido perdidas
+    /// Princípios:
+    /// - atua apenas no trecho da classe atual
+    /// - não reanalisa o arquivo inteiro
+    /// - não substitui o parser textual
+    /// - tenta recuperar apenas referências plausíveis
     ///
-    /// Complexidade aproximada:
-    ///
-    /// O(n × t)
-    ///
-    /// onde:
-    /// n = tamanho do trecho analisado
-    /// t = número de tipos conhecidos no modelo
-    ///
-    /// Como o trecho normalmente é apenas a classe atual,
-    /// o impacto de performance é mínimo.
+    /// Segurança:
+    /// - só aceita alvos presentes no conjunto de tipos conhecidos
+    /// - rejeita falsos positivos léxicos via StructuralTokenGuard
     /// </summary>
     internal static class RegexLocalRecovery
     {
@@ -43,6 +34,9 @@ namespace RefactorScope.Parsers.CsharpParsers
                 if (target == fromType)
                     continue;
 
+                if (!StructuralTokenGuard.IsValidReferenceTarget(target, knownTypes))
+                    continue;
+
                 if (Regex.IsMatch(classSource, $@"\b{Regex.Escape(target)}\b"))
                 {
                     refs.Add(new ReferenciaInfo(
@@ -52,7 +46,11 @@ namespace RefactorScope.Parsers.CsharpParsers
                 }
             }
 
-            return refs;
+            return refs
+                .GroupBy(r => $"{r.FromType}|{r.ToType}|{r.Kind}",
+                    StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .ToList();
         }
     }
 }

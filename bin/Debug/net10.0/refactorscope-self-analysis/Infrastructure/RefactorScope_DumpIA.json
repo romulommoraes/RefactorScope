@@ -39,18 +39,8 @@
       "Kind": 0
     },
     {
-      "FromType": "ConfigLoader",
-      "ToType": "RefactorScopeConfig",
-      "Kind": 3
-    },
-    {
       "FromType": "ConfigValidator",
       "ToType": "RefactorScopeConfig",
-      "Kind": 0
-    },
-    {
-      "FromType": "LayerRuleEvaluator",
-      "ToType": "TipoInfo",
       "Kind": 0
     },
     {
@@ -59,13 +49,13 @@
       "Kind": 0
     },
     {
-      "FromType": "TerminalRenderer",
-      "ToType": "HygieneReport",
+      "FromType": "LayerRuleEvaluator",
+      "ToType": "TipoInfo",
       "Kind": 0
     },
     {
       "FromType": "TerminalRenderer",
-      "ToType": "EffortEstimate",
+      "ToType": "HygieneReport",
       "Kind": 0
     }
   ]

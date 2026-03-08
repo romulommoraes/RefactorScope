@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-08 16:33 UTC  
+📅 **Execution Time:** 2026-03-08 22:41 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -41,6 +41,11 @@
 │   │   │   │   ├── Segmentation
 │   │   │   │   ├── Strategies
 │   │   ├── Exporters
+│   │   │   ├── Adapters
+│   │   │   ├── Assets
+│   │   │   │   ├── Css
+│   │   │   │   ├── Vendor
+│   │   │   ├── Styling
 │   │   ├── Infrastructure
 │   │   ├── Parsers
 │   │   │   ├── Analysis
@@ -57,9 +62,9 @@
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 40
-- **Pattern Similarity:** 39
-- **Unresolved:** 1
+- **Structural Candidates:** 45
+- **Pattern Similarity:** 43
+- **Unresolved:** 2
 
 ---
 
@@ -69,7 +74,7 @@
 
 - **Score:** `54,5`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 4,74
+- **Coupling:** 3,37
 - **Isolation:** 0,53
 - **Core Density:** 1,00
 
@@ -89,27 +94,27 @@
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
-### 🟡 Estimation
+### 🟢 Estimation
 
-- **Score:** `66,3`
+- **Score:** `70,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 1,25
+- **Coupling:** 1,00
 - **Isolation:** 0,00
-- **Core Density:** 0,25
+- **Core Density:** 0,00
 
 ### 🟢 Exporters
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 6,69
+- **Coupling:** 4,06
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟢 Infrastructure
 
-- **Score:** `79,0`
+- **Score:** `85,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 1,40
+- **Coupling:** 1,00
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -117,23 +122,23 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 0,28
-- **Isolation:** 0,25
-- **Core Density:** 0,99
+- **Coupling:** 0,12
+- **Isolation:** 0,27
+- **Core Density:** 0,98
 
 ### 🟢 Execution
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 3,13
+- **Coupling:** 2,13
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟡 Parsers
 
-- **Score:** `50,0`
-- **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 8,00
+- **Score:** `48,2`
+- **Unresolved Candidates:** 🔴 1 (7%)
+- **Coupling:** 3,21
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -141,9 +146,9 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 1,75
+- **Coupling:** 4,00
 - **Isolation:** 0,00
-- **Core Density:** 0,75
+- **Core Density:** 0,00
 
 ---
 
@@ -151,41 +156,40 @@
 
 | Type | Module | Target Module | Fan-Out | Fan-In | Dominance | Volume |
 |------|--------|---------------|--------|--------|-----------|--------|
-| ArchitecturalClassificationAnalyzer | Analyzers | Core | 11 | 0 | 1,00 | 11 |
-| CoreIsolationAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
-| CouplingAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
-| EntryPointHeuristicAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
-| FitnessGateAnalyzer | Analyzers | Core | 12 | 0 | 1,00 | 12 |
-| ImplicitCouplingAnalyzer | Analyzers | Core | 8 | 0 | 1,00 | 8 |
-| ProjectStructureAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
-| StructuralCandidateAnalyzer | Analyzers | Core | 6 | 0 | 1,00 | 6 |
-| StructuralCandidateRefinementAnalyzer | Analyzers | Core | 11 | 0 | 1,00 | 11 |
-| EffortEstimator | Estimation | Core | 10 | 2 | 0,83 | 10 |
-| DatasetExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
-| DumpAnaliseExporter | Exporters | Core | 7 | 0 | 1,00 | 7 |
-| FitnessGateCsvExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
-| HtmlDashboardExporter | Exporters | Core | 13 | 0 | 1,00 | 13 |
-| HubDashboardExporter | Exporters | Core | 12 | 2 | 0,86 | 12 |
-| MarkdownReportExporter | Exporters | Core | 15 | 2 | 0,88 | 15 |
-| StructuralInventoryExporter | Exporters | Core | 18 | 3 | 0,86 | 18 |
-| SolidAnalyzer | Analyzers | Core | 21 | 0 | 1,00 | 21 |
-| AnalysisOrchestrator | Core | Infrastructure | 15 | 0 | 1,00 | 15 |
-| ParserSelector | Core | Parsers | 16 | 0 | 1,00 | 16 |
-| RDICalculator | Estimation | Core | 12 | 2 | 0,86 | 12 |
-| DumpStrategyResolver | Execution | Core | 11 | 0 | 1,00 | 11 |
-| CSharpRegexParser | Parsers | Core | 22 | 2 | 0,92 | 22 |
-| HigienizadorLexico | Parsers | Core | 12 | 2 | 0,86 | 12 |
-| CSharpTextualParser | Parsers | Core | 30 | 3 | 0,91 | 30 |
-| HybridParser | Parsers | Core | 10 | 2 | 0,83 | 10 |
-| ValidationEngine | Statistics | Core | 12 | 2 | 0,86 | 12 |
-| PublicZeroUsageOmissionRule | Analyzers | Core | 6 | 2 | 0,75 | 6 |
-| LayerSegmentationResolver | Execution | Core | 10 | 2 | 0,83 | 10 |
-| TopFolderSegmentationResolver | Execution | Core | 8 | 2 | 0,80 | 8 |
-| SegmentedDumpStrategy | Execution | Core | 6 | 2 | 0,75 | 6 |
-| HybridAdaptiveParser | Parsers | Core | 11 | 2 | 0,85 | 11 |
-| HybridIncrementalParser | Parsers | Core | 11 | 2 | 0,85 | 11 |
-| HybridSelectiveParser | Parsers | Core | 10 | 2 | 0,83 | 10 |
-| misuse | Exporters | Core | 11 | 1 | 0,92 | 11 |
+| ArchitecturalClassificationAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
+| CoreIsolationAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
+| FitnessGateAnalyzer | Analyzers | Core | 8 | 0 | 1,00 | 8 |
+| ImplicitCouplingAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
+| StructuralCandidateAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
+| StructuralCandidateRefinementAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
+| EffortEstimator | Estimation | Core | 4 | 1 | 0,80 | 4 |
+| ArchitecturalDashboardExporter | Exporters | Core | 9 | 1 | 0,90 | 9 |
+| ChartsRenderer | Exporters | Core | 5 | 1 | 0,83 | 5 |
+| DumpAnaliseExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
+| HtmlDashboardExporter | Exporters | Core | 7 | 0 | 1,00 | 7 |
+| HubDashboardExporter | Exporters | Core | 8 | 1 | 0,89 | 8 |
+| MarkdownReportExporter | Exporters | Core | 8 | 1 | 0,89 | 8 |
+| StructuralInventoryExporter | Exporters | Core | 10 | 1 | 0,91 | 10 |
+| SolidAnalyzer | Analyzers | Core | 12 | 0 | 1,00 | 12 |
+| AnalysisOrchestrator | Core | Estimation | 7 | 0 | 1,00 | 7 |
+| ParserSelector | Core | Parsers | 9 | 0 | 1,00 | 9 |
+| RDICalculator | Estimation | Core | 5 | 1 | 0,83 | 5 |
+| DumpStrategyResolver | Execution | Core | 7 | 0 | 1,00 | 7 |
+| ArchitecturalDashboardExporterAdapter | Exporters | Core | 5 | 0 | 1,00 | 5 |
+| CSharpRegexParser | Parsers | Core | 11 | 1 | 0,92 | 11 |
+| HigienizadorLexico | Parsers | Core | 13 | 1 | 0,93 | 13 |
+| CSharpTextualParser | Parsers | Core | 13 | 2 | 0,87 | 13 |
+| ValidationEngine | Statistics | Core | 4 | 1 | 0,80 | 4 |
+| CoreDependencyAbsolutionRule | Analyzers | Core | 4 | 1 | 0,80 | 4 |
+| OrchestratorAbsolutionRule | Analyzers | Core | 4 | 1 | 0,80 | 4 |
+| PublicZeroUsageOmissionRule | Analyzers | Core | 4 | 1 | 0,80 | 4 |
+| LayerSegmentationResolver | Execution | Core | 5 | 1 | 0,83 | 5 |
+| TopFolderSegmentationResolver | Execution | Core | 4 | 1 | 0,80 | 4 |
+| GlobalDumpStrategy | Execution | Core | 4 | 1 | 0,80 | 4 |
+| SegmentedDumpStrategy | Execution | Core | 5 | 1 | 0,83 | 5 |
+| HybridAdaptiveParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
+| HybridIncrementalParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
+| HybridSelectiveParser | Parsers | Core | 8 | 1 | 0,89 | 8 |
 
 Possible architectural coupling detected based on structural heuristics.
 Manual inspection is recommended.
@@ -196,16 +200,16 @@ Manual inspection is recommended.
 
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
-| Analyzers | 0,11 | 0,69 | 0,21 |
+| Analyzers | 0,11 | 0,73 | 0,17 |
 | CLI | 0,00 | 0,00 | 1,00 |
 | Debug | 0,00 | 0,00 | 1,00 |
-| Estimation | 0,00 | 0,33 | 0,67 |
-| Exporters | 0,08 | 0,85 | 0,07 |
-| Infrastructure | 0,00 | 0,47 | 0,53 |
-| Core | 0,11 | 0,04 | 0,85 |
-| Execution | 0,25 | 0,52 | 0,23 |
-| Parsers | 0,00 | 0,74 | 0,26 |
-| Statistics | 0,00 | 0,35 | 0,65 |
+| Estimation | 0,00 | 0,50 | 0,50 |
+| Exporters | 0,00 | 0,89 | 0,11 |
+| Infrastructure | 0,00 | 0,63 | 0,38 |
+| Core | 0,12 | 0,02 | 0,86 |
+| Execution | 0,25 | 0,55 | 0,20 |
+| Parsers | 0,00 | 0,63 | 0,37 |
+| Statistics | 0,00 | 0,80 | 0,20 |
 
 ---
 

@@ -1,4 +1,355 @@
 ==========================================
+ARQUIVO: ArchitecturalDashboardExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\ArchitecturalDashboardExporter.cs
+==========================================
+using RefactorScope.Core.Metrics;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Results;
+using RefactorScope.Exporters.Styling;
+using System.Text;
+
+namespace RefactorScope.Exporters
+{
+    /// <summary>
+    /// Exporta o dashboard arquitetural em HTML.
+    ///
+    /// Objetivo
+    /// --------
+    /// Fornecer uma visualização executiva e navegável da saúde arquitetural,
+    /// complementar ao relatório Markdown.
+    ///
+    /// Escopo atual
+    /// ------------
+    /// - saúde por módulo
+    /// - métricas de Robert Martin (A / I / D)
+    /// - coupling implícito
+    /// - fitness gates
+    /// - estrutura do projeto em formato textual estilizado
+    ///
+    /// Observação
+    /// ----------
+    /// Esta versão usa o shell visual compartilhado da suíte HTML,
+    /// permitindo seleção de tema sem alterar a estrutura do dashboard.
+    /// </summary>
+    public sealed class ArchitecturalDashboardExporter
+    {
+        public void Export(ConsolidatedReport report, string outputPath)
+        {
+            Export(report, outputPath, DashboardThemeSelector.DefaultTheme);
+        }
+
+        public void Export(
+            ConsolidatedReport report,
+            string outputPath,
+            string themeFileName)
+        {
+            var html = GenerateHtml(report, themeFileName);
+            File.WriteAllText(outputPath, html, Encoding.UTF8);
+        }
+
+        private string GenerateHtml(
+            ConsolidatedReport report,
+            string themeFileName)
+        {
+            var architecture = report.GetResult<ArchitecturalClassificationResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var coupling = report.GetResult<CouplingResult>();
+            var implicitCoupling = report.GetResult<ImplicitCouplingResult>();
+            var fitness = report.GetResult<FitnessGateResult>();
+            var structure = report.GetResult<ProjectStructureResult>();
+
+            var structuralCandidates = report.GetStructuralCandidates();
+            var patternSimilarity = report.GetPatternSimilarityCandidates();
+            var unresolved = report.GetEffectiveUnresolvedCandidates();
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine(DashboardHtmlShell.RenderDocumentStart(
+                "Architectural Dashboard",
+                themeFileName));
+
+            sb.AppendLine("<div class='page-header' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>");
+            sb.AppendLine("<div class='brand'>");
+            sb.AppendLine("<div class='brand-kicker'>RefactorScope // Architectural Layer</div>");
+            sb.AppendLine("<h1>Architectural Dashboard</h1>");
+            sb.AppendLine($"<div class='subtitle'>Target Scope: <b>{Html(report.TargetScope)}</b></div>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("<div class='run-meta'>");
+            sb.AppendLine($"<div><b>Generated:</b> {report.ExecutionTime:yyyy-MM-dd HH:mm} UTC</div>");
+            sb.AppendLine($"<div><b>View:</b> Executive architectural summary</div>");
+            sb.AppendLine($"<div><b>Scope:</b> {Html(report.TargetScope)}</div>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            var modules = architecture?.Items
+                .GroupBy(i => i.Folder)
+                .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+                .ToList()
+                ?? new List<IGrouping<string, ArchitecturalClassificationItem>>();
+
+            var avgScore = CalculateAverageScore(modules, unresolved, isolated, coupling);
+            var avgAbstractness = coupling?.AbstractnessByModule.Any() == true
+                ? coupling.AbstractnessByModule.Values.Average()
+                : 0;
+
+            var avgInstability = coupling?.InstabilityByModule.Any() == true
+                ? coupling.InstabilityByModule.Values.Average()
+                : 0;
+
+            var avgDistance = coupling?.DistanceByModule.Any() == true
+                ? coupling.DistanceByModule.Values.Average()
+                : 0;
+
+            var fitStatus = fitness == null
+                ? "Unknown"
+                : fitness.HasFailure ? "Attention Required" : "Ready";
+
+            sb.AppendLine("<div class='grid-kpis'>");
+            AppendKpi(sb, "Modules", modules.Count.ToString(), "Detected architectural folders");
+            AppendKpi(sb, "Average Score", $"{avgScore:0.0}", "Composite health by module");
+            AppendKpi(sb, "Unresolved", unresolved.Count.ToString(), "Final unresolved structural candidates", unresolved.Count > 0 ? "alert" : "good");
+            AppendKpi(sb, "Fitness", fitStatus, "Overall architectural readiness", fitness == null ? "warning" : fitness.HasFailure ? "alert" : "good");
+            AppendKpi(sb, "Abstractness (A)", $"{avgAbstractness:0.00}", "Average architectural abstraction");
+            AppendKpi(sb, "Instability (I)", $"{avgInstability:0.00}", "Average outgoing dependency pressure");
+            AppendKpi(sb, "Distance (D)", $"{avgDistance:0.00}", "Average distance from main sequence");
+            AppendKpi(sb, "Implicit Coupling", $"{implicitCoupling?.Suspicions.Count ?? 0}", "Potential dependency hotspots", (implicitCoupling?.Suspicions.Count ?? 0) > 0 ? "warning" : "good");
+            sb.AppendLine("</div>");
+
+            sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Module Health</h2>
+        <div class="line"></div>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>");
+            sb.AppendLine("<h3>Architectural Health by Module</h3>");
+            sb.AppendLine("<div class='table-wrap'>");
+            sb.AppendLine("<table>");
+            sb.AppendLine("<tr><th>Module</th><th>Score</th><th>Unresolved</th><th>Coupling</th><th>Isolation</th><th>Core Density</th></tr>");
+
+            foreach (var module in modules)
+            {
+                var total = module.Count();
+                if (total == 0) continue;
+
+                var unresolvedCount = unresolved.Count(z => module.Any(m => m.TypeName == z));
+                var isolatedCount = isolated?.IsolatedCoreTypes.Count(i => module.Any(m => m.TypeName == i)) ?? 0;
+                var fanOut = coupling?.ModuleFanOut.GetValueOrDefault(module.Key) ?? 0;
+                var coreCount = module.Count(t => t.Layer == "Core");
+
+                var candidateRate = unresolvedCount / (double)total;
+                var isolationRate = isolatedCount / (double)total;
+                var couplingRate = fanOut / (double)total;
+                var coreDensity = coreCount / (double)total;
+
+                var score = ArchitecturalScoreCalculator.Calculate(
+                    module.Key,
+                    total,
+                    unresolvedCount,
+                    isolatedCount,
+                    fanOut,
+                    coreCount);
+
+                score = Math.Max(0, Math.Min(100, score));
+
+                sb.AppendLine("<tr>");
+                sb.AppendLine($"<td>{Html(module.Key)}</td>");
+                sb.AppendLine($"<td>{ScoreHtml(score)}</td>");
+                sb.AppendLine($"<td>{unresolvedCount} ({candidateRate:0%})</td>");
+                sb.AppendLine($"<td>{couplingRate:0.00}</td>");
+                sb.AppendLine($"<td>{isolationRate:0.00}</td>");
+                sb.AppendLine($"<td>{coreDensity:0.00}</td>");
+                sb.AppendLine("</tr>");
+            }
+
+            sb.AppendLine("</table>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Architectural Signals</h2>
+        <div class="line"></div>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("<div class='panel-grid'>");
+
+            sb.AppendLine("<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>");
+            sb.AppendLine("<h3>Interpretation</h3>");
+            sb.AppendLine("<ul class='clean'>");
+            sb.AppendLine($"<li>Structural Candidates: {structuralCandidates.Count}</li>");
+            sb.AppendLine($"<li>Pattern Similarity: {patternSimilarity.Count}</li>");
+            sb.AppendLine($"<li>Unresolved: {unresolved.Count}</li>");
+            sb.AppendLine($"<li>Implicit Coupling Suspicions: {implicitCoupling?.Suspicions.Count ?? 0}</li>");
+            sb.AppendLine($"<li>Average Abstractness: {avgAbstractness:0.00}</li>");
+            sb.AppendLine($"<li>Average Instability: {avgInstability:0.00}</li>");
+            sb.AppendLine($"<li>Average Distance: {avgDistance:0.00}</li>");
+            sb.AppendLine("</ul>");
+
+            sb.AppendLine("<div class='note' style='margin-top:14px;'>");
+            sb.AppendLine("""
+This dashboard is an executive architectural view.
+It complements the Markdown report rather than replacing it.
+The Markdown artifact remains useful for direct textual reading, project tree inspection and documentation-friendly export.
+""");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            sb.AppendLine("<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>");
+            sb.AppendLine("<h3>Fitness Gates</h3>");
+
+            if (fitness != null && fitness.Gates.Any())
+            {
+                sb.AppendLine("<div class='table-wrap'>");
+                sb.AppendLine("<table>");
+                sb.AppendLine("<tr><th>Gate</th><th>Status</th><th>Message</th></tr>");
+
+                foreach (var gate in fitness.Gates)
+                {
+                    sb.AppendLine("<tr>");
+                    sb.AppendLine($"<td>{Html(gate.GateName)}</td>");
+                    sb.AppendLine($"<td>{GateStatusHtml(gate.Status)}</td>");
+                    sb.AppendLine($"<td>{Html(gate.Message)}</td>");
+                    sb.AppendLine("</tr>");
+                }
+
+                sb.AppendLine("</table>");
+                sb.AppendLine("</div>");
+            }
+            else
+            {
+                sb.AppendLine("<div class='note'>No fitness gate information available for this execution.</div>");
+            }
+
+            sb.AppendLine("</div>");
+            sb.AppendLine("</div>");
+
+            if (structure != null && structure.Lines.Any())
+            {
+                sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Project Structure</h2>
+        <div class="line"></div>
+    </div>
+</div>
+""");
+
+                sb.AppendLine("<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>");
+                sb.AppendLine("<h3>Root Structure Snapshot</h3>");
+                sb.AppendLine("<pre class='tree-view'>");
+
+                foreach (var line in structure.Lines)
+                    sb.AppendLine(Html(line));
+
+                sb.AppendLine("</pre>");
+                sb.AppendLine("</div>");
+            }
+
+            sb.AppendLine(DashboardHtmlShell.RenderDocumentEnd(
+                "Generated by RefactorScope Architectural Dashboard"));
+
+            return sb.ToString();
+        }
+
+        private static void AppendKpi(
+            StringBuilder sb,
+            string label,
+            string value,
+            string hint,
+            string stateClass = "")
+        {
+            var cssClass = string.IsNullOrWhiteSpace(stateClass)
+                ? "kpi"
+                : $"kpi {stateClass}";
+
+            sb.AppendLine($"<div class='{cssClass}' augmented-ui='tr-clip bl-clip border'>");
+            sb.AppendLine($"<div class='label'>{Html(label)}</div>");
+            sb.AppendLine($"<div class='value'>{Html(value)}</div>");
+            sb.AppendLine($"<div class='hint'>{Html(hint)}</div>");
+            sb.AppendLine("</div>");
+        }
+
+        private static double CalculateAverageScore(
+            IReadOnlyList<IGrouping<string, ArchitecturalClassificationItem>> modules,
+            IReadOnlyList<string> unresolved,
+            CoreIsolationResult? isolated,
+            CouplingResult? coupling)
+        {
+            if (modules.Count == 0)
+                return 0;
+
+            var scores = new List<double>();
+
+            foreach (var module in modules)
+            {
+                var total = module.Count();
+                if (total == 0) continue;
+
+                var unresolvedCount = unresolved.Count(z => module.Any(m => m.TypeName == z));
+                var isolatedCount = isolated?.IsolatedCoreTypes.Count(i => module.Any(m => m.TypeName == i)) ?? 0;
+                var fanOut = coupling?.ModuleFanOut.GetValueOrDefault(module.Key) ?? 0;
+                var coreCount = module.Count(t => t.Layer == "Core");
+
+                var score = ArchitecturalScoreCalculator.Calculate(
+                    module.Key,
+                    total,
+                    unresolvedCount,
+                    isolatedCount,
+                    fanOut,
+                    coreCount);
+
+                scores.Add(Math.Max(0, Math.Min(100, score)));
+            }
+
+            return scores.Count == 0 ? 0 : scores.Average();
+        }
+
+        private static string ScoreHtml(double score)
+        {
+            var css = score >= 70
+                ? "metric-good"
+                : score >= 40
+                    ? "metric-warn"
+                    : "metric-bad";
+
+            return $"<span class='{css}'>{score:0.0}</span>";
+        }
+
+        private static string GateStatusHtml(GateStatus status)
+        {
+            return status switch
+            {
+                GateStatus.Pass => "<span class='metric-good'>PASS</span>",
+                GateStatus.Warn => "<span class='metric-warn'>WARN</span>",
+                GateStatus.Fail => "<span class='metric-bad'>FAIL</span>",
+                _ => Html(status.ToString())
+            };
+        }
+
+        private static string Html(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            return text
+                .Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&#39;");
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: ChartsRenderer.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\ChartsRenderer.cs
 ==========================================
@@ -528,183 +879,162 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\HtmlD
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Core.Configuration;
+using RefactorScope.Exporters.Styling;
 using System.Text;
 
 namespace RefactorScope.Exporters
 {
-    public class HtmlDashboardExporter : IExporter
+    /// <summary>
+    /// Exportador do Hub HTML.
+    ///
+    /// Responsabilidade
+    /// ----------------
+    /// Gerar apenas o index.html do hub visual da suíte de dashboards.
+    ///
+    /// Este exporter:
+    /// - garante assets CSS compartilhados
+    /// - resolve o tema visual
+    /// - detecta quais dashboards já foram gerados
+    /// - constrói o ponto central de navegação
+    /// </summary>
+    public sealed class HtmlDashboardExporter : IExporter
     {
-        public string Name => "html-dashboard";
+        public string Name => "html-dashboard-hub";
 
-        public void Export(AnalysisContext context, ConsolidatedReport report, string outputPath)
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
         {
-            var dashboardDir = Path.Combine(outputPath, "dashboard");
-            Directory.CreateDirectory(dashboardDir);
-
-            var htmlPath = Path.Combine(dashboardDir, "index.html");
-
-            var unresolved = report.GetEffectiveUnresolvedCandidates();
-            var structural = report.GetStructuralCandidates();
-            var patternSimilarity = report.GetPatternSimilarityCandidates();
-
-            var html = BuildHtml(unresolved, structural, patternSimilarity);
-
-            File.WriteAllText(htmlPath, html);
+            ExportHub(
+                context,
+                report,
+                parsingResult: null,
+                outputPath: outputPath);
         }
 
-        private string BuildHtml(
-            IReadOnlyList<string> unresolved,
-            IReadOnlyList<string> structural,
-            IReadOnlyList<string> patternSimilarity)
+        public void ExportHub(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IParserResult? parsingResult,
+            string outputPath)
         {
-            var unresolvedList = new StringBuilder();
-            foreach (var item in unresolved)
-                unresolvedList.AppendLine($"<li class='unresolved'>{item}</li>");
+            Directory.CreateDirectory(outputPath);
 
-            var structuralList = new StringBuilder();
-            foreach (var item in structural)
-                structuralList.AppendLine($"<li>{item}</li>");
+            var themeFileName = ResolveThemeFileName(context);
 
-            var patternSimilarityList = new StringBuilder();
-            foreach (var item in patternSimilarity)
-                patternSimilarityList.AppendLine($"<li class='pattern'>{item}</li>");
+            //legado
+            //EnsureCssAssets(outputPath, themeFileName);
+            //EnsureVendorAssets(outputPath);
 
-            return $@"
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset='UTF-8'>
-<title>RefactorScope Dashboard</title>
-<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+            DashboardAssetCopier.CopyAll(outputPath, themeFileName);
 
-<style>
-body {{ background:#111; color:#eee; font-family:Arial; }}
+            var structuralFileName =
+                File.Exists(Path.Combine(outputPath, "StructuralDashboard.html"))
+                    ? "StructuralDashboard.html"
+                    : string.Empty;
 
-.container {{ display:flex; flex-wrap:wrap; }}
+            var architecturalFileName =
+                File.Exists(Path.Combine(outputPath, "ArchitecturalDashboard.html"))
+                    ? "ArchitecturalDashboard.html"
+                    : string.Empty;
 
-.card {{
-    background:#1b1b1b;
-    margin:20px;
-    padding:20px;
-    border-radius:8px;
-    width:45%;
-}}
+            var architecturalMarkdownFileName =
+                File.Exists(Path.Combine(outputPath, "Relatorio_Arquitetural.md"))
+                    ? "Relatorio_Arquitetural.md"
+                    : string.Empty;
 
-.section {{
-    margin:20px;
-    padding:20px;
-    background:#1b1b1b;
-    border-radius:8px;
-}}
+            var parsingFileName =
+                File.Exists(Path.Combine(outputPath, "ParsingDashboard.html"))
+                    ? "ParsingDashboard.html"
+                    : string.Empty;
 
-.count {{
-    font-size:20px;
-    font-weight:bold;
-}}
+            var qualityFileName =
+                File.Exists(Path.Combine(outputPath, "QualityDashboard.html"))
+                    ? "QualityDashboard.html"
+                    : string.Empty;
 
-.unresolved {{
-    color:#ff4c4c;
-    font-weight:bold;
-}}
+            var hubExporter = new HubDashboardExporter();
 
-.pattern {{
-    color:#06d6a0;
-}}
-
-</style>
-
-</head>
-<body>
-
-<h1>RefactorScope Dashboard</h1>
-
-<div class='section'>
-<h2>Structural Candidate Analysis (ADR-EXP-007)</h2>
-
-<p class='count'>Structural Candidates: {structural.Count}</p>
-
-<p class='count'>
-Pattern Similarity: 
-<span style='color:#06d6a0'>{patternSimilarity.Count}</span>
-</p>
-
-<p class='count'>
-Unresolved: 
-<span style='color:#ff4c4c'>{unresolved.Count}</span>
-</p>
-
-<h3>Unresolved Candidates</h3>
-<ul>
-{unresolvedList}
-</ul>
-
-<h3>Pattern Similarity</h3>
-<ul>
-{patternSimilarityList}
-</ul>
-
-<h3>All Structural Candidates</h3>
-<ul>
-{structuralList}
-</ul>
-
-</div>
-
-<div class='container'>
-<div class='card'>
-<canvas id='radarChart'></canvas>
-</div>
-
-<div class='card'>
-<canvas id='heatChart'></canvas>
-</div>
-</div>
-
-<script>
-
-function loadCSV(path, callback) {{
-    Papa.parse(path, {{
-        download: true,
-        header: true,
-        complete: results => callback(results.data)
-    }});
-}}
-
-loadCSV('../dataset_arch_health.csv', data => {{
-
-    const modules = data.map(x => x.Module);
-    const candidates = data.map(x => parseFloat(x.CandidateRate));
-    const isolation = data.map(x => parseFloat(x.IsolationRate));
-
-    new Chart(document.getElementById('radarChart'), {{
-        type: 'radar',
-        data: {{
-            labels: modules,
-            datasets: [
-                {{ label: 'Structural Candidates', data: candidates }},
-                {{ label: 'Isolation', data: isolation }}
-            ]
-        }}
-    }});
-
-    new Chart(document.getElementById('heatChart'), {{
-        type: 'bar',
-        data: {{
-            labels: modules,
-            datasets: [
-                {{ label: 'Candidate Density', data: candidates }}
-            ]
-        }}
-    }});
-
-}});
-
-</script>
-
-</body>
-</html>";
+            hubExporter.Export(
+                report,
+                outputPath,
+                parserName: parsingResult?.ParserName ?? "Unavailable",
+                parserConfidence: parsingResult?.Confidence ?? 0,
+                parsingExecution: parsingResult?.Stats?.ExecutionTime ?? TimeSpan.Zero,
+                parsingFiles: parsingResult?.Model?.Arquivos.Count ?? 0,
+                parsingTypes: parsingResult?.Model?.Tipos.Count ?? 0,
+                parsingReferences: parsingResult?.Model?.Referencias.Count ?? 0,
+                structuralFileName: structuralFileName,
+                architecturalFileName: architecturalFileName,
+                parsingFileName: parsingFileName,
+                qualityFileName: qualityFileName,
+                architecturalMarkdownFileName: architecturalMarkdownFileName,
+                themeFileName: themeFileName);
         }
+
+        private static string ResolveThemeFileName(AnalysisContext context)
+        {
+            try
+            {
+                var config = context?.Config;
+                var themeName = TryReadDashboardTheme(config);
+                return DashboardThemeSelector.ResolveFileName(themeName);
+            }
+            catch
+            {
+                return DashboardThemeSelector.DefaultTheme;
+            }
+        }
+
+        private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+        {
+            if (config == null)
+                return null;
+
+            var prop = config.GetType().GetProperty("DashboardTheme");
+            if (prop == null)
+                return null;
+
+            return prop.GetValue(config) as string;
+        }
+
+        //private static void EnsureCssAssets(string outputPath, string themeFileName)
+        //{
+        //    var cssDir = Path.Combine(outputPath, "assets", "css");
+        //    Directory.CreateDirectory(cssDir);
+
+        //    var baseCssPath = Path.Combine(cssDir, "dashboard-base.css");
+        //    var componentsCssPath = Path.Combine(cssDir, "dashboard-components.css");
+        //    var themeCssPath = Path.Combine(cssDir, themeFileName);
+
+        //    if (!File.Exists(baseCssPath))
+        //        File.WriteAllText(baseCssPath, DashboardBaseCss(), Encoding.UTF8);
+
+        //    if (!File.Exists(componentsCssPath))
+        //        File.WriteAllText(componentsCssPath, DashboardComponentsCss(), Encoding.UTF8);
+
+        //    if (!File.Exists(themeCssPath))
+        //        File.WriteAllText(themeCssPath, ThemeCyberBlueCss(), Encoding.UTF8);
+        //}
+
+        //private static void EnsureVendorAssets(string outputPath)
+        //{
+        //    var vendorDir = Path.Combine(outputPath, "assets", "vendor");
+        //    Directory.CreateDirectory(vendorDir);
+
+        //    var chartsCssPath = Path.Combine(vendorDir, "charts.min.css");
+        //    var augmentedUiPath = Path.Combine(vendorDir, "augmented-ui.min.css");
+
+        //    if (!File.Exists(chartsCssPath))
+        //        File.WriteAllText(chartsCssPath, PlaceholderChartsCss(), Encoding.UTF8);
+
+        //    if (!File.Exists(augmentedUiPath))
+        //        File.WriteAllText(augmentedUiPath, PlaceholderAugmentedUiCss(), Encoding.UTF8);
+        //}
+
+  
     }
 }
 
@@ -713,17 +1043,548 @@ loadCSV('../dataset_arch_health.csv', data => {{
 ARQUIVO: HubDashboardExporter.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\HubDashboardExporter.cs
 ==========================================
-using System;
-using System.Collections.Generic;
+using RefactorScope.Analyzers.Solid;
+using RefactorScope.Core.Analyzers;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Results;
+using RefactorScope.Exporters.Styling;
+using System.Globalization;
 using System.Text;
 
 namespace RefactorScope.Exporters
 {
-    internal class HubDashboardExporter
+    internal sealed class HubDashboardExporter
     {
+        public void Export(
+            ConsolidatedReport report,
+            string outputDirectory,
+            string parserName,
+            double parserConfidence,
+            TimeSpan parsingExecution,
+            int parsingFiles,
+            int parsingTypes,
+            int parsingReferences,
+            string structuralFileName,
+            string architecturalFileName,
+            string parsingFileName,
+            string qualityFileName,
+            string architecturalMarkdownFileName,
+            string themeFileName)
+        {
+            Directory.CreateDirectory(outputDirectory);
+
+            var html = GenerateHtml(
+                report,
+                parserName,
+                parserConfidence,
+                parsingExecution,
+                parsingFiles,
+                parsingTypes,
+                parsingReferences,
+                structuralFileName,
+                architecturalFileName,
+                parsingFileName,
+                qualityFileName,
+                architecturalMarkdownFileName,
+                themeFileName);
+
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "index.html"),
+                html,
+                Encoding.UTF8);
+        }
+
+        private string GenerateHtml(
+            ConsolidatedReport report,
+            string parserName,
+            double parserConfidence,
+            TimeSpan parsingExecution,
+            int parsingFiles,
+            int parsingTypes,
+            int parsingReferences,
+            string structuralFileName,
+            string architecturalFileName,
+            string parsingFileName,
+            string qualityFileName,
+            string architecturalMarkdownFileName,
+            string themeFileName)
+        {
+            var hygiene = new ArchitecturalHygieneAnalyzer().Analyze(report);
+            var structural = report.GetStructuralCandidateBreakdown();
+            var coupling = report.GetResult<CouplingResult>();
+            var implicitCoupling = report.GetResult<ImplicitCouplingResult>();
+            var solid = report.GetResult<SolidResult>();
+            var fitness = report.GetResult<FitnessGateResult>();
+            var effortResult = report.GetResult<EffortEstimateResult>();
+            var effort = effortResult?.Estimate;
+
+            var unresolved = structural.ProbabilisticConfirmed;
+            var patternSimilarity = structural.PatternSimilarity;
+            var structuralCandidates = structural.StructuralCandidates;
+            var couplingSuspects = implicitCoupling?.Suspicions.Count ?? 0;
+            var solidAlerts = solid?.Alerts.Count ?? 0;
+
+            double avgAbstractness = 0;
+            double avgInstability = 0;
+            double avgDistance = 0;
+
+            if (coupling != null && coupling.AbstractnessByModule.Any())
+            {
+                avgAbstractness = coupling.AbstractnessByModule.Values.Average();
+                avgInstability = coupling.InstabilityByModule.Values.Average();
+                avgDistance = coupling.DistanceByModule.Values.Average();
+            }
+
+            var targetName = string.IsNullOrWhiteSpace(report.TargetScope)
+                ? "Unknown Scope"
+                : Path.GetFileName(report.TargetScope.TrimEnd(
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar));
+
+            var fitStatus = fitness == null
+                ? "Unknown"
+                : fitness.HasFailure ? "Attention Required" : "Ready";
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine(DashboardHtmlShell.RenderDocumentStart(
+                "RefactorScope Hub",
+                themeFileName));
+
+            sb.AppendLine($"""
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Analysis Hub</div>
+        <h1>Structural Command Nexus</h1>
+        <div class="subtitle">Target Project: <b>{Html(targetName)}</b></div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> {report.ExecutionTime:yyyy-MM-dd HH:mm} UTC</div>
+        <div><b>Parser:</b> {Html(parserName)}</div>
+        <div><b>Target Scope:</b> {Html(report.TargetScope)}</div>
+        <div><b>Readiness:</b> {Html(fitStatus)}</div>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("""<div class="nav-grid">""");
+
+            if (!string.IsNullOrWhiteSpace(structuralFileName))
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderNavCard(
+                    "Module // 01",
+                    "Structural",
+                    "Dead code candidates, namespace drift, coupling suspicion and removal analysis.",
+                    structuralFileName));
+            }
+            else
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderUnavailableNavCard(
+                    "Module // 01",
+                    "Structural",
+                    "Not generated in this execution."));
+            }
+
+            if (!string.IsNullOrWhiteSpace(architecturalFileName))
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderNavCard(
+                    "Module // 02",
+                    "Architectural",
+                    "Health by module, score, Robert Martin metrics and architectural balance.",
+                    architecturalFileName));
+            }
+            else
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderUnavailableNavCard(
+                    "Module // 02",
+                    "Architectural",
+                    "Not generated in this execution."));
+            }
+
+            if (!string.IsNullOrWhiteSpace(parsingFileName))
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderNavCard(
+                    "Module // 03",
+                    "Parsing",
+                    "Parser confidence, structural density, throughput and parsed type coverage.",
+                    parsingFileName));
+            }
+            else
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderUnavailableNavCard(
+                    "Module // 03",
+                    "Parsing",
+                    "Unavailable in this execution."));
+            }
+
+            if (!string.IsNullOrWhiteSpace(qualityFileName))
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderNavCard(
+                    "Module // 04",
+                    "Quality / Gates",
+                    "Fitness gates, statistics, warnings, crashes and execution quality signals.",
+                    qualityFileName));
+            }
+            else
+            {
+                sb.AppendLine(DashboardHtmlShell.RenderUnavailableNavCard(
+                    "Module // 04",
+                    "Quality / Gates",
+                    "Not generated yet."));
+            }
+
+            sb.AppendLine("</div>");
+
+            sb.AppendLine($"""
+<div class="grid-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Total Classes</div>
+        <div class="value">{hygiene.TotalClasses}</div>
+        <div class="hint">Structural inventory</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Structural Candidates</div>
+        <div class="value">{structuralCandidates}</div>
+        <div class="hint">Zero-reference candidates</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Pattern Similarity</div>
+        <div class="value">{patternSimilarity}</div>
+        <div class="hint">Pattern-compatible candidates</div>
+    </div>
+
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Unresolved</div>
+        <div class="value">{unresolved}</div>
+        <div class="hint">Manual inspection required</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Namespace Drift</div>
+        <div class="value">{hygiene.NamespaceDriftCount}</div>
+        <div class="hint">Namespace ? folder mismatch</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Global Namespace</div>
+        <div class="value">{hygiene.GlobalNamespaceCount}</div>
+        <div class="hint">Legacy structural smell</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Isolated Core</div>
+        <div class="value">{hygiene.IsolatedCoreCount}</div>
+        <div class="hint">Protected boundaries</div>
+    </div>
+
+    <div class="kpi {(hygiene.SmellIndex > 40 ? "alert" : hygiene.SmellIndex > 20 ? "warning" : "good")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Smell Index</div>
+        <div class="value">{hygiene.SmellIndex:0.0}</div>
+        <div class="hint">Composite hygiene indicator</div>
+    </div>
+
+    <div class="kpi {(string.Equals(hygiene.HygieneLevel, "Healthy", StringComparison.OrdinalIgnoreCase) ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Hygiene Level</div>
+        <div class="value" style="font-size:24px;">{Html(hygiene.HygieneLevel)}</div>
+        <div class="hint">Structural health classification</div>
+    </div>
+
+    <div class="kpi {(couplingSuspects > 0 ? "warning" : "good")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Implicit Coupling</div>
+        <div class="value">{couplingSuspects}</div>
+        <div class="hint">Directional dependency hotspots</div>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Run Overview</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+""");
+
+            int parseMax = Math.Max(parsingFiles, Math.Max(parsingTypes, parsingReferences));
+            parseMax = Math.Max(parseMax, 1);
+
+            sb.AppendLine($"""
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Pipeline Telemetry</h3>
+
+    <div class="status-row" style="margin-bottom:14px;">
+        <div class="badge green"><span class="badge-dot"></span> Parser: {Html(parserName)}</div>
+        <div class="badge {(parserConfidence >= 0.85 ? "green" : parserConfidence >= 0.65 ? "amber" : "red")}"><span class="badge-dot"></span> Confidence: {parserConfidence:P0}</div>
+        <div class="badge {(fitness == null ? "amber" : fitness.HasFailure ? "red" : "green")}"><span class="badge-dot"></span> Gates: {Html(fitStatus)}</div>
+    </div>
+
+    <div class="chart-wrap">
+        <table class="charts-css">
+            <caption>Parsing / Scope / Quality Signals</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Files</th>
+                    <td style="--size: {SafeRatio(parsingFiles, parseMax)};">
+                        <span class="data">{parsingFiles}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Types</th>
+                    <td style="--size: {SafeRatio(parsingTypes, parseMax)};">
+                        <span class="data">{parsingTypes}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Refs</th>
+                    <td style="--size: {SafeRatio(parsingReferences, parseMax)};">
+                        <span class="data">{parsingReferences}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: {Clamp01(parserConfidence).ToString("0.####", CultureInfo.InvariantCulture)};">
+                        <span class="data">{parserConfidence:P0}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <ul class="clean" style="margin-top:14px;">
+        <li><b>Execution:</b> {parsingExecution.TotalMilliseconds:0} ms</li>
+        <li><b>Files:</b> {parsingFiles} / <b>Types:</b> {parsingTypes} / <b>References:</b> {parsingReferences}</li>
+        <li><b>Average Abstractness:</b> {avgAbstractness:0.00}</li>
+        <li><b>Average Instability:</b> {avgInstability:0.00}</li>
+        <li><b>Average Distance:</b> {avgDistance:0.00}</li>
+    </ul>
+</div>
+""");
+
+            var unresolvedMessage = unresolved > 0
+                ? "Remaining structural candidates persist after refinement."
+                : "No unresolved candidates remain after refinement.";
+
+            var coreMessage = hygiene.IsolatedCoreCount > 0
+                ? "Core isolation detected and architectural boundaries appear preserved."
+                : "Core isolation not detected. Review possible leakage to outer layers.";
+
+            var driftMessage = hygiene.NamespaceDriftCount > 0
+                ? "Namespace drift detected. Folder hierarchy and namespace map need review."
+                : "Namespace hierarchy aligned with the physical project structure.";
+
+            var smellMessage = hygiene.SmellIndex <= 20
+                ? "Smell index remains in a healthy range."
+                : hygiene.SmellIndex <= 40
+                    ? "Smell index indicates moderate architectural attention."
+                    : "Smell index indicates elevated structural degradation risk.";
+
+            sb.AppendLine($"""
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Analysis</h3>
+    <ul class="clean">
+        <li>{Html(coreMessage)}</li>
+        <li>{Html(driftMessage)}</li>
+        <li>{Html(unresolvedMessage)}</li>
+        <li>{Html(smellMessage)}</li>
+        <li>{(solidAlerts > 0 ? $"SOLID alerts detected: {solidAlerts}." : "No SOLID alerts detected.")}</li>
+        <li>{(couplingSuspects > 0 ? $"Implicit coupling hotspots detected: {couplingSuspects}." : "No implicit coupling hotspots detected.")}</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge {(unresolved > 0 ? "red" : "green")}"><span class="badge-dot"></span> Unresolved: {unresolved}</div>
+        <div class="badge {(hygiene.NamespaceDriftCount > 0 ? "amber" : "green")}" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: {hygiene.NamespaceDriftCount}</div>
+        <div class="badge {(solidAlerts > 0 ? "amber" : "green")}" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: {solidAlerts}</div>
+        <div class="badge {(couplingSuspects > 0 ? "amber" : "green")}" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: {couplingSuspects}</div>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("</div></div>");
+
+            sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Hub Navigation Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <h3>Available Dashboards</h3>
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Dashboard</th>
+                    <th>Primary Focus</th>
+                    <th>Target Signals</th>
+                    <th>Open</th>
+                </tr>
+            </thead>
+            <tbody>
+""");
+
+            if (!string.IsNullOrWhiteSpace(structuralFileName))
+            {
+                sb.AppendLine($"""
+<tr>
+    <td>Structural</td>
+    <td>Dead code probability / structural risk</td>
+    <td>Structural Candidates, Pattern Similarity, Unresolved, Namespace Drift</td>
+    <td><a href="{Html(structuralFileName)}">Open Structural Dashboard</a></td>
+</tr>
+""");
+            }
+
+            if (!string.IsNullOrWhiteSpace(architecturalFileName))
+            {
+                sb.AppendLine($"""
+<tr>
+    <td>Architectural</td>
+    <td>Health by module / A-I-D balance</td>
+    <td>Score, Coupling, Isolation, Abstractness, Instability, Distance</td>
+    <td><a href="{Html(architecturalFileName)}">Open Architectural Dashboard</a></td>
+</tr>
+""");
+            }
+
+            if (!string.IsNullOrWhiteSpace(architecturalMarkdownFileName))
+            {
+                sb.AppendLine($"""
+<tr>
+    <td>Architectural Markdown</td>
+    <td>Portable textual companion report</td>
+    <td>Project structure, architectural explanation, metrics narrative</td>
+    <td><a href="{Html(architecturalMarkdownFileName)}">Open Markdown Report</a></td>
+</tr>
+""");
+            }
+
+            if (!string.IsNullOrWhiteSpace(parsingFileName))
+            {
+                sb.AppendLine($"""
+<tr>
+    <td>Parsing</td>
+    <td>Parser quality / structural extraction</td>
+    <td>Confidence, Files, Types, References, Time/Class</td>
+    <td><a href="{Html(parsingFileName)}">Open Parsing Dashboard</a></td>
+</tr>
+""");
+            }
+
+            if (!string.IsNullOrWhiteSpace(qualityFileName))
+            {
+                sb.AppendLine($"""
+<tr>
+    <td>Quality / Gates</td>
+    <td>Validation / execution quality</td>
+    <td>Fitness Gates, Statistics, Crash Reports, Warnings</td>
+    <td><a href="{Html(qualityFileName)}">Open Quality Dashboard</a></td>
+</tr>
+""");
+            }
+
+            sb.AppendLine("""
+            </tbody>
+        </table>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Refactor Command Summary</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+""");
+
+            sb.AppendLine($"""
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Code Hygiene</h3>
+    <ul class="clean">
+        <li><b>CodeSmellIndex:</b> {hygiene.SmellIndex:0.0}</li>
+        <li><b>Hygiene:</b> {Html(hygiene.HygieneLevel)}</li>
+        <li><b>Dead Code Candidates:</b> {hygiene.UnreferencedCount}</li>
+        <li><b>Namespace Drift:</b> {hygiene.NamespaceDriftCount}</li>
+        <li><b>Global Namespace:</b> {hygiene.GlobalNamespaceCount}</li>
+        <li><b>Isolated Core:</b> {hygiene.IsolatedCoreCount}</li>
+    </ul>
+</div>
+""");
+
+            var effortDifficulty = effort?.Difficulty ?? "Unknown";
+            var effortHours = effort?.EstimatedHours ?? 0;
+            var effortConfidence = effort?.Confidence ?? 0;
+            var effortRdi = effort?.RDI ?? 0;
+
+            sb.AppendLine($"""
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Refactor Effort Estimation</h3>
+    <ul class="clean">
+        <li><b>RDI:</b> {effortRdi}</li>
+        <li><b>Difficulty:</b> {Html(effortDifficulty)}</li>
+        <li><b>Estimated Hours:</b> {effortHours:0.0}</li>
+        <li><b>Confidence:</b> {effortConfidence:0.00}</li>
+    </ul>
+
+    <div class="chart-wrap" style="margin-top:16px;">
+        <table class="charts-css">
+            <caption>Estimated Refactor Load</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Hours</th>
+                    <td style="--size: {Clamp01(effortHours / 80.0).ToString("0.####", CultureInfo.InvariantCulture)};">
+                        <span class="data">{effortHours:0.0}h</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: {Clamp01(effortConfidence).ToString("0.####", CultureInfo.InvariantCulture)};">
+                        <span class="data">{effortConfidence:0.00}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+""");
+
+            sb.AppendLine("</div></div>");
+
+            sb.AppendLine(DashboardHtmlShell.RenderDocumentEnd(
+                "Generated by RefactorScope Hub // Cyberpunk Publication Layout"));
+
+            return sb.ToString();
+        }
+
+        private static string Html(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            return text
+                .Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&#39;");
+        }
+
+        private static double Clamp01(double value)
+            => Math.Max(0, Math.Min(1, value));
+
+        private static string SafeRatio(double value, double max)
+        {
+            if (max <= 0)
+                return "0";
+
+            return Clamp01(value / max).ToString("0.####", CultureInfo.InvariantCulture);
+        }
     }
 }
-
 
 
 ==========================================
@@ -2218,6 +3079,517 @@ function sortTable(n) {
 
 
             return sb.ToString();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalDashboardExporterAdapter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Adapters\ArchitecturalDashboardExporterAdapter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Exporters.Adapters
+{
+    /// <summary>
+    /// Adapter da família arquitetural.
+    ///
+    /// Objetivo
+    /// --------
+    /// Integrar os artefatos arquiteturais ao pipeline padronizado de IExporter
+    /// sem exigir, neste momento, uma refatoração ampla dos exporters originais.
+    ///
+    /// Estratégia atual
+    /// ----------------
+    /// Este adapter publica dois artefatos complementares para a mesma visão:
+    ///
+    /// 1. Relatorio_Arquitetural.md
+    ///    - leitura textual rápida
+    ///    - fácil acesso à estrutura de pastas
+    ///    - útil fora do navegador
+    ///    - artefato documental e portátil
+    ///
+    /// 2. ArchitecturalDashboard.html
+    ///    - visão executiva e visual da saúde arquitetural
+    ///    - melhor para publicação e navegação
+    ///    - complementa, mas não substitui, o Markdown
+    ///
+    /// Motivação
+    /// ---------
+    /// O Markdown continua valioso por motivo funcional, não apenas por legado:
+    /// ele oferece acesso direto à árvore do projeto e leitura linear simples.
+    ///
+    /// Já o dashboard HTML nasce como uma nova camada visual sobre o mesmo domínio.
+    ///
+    /// Caminho de refatoração futura
+    /// ----------------------------
+    /// 1. Consolidar um núcleo comum de view models arquiteturais
+    /// 2. Fazer os exporters arquiteturais consumirem a mesma fonte consolidada
+    /// 3. Opcionalmente transformar este adapter em um exporter composto formal
+    /// 4. Manter ambos os outputs se continuarem úteis ao produto
+    ///
+    /// Observação
+    /// ----------
+    /// Este adapter não duplica regra de negócio; ele apenas orquestra
+    /// dois formatos de saída para a mesma camada de análise.
+    /// </summary>
+    public sealed class ArchitecturalDashboardExporterAdapter : IExporter
+    {
+        public string Name => "architectural-dashboard";
+
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
+        {
+            Directory.CreateDirectory(outputPath);
+
+            var markdownPath = Path.Combine(outputPath, "Relatorio_Arquitetural.md");
+            var htmlPath = Path.Combine(outputPath, "ArchitecturalDashboard.html");
+
+            var markdownExporter = new MarkdownReportExporter();
+            markdownExporter.Export(report, markdownPath);
+
+            var htmlExporter = new ArchitecturalDashboardExporter();
+            htmlExporter.Export(report, htmlPath);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ParsingDashboardExporterAdapter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Adapters\ParsingDashboardExporterAdapter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Exporters.Adapters
+{
+    /// <summary>
+    /// Adapter temporário para integrar o ParsingDashboardExporter
+    /// ao pipeline padronizado de IExporter.
+    ///
+    /// Motivação
+    /// ---------
+    /// ParsingDashboardExporter já gera corretamente seu artefato HTML,
+    /// mas ainda opera fora do contrato IExporter utilizado pelo fluxo
+    /// principal do CLI.
+    ///
+    /// Este adapter permite que o dashboard de parsing entre no novo
+    /// bloco de dashboards HTML mantendo a implementação atual intacta.
+    ///
+    /// Estratégia atual
+    /// ----------------
+    /// - recuperar ParserResult a partir do AnalysisContext
+    /// - chamar ParsingDashboardExporter sem alterar sua assinatura atual
+    /// - publicar no mesmo diretório compartilhado da suíte HTML
+    ///
+    /// Caminho de refatoração futura
+    /// ----------------------------
+    /// 1. Expor ParserResult de forma explícita e estável no contexto
+    /// 2. Fazer ParsingDashboardExporter implementar IExporter nativamente
+    /// 3. Eliminar reflexão/fallback e remover este adapter
+    ///
+    /// Observação
+    /// ----------
+    /// Este adapter existe apenas como camada de compatibilidade.
+    /// A lógica de geração do HTML continua centralizada no exporter original.
+    /// </summary>
+    public sealed class ParsingDashboardExporterAdapter : IExporter
+    {
+        public string Name => "parsing-dashboard";
+
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
+        {
+            var parserResult = TryGetParserResult(context);
+            if (parserResult == null)
+                return;
+
+            var exporter = new ParsingDashboardExporter();
+            exporter.Export(parserResult, outputPath);
+        }
+
+        private static dynamic? TryGetParserResult(AnalysisContext context)
+        {
+            try
+            {
+                var prop = context.GetType().GetProperty("ParserResult");
+                return prop?.GetValue(context);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralDashboardExporterAdapter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Adapters\StructuralDashboardExporterAdapter.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Exporters.Adapters
+{
+    /// <summary>
+    /// Adapter temporário para integrar o StructuralInventoryExporter
+    /// ao pipeline padronizado de IExporter.
+    ///
+    /// Motivação
+    /// ---------
+    /// O projeto possui exporters HTML mais recentes que ainda não
+    /// implementam IExporter diretamente, pois nasceram fora do fluxo
+    /// principal de exportação.
+    ///
+    /// Este adapter permite encaixar o dashboard estrutural no novo
+    /// bloco de exportadores HTML sem alterar imediatamente a classe
+    /// original, reduzindo risco de regressão.
+    ///
+    /// Estratégia atual
+    /// ----------------
+    /// - manter StructuralInventoryExporter como está
+    /// - encapsular sua chamada via IExporter
+    /// - permitir execução ordenada junto ao Hub HTML
+    ///
+    /// Caminho de refatoração futura
+    /// ----------------------------
+    /// 1. Extrair uma interface/contrato comum para exporters HTML
+    /// 2. Tornar StructuralInventoryExporter um IExporter nativo
+    /// 3. Remover este adapter após estabilização da suíte HTML
+    ///
+    /// Observação
+    /// ----------
+    /// Esta classe é deliberadamente fina e sem regra de negócio.
+    /// Toda a lógica real continua no exporter original.
+    /// </summary>
+    public sealed class StructuralDashboardExporterAdapter : IExporter
+    {
+        public string Name => "structural-dashboard";
+
+        public void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
+        {
+            var exporter = new StructuralInventoryExporter();
+            exporter.Export(report, outputPath);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: DashboardAssetCopier.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Styling\DashboardAssetCopier.cs
+==========================================
+using System.Reflection;
+
+namespace RefactorScope.Exporters.Styling
+{
+    /// <summary>
+    /// Copia os assets visuais dos dashboards para a pasta de saída.
+    ///
+    /// Origem esperada no repositório:
+    ///
+    /// RefactorScope/
+    ///   Exporters/
+    ///     Assets/
+    ///       Css/
+    ///       Vendor/
+    ///
+    /// Destino na publicação:
+    ///
+    /// <output>/assets/css/
+    /// <output>/assets/vendor/
+    /// </summary>
+    public static class DashboardAssetCopier
+    {
+        public static void CopyAll(string outputPath, string themeFileName)
+        {
+            if (string.IsNullOrWhiteSpace(outputPath))
+                throw new ArgumentException("Output path inválido.", nameof(outputPath));
+
+            var sourceRoot = ResolveAssetsRoot();
+            var sourceCssDir = Path.Combine(sourceRoot, "Css");
+            var sourceVendorDir = Path.Combine(sourceRoot, "Vendor");
+
+            var targetAssetsDir = Path.Combine(outputPath, "assets");
+            var targetCssDir = Path.Combine(targetAssetsDir, "css");
+            var targetVendorDir = Path.Combine(targetAssetsDir, "vendor");
+
+            Directory.CreateDirectory(targetCssDir);
+            Directory.CreateDirectory(targetVendorDir);
+
+            CopyDirectory(sourceCssDir, targetCssDir);
+            CopyDirectory(sourceVendorDir, targetVendorDir);
+
+            EnsureThemeExists(targetCssDir, themeFileName);
+        }
+
+        private static string ResolveAssetsRoot()
+        {
+            var baseDir = AppContext.BaseDirectory;
+            var dir = new DirectoryInfo(baseDir);
+
+            while (dir != null)
+            {
+                var candidate = Path.Combine(
+                    dir.FullName,
+                    "RefactorScope",
+                    "Exporters",
+                    "Assets");
+
+                if (Directory.Exists(candidate))
+                    return candidate;
+
+                candidate = Path.Combine(
+                    dir.FullName,
+                    "Exporters",
+                    "Assets");
+
+                if (Directory.Exists(candidate))
+                    return candidate;
+
+                dir = dir.Parent;
+            }
+
+            throw new DirectoryNotFoundException(
+                "Não foi possível localizar a pasta Exporters/Assets no projeto.");
+        }
+
+        private static void CopyDirectory(string sourceDir, string targetDir)
+        {
+            if (!Directory.Exists(sourceDir))
+                throw new DirectoryNotFoundException(
+                    $"Pasta de assets não encontrada: {sourceDir}");
+
+            Directory.CreateDirectory(targetDir);
+
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                var fileName = Path.GetFileName(file);
+                var destination = Path.Combine(targetDir, fileName);
+
+                File.Copy(file, destination, overwrite: true);
+            }
+
+            foreach (var directory in Directory.GetDirectories(sourceDir))
+            {
+                var name = Path.GetFileName(directory);
+                var destination = Path.Combine(targetDir, name);
+
+                CopyDirectory(directory, destination);
+            }
+        }
+
+        private static void EnsureThemeExists(string targetCssDir, string themeFileName)
+        {
+            if (string.IsNullOrWhiteSpace(themeFileName))
+                return;
+
+            var themePath = Path.Combine(targetCssDir, themeFileName);
+
+            if (!File.Exists(themePath))
+            {
+                throw new FileNotFoundException(
+                    $"O tema solicitado não foi encontrado na pasta de saída: {themeFileName}",
+                    themePath);
+            }
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: DashboardHtmlShell.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Styling\DashboardHtmlShell.cs
+==========================================
+using System.Text;
+
+namespace RefactorScope.Exporters.Styling
+{
+    /// <summary>
+    /// Responsável por renderizar o shell HTML compartilhado
+    /// entre os dashboards da suíte visual.
+    ///
+    /// Objetivo
+    /// --------
+    /// Remover repetição de:
+    /// - doctype
+    /// - head
+    /// - meta tags
+    /// - imports CSS
+    /// - abertura e fechamento estrutural do body
+    ///
+    /// Benefícios
+    /// ----------
+    /// - padronização visual
+    /// - troca de tema sem alterar exporters
+    /// - menor duplicação de markup
+    /// - evolução mais segura da suíte HTML
+    /// </summary>
+    public static class DashboardHtmlShell
+    {
+        public static string RenderDocumentStart(
+            string title,
+            string themeFileName)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("<!DOCTYPE html>");
+            sb.AppendLine("<html lang='en'>");
+            sb.AppendLine("<head>");
+            sb.AppendLine("<meta charset='UTF-8' />");
+            sb.AppendLine("<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
+            sb.AppendLine($"<title>{Html(title)}</title>");
+
+            // Vendor CSS local
+            sb.AppendLine("<link rel='stylesheet' href='assets/vendor/Charts.css' />");
+            sb.AppendLine("<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />");
+
+            // Shared dashboard CSS
+            sb.AppendLine("<link rel='stylesheet' href='assets/css/dashboard-base.css' />");
+            sb.AppendLine("<link rel='stylesheet' href='assets/css/dashboard-components.css' />");
+            sb.AppendLine($"<link rel='stylesheet' href='assets/css/{Html(themeFileName)}' />");
+
+            sb.AppendLine("</head>");
+            sb.AppendLine("<body>");
+            sb.AppendLine("<div class='wrapper'>");
+
+            return sb.ToString();
+        }
+
+        public static string RenderDocumentEnd(string? footerText = null)
+        {
+            var sb = new StringBuilder();
+
+            if (!string.IsNullOrWhiteSpace(footerText))
+            {
+                sb.AppendLine($"<div class='footer'>{Html(footerText)}</div>");
+            }
+
+            sb.AppendLine("</div>");
+            sb.AppendLine("</body>");
+            sb.AppendLine("</html>");
+
+            return sb.ToString();
+        }
+
+        public static string RenderUnavailableNavCard(
+            string moduleTag,
+            string title,
+            string description)
+        {
+            return $"""
+<a class="nav-card is-disabled" aria-disabled="true" augmented-ui="tr-clip bl-clip border">
+    <div class="tag">{Html(moduleTag)}</div>
+    <div class="title">{Html(title)}</div>
+    <div class="desc">{Html(description)}</div>
+    <div class="accent"></div>
+</a>
+""";
+        }
+
+        public static string RenderNavCard(
+            string moduleTag,
+            string title,
+            string description,
+            string href)
+        {
+            return $"""
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="{Html(href)}">
+    <div class="tag">{Html(moduleTag)}</div>
+    <div class="title">{Html(title)}</div>
+    <div class="desc">{Html(description)}</div>
+    <div class="accent"></div>
+</a>
+""";
+        }
+
+        public static string Html(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            return text
+                .Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&#39;");
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: DashboardThemeSelector.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Styling\DashboardThemeSelector.cs
+==========================================
+namespace RefactorScope.Exporters.Styling
+{
+    /// <summary>
+    /// Resolve o arquivo CSS do tema visual dos dashboards.
+    ///
+    /// Estratégia
+    /// ----------
+    /// O sistema usa:
+    /// - dashboard-base.css
+    /// - dashboard-components.css
+    /// - theme-*.css
+    ///
+    /// Este seletor mapeia o nome informado em configuração
+    /// para o arquivo de tema correspondente.
+    ///
+    /// Convenção
+    /// ---------
+    /// O valor retornado deve apontar apenas para o nome do arquivo.
+    /// O chamador é responsável por montar o path final:
+    ///
+    /// assets/css/{themeFile}
+    ///
+    /// Fallback
+    /// --------
+    /// Quando o tema não é informado ou é inválido,
+    /// o sistema usa CyberBlue como padrão.
+    /// </summary>
+    public static class DashboardThemeSelector
+    {
+        public const string DefaultTheme = "theme-cyberblue.css";
+
+        public static string ResolveFileName(string? themeName)
+        {
+            if (string.IsNullOrWhiteSpace(themeName))
+                return DefaultTheme;
+
+            return themeName.Trim().ToLowerInvariant() switch
+            {
+                "cyberblue" => "theme-cyberblue.css",
+                "blue" => "theme-cyberblue.css",
+
+                "cyberorange" => "theme-cyberorange.css",
+                "orange" => "theme-cyberorange.css",
+
+                "cyberyellow" => "theme-cyberyellow.css",
+                "yellow" => "theme-cyberyellow.css",
+
+                "matrixcyan" => "theme-matrixcyan.css",
+                "cyan" => "theme-matrixcyan.css",
+
+                _ => DefaultTheme
+            };
         }
     }
 }

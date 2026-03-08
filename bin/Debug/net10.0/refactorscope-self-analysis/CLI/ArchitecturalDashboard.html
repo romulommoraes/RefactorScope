@@ -1,0 +1,407 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<title>Architectural Dashboard</title>
+<style>
+body {
+    background:
+        radial-gradient(circle at top left, rgba(47,136,255,.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(255,59,107,.07), transparent 25%),
+        linear-gradient(180deg, #050816 0%, #080c1a 100%);
+    color: #e8f3ff;
+    font-family: Segoe UI, Arial, sans-serif;
+    margin: 30px;
+}
+
+h1, h2, h3 {
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+h1 {
+    color: #cfe8ff;
+    margin-bottom: 6px;
+}
+
+.subtle {
+    color: #8ea9c7;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 34px;
+    margin-bottom: 14px;
+}
+
+.section-title h2 {
+    margin: 0;
+    color: #cfe8ff;
+    font-size: 24px;
+}
+
+.section-title .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(57,213,255,.45), rgba(255,59,107,.18), transparent);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.card {
+    background: linear-gradient(180deg, rgba(11,18,37,.95), rgba(7,12,26,.92));
+    border: 1px solid rgba(57,213,255,.16);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 0 0 1px rgba(57,213,255,.08), 0 0 24px rgba(47,136,255,.06);
+    min-height: 110px;
+}
+
+.card .label {
+    color: #8ea9c7;
+    font-size: 12px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.card .value {
+    font-size: 30px;
+    font-weight: 800;
+    color: #cfe8ff;
+    line-height: 1;
+}
+
+.card .hint {
+    margin-top: 10px;
+    color: #8ea9c7;
+    font-size: 12px;
+}
+
+.panel-grid {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 16px;
+}
+
+.panel {
+    background: linear-gradient(180deg, rgba(11,18,37,.95), rgba(7,12,26,.92));
+    border: 1px solid rgba(57,213,255,.16);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 0 0 1px rgba(57,213,255,.08), 0 0 24px rgba(47,136,255,.06);
+}
+
+.panel h3 {
+    margin-top: 0;
+    color: #7cecff;
+    font-size: 16px;
+    letter-spacing: .12em;
+}
+
+ul.clean {
+    margin: 0;
+    padding-left: 18px;
+}
+
+ul.clean li {
+    color: #8ea9c7;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+    background: rgba(10, 16, 34, .55);
+}
+
+th, td {
+    border: 1px solid rgba(57,213,255,.10);
+    padding: 10px 12px;
+    text-align: left;
+}
+
+th {
+    background: rgba(22, 30, 52, .95);
+    color: #7cecff;
+    font-size: 12px;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+}
+
+td {
+    color: #e8f3ff;
+}
+
+.metric-good { color: #49f2b8; font-weight: 700; }
+.metric-warn { color: #ffc857; font-weight: 700; }
+.metric-bad  { color: #ff6b8f; font-weight: 700; }
+
+pre.tree-view {
+    margin: 0;
+    padding: 16px;
+    background: rgba(4, 10, 24, .85);
+    border: 1px solid rgba(57,213,255,.12);
+    border-radius: 12px;
+    color: #cfe8ff;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.45;
+    overflow-x: auto;
+    white-space: pre;
+}
+
+.note {
+    color: #8ea9c7;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.footer {
+    margin-top: 32px;
+    text-align: center;
+    color: #8ea9c7;
+    font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+    .panel-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+}
+</style>
+</head><body>
+<h1>🧭 Architectural Dashboard</h1>
+<div class='subtle'>Generated: 2026-03-08 17:15 UTC &nbsp;|&nbsp; Target Scope: C:\Users\romul\source\repos\RefactorScope</div>
+<div class='grid'>
+<div class='card'>
+<div class='label'>Modules</div>
+<div class='value'>10</div>
+<div class='hint'>Detected architectural folders</div>
+</div>
+<div class='card'>
+<div class='label'>Average Score</div>
+<div class='value'>84,1</div>
+<div class='hint'>Composite health by module</div>
+</div>
+<div class='card'>
+<div class='label'>Unresolved</div>
+<div class='value'>1</div>
+<div class='hint'>Final unresolved structural candidates</div>
+</div>
+<div class='card'>
+<div class='label'>Fitness</div>
+<div class='value'>Ready</div>
+<div class='hint'>Overall architectural readiness</div>
+</div>
+<div class='card'>
+<div class='label'>Abstractness (A)</div>
+<div class='value'>0,05</div>
+<div class='hint'>Average architectural abstraction</div>
+</div>
+<div class='card'>
+<div class='label'>Instability (I)</div>
+<div class='value'>0,40</div>
+<div class='hint'>Average outgoing dependency pressure</div>
+</div>
+<div class='card'>
+<div class='label'>Distance (D)</div>
+<div class='value'>0,55</div>
+<div class='hint'>Average distance from main sequence</div>
+</div>
+<div class='card'>
+<div class='label'>Implicit Coupling</div>
+<div class='value'>39</div>
+<div class='hint'>Potential dependency hotspots</div>
+</div>
+</div>
+<div class="section-title">
+    <h2>Module Health</h2>
+    <div class="line"></div>
+</div>
+<div class='panel'>
+<h3>Architectural Health by Module</h3>
+<table>
+<tr><th>Module</th><th>Score</th><th>Unresolved</th><th>Coupling</th><th>Isolation</th><th>Core Density</th></tr>
+<tr>
+<td>Analyzers</td>
+<td><span class='metric-warn'>54,5</span></td>
+<td>0 (0%)</td>
+<td>4,74</td>
+<td>0,53</td>
+<td>1,00</td>
+</tr>
+<tr>
+<td>CLI</td>
+<td><span class='metric-good'>100,0</span></td>
+<td>0 (0%)</td>
+<td>0,00</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Core</td>
+<td><span class='metric-good'>100,0</span></td>
+<td>0 (0%)</td>
+<td>0,28</td>
+<td>0,25</td>
+<td>0,99</td>
+</tr>
+<tr>
+<td>Debug</td>
+<td><span class='metric-good'>91,7</span></td>
+<td>1 (100%)</td>
+<td>0,00</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Estimation</td>
+<td><span class='metric-warn'>66,3</span></td>
+<td>0 (0%)</td>
+<td>1,25</td>
+<td>0,00</td>
+<td>0,25</td>
+</tr>
+<tr>
+<td>Execution</td>
+<td><span class='metric-good'>100,0</span></td>
+<td>0 (0%)</td>
+<td>3,13</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Exporters</td>
+<td><span class='metric-good'>100,0</span></td>
+<td>0 (0%)</td>
+<td>6,65</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td><span class='metric-good'>79,0</span></td>
+<td>0 (0%)</td>
+<td>1,40</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Parsers</td>
+<td><span class='metric-warn'>50,0</span></td>
+<td>0 (0%)</td>
+<td>8,00</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Statistics</td>
+<td><span class='metric-good'>100,0</span></td>
+<td>0 (0%)</td>
+<td>1,75</td>
+<td>0,00</td>
+<td>0,75</td>
+</tr>
+</table>
+</div>
+<div class="section-title">
+    <h2>Architectural Signals</h2>
+    <div class="line"></div>
+</div>
+<div class='panel-grid'>
+<div class='panel'>
+<h3>Interpretation</h3>
+<ul class='clean'>
+<li>Structural Candidates: 43</li>
+<li>Pattern Similarity: 42</li>
+<li>Unresolved: 1</li>
+<li>Implicit Coupling Suspicions: 39</li>
+<li>Average Abstractness: 0,05</li>
+<li>Average Instability: 0,40</li>
+<li>Average Distance: 0,55</li>
+</ul>
+<div class='note' style='margin-top:14px;'>
+This dashboard is an executive architectural view.
+It complements the Markdown report rather than replacing it.
+The Markdown artifact remains useful for direct textual reading, project tree inspection and documentation-friendly export.
+</div>
+</div>
+<div class='panel'>
+<h3>Fitness Gates</h3>
+<table>
+<tr><th>Gate</th><th>Status</th><th>Message</th></tr>
+<tr>
+<td>UnreferencedTypes</td>
+<td><span class='metric-good'>PASS</span></td>
+<td>Structural Unreferenced controlado: 0%</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="section-title">
+    <h2>Project Structure</h2>
+    <div class="line"></div>
+</div>
+<div class='panel'>
+<h3>Root Structure Snapshot</h3>
+<pre class='tree-view'>
+│   ├── Docs
+│   ├── RefactorScope
+│   │   ├── Analyzers
+│   │   │   ├── Solid
+│   │   │   │   ├── Rules
+│   │   ├── CLI
+│   │   ├── Core
+│   │   │   ├── Abstractions
+│   │   │   ├── Configuration
+│   │   │   ├── Context
+│   │   │   ├── Datasets
+│   │   │   ├── Governance
+│   │   │   ├── Metrics
+│   │   │   ├── Model
+│   │   │   ├── Orchestration
+│   │   │   ├── Parsing
+│   │   │   │   ├── Enum
+│   │   │   ├── Patterns
+│   │   │   ├── Reporting
+│   │   │   ├── Results
+│   │   │   ├── Scope
+│   │   │   ├── Structure
+│   │   ├── Debug
+│   │   ├── Docs
+│   │   ├── Estimation
+│   │   │   ├── Classification
+│   │   │   ├── Models
+│   │   │   ├── Scoring
+│   │   ├── Execution
+│   │   │   ├── Dump
+│   │   │   │   ├── Segmentation
+│   │   │   │   ├── Strategies
+│   │   ├── Exporters
+│   │   │   ├── Adapters
+│   │   ├── Infrastructure
+│   │   ├── Parsers
+│   │   │   ├── Analysis
+│   │   │   ├── Common
+│   │   │   ├── CsharpParsers
+│   │   │   │   ├── Hybrid
+│   │   │   ├── Results
+│   │   ├── Statistics
+│   │   │   ├── Engines
+│   │   │   ├── Models
+</pre>
+</div>
+<div class='footer'>Generated by RefactorScope Architectural Dashboard</div>
+</body></html>

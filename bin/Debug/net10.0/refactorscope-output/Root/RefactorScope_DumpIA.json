@@ -11,48 +11,28 @@
   "Referencias": [
     {
       "FromType": "Program",
-      "ToType": "VerificadorLimbic",
-      "Kind": 2
-    },
-    {
-      "FromType": "Program",
-      "ToType": "VerificadorLimbic",
-      "Kind": 0
-    },
-    {
-      "FromType": "Program",
-      "ToType": "RaizComposicao",
-      "Kind": 2
-    },
-    {
-      "FromType": "Program",
       "ToType": "RaizComposicao",
       "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "LeitorFountain",
-      "Kind": 1
-    },
-    {
-      "FromType": "Program",
-      "ToType": "LeitorFountain",
+      "ToType": "OrquestradorNucleo",
       "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "OrquestradorNucleo",
-      "Kind": 1
+      "ToType": "ExportadorBaselineElencoLegacyJson",
+      "Kind": 0
     },
     {
       "FromType": "Program",
-      "ToType": "OrquestradorNucleo",
+      "ToType": "ExportadorBaselineEtograma",
       "Kind": 0
     },
     {
       "FromType": "Program",
       "ToType": "ExportadorExcelModular",
-      "Kind": 1
+      "Kind": 0
     },
     {
       "FromType": "Program",
@@ -61,22 +41,42 @@
     },
     {
       "FromType": "Program",
+      "ToType": "LeitorFountain",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
+      "ToType": "VerificadorLimbic",
+      "Kind": 2
+    },
+    {
+      "FromType": "Program",
+      "ToType": "VerificadorLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
+      "ToType": "RaizComposicao",
+      "Kind": 2
+    },
+    {
+      "FromType": "Program",
+      "ToType": "LeitorFountain",
+      "Kind": 1
+    },
+    {
+      "FromType": "Program",
+      "ToType": "OrquestradorNucleo",
+      "Kind": 1
+    },
+    {
+      "FromType": "Program",
       "ToType": "ExportadorExcelModular",
-      "Kind": 0
+      "Kind": 1
     },
     {
       "FromType": "Program",
       "ToType": "ExportadorBaselineElencoLegacyJson",
-      "Kind": 2
-    },
-    {
-      "FromType": "Program",
-      "ToType": "ExportadorBaselineElencoLegacyJson",
-      "Kind": 0
-    },
-    {
-      "FromType": "Program",
-      "ToType": "Etograma",
       "Kind": 2
     },
     {
@@ -88,11 +88,6 @@
       "FromType": "Program",
       "ToType": "ExportadorBaselineEtograma",
       "Kind": 2
-    },
-    {
-      "FromType": "Program",
-      "ToType": "ExportadorBaselineEtograma",
-      "Kind": 0
     }
   ]
 }

@@ -5,7 +5,7 @@ using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Parsing;
 
-namespace RefactorScope.Parsers.Hybrid;
+namespace RefactorScope.Parsers.CsharpParsers.Hybrid;
 
 /// <summary>
 /// Parser híbrido que orquestra dois parsers diferentes.

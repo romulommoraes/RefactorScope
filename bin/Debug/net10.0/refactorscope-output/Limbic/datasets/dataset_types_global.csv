@@ -25,7 +25,7 @@ ResultadoDeriva,AvaliaRoteiro,Core,9,DriftArquitetural,0,0,0,0
 ResultadoLimbic,AvaliaRoteiro,Core,4,DriftArquitetural,0,0,0,0
 TermoLexical,AvaliaRoteiro,Core,3,DriftArquitetural,0,0,0,0
 TokenPontuado,AvaliaRoteiro,Core,2,DriftArquitetural,0,0,0,0
-MotorLimbic,AvaliaRoteiro,Aplicação,13,DriftArquitetural,0,0,0,0
+MotorLimbic,AvaliaRoteiro,Aplicação,8,DriftArquitetural,0,0,0,0
 AnalisadorContextual,AvaliaRoteiro,Aplicação,2,DriftArquitetural,0,0,0,0
 AnalisadorLexico,AvaliaRoteiro,Aplicação,2,DriftArquitetural,0,0,0,0
 ConstrutorDeCena,AvaliaRoteiro,Aplicação,2,DriftArquitetural,0,0,0,0

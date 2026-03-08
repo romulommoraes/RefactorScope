@@ -1,4 +1,4 @@
-﻿using RefactorScope.Core.Scope;
+﻿using RefactorScope.Parsers.Common;
 
 namespace RefactorScope.Parsers.Analysis;
 
@@ -34,8 +34,7 @@ public class ClassComplexityClassifier
         IEnumerable<string>? exclude = null)
     {
         var result = new ClassComplexityScanResult();
-
-        var scope = new ScopeRuleSet(include, exclude);
+        var scope = new FileSelectionScope(rootPath, include, exclude);
 
         var files = Directory.GetFiles(
             rootPath,
@@ -44,7 +43,7 @@ public class ClassComplexityClassifier
 
         foreach (var file in files)
         {
-            if (!scope.IsInScope(rootPath, file))
+            if (!scope.IsInScope(file))
                 continue;
 
             string source;
@@ -55,7 +54,7 @@ public class ClassComplexityClassifier
             }
             catch
             {
-                // Arquivo inacessível → tratado como complexo
+                // Arquivo inacessível -> tratado como complexo
                 result.ComplexClasses.Add(file);
                 continue;
             }
@@ -82,27 +81,15 @@ public class ClassComplexityClassifier
         if (string.IsNullOrWhiteSpace(source))
             return false;
 
-        // -------------------------------------------------
-        // Records modernos
-        // -------------------------------------------------
         if (source.Contains("record "))
             return true;
 
-        // -------------------------------------------------
-        // Init-only properties
-        // -------------------------------------------------
         if (source.Contains(" init;"))
             return true;
 
-        // -------------------------------------------------
-        // Lambda expressions
-        // -------------------------------------------------
         if (source.Contains("=>"))
             return true;
 
-        // -------------------------------------------------
-        // With expressions
-        // -------------------------------------------------
         if (source.Contains("with {"))
             return true;
 

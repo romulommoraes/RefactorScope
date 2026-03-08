@@ -14,6 +14,7 @@ using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
 using RefactorScope.Execution.Dump;
 using RefactorScope.Exporters;
+using RefactorScope.Exporters.Adapters;
 using RefactorScope.Infrastructure;
 using Spectre.Console;
 
@@ -339,8 +340,6 @@ static void PrintStructuralBreakdown(ConsolidatedReport report)
     AnsiConsole.WriteLine();
 }
 
-
-
 /* =====================================================
    EXPORTAÇÃO
    ===================================================== */
@@ -356,21 +355,27 @@ static bool RunExport(
         TerminalRenderer.Step("Gerando dumps, datasets e dashboards...");
 
         var datasetBuilders = BuildDatasetBuilders();
-        var exporters = BuildExporters(datasetBuilders);
+
+        var coreExporters = BuildCoreExporters(datasetBuilders);
+        var htmlExporters = BuildHtmlExportersWithoutHub();
 
         var strategy = DumpStrategyResolver.Resolve(config);
 
-        strategy.Execute(context, report, exporters);
+        // -------------------------------------------------
+        // Bloco 1: exportadores gerais
+        // -------------------------------------------------
+        strategy.Execute(context, report, coreExporters);
 
-        GenerateMarkdownReport(report, config.OutputPath);
-        GenerateStructuralDashboard(report, config.OutputPath);
+        // -------------------------------------------------
+        // Bloco 2: dashboards HTML especializados
+        // -------------------------------------------------
+        RunHtmlExporters(htmlExporters, context, report, config.OutputPath);
 
-        if (parsingResult != null)
-        {
-            var parsingDashboard = new ParsingDashboardExporter();
-
-            parsingDashboard.Export(parsingResult, config.OutputPath);
-        }
+        // -------------------------------------------------
+        // Bloco 3: Hub HTML final
+        // Gerado explicitamente com parsingResult real
+        // -------------------------------------------------
+        RunHtmlHubExporter(context, report, parsingResult, config.OutputPath);
 
         TerminalRenderer.Success(
             "Dumps, datasets e dashboards gerados com sucesso");
@@ -384,8 +389,6 @@ static bool RunExport(
         return false;
     }
 }
-
-
 
 static List<IAnalyticalDatasetBuilder> BuildDatasetBuilders()
 {
@@ -402,9 +405,7 @@ static List<IAnalyticalDatasetBuilder> BuildDatasetBuilders()
     };
 }
 
-
-
-static List<IExporter> BuildExporters(
+static List<IExporter> BuildCoreExporters(
     List<IAnalyticalDatasetBuilder> datasetBuilders)
 {
     return new List<IExporter>
@@ -413,63 +414,70 @@ static List<IExporter> BuildExporters(
         new DumpIaExporter(),
         new DatasetExporter(datasetBuilders),
         new ProjectStructureExporter(),
-        new FitnessGateCsvExporter(),
-        new HtmlDashboardExporter()
+        new FitnessGateCsvExporter()
     };
 }
 
-
-
+static List<IExporter> BuildHtmlExporters()
+{
+    return new List<IExporter>
+    {
+        new StructuralDashboardExporterAdapter(),
+        new ParsingDashboardExporterAdapter(),
+        new ArchitecturalDashboardExporterAdapter(),
+        new HtmlDashboardExporter()
+    };
+}
 /* =====================================================
-   RELATÓRIOS
+   RELATÓRIOS legado
    ===================================================== */
 
-static void GenerateMarkdownReport(
-    ConsolidatedReport report,
-    string outputDirectory)
-{
-    try
-    {
-        Directory.CreateDirectory(outputDirectory);
+//static void GenerateMarkdownReport(
+//    ConsolidatedReport report,
+//    string outputDirectory)
+//{
+//    try
+//    {
+//        Directory.CreateDirectory(outputDirectory);
 
-        var outputPath =
-            Path.Combine(outputDirectory, "Relatorio_Arquitetural.md");
+//        var outputPath =
+//            Path.Combine(outputDirectory, "Relatorio_Arquitetural.md");
 
-        var exporter = new MarkdownReportExporter();
+//        var exporter = new MarkdownReportExporter();
 
-        exporter.Export(report, outputPath);
+//        exporter.Export(report, outputPath);
 
-        TerminalRenderer.Success("Relatório Markdown gerado");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[ERRO AO GERAR MD]: {ex.Message}");
-        CrashLogger.Log(ex, "MARKDOWN_EXPORT");
-    }
-}
+//        TerminalRenderer.Success("Relatório Markdown gerado");
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"[ERRO AO GERAR MD]: {ex.Message}");
+//        CrashLogger.Log(ex, "MARKDOWN_EXPORT");
+//    }
+//}
 
 
 
-static void GenerateStructuralDashboard(
-    ConsolidatedReport report,
-    string outputDirectory)
-{
-    try
-    {
-        Directory.CreateDirectory(outputDirectory);
+//static void GenerateStructuralDashboard(
+//    ConsolidatedReport report,
+//    string outputDirectory)
+//{
+//    try
+//    {
+//        Directory.CreateDirectory(outputDirectory);
 
-        var exporter = new StructuralInventoryExporter();
+//        var exporter = new StructuralInventoryExporter();
 
-        exporter.Export(report, outputDirectory);
+//        exporter.Export(report, outputDirectory);
 
-        TerminalRenderer.Success("Structural Dashboard gerado");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[ERRO AO GERAR DASHBOARD]: {ex.Message}");
-        CrashLogger.Log(ex, "DASHBOARD_EXPORT");
-    }
-}
+//        TerminalRenderer.Success("Structural Dashboard gerado");
+//    }
+//    catch (Exception ex)
+//    {
+//        Console.WriteLine($"[ERRO AO GERAR DASHBOARD]: {ex.Message}");
+//        CrashLogger.Log(ex, "DASHBOARD_EXPORT");
+//    }
+//}
 
 
 
@@ -614,4 +622,88 @@ static bool IsEnabled(AnalysisContext context, string analyzerName)
 {
     return context.Config.Analyzers.TryGetValue(analyzerName, out var enabled)
            && enabled;
+}
+
+static void TrySetParserResult(
+    AnalysisContext context,
+    IParserResult? parsingResult)
+{
+    if (parsingResult == null)
+        return;
+
+    try
+    {
+        var prop = context.GetType().GetProperty("ParserResult");
+
+        if (prop != null && prop.CanWrite)
+        {
+            prop.SetValue(context, parsingResult);
+        }
+    }
+    catch
+    {
+        // Compatibilidade temporária:
+        // se AnalysisContext ainda não expõe ParserResult,
+        // os adapters/hub seguirão operando em fallback.
+    }
+}
+
+static void RunHtmlExporters(
+    IEnumerable<IExporter> exporters,
+    AnalysisContext context,
+    ConsolidatedReport report,
+    string outputDirectory)
+{
+    Directory.CreateDirectory(outputDirectory);
+
+    foreach (var exporter in exporters)
+    {
+        try
+        {
+            exporter.Export(context, report, outputDirectory);
+            TerminalRenderer.Success($"{exporter.Name} gerado");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO AO GERAR HTML - {exporter.Name}]: {ex.Message}");
+            CrashLogger.Log(ex, $"HTML_EXPORT_{exporter.Name.ToUpperInvariant()}");
+        }
+    }
+}
+
+static List<IExporter> BuildHtmlExportersWithoutHub()
+{
+    return new List<IExporter>
+    {
+        new StructuralDashboardExporterAdapter(),
+        new ParsingDashboardExporterAdapter(),
+        new ArchitecturalDashboardExporterAdapter()
+    };
+}
+
+static void RunHtmlHubExporter(
+    AnalysisContext context,
+    ConsolidatedReport report,
+    IParserResult? parsingResult,
+    string outputDirectory)
+{
+    try
+    {
+        Directory.CreateDirectory(outputDirectory);
+
+        var exporter = new HtmlDashboardExporter();
+
+        exporter.ExportHub(
+            context,
+            report,
+            parsingResult,
+            outputDirectory);
+
+        TerminalRenderer.Success("html-dashboard-hub gerado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO AO GERAR HUB HTML]: {ex.Message}");
+        CrashLogger.Log(ex, "HTML_EXPORT_HUB");
+    }
 }

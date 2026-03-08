@@ -1,0 +1,1989 @@
+﻿<html><head><meta charset='UTF-8'>
+<style>
+body { background:#0f1117; color:#e6edf3; font-family:Segoe UI; margin:30px; }
+.card { display:inline-block; padding:20px; margin:10px; background:#161b22; border-radius:10px; min-width:220px; vertical-align:top; }
+.danger { color:#ff6b6b; }
+.warning { color:#ffd166; }
+.ok { color:#06d6a0; }
+table { border-collapse: collapse; width:100%; margin-top:20px; }
+th, td { border:1px solid #30363d; padding:8px; }
+th { cursor:pointer; background:#21262d; }
+tr.danger { background:#2d1117; color:#ff6b6b; }
+tr.warning { background:#332701; color:#ffd166; }
+tr.core { background:#0d1b2a; }
+tr.ok { background:#0f1f14; color:#7ee787; }
+
+.tooltip { position: relative; cursor: help; }
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 320px;
+  background-color: #1f2937;
+  color: #fff;
+  text-align: left;
+  padding: 14px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  top: 125%;
+  left: 50%;
+  margin-left: -160px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 12px;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
+<script>
+
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var rows = document.getElementById('table').rows;
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+      if (dir == 'asc' && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) shouldSwitch = true;
+      if (dir == 'desc' && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) shouldSwitch = true;
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+    if (!switching && dir == 'asc') { dir = 'desc'; switching = true; }
+}
+</script>
+</head><body>
+<h1>🧬 Structural Dashboard</h1>
+<p>Generated: 2026-03-08 17:15 UTC</p>
+<div>
+<div class='card'>Total Classes<br><b>146</b></div>
+<div class='card tooltip warning'>
+                Structural Candidates<br>
+                <b>43</b>
+                <span class='tooltiptext'>
+                    Types with zero structural references inside the analyzed scope.
+                    This does NOT indicate dead code.
+                    It only means the type is not directly referenced in the parsed graph.
+                    Common cases:
+                    - CLI commands
+                    - plugin rules
+                    - reflection usage
+                    - framework entry points
+                </span></div>
+<div class='card tooltip ok'>
+            Pattern Similarity<br>
+            <b>42</b>
+            <span class='tooltiptext'>
+            Classes that exhibit structural similarity
+            to known design patterns.
+            </span></div>
+<div class='card tooltip danger'>
+            Unresolved<br>
+            <b>1</b>
+            <span class='tooltiptext'>
+                References that could not be resolved by the structural parser.
+
+                May indicate:
+                - missing dependencies
+                - incomplete parsing
+                - namespace mismatch
+                - broken architecture links
+            </span></div>
+<div class='card tooltip warning'>Namespace Drift<br><b>5</b><span class='tooltiptext'>Namespace Drift (Strict Rule): Exact correspondence to folder structure</span></div>
+<div class='card tooltip'>
+                Global Namespace<br>
+                <b>0</b>
+                <span class='tooltiptext'>
+                Number of classes declared without a namespace.
+
+                Using the global namespace reduces architectural clarity
+                and weakens modular organization.
+
+                Well-structured projects usually avoid global namespace usage.
+                </span></div>
+<div class='card tooltip'>Isolated Core<br><b>28</b> <span class='tooltiptext'>Number of Core types that remain structurally independent from the rest of the system. These elements represent stable architectural foundations. If the value is low, the Core may be leaking responsibilities or depending on outer layers.</span></div>
+<div class='card tooltip'>
+            Smell Index<br>
+            <b>14,1</b>
+            <span class='tooltiptext'>
+            Composite structural smell indicator.
+
+            Components:
+            • Dead Code Ratio (Unreferenced classes)
+            • Namespace Drift Ratio (namespace vs folder misalignment)
+            • Global Namespace Ratio (legacy structural usage)
+            • Core Isolation Ratio (core architectural boundary integrity)
+            • Structural Entropy (distribution disorder across modules)
+
+            Higher values indicate architectural degradation
+            and increased maintenance risk.
+            </span>
+            </div>
+<div class='card tooltip'>
+            Hygiene Level<br>
+            <b>🟢 Healthy</b>
+            <span class='tooltiptext'>
+            Overall structural health classification derived
+            from the SmellIndex score.
+
+            Evaluates architectural hygiene considering
+            dead code probability, legacy structure,
+            core isolation and structural entropy.
+            </span>
+            </div>
+<div class='card tooltip'>
+            SOLID Alerts<br>
+            <b>3</b>
+            <span class='tooltiptext'>Two-pass heuristic detection, SOLID Alerts
+            Number of detected violations of SOLID design principles.
+            Low values indicate stable object-oriented design.
+            High values indicate architectural erosion or responsibility leaks.
+            Examples:
+            • SRP violations
+            • LSP violations
+            • interface misuse</span>
+            </div>
+<div class='card tooltip warning'>
+            Implicit Coupling<br>
+            <b>39</b>
+            <span class='tooltiptext'>
+            Classes whose dependencies concentrate strongly toward a single module.
+
+            Detection considers:
+            • Fan-out asymmetry
+            • Dominant dependency direction
+            • Structural concentration of references
+
+            These signals highlight potential architectural coupling hotspots,
+            but do not necessarily indicate design violations.
+            </span></div>
+<div class='card tooltip'>
+            Abstractness (A)<br>
+            <b>0,05</b>
+            <span class='tooltiptext'>
+            Architectural abstraction ratio.
+
+            A = Na / Nc
+
+            Where:
+            Na = number of abstract types
+            Nc = total types in module
+
+            Higher values indicate greater use of abstraction.
+            </span></div>
+<div class='card tooltip'>
+            Instability (I)<br>
+            <b>0,40</b>
+            <span class='tooltiptext'>
+            Architectural instability.
+
+            I = Ce / (Ce + Ca)
+
+            Where:
+            Ce = outgoing dependencies
+            Ca = incoming dependencies
+
+            Values closer to 1 indicate modules
+            that depend heavily on other modules.
+            </span></div>
+<div class='card tooltip'>
+            Distance (D)<br>
+            <b>0,55</b>
+            <span class='tooltiptext'>
+            Distance from Main Sequence.
+
+            D = | A + I − 1 |
+
+            Measures how far a module is from the
+            ideal architectural balance between
+            abstraction and stability.
+            </span></div>
+</div>
+<div style='margin-top:40px;'>
+<div style='display:flex; gap:40px; flex-wrap:wrap;'>
+<div class='chart-container'>
+<h3>Architectural Risk Radar</h3>
+<div class='tooltip'>
+<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
+<circle cx='160' cy='160' r='27.5' fill='none' stroke='#30363d' stroke-width='1' />
+<circle cx='160' cy='160' r='55' fill='none' stroke='#30363d' stroke-width='1' />
+<circle cx='160' cy='160' r='82.5' fill='none' stroke='#30363d' stroke-width='1' />
+<circle cx='160' cy='160' r='110' fill='none' stroke='#30363d' stroke-width='1' />
+<line x1='160' y1='160' x2='160' y2='50' stroke='#30363d' />
+<text x='160' y='28' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Structural Candidates — 29% of classes</title>Structural Candidates</text>
+<line x1='160' y1='160' x2='237.78174593052023' y2='82.21825406947977' stroke='#30363d' />
+<text x='253.3380951166243' y='66.66190488337573' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Pattern Similarity — 29% of classes</title>Pattern Similarity</text>
+<line x1='160' y1='160' x2='270' y2='160' stroke='#30363d' />
+<text x='292' y='160' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Unresolved — 1% of classes</title>Unresolved</text>
+<line x1='160' y1='160' x2='237.78174593052023' y2='237.78174593052023' stroke='#30363d' />
+<text x='253.3380951166243' y='253.3380951166243' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Namespace Drift — 3% of classes</title>Namespace Drift</text>
+<line x1='160' y1='160' x2='160' y2='270' stroke='#30363d' />
+<text x='160' y='292' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Global Namespace — 0% of classes</title>Global Namespace</text>
+<line x1='160' y1='160' x2='82.21825406947978' y2='237.78174593052023' stroke='#30363d' />
+<text x='66.66190488337574' y='253.3380951166243' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Core Isolation — 19% of classes</title>Core Isolation</text>
+<line x1='160' y1='160' x2='50' y2='160' stroke='#30363d' />
+<text x='28' y='160.00000000000003' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Implicit Coupling — 27% of classes</title>Implicit Coupling</text>
+<line x1='160' y1='160' x2='82.21825406947976' y2='82.21825406947978' stroke='#30363d' />
+<text x='66.66190488337571' y='66.66190488337574' fill='#e6edf3' font-size='11' text-anchor='middle'><title>SOLID Alerts — 10% of classes</title>SOLID Alerts</text>
+<polygon points='160,127.6027397260274 182.37557074713595,137.62442925286405 160.75342465753425,160 162.66375842227808,162.66375842227808 160,160 145.0829528352427,174.9170471647573 130.6164383561644,160 152.00872473316574,152.00872473316574' fill='rgba(255,99,132,0.35)' stroke='#ff6384' stroke-width='2'/>
+</svg>
+<span class='tooltiptext'>
+Radar summarizing architectural risk indicators.
+
+Higher values indicate larger concentration of potential structural issues:
+• Dead code candidates
+• Pattern similarity clusters
+• Namespace drift
+• Hidden coupling
+• SOLID violations
+</span>
+</div>
+</div>
+
+<div class='chart-container'>
+<h3>Architectural Galaxy (A/I Distribution)</h3>
+<div class='tooltip'>
+<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
+<line x1='35' y1='285' x2='285' y2='285' stroke='#30363d'/>
+<line x1='35' y1='285' x2='35' y2='35' stroke='#30363d'/>
+<text x='240' y='312' fill='#e6edf3' font-size='11'>Instability</text>
+<text x='5' y='20' fill='#e6edf3' font-size='11'>Abstractness</text>
+<line x1='35' y1='35' x2='285' y2='285' stroke='#444' stroke-dasharray='4,4'/>
+<circle cx='206.7557251908397' cy='258.6842105263158' r='14' fill='#ff6b6b' opacity='0.9'><title>Analyzers
+Abstractness: 0,11
+Instability: 0,69
+FanOut: 90</title></circle>
+<circle cx='35' cy='285' r='4' fill='#58a6ff' opacity='0.9'><title>CLI
+Abstractness: 0,00
+Instability: 0,00
+FanOut: 0</title></circle>
+<circle cx='35' cy='285' r='4' fill='#58a6ff' opacity='0.9'><title>Debug
+Abstractness: 0,00
+Instability: 0,00
+FanOut: 0</title></circle>
+<circle cx='118.33333333333333' cy='285' r='7.333333333333334' fill='#58a6ff' opacity='0.9'><title>Estimation
+Abstractness: 0,00
+Instability: 0,33
+FanOut: 10</title></circle>
+<circle cx='252.30769230769232' cy='270.29411764705884' r='14' fill='#ff6b6b' opacity='0.9'><title>Exporters
+Abstractness: 0,06
+Instability: 0,87
+FanOut: 113</title></circle>
+<circle cx='151.66666666666669' cy='285' r='6.333333333333334' fill='#58a6ff' opacity='0.9'><title>Infrastructure
+Abstractness: 0,00
+Instability: 0,47
+FanOut: 7</title></circle>
+<circle cx='44.107468123861565' cy='256.83098591549293' r='10.666666666666668' fill='#ffd166' opacity='0.9'><title>Core
+Abstractness: 0,11
+Instability: 0,04
+FanOut: 20</title></circle>
+<circle cx='165.20833333333334' cy='222.5' r='12.333333333333334' fill='#ff6b6b' opacity='0.9'><title>Execution
+Abstractness: 0,25
+Instability: 0,52
+FanOut: 25</title></circle>
+<circle cx='219.6153846153846' cy='285' r='14' fill='#ff6b6b' opacity='0.9'><title>Parsers
+Abstractness: 0,00
+Instability: 0,74
+FanOut: 96</title></circle>
+<circle cx='122.5' cy='285' r='6.333333333333334' fill='#58a6ff' opacity='0.9'><title>Statistics
+Abstractness: 0,00
+Instability: 0,35
+FanOut: 7</title></circle>
+</svg>
+<span class='tooltiptext'>
+Architectural Galaxy visualizes module positioning based on
+Robert Martin's A/I model.
+
+A = Abstractness
+I = Instability
+
+Modules should ideally lie near the Main Sequence (A + I = 1).
+Points far from this line indicate architectural tension.
+Circle size represents coupling intensity.
+</span>
+</div>
+</div>
+
+<ul>
+<li>Core isolation detected. Architectural boundaries appear preserved.</li>
+<li>Namespace hierarchy aligned with project structure.</li>
+<li>No global namespace usage detected.</li>
+<li>Potential dead or orphaned code detected through structural analysis.</li>
+<li>Minor SOLID design alerts detected.</li>
+<li>Critical implicit coupling detected. System architecture may be entangled.</li>
+</ul>
+</div>
+
+</div>
+<table id='table'>
+<tr>
+<th onclick='sortTable(0)'>Classe</th>
+<th onclick='sortTable(1)'>Arquivo</th>
+<th onclick='sortTable(2)'>Namespace</th>
+<th onclick='sortTable(3)'>Usos</th>
+<th onclick='sortTable(4)'>Status</th>
+<th onclick='sortTable(5)'>Remoção</th>
+</tr>
+<tr class='danger'>
+<td>FakeZombieService</td>
+<td>Debug\FakeZombieService.cs</td>
+<td>RefactorScope.Debug</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>AnalysisContextExtensions</td>
+<td>Core\Context\AnalysisContextExtensions.cs</td>
+<td>RefactorScope.Core.Context</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>AnalysisOrchestrator</td>
+<td>Core\Orchestration\AnalysisOrchestrator.cs</td>
+<td>RefactorScope.Core.Orchestration</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ArchitecturalClassificationAnalyzer</td>
+<td>Analyzers\ArchitecturalClassificationAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ArchitecturalDashboardExporterAdapter</td>
+<td>Exporters\Adapters\ArchitecturalDashboardExporterAdapter.cs</td>
+<td>RefactorScope.Exporters.Adapters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ArchitecturalHealthDatasetBuilder</td>
+<td>Core\Datasets\ArchitecturalHealthDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ConfigLoader</td>
+<td>Infrastructure\ConfigLoader.cs</td>
+<td>RefactorScope.Infrastructure</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ConfigValidator</td>
+<td>Infrastructure\ConfigValidator.cs</td>
+<td>RefactorScope.Infrastructure</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ConsolidatedReportExtensions</td>
+<td>Core\Results\ConsolidatedReportExtensions.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>CoreIsolationAnalyzer</td>
+<td>Analyzers\CoreIsolationAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>CouplingAnalyzer</td>
+<td>Analyzers\CouplingAnalyser.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>DatasetExporter</td>
+<td>Exporters\DatasetExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>DumpAnaliseExporter</td>
+<td>Exporters\DumpAnaliseExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>DumpIaExporter</td>
+<td>Exporters\DumpIaExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>DumpStrategyResolver</td>
+<td>Execution\Dump\DumpStrategyResolver.cs</td>
+<td>RefactorScope.Execution.Dump</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>EntryPointHeuristicAnalyzer</td>
+<td>Analyzers\EntryPointHeuristicAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>FitnessGateAnalyzer</td>
+<td>Analyzers\FitnessGateAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>FitnessGateConfigResolver</td>
+<td>Core\Configuration\FitnessGateConfigResolver.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>FitnessGateCsvExporter</td>
+<td>Exporters\FitnessGateCsvExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>FitnessGateEvaluator</td>
+<td>Core\Governance\FitnessGateEvaluator.cs</td>
+<td>RefactorScope.Core.Governance</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>GlobalMetricsDatasetBuilder</td>
+<td>Core\Datasets\GlobalMetricsDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>GlobalTypesDatasetBuilder</td>
+<td>Core\Datasets\GlobalTypesDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>HtmlDashboardExporter</td>
+<td>Exporters\HtmlDashboardExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ImplicitCouplingAnalyzer</td>
+<td>Analyzers\ImplicitCouplingAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ModuleContributionDatasetBuilder</td>
+<td>Core\Datasets\ModuleContributionDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ParserSelector</td>
+<td>Core\Parsing\ParserSelector.cs</td>
+<td>RefactorScope.Core.Parsing</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ParsingDashboardExporterAdapter</td>
+<td>Exporters\Adapters\ParsingDashboardExporterAdapter.cs</td>
+<td>RefactorScope.Exporters.Adapters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ProjectStructureAnalyzer</td>
+<td>Analyzers\ProjectStructureAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ProjectStructureExporter</td>
+<td>Exporters\ProjectStructureExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ReportConsolidator</td>
+<td>Core\Reporting\ReportConsolidator.cs</td>
+<td>RefactorScope.Core.Reporting</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>ScopeFilteredFileDiscovery</td>
+<td>Core\Scope\ScopeFilteredFileDiscovery.cs</td>
+<td>RefactorScope.Core.Scope</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>SelfAnalysisSelector</td>
+<td>CLI\SelfAnalysisSelector.cs</td>
+<td>RefactorScope.CLI</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>SolidAnalyzer</td>
+<td>Analyzers\Solid\SolidAnalyzer.cs</td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StatisticsResult</td>
+<td>Core\Results\StatisticsResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralBreakdownExtensions</td>
+<td>Core\Results\StructuralBreakdownExtensions.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralCandidateAnalyzer</td>
+<td>Analyzers\StructuralCandidateAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralCandidateRefinementAnalyzer</td>
+<td>Analyzers\StructuralCandidateRefinementAnalyzer.cs</td>
+<td>RefactorScope.Analyzers</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralDashboardExporterAdapter</td>
+<td>Exporters\Adapters\StructuralDashboardExporterAdapter.cs</td>
+<td>RefactorScope.Exporters.Adapters</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralOverviewDatasetBuilder</td>
+<td>Core\Datasets\StructuralOverviewDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralScoreDatasetBuilder</td>
+<td>Core\Datasets\StructuralScoreDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>StructuralTrendDatasetBuilder</td>
+<td>Core\Datasets\StructuralTrendDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>TerminalRenderer</td>
+<td>Infrastructure\TerminalRenderer.cs</td>
+<td>RefactorScope.Infrastructure</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='warning'>
+<td>TypeContributionDatasetBuilder</td>
+<td>Core\Datasets\TypeContributionDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='core'>
+<td>AnalysisContext</td>
+<td>Core\Context\AnalysisContext.cs</td>
+<td>RefactorScope.Core.Context</td>
+<td>53</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalClassificationItem</td>
+<td>Core\Model\ArchitecturalClassificationItem.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>8</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalClassificationResult</td>
+<td>Core\Results\ArchitecturalClassificationResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>31</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalHygieneAnalyzer</td>
+<td>Analyzers\ArchitecturalHygieneAnalyzer.cs</td>
+<td>RefactorScope.Core.Analyzers</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalMetrics</td>
+<td>Core\Metrics\ArchitecturalMetrics.cs</td>
+<td>RefactorScope.Core.Metrics</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalMetricsBuilder</td>
+<td>Core\Metrics\ArchitecturalMetricsBuilder.cs</td>
+<td>RefactorScope.Core.Metrics</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArchitecturalScoreCalculator</td>
+<td>Core\Metrics\ArchitecturalScoreCalculator.cs</td>
+<td>RefactorScope.Core.Metrics</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ArquivoInfo</td>
+<td>Core\Model\ArquivoInfo.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>9</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ConsolidatedReport</td>
+<td>Core\Results\ConsolidatedReport.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>37</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>CoreDependencyAbsolutionRule</td>
+<td>Analyzers\Solid\Rules\CoreDependencyAbsolutionRule.cs</td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>CoreIsolationGateConfig</td>
+<td>Core\Configuration\FitnessGateConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>CoreIsolationResult</td>
+<td>Core\Results\CoreIsolationResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>22</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>CouplingGateConfig</td>
+<td>Core\Configuration\FitnessGateConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>CouplingResult</td>
+<td>Core\Results\CouplingResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>28</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>CouplingSuspicion</td>
+<td>Core\Model\CouplingSuspicion.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>DeadCodeGateConfig</td>
+<td>Core\Configuration\FitnessGateConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>DesignPatternSignatureLibrary</td>
+<td>Core\Patterns\PatternSignatureLibrary.cs</td>
+<td>RefactorScope.Core.Patterns</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>DumpStrategyConfig</td>
+<td>Core\Configuration\DumpStrategyConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>1</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>EffortEstimate</td>
+<td>Estimation\Models\EffortEstimate.cs</td>
+<td>RefactorScope.Estimation.Models</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>EffortEstimateResult</td>
+<td>Core\Results\EffortEstimateResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>EntryPointHeuristicResult</td>
+<td>Core\Results\EntryPointHeuristicResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>14</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>EstimatorConfig</td>
+<td>Core\Configuration\EstimatorConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>1</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>FitnessGateConfig</td>
+<td>Core\Configuration\FitnessGateConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>7</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>FitnessGateResult</td>
+<td>Core\Results\FitnessGateResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>12</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>FitnessGateStatus</td>
+<td>Core\Results\FitnessGateStatus.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>4</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>HygieneReport</td>
+<td>Core\Model\HygieneReport.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IAbsolutionRule</td>
+<td>Analyzers\Solid\Rules\IAbsolutionRule.cs</td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>4</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IAnalysisResult</td>
+<td>Core\Abstractions\IAnalysisResult.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>31</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IAnalyticalDatasetBuilder</td>
+<td>Core\Datasets\IAnalyticalDatasetBuilder.cs</td>
+<td>RefactorScope.Core.Datasets</td>
+<td>10</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IAnalyzer</td>
+<td>Core\Abstractions\IAnalyzer.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>12</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IExporter</td>
+<td>Core\Abstractions\IExporter.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>15</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ImplicitCouplingResult</td>
+<td>Core\Results\ImplicitCouplingResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>12</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IOmissionRule</td>
+<td>Analyzers\Solid\Rules\IOmissionRule.cs</td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IParserCodigo</td>
+<td>Core\Abstractions\IParserCodigo.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>8</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IParserResult</td>
+<td>Core\Abstractions\IParserResult.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>10</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>IPipelineStep</td>
+<td>Core\Abstractions\IPipelineStep.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>0</td>
+<td>Sem Referência Estrutural</td>
+<td>Requer Análise</td>
+</tr>
+<tr class='core'>
+<td>IPreParser</td>
+<td>Core\Abstractions\IPreParser.cs</td>
+<td>RefactorScope.Core.Abstractions</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>LayerRuleConfig</td>
+<td>Core\Context\LayerRuleConfig.cs</td>
+<td>RefactorScope.Core.Context</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>MetricsStatisticsSummary</td>
+<td>Statistics\Models\StatisticsReport.cs</td>
+<td>RefactorScope.Statistics.Models</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ModeloEstrutural</td>
+<td>Core\Model\ModeloEstrutural.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>17</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>OrchestratorAbsolutionRule</td>
+<td>Analyzers\Solid\Rules\OrchestratorAbsolutionRule.cs</td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ParserExecutionStats</td>
+<td>Core\Parsing\ParserExecutionStats.cs</td>
+<td>RefactorScope.Core.Parsing</td>
+<td>11</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ParserResult</td>
+<td>Core\Parsing\ParserResult.cs</td>
+<td>RefactorScope.Core.Parsing</td>
+<td>14</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ParsingConfidence</td>
+<td>Statistics\Models\StatisticsReport.cs</td>
+<td>RefactorScope.Statistics.Models</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>PatternRule</td>
+<td>Core\Patterns\PatternSignatureLibrary.cs</td>
+<td>RefactorScope.Core.Patterns</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>PatternSignatureResult</td>
+<td>Core\Patterns\PatternSignatureLibrary.cs</td>
+<td>RefactorScope.Core.Patterns</td>
+<td>4</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>PlausibilityEvaluator</td>
+<td>Core\Parsing\PlausibilityEvaluator.cs</td>
+<td>RefactorScope.Core.Parsing</td>
+<td>11</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ProjectStructureResult</td>
+<td>Core\Results\ProjectStructureResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>PublicZeroUsageOmissionRule</td>
+<td>Analyzers\Solid\Rules\PublicZeroUsageOmissionRule.cs</td>
+<td>RefactorScope.Analyzers.Solid.Rules</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>RefactorDifficultyIndex</td>
+<td>Estimation\Models\RefactorDifficultyIndex.cs</td>
+<td>RefactorScope.Estimation.Models</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>RefactorScopeConfig</td>
+<td>Core\Configuration\RefactorScopeConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ReferenciaInfo</td>
+<td>Core\Model\ReferenciaInfo.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>14</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>SanitizedSourceProvider</td>
+<td>Core\Parsing\SanitizedSourceProvider.cs</td>
+<td>RefactorScope.Core.Parsing</td>
+<td>7</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>ScopeRuleSet</td>
+<td>Core\Scope\ScopeRuleSet.cs</td>
+<td>RefactorScope.Core.Scope</td>
+<td>8</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>SolidConfig</td>
+<td>Analyzers\Solid\SolidConfig.cs</td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>4</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>SolidResult</td>
+<td>Analyzers\Solid\SolidResult.cs</td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>8</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>SolidSuspicion</td>
+<td>Analyzers\Solid\SolidSuspicion.cs</td>
+<td>RefactorScope.Analyzers.Solid</td>
+<td>11</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StatisticsConfig</td>
+<td>Core\Configuration\StatisticsConfig.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>1</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StatisticsReport</td>
+<td>Statistics\Models\StatisticsReport.cs</td>
+<td>RefactorScope.Statistics.Models</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralAlignmentEvaluator</td>
+<td>Core\Structure\StructuralAlignmentEvaluator.cs</td>
+<td>RefactorScope.Core.Structure</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralCandidateAnalysisBreakdown</td>
+<td>Core\Results\StructuralCandidateAnalysisBreakdown.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>9</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralCandidateDetectionOptions</td>
+<td>Core\Configuration\StructuralCandidateDetectionOptions.cs</td>
+<td>RefactorScope.Core.Configuration</td>
+<td>1</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralCandidateProbabilityItem</td>
+<td>Core\Results\StructuralCandidateProbabilityItem.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>5</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralCandidateProbabilityResult</td>
+<td>Core\Results\StructuralCandidateProbabilityResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>4</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralCandidateResult</td>
+<td>Core\Results\StructuralCandidateResult.cs</td>
+<td>RefactorScope.Core.Results</td>
+<td>12</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>StructuralHeuristicLibrary</td>
+<td>Core\Patterns\StructuralHeuristicLibrary.cs</td>
+<td>RefactorScope.Core.Patterns</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='core'>
+<td>TipoInfo</td>
+<td>Core\Model\TipoInfo.cs</td>
+<td>RefactorScope.Core.Model</td>
+<td>23</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ArchitecturalDashboardExporter</td>
+<td>Exporters\ArchitecturalDashboardExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ChartsRenderer</td>
+<td>Exporters\ChartsRenderer.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ClassComplexityClassifier</td>
+<td>Parsers\Analysis\ClassComplexityClassifier.cs</td>
+<td>RefactorScope.Parsers.Analysis</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ClassComplexityScanResult</td>
+<td>Parsers\Analysis\ClassComplexityScanResult.cs</td>
+<td>RefactorScope.Parsers.Analysis</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>CouplingPressureModel</td>
+<td>Estimation\Scoring\CouplingPressureModel.cs</td>
+<td>RefactorScope.Estimation.Scoring</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>CrashLogger</td>
+<td>Infrastructure\CrashLogger.cs</td>
+<td>RefactorScope.Infrastructure</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>CSharpPreParser</td>
+<td>Parsers\Common\CSharpPreParser.cs</td>
+<td>RefactorScope.Parsers.Common</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>CSharpRegexParser</td>
+<td>Parsers\CsharpParsers\CSharpRegexParser.cs</td>
+<td>RefactorScope.Parsers.CsharpParsers</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>CSharpTextualParser</td>
+<td>Parsers\CsharpParsers\CsharpTextualParser.cs</td>
+<td>RefactorScope.Parsers.CsharpParsers</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>EffortEstimator</td>
+<td>Estimation\EffortEstimator.cs</td>
+<td>RefactorScope.Estimation</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>GlobalDumpStrategy</td>
+<td>Execution\Dump\Strategies\GlobalDumpStrategy.cs</td>
+<td>RefactorScope.Execution.Dump.Strategies</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>HigienizadorLexico</td>
+<td>Parsers\CsharpParsers\CsharpTextualParser.cs</td>
+<td>RefactorScope.Parsers.CsharpParsers</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>HubDashboardExporter</td>
+<td>Exporters\HubDashboardExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>HybridAdaptiveParser</td>
+<td>Parsers\CsharpParsers\Hybrid\HybridAdaptativeParser.cs</td>
+<td>RefactorScope.Parsers.Hybrid</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>HybridIncrementalParser</td>
+<td>Parsers\CsharpParsers\Hybrid\HybridIncrementalParser.cs</td>
+<td>RefactorScope.Parsers.Hybrid</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>HybridParser</td>
+<td>Parsers\CsharpParsers\HybridParser.cs</td>
+<td>RefactorScope.Parsers.Hybrid</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>HybridSelectiveParser</td>
+<td>Parsers\CsharpParsers\Hybrid\HybridSelectiveParser.cs</td>
+<td>RefactorScope.Parsers.Hybrid</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>IDumpStrategy</td>
+<td>Execution\Dump\Strategies\IDumpStrategy.cs</td>
+<td>RefactorScope.Execution.Dump.Strategies</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ISegmentationResolver</td>
+<td>Execution\Dump\Segmentation\ISegmentationResolver.cs</td>
+<td>RefactorScope.Execution.Dump.Segmentation</td>
+<td>4</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>LayerRuleEvaluator</td>
+<td>Infrastructure\LayerRuleEvaluator.cs</td>
+<td>RefactorScope.Infrastructure</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>LayerSegmentationResolver</td>
+<td>Execution\Dump\Segmentation\LayerSegmentationResolver.cs</td>
+<td>RefactorScope.Execution.Dump.Segmentation</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>MarkdownReportExporter</td>
+<td>Exporters\MarkdownReportExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>misuse</td>
+<td>Exporters\StructuralInventoryExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>1</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ModeloMerger</td>
+<td>Parsers\CsharpParsers\Hybrid\ModeloMerger.cs</td>
+<td>RefactorScope.Parsers.Hybrid</td>
+<td>6</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ParsingChartsRenderer</td>
+<td>Exporters\ParsingChartsRenderer.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ParsingDashboardExporter</td>
+<td>Exporters\ParsingDashboardExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>RDICalculator</td>
+<td>Estimation\Scoring\RDICalculator.cs</td>
+<td>RefactorScope.Estimation.Scoring</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>RefactorClassifier</td>
+<td>Estimation\Classification\RefactorClassifier.cs</td>
+<td>RefactorScope.Estimation.Classification</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>RegexLocalRecovery</td>
+<td>Parsers\CsharpParsers\RegexLocalRecovery.cs</td>
+<td>RefactorScope.Parsers.CsharpParsers</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>SegmentedDumpStrategy</td>
+<td>Execution\Dump\Strategies\SegmentedDumpStrategy.cs</td>
+<td>RefactorScope.Execution.Dump.Strategies</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>SegmentScope</td>
+<td>Execution\Dump\Segmentation\SegmentScope.cs</td>
+<td>RefactorScope.Execution.Dump.Segmentation</td>
+<td>8</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>SizePressureModel</td>
+<td>Estimation\Scoring\SizePressureModel.cs</td>
+<td>RefactorScope.Estimation.Scoring</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>StructuralInventoryExporter</td>
+<td>Exporters\StructuralInventoryExporter.cs</td>
+<td>RefactorScope.Exporters</td>
+<td>3</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>StructuralRiskModel</td>
+<td>Estimation\Scoring\StructuralRiskModel.cs</td>
+<td>RefactorScope.Estimation.Scoring</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>TopFolderSegmentationResolver</td>
+<td>Execution\Dump\Segmentation\TopFolderSegmentationResolver.cs</td>
+<td>RefactorScope.Execution.Dump.Segmentation</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+<tr class='ok'>
+<td>ValidationEngine</td>
+<td>Statistics\Engines\ValidationEngine.cs</td>
+<td>RefactorScope.Statistics.Engines</td>
+<td>2</td>
+<td>Referenciado</td>
+<td>N/A</td>
+</tr>
+</table>
+<h2 style='margin-top:50px;'>⚠ Implicit Coupling Candidates</h2>
+<table>
+<tr>
+<th>Type</th>
+<th>Module</th>
+<th>Target Module</th>
+<th>Fan-Out</th>
+<th>Fan-In</th>
+<th>Dominance</th>
+<th>Volume</th>
+</tr>
+<tr>
+<td>ArchitecturalClassificationAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>11</td>
+<td>0</td>
+<td>1,00</td>
+<td>11</td>
+</tr>
+<tr>
+<td>CoreIsolationAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>7</td>
+<td>0</td>
+<td>1,00</td>
+<td>7</td>
+</tr>
+<tr>
+<td>CouplingAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>5</td>
+<td>0</td>
+<td>1,00</td>
+<td>5</td>
+</tr>
+<tr>
+<td>EntryPointHeuristicAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>5</td>
+<td>0</td>
+<td>1,00</td>
+<td>5</td>
+</tr>
+<tr>
+<td>FitnessGateAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>12</td>
+<td>0</td>
+<td>1,00</td>
+<td>12</td>
+</tr>
+<tr>
+<td>ImplicitCouplingAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>8</td>
+<td>0</td>
+<td>1,00</td>
+<td>8</td>
+</tr>
+<tr>
+<td>ProjectStructureAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>5</td>
+<td>0</td>
+<td>1,00</td>
+<td>5</td>
+</tr>
+<tr>
+<td>StructuralCandidateAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>6</td>
+<td>0</td>
+<td>1,00</td>
+<td>6</td>
+</tr>
+<tr>
+<td>StructuralCandidateRefinementAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>11</td>
+<td>0</td>
+<td>1,00</td>
+<td>11</td>
+</tr>
+<tr>
+<td>EffortEstimator</td>
+<td>Estimation</td>
+<td>Core</td>
+<td>10</td>
+<td>2</td>
+<td>0,83</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ArchitecturalDashboardExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>16</td>
+<td>2</td>
+<td>0,89</td>
+<td>16</td>
+</tr>
+<tr>
+<td>DatasetExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>5</td>
+<td>0</td>
+<td>1,00</td>
+<td>5</td>
+</tr>
+<tr>
+<td>DumpAnaliseExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>7</td>
+<td>0</td>
+<td>1,00</td>
+<td>7</td>
+</tr>
+<tr>
+<td>FitnessGateCsvExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>5</td>
+<td>0</td>
+<td>1,00</td>
+<td>5</td>
+</tr>
+<tr>
+<td>HtmlDashboardExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>7</td>
+<td>0</td>
+<td>1,00</td>
+<td>7</td>
+</tr>
+<tr>
+<td>HubDashboardExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>12</td>
+<td>2</td>
+<td>0,86</td>
+<td>12</td>
+</tr>
+<tr>
+<td>MarkdownReportExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>15</td>
+<td>2</td>
+<td>0,88</td>
+<td>15</td>
+</tr>
+<tr>
+<td>StructuralInventoryExporter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>18</td>
+<td>3</td>
+<td>0,86</td>
+<td>18</td>
+</tr>
+<tr>
+<td>SolidAnalyzer</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>21</td>
+<td>0</td>
+<td>1,00</td>
+<td>21</td>
+</tr>
+<tr>
+<td>AnalysisOrchestrator</td>
+<td>Core</td>
+<td>Infrastructure</td>
+<td>15</td>
+<td>0</td>
+<td>1,00</td>
+<td>15</td>
+</tr>
+<tr>
+<td>ParserSelector</td>
+<td>Core</td>
+<td>Parsers</td>
+<td>16</td>
+<td>0</td>
+<td>1,00</td>
+<td>16</td>
+</tr>
+<tr>
+<td>RDICalculator</td>
+<td>Estimation</td>
+<td>Core</td>
+<td>12</td>
+<td>2</td>
+<td>0,86</td>
+<td>12</td>
+</tr>
+<tr>
+<td>DumpStrategyResolver</td>
+<td>Execution</td>
+<td>Core</td>
+<td>11</td>
+<td>0</td>
+<td>1,00</td>
+<td>11</td>
+</tr>
+<tr>
+<td>ArchitecturalDashboardExporterAdapter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>7</td>
+<td>0</td>
+<td>1,00</td>
+<td>7</td>
+</tr>
+<tr>
+<td>ParsingDashboardExporterAdapter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>6</td>
+<td>0</td>
+<td>1,00</td>
+<td>6</td>
+</tr>
+<tr>
+<td>StructuralDashboardExporterAdapter</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>5</td>
+<td>0</td>
+<td>1,00</td>
+<td>5</td>
+</tr>
+<tr>
+<td>CSharpRegexParser</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>22</td>
+<td>2</td>
+<td>0,92</td>
+<td>22</td>
+</tr>
+<tr>
+<td>HigienizadorLexico</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>12</td>
+<td>2</td>
+<td>0,86</td>
+<td>12</td>
+</tr>
+<tr>
+<td>CSharpTextualParser</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>30</td>
+<td>3</td>
+<td>0,91</td>
+<td>30</td>
+</tr>
+<tr>
+<td>HybridParser</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>10</td>
+<td>2</td>
+<td>0,83</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ValidationEngine</td>
+<td>Statistics</td>
+<td>Core</td>
+<td>12</td>
+<td>2</td>
+<td>0,86</td>
+<td>12</td>
+</tr>
+<tr>
+<td>PublicZeroUsageOmissionRule</td>
+<td>Analyzers</td>
+<td>Core</td>
+<td>6</td>
+<td>2</td>
+<td>0,75</td>
+<td>6</td>
+</tr>
+<tr>
+<td>LayerSegmentationResolver</td>
+<td>Execution</td>
+<td>Core</td>
+<td>10</td>
+<td>2</td>
+<td>0,83</td>
+<td>10</td>
+</tr>
+<tr>
+<td>TopFolderSegmentationResolver</td>
+<td>Execution</td>
+<td>Core</td>
+<td>8</td>
+<td>2</td>
+<td>0,80</td>
+<td>8</td>
+</tr>
+<tr>
+<td>SegmentedDumpStrategy</td>
+<td>Execution</td>
+<td>Core</td>
+<td>6</td>
+<td>2</td>
+<td>0,75</td>
+<td>6</td>
+</tr>
+<tr>
+<td>HybridAdaptiveParser</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>11</td>
+<td>2</td>
+<td>0,85</td>
+<td>11</td>
+</tr>
+<tr>
+<td>HybridIncrementalParser</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>11</td>
+<td>2</td>
+<td>0,85</td>
+<td>11</td>
+</tr>
+<tr>
+<td>HybridSelectiveParser</td>
+<td>Parsers</td>
+<td>Core</td>
+<td>10</td>
+<td>2</td>
+<td>0,83</td>
+<td>10</td>
+</tr>
+<tr>
+<td>misuse</td>
+<td>Exporters</td>
+<td>Core</td>
+<td>11</td>
+<td>1</td>
+<td>0,92</td>
+<td>11</td>
+</tr>
+</table>
+
+                    <div style='margin-top:8px;font-size:12px;color:#9aa4b2;max-width:800px;'>
+
+                    <b>Metric Definitions</b><br>
+
+                    <b>Fan-Out</b> — Number of outgoing dependencies from the module.<br>
+
+                    <b>Fan-In</b> — Number of incoming dependencies targeting the module.<br>
+
+                    <b>Dominance</b> — Relative structural influence derived from Fan-Out versus Fan-In. 
+                    Higher values indicate modules exerting stronger control over other modules.<br>
+
+                    <b>Volume</b> — Total dependency interaction involving the module 
+                    (Fan-In + Fan-Out), representing the structural traffic of the component.
+
+                    </div>
+<h2 style='margin-top:50px;'>⚠ SOLID Alerts</h2>
+<table>
+<tr><th>Principle</th><th>Class</th><th>Namespace</th><th>Reason</th></tr>
+<tr>
+<td>SRP</td>
+<td>ArchitecturalDashboardExporter</td>
+<td>Exporters</td>
+<td>FanOut > 15</td>
+</tr>
+<tr>
+<td>SRP</td>
+<td>CSharpRegexParser</td>
+<td>Parsers</td>
+<td>FanOut > 15</td>
+</tr>
+<tr>
+<td>SRP</td>
+<td>CSharpTextualParser</td>
+<td>Parsers</td>
+<td>FanOut > 15</td>
+</tr>
+</table>
+
+                <div style='margin-top:60px; padding:20px; background:#111827; border-radius:10px; font-size:13px; color:#9ca3af;'>
+                <h3>📘 Methodology & Limitations</h3>
+                This dashboard is based on heuristic static structural analysis of the analyzed codebase.
+                Metrics highlight architectural signals and potential anomalies, not definitive violations.
+
+                Structural Candidates
+                Classes with zero structural references in the analyzed graph.
+                These are not automatically dead code.
+                Typical causes include CLI entry points, plugin rules, reflection usage, or framework wiring.
+
+                Pattern Similarity
+                Subset of candidates that resemble known structural patterns (interfaces, DI adapters, factories, etc.).
+                Higher values usually indicate intentional architectural structures rather than dead code.
+
+                Unresolved
+                Candidates that remain unexplained after probabilistic refinement.
+                These are the strongest signals of potential dead code or incomplete integration.
+
+                Namespace Drift
+                Classes whose namespace does not match the folder hierarchy under the project root.
+                Strict rule: namespace should reflect the physical module structure.
+
+                Global Namespace
+                Classes declared without a namespace.
+                These reduce modular clarity and should normally be avoided.
+
+                Isolated Core
+                Core-layer classes that remain structurally independent from outer layers.
+                Healthy architectures usually keep Core stable and referenced by other modules,
+                while avoiding dependencies from Core to infrastructure.
+
+                SOLID Alerts
+                Heuristic detection of potential violations of object-oriented design principles.
+                Examples include Single Responsibility violations, Liskov Substitution conflicts,
+                and interface misuse.
+
+                Radar Interpretation
+
+                Radar values are normalized between 0 and 1 relative to the total number of classes.
+
+                Typical interpretation:
+
+                0.00 – 0.10  Healthy signal  
+                0.10 – 0.25  Moderate architectural signal  
+                0.25 – 0.50  Structural attention recommended  
+                0.50 – 1.00  High architectural risk indicator
+
+                Important:
+                High values do not necessarily indicate errors, but highlight areas that deserve architectural review.
+
+                This analysis operates purely at the static structural level.
+                Runtime mechanisms such as reflection, dependency injection, or framework behavior may produce false positives.
+                Final architectural decisions should always involve human review.
+
+                    <br><br>
+                    <b>Implicit Coupling</b><br>
+                    Implicit coupling highlights classes whose dependencies concentrate toward a single module or subsystem.
+                    This signal may reveal architectural hotspots such as orchestration layers,
+                    integration adapters, or hidden dependency concentration.
+
+                    These detections are heuristic and should be interpreted as architectural signals rather than definitive issues.
+
+                    <br><br>
+                    <b>Architectural Stability Metrics (Robert Martin)</b><br>
+
+                    Abstractness (A) measures how much of a module consists of abstractions.
+
+                    Instability (I) measures how dependent a module is on other modules.
+
+                    Distance from Main Sequence (D) measures how far a module is from the ideal balance
+                    between abstraction and stability.
+
+                    Architectures close to the main sequence tend to be easier to evolve and maintain.
+
+                    These metrics are widely used in architectural analysis tools such as NDepend.
+                </div>
+</body></html>
