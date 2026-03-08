@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-07 06:09 UTC  
+📅 **Execution Time:** 2026-03-08 03:35 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\Scriptome`  
 
 ---
@@ -75,8 +75,8 @@
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 25
-- **Pattern Similarity:** 8
+- **Structural Candidates:** 26
+- **Pattern Similarity:** 9
 - **Unresolved:** 17
 
 ---
@@ -93,35 +93,35 @@
 
 ### 🟡 Fingerprint
 
-- **Score:** `63,0`
-- **Unresolved Candidates:** 🔴 3 (6%)
-- **Coupling:** 1,22
-- **Isolation:** 0,02
-- **Core Density:** 0,10
+- **Score:** `64,7`
+- **Unresolved Candidates:** 🔴 3 (5%)
+- **Coupling:** 1,25
+- **Isolation:** 0,05
+- **Core Density:** 0,28
 
-### 🔴 Infrastructure
+### 🟡 Infrastructure
 
-- **Score:** `37,6`
+- **Score:** `48,1`
 - **Unresolved Candidates:** 🔴 2 (7%)
-- **Coupling:** 4,04
+- **Coupling:** 3,78
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟢 Nucleo
 
-- **Score:** `79,9`
-- **Unresolved Candidates:** 🔴 5 (11%)
-- **Coupling:** 0,96
-- **Isolation:** 0,15
+- **Score:** `88,0`
+- **Unresolved Candidates:** 🔴 5 (10%)
+- **Coupling:** 0,71
+- **Isolation:** 0,14
 - **Core Density:** 0,96
 
 ### 🟡 Limbic
 
-- **Score:** `66,5`
+- **Score:** `61,5`
 - **Unresolved Candidates:** 🔴 7 (19%)
-- **Coupling:** 1,22
-- **Isolation:** 0,24
-- **Core Density:** 0,84
+- **Coupling:** 1,19
+- **Isolation:** 0,03
+- **Core Density:** 0,16
 
 ---
 
@@ -130,19 +130,23 @@
 | Type | Module | Target Module | Fan-Out | Fan-In | Dominance | Volume |
 |------|--------|---------------|--------|--------|-----------|--------|
 | Program | Program.cs | Infrastructure | 17 | 2 | 0,89 | 17 |
-| OrquestradorNucleo | Nucleo | Fingerprint | 12 | 3 | 0,80 | 12 |
+| OrquestradorNucleo | Nucleo | Fingerprint | 11 | 3 | 0,79 | 11 |
 | ModuloEtogramaV2 | Fingerprint | Nucleo | 7 | 0 | 1,00 | 7 |
 | MotorIdentidadeRNA | Fingerprint | Nucleo | 10 | 2 | 0,83 | 10 |
-| MotorEtogramaCartesiano3D | Fingerprint | Nucleo | 9 | 2 | 0,82 | 9 |
-| MotorEtogramaHeuristico | Fingerprint | Nucleo | 7 | 1 | 0,88 | 7 |
-| AnalisadorContextual | Limbic | Nucleo | 12 | 3 | 0,80 | 12 |
-| AnalisadorLexico | Limbic | Nucleo | 10 | 3 | 0,77 | 10 |
-| PipelineLimbic | Limbic | Nucleo | 16 | 3 | 0,84 | 16 |
-| VerificadorLimbic | Limbic | Nucleo | 26 | 2 | 0,93 | 26 |
-| AdaptadorLimbic | Nucleo | Limbic | 28 | 3 | 0,90 | 28 |
-| MotorFenotipoV2 | Nucleo | Fingerprint | 21 | 2 | 0,91 | 21 |
-| ClassificadorJungV2 | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
+| MotorEtogramaCartesiano3D | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
+| MotorEtogramaHeuristico | Fingerprint | Nucleo | 6 | 0 | 1,00 | 6 |
+| MotorEtogramaV2 | Fingerprint | Nucleo | 9 | 1 | 0,90 | 9 |
+| AnalisadorContextual | Limbic | Nucleo | 10 | 2 | 0,83 | 10 |
+| AnalisadorLexico | Limbic | Nucleo | 8 | 2 | 0,80 | 8 |
+| PipelineLimbic | Limbic | Nucleo | 13 | 2 | 0,87 | 13 |
+| VerificadorLimbic | Limbic | Nucleo | 23 | 2 | 0,92 | 23 |
+| AdaptadorLimbic | Nucleo | Limbic | 27 | 2 | 0,93 | 27 |
+| MotorFenotipoV2 | Nucleo | Fingerprint | 18 | 2 | 0,90 | 18 |
+| ClassificadorJungV2 | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
 | ClassificadorTermico | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
+| ClassificadorNarrativaV2 | Fingerprint | Nucleo | 14 | 4 | 0,78 | 14 |
+| ClassificadorLacanianoV2 | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
+| ClassificadorMBTIV2 | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
 | ClassificadorPsicodinamicoAvancado | Fingerprint | Nucleo | 4 | 1 | 0,80 | 4 |
 
 Possible architectural coupling detected based on structural heuristics.
@@ -155,10 +159,10 @@ Manual inspection is recommended.
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
 | Program.cs | 0,00 | 0,89 | 0,11 |
-| Fingerprint | 0,26 | 0,26 | 0,48 |
+| Fingerprint | 0,20 | 0,30 | 0,50 |
 | Infrastructure | 0,07 | 0,66 | 0,27 |
-| Nucleo | 0,07 | 0,13 | 0,81 |
-| Limbic | 0,16 | 0,24 | 0,60 |
+| Nucleo | 0,06 | 0,10 | 0,84 |
+| Limbic | 0,16 | 0,26 | 0,57 |
 
 ---
 

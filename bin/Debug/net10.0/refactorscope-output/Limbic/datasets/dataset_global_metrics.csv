@@ -1,6 +1,6 @@
 ﻿Metric,Value
-Coupling,7,46
+Coupling,7,57
 ZombieRate,0,46
-IsolationRate,0,46
+IsolationRate,0,30
 EntryPointDensity,0,22
-CoreDensity,2,16
+CoreDensity,1,97

@@ -1,0 +1,175 @@
+{
+  "RootPath": "C:\\Users\\romul\\source\\repos\\RefactorScope",
+  "Tipos": [
+    {
+      "Name": "EffortEstimator",
+      "Namespace": "RefactorScope.Estimation",
+      "File": "RefactorScope\\Estimation\\EffortEstimator.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Results;\r\nusing RefactorScope.Core.Metrics;\r\nusing RefactorScope.Estimation.Models;\r\nusing RefactorScope.Estimation.Scoring;\r\nusing RefactorScope.Statistics.Models;\r\n\r\nnamespace RefactorScope.Estimation\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Calcula a estimativa final de esfor\u00E7o de refatora\u00E7\u00E3o.\r\n    ///\r\n    /// O c\u00E1lculo utiliza o Refactor Difficulty Index (RDI),\r\n    /// baseado exclusivamente em m\u00E9tricas arquiteturais derivadas\r\n    /// do modelo estrutural do sistema.\r\n    ///\r\n    /// O m\u00F3dulo Statistics \u00E9 opcional e utilizado apenas para\r\n    /// enriquecer o c\u00E1lculo de confian\u00E7a da estimativa.\r\n    /// \u003C/summary\u003E\r\n    public static class EffortEstimator\r\n    {\r\n        public static EffortEstimate Estimate(\r\n            AnalysisContext context,\r\n            ConsolidatedReport report)\r\n        {\r\n            // ------------------------------------------------\r\n            // 1. Construir m\u00E9tricas arquiteturais\r\n            // ------------------------------------------------\r\n\r\n            var metrics =\r\n                ArchitecturalMetricsBuilder.Build(context, report);\r\n\r\n            // ------------------------------------------------\r\n            // 2. Calcular RDI\r\n            // ------------------------------------------------\r\n\r\n            var rdi =\r\n                RDICalculator.Calculate(context, metrics);\r\n\r\n            int total = rdi.Total;\r\n\r\n            // ------------------------------------------------\r\n            // 3. Converter RDI em horas estimadas\r\n            // ------------------------------------------------\r\n\r\n            double estimatedHours = total * 0.4;\r\n\r\n            string difficulty =\r\n                total switch\r\n                {\r\n                    \u003C 20 =\u003E \u0022Trivial\u0022,\r\n                    \u003C 40 =\u003E \u0022Low\u0022,\r\n                    \u003C 60 =\u003E \u0022Moderate\u0022,\r\n                    \u003C 80 =\u003E \u0022Hard\u0022,\r\n                    _ =\u003E \u0022Critical\u0022\r\n                };\r\n\r\n            // ------------------------------------------------\r\n            // 4. Confian\u00E7a da estimativa (opcional)\r\n            // ------------------------------------------------\r\n\r\n            double confidence = 0.7; // valor padr\u00E3o\r\n\r\n            var stats = report.GetResult\u003CStatisticsReport\u003E();\r\n\r\n            if (stats != null)\r\n            {\r\n                confidence =\r\n                    Math.Clamp(\r\n                        stats.Confidence.ClassesPerFile * 0.3 \u002B\r\n                        stats.Confidence.ReferencesPerClass * 0.1,\r\n                        0.5,\r\n                        0.9\r\n                    );\r\n            }\r\n\r\n            return new EffortEstimate(\r\n                total,\r\n                difficulty,\r\n                estimatedHours,\r\n                confidence\r\n            );\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "RefactorClassifier",
+      "Namespace": "RefactorScope.Estimation.Classification",
+      "File": "RefactorScope\\Estimation\\Classification\\RefactorClassifier.cs",
+      "Code": "using RefactorScope.Core.Context;\r\n\r\nnamespace RefactorScope.Estimation.Classification\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Classificador heur\u00EDstico de refactors necess\u00E1rios.\r\n    ///\r\n    /// Esta vers\u00E3o utiliza apenas dados dispon\u00EDveis no ModeloEstrutural,\r\n    /// evitando depend\u00EAncia de parsing profundo (m\u00E9todos, AST etc.).\r\n    ///\r\n    /// Heur\u00EDsticas utilizadas:\r\n    ///\r\n    /// \u2022 Alto fan-out \u2192 poss\u00EDvel necessidade de decoupling\r\n    /// \u2022 Muitos tipos \u2192 press\u00E3o estrutural\r\n    /// \u2022 Refer\u00EAncias elevadas \u2192 poss\u00EDvel classe \u0022god object\u0022\r\n    /// \u003C/summary\u003E\r\n    public static class RefactorClassifier\r\n    {\r\n        public static double ComputeActionScore(AnalysisContext context)\r\n        {\r\n            var model = context.Model;\r\n\r\n            int highFanOutTypes =\r\n                model.Tipos.Count(t =\u003E t.References.Count \u003E 10);\r\n\r\n            int extremeFanOutTypes =\r\n                model.Tipos.Count(t =\u003E t.References.Count \u003E 20);\r\n\r\n            double score =\r\n                (highFanOutTypes * 2) \u002B\r\n                (extremeFanOutTypes * 4);\r\n\r\n            return Math.Min(25, score);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "EffortEstimate",
+      "Namespace": "RefactorScope.Estimation.Models",
+      "File": "RefactorScope\\Estimation\\Models\\EffortEstimate.cs",
+      "Code": "namespace RefactorScope.Estimation.Models\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a estimativa final de esfor\u00E7o de refatora\u00E7\u00E3o calculada pelo sistema.\r\n    /// \r\n    /// Esse modelo \u00E9 o output principal do m\u00F3dulo de Estimation e resume:\r\n    /// \r\n    /// \u2022 \u00CDndice de dificuldade de refatora\u00E7\u00E3o (RDI)\r\n    /// \u2022 Classifica\u00E7\u00E3o qualitativa da dificuldade\r\n    /// \u2022 Estimativa de horas de refatora\u00E7\u00E3o\r\n    /// \u2022 Confian\u00E7a da estimativa baseada nas estat\u00EDsticas do sistema\r\n    /// \r\n    /// Esse objeto \u00E9 posteriormente serializado em JSON ou consumido por dashboards.\r\n    /// \u003C/summary\u003E\r\n    public record EffortEstimate(\r\n        int RDI,\r\n        string Difficulty,\r\n        double EstimatedHours,\r\n        double Confidence\r\n    );\r\n}"
+    },
+    {
+      "Name": "RefactorDifficultyIndex",
+      "Namespace": "RefactorScope.Estimation.Models",
+      "File": "RefactorScope\\Estimation\\Models\\RefactorDifficultyIndex.cs",
+      "Code": "namespace RefactorScope.Estimation.Models\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa os componentes individuais do Refactor Difficulty Index (RDI).\r\n    /// \r\n    /// O RDI \u00E9 composto por quatro dimens\u00F5es principais:\r\n    /// \r\n    /// \u2022 StructuralRisk        \u2192 problemas estruturais detectados\r\n    /// \u2022 CouplingPressure      \u2192 press\u00E3o arquitetural causada por acoplamento\r\n    /// \u2022 SizePressure          \u2192 press\u00E3o estrutural causada pelo tamanho do c\u00F3digo\r\n    /// \u2022 RefactorActions       \u2192 tipos de refactor detectados heur\u00EDsticamente\r\n    /// \r\n    /// Cada dimens\u00E3o \u00E9 normalizada entre 0 e 25.\r\n    /// O \u00EDndice final varia entre 0 e 100.\r\n    /// \u003C/summary\u003E\r\n    public record RefactorDifficultyIndex(\r\n        double StructuralRisk,\r\n        double CouplingPressure,\r\n        double SizePressure,\r\n        double RefactorActions\r\n    )\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Soma total do \u00EDndice.\r\n        /// \u003C/summary\u003E\r\n        public int Total =\u003E\r\n            (int)Math.Round(\r\n                StructuralRisk \u002B\r\n                CouplingPressure \u002B\r\n                SizePressure \u002B\r\n                RefactorActions\r\n            );\r\n    }\r\n}"
+    },
+    {
+      "Name": "CouplingPressureModel",
+      "Namespace": "RefactorScope.Estimation.Scoring",
+      "File": "RefactorScope\\Estimation\\Scoring\\CouplingPressureModel.cs",
+      "Code": "namespace RefactorScope.Estimation.Scoring\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Calcula o impacto do acoplamento arquitetural na dificuldade\r\n    /// de refatora\u00E7\u00E3o.\r\n    ///\r\n    /// A m\u00E9trica utilizada \u00E9 a m\u00E9dia de fan-out estrutural entre tipos\r\n    /// do sistema (MeanCoupling).\r\n    ///\r\n    /// Valores mais altos indicam maior press\u00E3o arquitetural para\r\n    /// desacoplamento.\r\n    ///\r\n    /// O resultado \u00E9 normalizado para um m\u00E1ximo de 25 pontos.\r\n    /// \u003C/summary\u003E\r\n    public static class CouplingPressureModel\r\n    {\r\n        public static double Compute(double meanCoupling)\r\n        {\r\n            double pressure = meanCoupling * 3;\r\n\r\n            return Math.Min(25, pressure);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "RDICalculator",
+      "Namespace": "RefactorScope.Estimation.Scoring",
+      "File": "RefactorScope\\Estimation\\Scoring\\RDICalculator.cs",
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Core.Metrics;\r\nusing RefactorScope.Estimation.Classification;\r\nusing RefactorScope.Estimation.Models;\r\n\r\nnamespace RefactorScope.Estimation.Scoring\r\n{\r\n\t/// \u003Csummary\u003E\r\n\t/// Calcula o Refactor Difficulty Index (RDI).\r\n\t///\r\n\t/// O RDI \u00E9 um indicador heur\u00EDstico de dificuldade de refatora\u00E7\u00E3o\r\n\t/// que agrega m\u00FAltiplos sinais estruturais do sistema em um \u00FAnico valor.\r\n\t///\r\n\t/// O \u00EDndice varia de 0 a 100 e \u00E9 composto por quatro dimens\u00F5es\r\n\t/// normalizadas (0\u201325 cada):\r\n\t///\r\n\t/// \u2022 StructuralRisk\r\n\t///     Mede degrada\u00E7\u00E3o estrutural da arquitetura\r\n\t///     (drift de namespace \u002B candidatos unresolved).\r\n\t///\r\n\t/// \u2022 CouplingPressure\r\n\t///     Mede press\u00E3o arquitetural causada por depend\u00EAncias\r\n\t///     excessivas entre m\u00F3dulos.\r\n\t///\r\n\t/// \u2022 SizePressure\r\n\t///     Mede press\u00E3o estrutural causada pela densidade\r\n\t///     de classes no sistema.\r\n\t///\r\n\t/// \u2022 RefactorActions\r\n\t///     Heur\u00EDstica baseada em sinais de refactor detectados\r\n\t///     diretamente no modelo estrutural.\r\n\t///\r\n\t/// Importante:\r\n\t/// Este c\u00E1lculo depende apenas de:\r\n\t///\r\n\t/// \u2022 AnalysisContext (modelo estrutural)\r\n\t/// \u2022 ArchitecturalMetrics (m\u00E9tricas arquiteturais agregadas)\r\n\t///\r\n\t/// N\u00E3o depende do m\u00F3dulo Statistics, mantendo o Estimation\r\n\t/// completamente desacoplado da camada observacional.\r\n\t/// \u003C/summary\u003E\r\n\tpublic static class RDICalculator\r\n\t{\r\n\t\tpublic static RefactorDifficultyIndex Calculate(\r\n\t\t\tAnalysisContext context,\r\n\t\t\tArchitecturalMetrics metrics)\r\n\t\t{\r\n\t\t\t// 1. Risco estrutural da arquitetura\r\n\t\t\tvar structural =\r\n\t\t\t\tStructuralRiskModel.Compute(\r\n\t\t\t\t\tmetrics.NamespaceDriftRatio,\r\n\t\t\t\t\tmetrics.UnresolvedCandidateRatio);\r\n\r\n\t\t\t// 2. Press\u00E3o causada por acoplamento arquitetural\r\n\t\t\tvar coupling =\r\n\t\t\t\tCouplingPressureModel.Compute(\r\n\t\t\t\t\tmetrics.MeanCoupling);\r\n\r\n\t\t\t// 3. Press\u00E3o estrutural causada pelo tamanho do sistema\r\n\t\t\tvar size =\r\n\t\t\t\tSizePressureModel.Compute(context);\r\n\r\n\t\t\t// 4. Heur\u00EDstica de a\u00E7\u00F5es de refactor detectadas\r\n\t\t\tvar actions =\r\n\t\t\t\tRefactorClassifier.ComputeActionScore(context);\r\n\r\n\t\t\treturn new RefactorDifficultyIndex(\r\n\t\t\t\tstructural,\r\n\t\t\t\tcoupling,\r\n\t\t\t\tsize,\r\n\t\t\t\tactions\r\n\t\t\t);\r\n\t\t}\r\n\t}\r\n}"
+    },
+    {
+      "Name": "SizePressureModel",
+      "Namespace": "RefactorScope.Estimation.Scoring",
+      "File": "RefactorScope\\Estimation\\Scoring\\SizePressureModel.cs",
+      "Code": "using RefactorScope.Core.Context;\r\n\r\nnamespace RefactorScope.Estimation.Scoring\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Mede press\u00E3o estrutural causada pelo tamanho do projeto.\r\n    /// \r\n    /// Quanto maior a densidade estrutural (classes por arquivo),\r\n    /// maior a probabilidade de refactors complexos.\r\n    /// \u003C/summary\u003E\r\n    public static class SizePressureModel\r\n    {\r\n        public static double Compute(AnalysisContext context)\r\n        {\r\n            var model = context.Model;\r\n\r\n            var files = Math.Max(model.Arquivos.Count, 1);\r\n\r\n            double classesPerFile = (double)model.Tipos.Count / files;\r\n\r\n            double pressure = classesPerFile * 8;\r\n\r\n            return Math.Min(25, pressure);\r\n        }\r\n    }\r\n}"
+    },
+    {
+      "Name": "StructuralRiskModel",
+      "Namespace": "RefactorScope.Estimation.Scoring",
+      "File": "RefactorScope\\Estimation\\Scoring\\StructuralRiskModel.cs",
+      "Code": "namespace RefactorScope.Estimation.Scoring\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Calcula o componente StructuralRisk do RDI.\r\n    ///\r\n    /// Este valor mede o n\u00EDvel de degrada\u00E7\u00E3o estrutural da arquitetura\r\n    /// com base em dois sinais principais:\r\n    ///\r\n    /// \u2022 NamespaceDriftRatio\r\n    ///     Propor\u00E7\u00E3o de tipos classificados como drift arquitetural.\r\n    ///\r\n    /// \u2022 UnresolvedCandidateRatio\r\n    ///     Propor\u00E7\u00E3o de tipos potencialmente mortos ap\u00F3s refinamento\r\n    ///     estrutural (zombie candidates).\r\n    ///\r\n    /// O valor \u00E9 normalizado para um m\u00E1ximo de 25 pontos.\r\n    /// \u003C/summary\u003E\r\n    public static class StructuralRiskModel\r\n    {\r\n        public static double Compute(\r\n            double namespaceDriftRatio,\r\n            double unresolvedCandidateRatio)\r\n        {\r\n            double risk =\r\n                (namespaceDriftRatio * 25) \u002B\r\n                (unresolvedCandidateRatio * 25);\r\n\r\n            return Math.Min(25, risk);\r\n        }\r\n    }\r\n}"
+    }
+  ],
+  "Referencias": [
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "EffortEstimate",
+      "Kind": 0
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "ArchitecturalMetricsBuilder",
+      "Kind": 2
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "ArchitecturalMetricsBuilder",
+      "Kind": 0
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "RDICalculator",
+      "Kind": 2
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "RDICalculator",
+      "Kind": 0
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "StatisticsReport",
+      "Kind": 3
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "StatisticsReport",
+      "Kind": 0
+    },
+    {
+      "FromType": "EffortEstimator",
+      "ToType": "EffortEstimate",
+      "Kind": 1
+    },
+    {
+      "FromType": "RefactorClassifier",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "RefactorDifficultyIndex",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "ArchitecturalMetrics",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "StructuralRiskModel",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "StructuralRiskModel",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "CouplingPressureModel",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "CouplingPressureModel",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "SizePressureModel",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "SizePressureModel",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "RefactorClassifier",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "RefactorClassifier",
+      "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "RefactorDifficultyIndex",
+      "Kind": 1
+    },
+    {
+      "FromType": "SizePressureModel",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    }
+  ]
+}

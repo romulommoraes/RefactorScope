@@ -2,73 +2,11 @@
   "RootPath": "C:\\Users\\romul\\source\\repos\\RefactorScope",
   "Tipos": [
     {
-      "Name": "ParserSelector",
-      "Namespace": "RefactorScope.CLI",
-      "File": "RefactorScope\\CLI\\ParserSelector.cs",
-      "Code": "using System;\r\nusing RefactorScope.Core.Abstractions;\r\nusing RefactorScope.Parsers.CsharpParsers;\r\nusing RefactorScope.Parsers.Hybrid;\r\n\r\nnamespace RefactorScope.CLI;\r\n\r\n/// \u003Csummary\u003E\r\n/// Respons\u00E1vel por resolver qual parser ser\u00E1 utilizado.\r\n/// \r\n/// Pode operar em dois modos:\r\n/// \r\n/// 1) Interativo (CLI pergunta ao usu\u00E1rio)\r\n/// 2) Configura\u00E7\u00E3o via refactorscope.json\r\n/// \r\n/// Parsers dispon\u00EDveis:\r\n/// \r\n/// Regex\r\n///     Parser r\u00E1pido baseado em Regex.\r\n///     Ideal para an\u00E1lise estrutural b\u00E1sica.\r\n/// \r\n/// Textual\r\n///     Parser textual resiliente.\r\n///     Extrai mais depend\u00EAncias, por\u00E9m \u00E9 mais pesado.\r\n/// \r\n/// Hybrid Failover\r\n///     Usa Regex.\r\n///     Caso falhe ou gere resultado implaus\u00EDvel,\r\n///     executa Textual.\r\n/// \r\n/// Hybrid Merge\r\n///     Executa ambos e combina resultados.\r\n///     Regex define tipos.\r\n///     Textual enriquece depend\u00EAncias.\r\n/// \r\n/// Hybrid Adaptive (experimental)\r\n///     Merge resiliente.\r\n///     Recupera tipos caso Regex falhe parcialmente.\r\n/// \r\n/// Hybrid Incremental (experimental)\r\n///     Executa Textual apenas se o modelo Regex\r\n///     estiver incompleto.\r\n///     Otimizado para performance.\r\n/// \u003C/summary\u003E\r\npublic static class ParserSelector\r\n{\r\n    public static IParserCodigo ResolveParser(\r\n        string configParserName,\r\n        bool interactive)\r\n    {\r\n        if (interactive)\r\n        {\r\n            Console.WriteLine();\r\n            Console.WriteLine(\u0022\uD83E\uDDE0 Parser Selection\u0022);\r\n            Console.WriteLine(\u0022------------------------------------------------\u0022);\r\n            Console.WriteLine(\u00221) Regex (Est\u00E1vel / R\u00E1pido)\u0022);\r\n            Console.WriteLine(\u00222) Textual (Experimental)\u0022);\r\n            Console.WriteLine(\u00223) Hybrid Failover (Resiliente)\u0022);\r\n            Console.WriteLine(\u00224) Hybrid Merge (M\u00E1xima precis\u00E3o)\u0022);\r\n            Console.WriteLine(\u00225) Hybrid Adaptive (Experimental)\u0022);\r\n            Console.WriteLine(\u00226) Hybrid Incremental (Experimental)\u0022);\r\n            Console.WriteLine();\r\n\r\n            Console.Write(\u0022Select parser [1-6] (default 3): \u0022);\r\n\r\n            var input = Console.ReadLine()?.Trim();\r\n\r\n            return input switch\r\n            {\r\n                \u00221\u0022 =\u003E BuildRegex(),\r\n                \u00222\u0022 =\u003E BuildTextual(),\r\n                \u00224\u0022 =\u003E BuildHybridMerge(),\r\n                \u00225\u0022 =\u003E BuildHybridAdaptive(),\r\n                \u00226\u0022 =\u003E BuildHybridIncremental(),\r\n                _ =\u003E BuildHybridFailover()\r\n            };\r\n        }\r\n\r\n        return configParserName.ToLowerInvariant() switch\r\n        {\r\n            \u0022regex\u0022 =\u003E BuildRegex(),\r\n\r\n            \u0022textual\u0022 =\u003E BuildTextual(),\r\n\r\n            \u0022hybridfailover\u0022 =\u003E BuildHybridFailover(),\r\n\r\n            \u0022hybridmerge\u0022 =\u003E BuildHybridMerge(),\r\n\r\n            \u0022hybridadaptive\u0022 =\u003E BuildHybridAdaptive(),\r\n\r\n            \u0022hybridincremental\u0022 =\u003E BuildHybridIncremental(),\r\n\r\n            _ =\u003E BuildHybridFailover()\r\n        };\r\n    }\r\n\r\n    // ------------------------------------------------\r\n    // Parsers b\u00E1sicos\r\n    // ------------------------------------------------\r\n\r\n    private static IParserCodigo BuildRegex()\r\n        =\u003E new CSharpRegexParser();\r\n\r\n    private static IParserCodigo BuildTextual()\r\n        =\u003E new CSharpTextualParser(msg =\u003E\r\n            Console.WriteLine($\u0022[WARN] {msg}\u0022));\r\n\r\n\r\n    // ------------------------------------------------\r\n    // Hybrid Parsers\r\n    // ------------------------------------------------\r\n\r\n    private static IParserCodigo BuildHybridFailover()\r\n        =\u003E new HybridParser(\r\n            BuildRegex(),\r\n            BuildTextual(),\r\n            HybridMode.Failover,\r\n            msg =\u003E Console.WriteLine(msg));\r\n\r\n\r\n    private static IParserCodigo BuildHybridMerge()\r\n        =\u003E new HybridParser(\r\n            BuildRegex(),\r\n            BuildTextual(),\r\n            HybridMode.Merge,\r\n            msg =\u003E Console.WriteLine(msg));\r\n\r\n\r\n    private static IParserCodigo BuildHybridAdaptive()\r\n        =\u003E new HybridAdaptiveParser(\r\n            BuildRegex(),\r\n            BuildTextual(),\r\n            msg =\u003E Console.WriteLine(msg));\r\n\r\n\r\n    private static IParserCodigo BuildHybridIncremental()\r\n        =\u003E new HybridIncrementalParser(\r\n            BuildRegex(),\r\n            BuildTextual(),\r\n            msg =\u003E Console.WriteLine(msg));\r\n}"
-    },
-    {
       "Name": "SelfAnalysisSelector",
       "Namespace": "RefactorScope.CLI",
       "File": "RefactorScope\\CLI\\SelfAnalysisSelector.cs",
       "Code": "namespace RefactorScope.CLI\r\n{\r\n    public static class SelfAnalysisSelector\r\n    {\r\n        public static string ResolveConfigPath(\r\n            string defaultConfigPath,\r\n            string selfConfigPath,\r\n            bool enableInteractiveSelector)\r\n        {\r\n            if (!enableInteractiveSelector)\r\n                return defaultConfigPath;\r\n\r\n            Console.WriteLine();\r\n            Console.WriteLine(\u0022\uD83E\uDDEC RefactorScope Startup Mode\u0022);\r\n            Console.WriteLine(\u0022---------------------------------\u0022);\r\n            Console.WriteLine(\u00221) Normal Analysis\u0022);\r\n            Console.WriteLine(\u00222) Self Analysis (RefactorScope analyzing itself)\u0022);\r\n            Console.WriteLine();\r\n            Console.Write(\u0022Select mode (1 or 2) [default=1]: \u0022);\r\n\r\n            var input = Console.ReadLine();\r\n\r\n            if (input?.Trim() == \u00222\u0022)\r\n            {\r\n                Console.WriteLine(\u0022\uD83D\uDD0D Self Analysis Mode Enabled\u0022);\r\n                return selfConfigPath;\r\n            }\r\n\r\n            Console.WriteLine(\u0022\uD83D\uDCE6 Normal Analysis Mode Enabled\u0022);\r\n            return defaultConfigPath;\r\n        }\r\n    }\r\n}"
     }
   ],
-  "Referencias": [
-    {
-      "FromType": "ParserSelector",
-      "ToType": "IParserCodigo",
-      "Kind": 0
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "CSharpRegexParser",
-      "Kind": 0
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "CSharpTextualParser",
-      "Kind": 0
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "HybridParser",
-      "Kind": 0
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "HybridAdaptiveParser",
-      "Kind": 0
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "HybridIncrementalParser",
-      "Kind": 0
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "CSharpRegexParser",
-      "Kind": 1
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "CSharpTextualParser",
-      "Kind": 1
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "HybridParser",
-      "Kind": 1
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "HybridAdaptiveParser",
-      "Kind": 1
-    },
-    {
-      "FromType": "ParserSelector",
-      "ToType": "HybridIncrementalParser",
-      "Kind": 1
-    }
-  ]
+  "Referencias": []
 }

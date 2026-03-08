@@ -1,35 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RefactorScope.Infrastructure
+﻿namespace RefactorScope.Infrastructure
 {
     static class CrashLogger
     {
-        private const string LogFile = "refactorscope-crash.log";
+        private const string LogDir = "Output/log";
+        private const int MaxLogs = 5;
 
         public static void Log(Exception ex, string phase)
         {
             try
             {
-                var log = $"""
+                Directory.CreateDirectory(LogDir);
+
+                var file = Path.Combine(
+                    LogDir,
+                    $"crash-{DateTime.Now:yyyyMMdd-HHmmss}.log"
+                );
+
+                var content = $"""
 ================================================
-RefactorScope Crash
+RefactorScope Crash Report
 Timestamp: {DateTime.Now}
 Phase: {phase}
 
 {ex}
 
 ================================================
-
 """;
 
-                File.AppendAllText(LogFile, log);
+                File.WriteAllText(file, content);
+
+                RotateLogs();
             }
             catch
             {
-                // Nunca deixar o logger causar outro crash
+                // nunca crashar
             }
+        }
+
+        private static void RotateLogs()
+        {
+            var files = new DirectoryInfo(LogDir)
+                .GetFiles("*.log")
+                .OrderByDescending(f => f.CreationTime)
+                .ToList();
+
+            if (files.Count <= MaxLogs)
+                return;
+
+            foreach (var file in files.Skip(MaxLogs))
+                file.Delete();
         }
     }
 }

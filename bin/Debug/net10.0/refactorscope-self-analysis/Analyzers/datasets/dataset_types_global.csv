@@ -10,7 +10,7 @@ ProjectStructureAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 StructuralCandidateAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 StructuralCandidateRefinementAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
 SolidAnalyzer,RefactorScope,Core,0,DriftArquitetural,1,0,1,0
-SolidConfig,RefactorScope,Core,7,DriftArquitetural,0,0,0,0
+SolidConfig,RefactorScope,Core,4,DriftArquitetural,0,0,0,0
 SolidResult,RefactorScope,Core,6,DriftArquitetural,0,0,0,0
 SolidSuspicion,RefactorScope,Core,11,DriftArquitetural,0,0,0,0
 CoreDependencyAbsolutionRule,RefactorScope,Core,2,DriftArquitetural,0,0,0,0

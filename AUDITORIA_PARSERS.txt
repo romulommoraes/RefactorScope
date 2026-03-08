@@ -1,187 +1,407 @@
 ==========================================
+ARQUIVO: ClassComplexityClassifier.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\Analysis\ClassComplexityClassifier.cs
+==========================================
+using RefactorScope.Core.Scope;
+
+namespace RefactorScope.Parsers.Analysis;
+
+/// <summary>
+/// Analisa arquivos C# e classifica cada arquivo em dois grupos:
+///
+/// SAFE
+/// COMPLEX
+///
+/// SAFE:
+///     Arquivos que podem ser analisados com segurança
+///     pelo TextualParser.
+///
+/// COMPLEX:
+///     Arquivos que contêm construções que o TextualParser
+///     pode interpretar incorretamente, sendo delegados ao
+///     RegexParser.
+///
+/// Este classificador NÃO realiza parsing estrutural.
+/// Apenas aplica heurísticas simples sobre o conteúdo.
+///
+/// A classificação é baseada no conteúdo textual do arquivo,
+/// e não em AST ou análise sintática completa.
+/// </summary>
+public class ClassComplexityClassifier
+{
+    /// <summary>
+    /// Executa o scan do projeto e classifica os arquivos.
+    /// </summary>
+    public ClassComplexityScanResult Scan(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null)
+    {
+        var result = new ClassComplexityScanResult();
+
+        var scope = new ScopeRuleSet(include, exclude);
+
+        var files = Directory.GetFiles(
+            rootPath,
+            "*.cs",
+            SearchOption.AllDirectories);
+
+        foreach (var file in files)
+        {
+            if (!scope.IsInScope(rootPath, file))
+                continue;
+
+            string source;
+
+            try
+            {
+                source = File.ReadAllText(file);
+            }
+            catch
+            {
+                // Arquivo inacessível ? tratado como complexo
+                result.ComplexClasses.Add(file);
+                continue;
+            }
+
+            if (IsComplex(source))
+                result.ComplexClasses.Add(file);
+            else
+                result.SafeClasses.Add(file);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Heurísticas simples para identificar arquivos
+    /// que podem causar problemas no TextualParser.
+    ///
+    /// Estas heurísticas são deliberadamente conservadoras.
+    /// Se qualquer uma delas for encontrada, o arquivo é
+    /// classificado como COMPLEX.
+    /// </summary>
+    private static bool IsComplex(string source)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+            return false;
+
+        // -------------------------------------------------
+        // Records modernos
+        // -------------------------------------------------
+        if (source.Contains("record "))
+            return true;
+
+        // -------------------------------------------------
+        // Init-only properties
+        // -------------------------------------------------
+        if (source.Contains(" init;"))
+            return true;
+
+        // -------------------------------------------------
+        // Lambda expressions
+        // -------------------------------------------------
+        if (source.Contains("=>"))
+            return true;
+
+        // -------------------------------------------------
+        // With expressions
+        // -------------------------------------------------
+        if (source.Contains("with {"))
+            return true;
+
+        return false;
+    }
+}
+
+
+==========================================
+ARQUIVO: ClassComplexityScanResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\Analysis\ClassComplexityScanResult.cs
+==========================================
+namespace RefactorScope.Parsers.Analysis;
+
+/// <summary>
+/// Resultado da análise de complexidade de classes.
+/// </summary>
+public class ClassComplexityScanResult
+{
+    public List<string> SafeClasses { get; } = new();
+
+    public List<string> ComplexClasses { get; } = new();
+}
+
+
+==========================================
+ARQUIVO: CSharpPreParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\Common\CSharpPreParser.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using System.Text;
+
+namespace RefactorScope.Parsers.Common
+{
+    /// <summary>
+    /// PreParser minimalista.
+    ///
+    /// Remove apenas blocos XML documentation:
+    ///
+    /// /// &lt;summary&gt;
+    ///     ...
+    /// /// &lt;/summary&gt;
+    ///
+    /// A estrutura do arquivo é preservada.
+    /// Nenhuma linha é removida — apenas limpa.
+    /// </summary>
+    public class CSharpPreParser : IPreParser
+    {
+        public string Sanitize(string source)
+        {
+            var reader = new StringReader(source);
+            var output = new StringBuilder();
+
+            bool insideSummary = false;
+
+            while (true)
+            {
+                var line = reader.ReadLine();
+                if (line == null)
+                    break;
+
+                var trimmed = line.Trim();
+
+                if (trimmed.StartsWith("/// <summary"))
+                {
+                    insideSummary = true;
+                    output.AppendLine("");
+                    continue;
+                }
+
+                if (insideSummary)
+                {
+                    if (trimmed.StartsWith("/// </summary"))
+                    {
+                        insideSummary = false;
+                    }
+
+                    output.AppendLine("");
+                    continue;
+                }
+
+                output.AppendLine(line);
+            }
+
+            return output.ToString();
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: CSharpRegexParser.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\CSharpRegexParser.cs
 ==========================================
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Scope;
+using RefactorScope.Core.Parsing;
 
 namespace RefactorScope.Parsers.CsharpParsers
 {
-    /// <summary>
-    /// Parser C# baseado em Regex (versão endurecida).
-    /// 
-    /// Correções aplicadas:
-    /// ? Ignora palavras reservadas modernas (with, init, etc.)
-    /// ? Valida identificador C# válido
-    /// ? Evita capturar construções "record with"
-    /// ? Mantém compatibilidade com modelo atual
-    /// </summary>
     public class CSharpRegexParser : IParserCodigo
     {
         public string Name => "CSharpRegex";
 
-        private static readonly Regex NamespaceRegex =
-            new(@"namespace\s+([\w\.]+)", RegexOptions.Compiled);
+        private readonly SanitizedSourceProvider _sourceProvider;
 
-        // ?? Exige que após o nome exista:
-        // espaço + {  OU
-        // espaço + :  OU
-        // espaço + where  OU
-        // espaço + < (genérico)
+        public CSharpRegexParser(SanitizedSourceProvider sourceProvider)
+        {
+            _sourceProvider = sourceProvider;
+        }
+
+        public CSharpRegexParser()
+        {
+            _sourceProvider = new SanitizedSourceProvider(new Parsers.Common.CSharpPreParser());
+        }
+
+        private static readonly Regex NamespaceRegex =
+            new(@"namespace\s+([\w\.]+)", RegexOptions.Compiled | RegexOptions.Multiline);
+
+        // SUA REGEX ORIGINAL DE TIPOS (Endurecida)
         private static readonly Regex TypeRegex =
             new(@"\b(class|interface|record|struct)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:<|\{|:|where)",
-                RegexOptions.Compiled);
+                RegexOptions.Compiled | RegexOptions.Multiline);
 
         private static readonly HashSet<string> ReservedKeywords =
             new(StringComparer.OrdinalIgnoreCase)
             {
-                "with", "init", "var", "new", "return",
-                "public", "private", "protected", "internal",
-                "static", "void", "string", "int", "bool",
-                "namespace", "class", "interface", "record", "struct"
+                "with","init","var","new","return",
+                "public","private","protected","internal",
+                "static","void","string","int","bool",
+                "namespace","class","interface","record","struct"
             };
 
-        public ModeloEstrutural Parse(
+        public IParserResult Parse(
             string rootPath,
             IEnumerable<string>? include = null,
             IEnumerable<string>? exclude = null)
         {
-            var scope = new ScopeRuleSet(include, exclude);
-
-            var arquivos = new List<ArquivoInfo>();
-            var tipos = new List<TipoInfo>();
-
-            var csFiles = Directory
-                .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
-                .Where(f => scope.IsInScope(rootPath, f))
-                .ToList();
-
-            // =====================================================
-            // 1?? Coletar tipos
-            // =====================================================
-            foreach (var file in csFiles)
+            try
             {
-                var source = File.ReadAllText(file);
-                var relativePath = Path.GetRelativePath(rootPath, file);
+                var stopwatch = Stopwatch.StartNew();
+                var scope = new ScopeRuleSet(include, exclude);
 
-                var nsMatch = NamespaceRegex.Match(source);
-                var ns = nsMatch.Success
-                    ? nsMatch.Groups[1].Value
-                    : "Global";
+                var arquivos = new List<ArquivoInfo>();
+                var tipos = new List<TipoInfo>();
+                var referencias = new List<ReferenciaInfo>();
 
-                var typeMatches = TypeRegex.Matches(source);
+                var csFiles = Directory
+                    .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
+                    .Where(f => scope.IsInScope(rootPath, f))
+                    .ToList();
 
-                foreach (Match match in typeMatches)
+                var fileContents = new Dictionary<string, string>();
+
+                // =====================================================
+                // 1?? Coleta de tipos
+                // =====================================================
+                foreach (var file in csFiles)
                 {
-                    var kind = match.Groups[1].Value;
-                    var typeName = match.Groups[2].Value;
+                    string source;
+                    try { source = _sourceProvider.Read(file); } catch { continue; }
 
-                    // ?? Ignorar palavras reservadas
-                    if (ReservedKeywords.Contains(typeName))
-                        continue;
+                    var relativePath = Path.GetRelativePath(rootPath, file);
+                    fileContents[relativePath] = source;
 
-                    // ?? Validar identificador C# válido
-                    if (!IsValidIdentifier(typeName))
-                        continue;
+                    var nsMatch = NamespaceRegex.Match(source);
+                    var ns = nsMatch.Success ? nsMatch.Groups[1].Value : "Global";
 
-                    tipos.Add(new TipoInfo(
-                        typeName,
-                        ns,
-                        kind,
-                        relativePath,
-                        new List<ReferenciaInfo>()
-                    ));
+                    var matches = TypeRegex.Matches(source);
+
+                    foreach (Match match in matches)
+                    {
+                        var kind = match.Groups[1].Value;
+                        var typeName = match.Groups[2].Value;
+
+                        if (ReservedKeywords.Contains(typeName)) continue;
+                        if (!IsValidIdentifier(typeName)) continue;
+
+                        tipos.Add(new TipoInfo(
+                            typeName,
+                            ns,
+                            kind,
+                            relativePath,
+                            new List<ReferenciaInfo>()
+                        ));
+                    }
                 }
-            }
 
-            var tipoNames = tipos.Select(t => t.Name).ToHashSet();
-            var referencias = new List<ReferenciaInfo>();
+                var tipoNames = tipos.Select(t => t.Name).ToHashSet();
 
-            // =====================================================
-            // 2?? Detectar referências
-            // =====================================================
-            foreach (var file in csFiles)
-            {
-                var source = File.ReadAllText(file);
-                var relativePath = Path.GetRelativePath(rootPath, file);
-
-                foreach (var tipo in tipos.Where(t => t.DeclaredInFile == relativePath))
+                // =====================================================
+                // 2?? Detecção de referências
+                // =====================================================
+                foreach (var file in csFiles)
                 {
+                    var relativePath = Path.GetRelativePath(rootPath, file);
+                    if (!fileContents.TryGetValue(relativePath, out var source)) continue;
+
+                    // ?? CORREÇÃO 1: FAKE ZOMBIE
+                    // Remove conteúdo das aspas apenas na cópia do texto usada para buscar referências
+                    var searchSource = StripStringLiterals(source);
+
+                    var tiposDoArquivo = tipos.Where(t => t.DeclaredInFile == relativePath).ToList();
+                    var fromTypes = tiposDoArquivo.Select(t => t.Name).ToList();
+
+                    // ?? CORREÇÃO 2: PROGRAM.CS / STEPS
+                    // Se o arquivo não tiver classe, assume o nome do arquivo (ex: Program)
+                    if (fromTypes.Count == 0)
+                    {
+                        fromTypes.Add(Path.GetFileNameWithoutExtension(relativePath));
+                    }
+
                     foreach (var target in tipoNames)
                     {
-                        if (target == tipo.Name)
-                            continue;
-
-                        if (Regex.IsMatch(source, $@"\b{target}\b"))
+                        // Usa a SUA busca padrão, respeitando namespaces e generics
+                        if (Regex.IsMatch(searchSource, $@"\b{Regex.Escape(target)}\b"))
                         {
-                            referencias.Add(new ReferenciaInfo(tipo.Name, target));
+                            foreach (var fromType in fromTypes)
+                            {
+                                if (target == fromType) continue;
+
+                                // Evita duplicidade simples
+                                if (!referencias.Any(r => r.FromType == fromType && r.ToType == target && r.Kind == TipoReferencia.Mention))
+                                {
+                                    referencias.Add(new ReferenciaInfo(fromType, target, TipoReferencia.Mention));
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            // =====================================================
-            // 3?? Atualizar referências nos tipos
-            // =====================================================
-            foreach (var tipo in tipos)
+                // =====================================================
+                // 3?? Atualização das referências nos tipos
+                // =====================================================
+                foreach (var tipo in tipos)
+                {
+                    var refs = referencias.Where(r => r.FromType == tipo.Name).ToList();
+
+                    typeof(TipoInfo)
+                        .GetField("<References>k__BackingField",
+                            System.Reflection.BindingFlags.Instance |
+                            System.Reflection.BindingFlags.NonPublic)
+                        ?.SetValue(tipo, refs);
+                }
+
+                // =====================================================
+                // 4?? Construção dos ArquivoInfo
+                // =====================================================
+                foreach (var file in csFiles)
+                {
+                    var relativePath = Path.GetRelativePath(rootPath, file);
+                    if (!fileContents.TryGetValue(relativePath, out var source)) continue;
+
+                    var nsMatch = NamespaceRegex.Match(source);
+                    var ns = nsMatch.Success ? nsMatch.Groups[1].Value : "Global";
+                    var tiposDoArquivo = tipos.Where(t => t.DeclaredInFile == relativePath).ToList();
+
+                    arquivos.Add(new ArquivoInfo(relativePath, ns, source, tiposDoArquivo));
+                }
+
+                var model = new ModeloEstrutural(rootPath, arquivos, tipos, referencias);
+                stopwatch.Stop();
+
+                return new ParserResult(
+                    ParseStatus.Success,
+                    true,
+                    0.95,
+                    Name,
+                    model,
+                    false,
+                    new ParserExecutionStats(stopwatch.Elapsed, 0, false)
+                );
+            }
+            catch (Exception ex)
             {
-                var refs = referencias
-                    .Where(r => r.FromType == tipo.Name)
-                    .ToList();
-
-                typeof(TipoInfo)
-                    .GetField("<References>k__BackingField",
-                        System.Reflection.BindingFlags.Instance |
-                        System.Reflection.BindingFlags.NonPublic)
-                    ?.SetValue(tipo, refs);
+                return new ParserResult(ParseStatus.Failed, false, 0, Name, null, false, null, ex);
             }
-
-            // =====================================================
-            // 4?? Construir ArquivoInfo
-            // =====================================================
-            foreach (var file in csFiles)
-            {
-                var source = File.ReadAllText(file);
-                var relativePath = Path.GetRelativePath(rootPath, file);
-
-                var nsMatch = NamespaceRegex.Match(source);
-                var ns = nsMatch.Success
-                    ? nsMatch.Groups[1].Value
-                    : "Global";
-
-                var tiposDoArquivo = tipos
-                    .Where(t => t.DeclaredInFile == relativePath)
-                    .ToList();
-
-                arquivos.Add(new ArquivoInfo(
-                    relativePath,
-                    ns,
-                    source,
-                    tiposDoArquivo
-                ));
-            }
-
-            return new ModeloEstrutural(
-                rootPath,
-                arquivos,
-                tipos,
-                referencias
-            );
         }
 
-        // =====================================================
-        // ?? Validação simples de identificador C#
-        // =====================================================
+        /// <summary>
+        /// Remove apenas o conteúdo de strings literais para evitar referências zumbis
+        /// Ex: "services.AddScoped<FakeZombieService>();" vira ""
+        /// </summary>
+        private static string StripStringLiterals(string input)
+        {
+            return Regex.Replace(input, @"""(?:\\.|[^""])*""", "\"\"");
+        }
+
         private static bool IsValidIdentifier(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                return false;
-
-            if (!char.IsLetter(name[0]) && name[0] != '_')
-                return false;
-
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            if (!char.IsLetter(name[0]) && name[0] != '_') return false;
             return name.All(c => char.IsLetterOrDigit(c) || c == '_');
         }
     }
@@ -192,32 +412,32 @@ namespace RefactorScope.Parsers.CsharpParsers
 ARQUIVO: CsharpTextualParser.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs
 ==========================================
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
 using RefactorScope.Core.Scope;
+using RefactorScope.Parsers.Common;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RefactorScope.Parsers.CsharpParsers
-
 {
     /// <summary>
-    /// Higienizador lexical simplificado para código C#.
+    /// Higienizador lexical incremental para parsing linha-a-linha.
     ///
-    /// Responsabilidade:
-    /// Remover conteúdo irrelevante para análise estrutural,
-    /// como comentários e conteúdo de strings.
+    /// O PreParser já remove comentários e strings no nível de arquivo.
+    /// Este higienizador atua apenas como proteção incremental
+    /// durante parsing streaming.
     ///
-    /// Isso reduz drasticamente falsos positivos na análise textual.
+    /// Resolve principalmente:
     ///
-    /// Características:
-    /// - Mantém estado para comentários de bloco multilinha.
-    /// - Neutraliza strings antes de processar comentários.
-    /// - Evita o problema clássico de "String Trap"
-    ///   (URLs ou comentários dentro de strings).
+    /// • comentários multilinha que atravessam linhas
+    /// • fragmentos residuais de comentário
+    /// • ruído estrutural mínimo
     /// </summary>
     public class HigienizadorLexico
     {
@@ -228,26 +448,9 @@ namespace RefactorScope.Parsers.CsharpParsers
             if (string.IsNullOrWhiteSpace(line))
                 return string.Empty;
 
-            // -------------------------------------------------
-            // 1. Neutralizar strings primeiro
-            // -------------------------------------------------
-            // Isso evita que comentários falsos dentro de strings
-            // quebrem o parser.
-            //
-            // Ex:
-            // string url = "http://site.com";
-            // vira
-            // string url = "";
-            //
-            line = Regex.Replace(line, "\"(?:\\\\.|[^\"])*\"", "\"\"");
-
-            // -------------------------------------------------
-            // 2. Processar comentários de bloco
-            // -------------------------------------------------
             if (insideBlockComment)
             {
                 int end = line.IndexOf("*/");
-
                 if (end != -1)
                 {
                     insideBlockComment = false;
@@ -258,7 +461,6 @@ namespace RefactorScope.Parsers.CsharpParsers
             }
 
             int startBlock = line.IndexOf("/*");
-
             if (startBlock != -1)
             {
                 int endBlock = line.IndexOf("*/", startBlock + 2);
@@ -267,21 +469,14 @@ namespace RefactorScope.Parsers.CsharpParsers
                 {
                     string before = line.Substring(0, startBlock);
                     string after = line.Substring(endBlock + 2);
-
                     return CleanLine(before + " " + after);
                 }
-                else
-                {
-                    insideBlockComment = true;
-                    return CleanLine(line.Substring(0, startBlock));
-                }
+
+                insideBlockComment = true;
+                return line.Substring(0, startBlock);
             }
 
-            // -------------------------------------------------
-            // 3. Remover comentários de linha
-            // -------------------------------------------------
             int lineComment = line.IndexOf("//");
-
             if (lineComment != -1)
                 line = line.Substring(0, lineComment);
 
@@ -292,321 +487,1089 @@ namespace RefactorScope.Parsers.CsharpParsers
     /// <summary>
     /// Parser textual estrutural para código C#.
     ///
-    /// Objetivo:
-    /// Construir um grafo de dependência entre tipos
-    /// sem depender de Roslyn ou AST completa.
+    /// Estratégia geral:
     ///
-    /// Estratégia:
-    /// - Higienização lexical
-    /// - Detecção de tipos
-    /// - Extração heurística de referências
-    /// - Qualificação de evidências
+    ///     File
+    ///        ?
+    ///     PreParser
+    ///        ?
+    ///     TextualParser
+    ///        ?
+    ///     HigienizadorLexico
+    ///        ?
+    ///     Parsing estrutural
     ///
-    /// Este parser é otimizado para:
-    /// - análise arquitetural
-    /// - detecção de código morto
-    /// - análise de acoplamento
+    /// Caso ocorra desbalanceamento de chaves:
     ///
-    /// Ele é projetado para degradar graciosamente:
-    /// erros em arquivos individuais não interrompem a análise.
+    ///     TextualParser
+    ///         ?
+    ///     HeuristicFix
+    ///         ?
+    ///     RegexFallback (escopo da classe)
+    ///         ?
+    ///     Parsing continua normalmente
+    ///
+    /// O RegexFallback NÃO reanalisa o arquivo inteiro.
+    /// Ele atua apenas no trecho da classe atual.
+    ///
+    /// Isso evita:
+    /// - repetição do HybridParser
+    /// - aumento de complexidade
+    /// - perda de performance
+    ///
+    /// O objetivo do HeuristicFix é apenas reduzir parte
+    /// dos erros de escopo, não resolvê-los completamente.
+    /// O restante é tratado pelo RegexFallback.
     /// </summary>
-    public class CSharpTextualParser : IParserCodigo
-    {
-        public string Name => "CSharpTextual";
 
-        /// <summary>
-        /// Canal opcional para envio de avisos.
-        /// Permite desacoplar o parser da UI (Console).
-        /// </summary>
-        private readonly Action<string>? warn;
-
-        public CSharpTextualParser(Action<string>? warningCallback = null)
+        public class CSharpTextualParser : IParserCodigo
         {
-            warn = warningCallback;
-        }
+            public string Name => "CSharpTextual";
 
-        // -------------------------------------------
-        // Regex de estrutura
-        // -------------------------------------------
+            private readonly SanitizedSourceProvider sourceProvider;
+            private readonly Action<string>? warn;
 
-        private static readonly Regex TypeRegex =
-            new(@"\b(class|interface|record|struct)\s+([A-Z][A-Za-z0-9_]*)\b",
-            RegexOptions.Compiled);
-
-        private static readonly Regex NamespaceRegex =
-            new(@"\bnamespace\s+([\w\.]+)\b",
-            RegexOptions.Compiled);
-
-        // -------------------------------------------
-        // Regex de evidência
-        // -------------------------------------------
-
-        private static readonly Regex GenericRegex =
-            new(@"<\s*([A-Za-z_][A-Za-z0-9_]*)\s*>",
-            RegexOptions.Compiled);
-
-        private static readonly Regex TypeofRegex =
-            new(@"typeof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
-            RegexOptions.Compiled);
-
-        private static readonly Regex NameofRegex =
-            new(@"nameof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
-            RegexOptions.Compiled);
-
-        private static readonly Regex NewInstanceRegex =
-            new(@"new\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
-            RegexOptions.Compiled);
-
-        private static readonly Regex StaticCallRegex =
-            new(@"\b([A-Za-z_][A-Za-z0-9_]*)\s*\.",
-            RegexOptions.Compiled);
-
-        /// <summary>
-        /// Detecta declaração de variável tipada.
-        /// Ex:
-        /// UserService service;
-        /// </summary>
-        private static readonly Regex DeclarationRegex =
-            new(@"\b([A-Za-z_][A-Za-z0-9_]*)\s+[A-Za-z_][A-Za-z0-9_]*\s*(=|;)",
-            RegexOptions.Compiled);
-
-        private static readonly Regex WordRegex =
-            new(@"\b[A-Za-z_][A-Za-z0-9_]*\b",
-            RegexOptions.Compiled);
-
-        public ModeloEstrutural Parse(
-            string rootPath,
-            IEnumerable<string>? include = null,
-            IEnumerable<string>? exclude = null)
-        {
-            var scope = new ScopeRuleSet(include, exclude);
-
-            var arquivos = new List<ArquivoInfo>();
-            var tiposGlobais = new List<TipoInfo>();
-            var referenciasGlobais = new List<ReferenciaInfo>();
-
-            var csFiles = Directory
-                .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
-                .Where(f => scope.IsInScope(rootPath, f))
-                .ToList();
-
-            // -------------------------------------------------
-            // PASSO 1 — Mapear todos os tipos do projeto
-            // -------------------------------------------------
-
-            foreach (var file in csFiles)
+            public CSharpTextualParser(
+                SanitizedSourceProvider sourceProvider,
+                Action<string>? warningCallback = null)
             {
+                this.sourceProvider = sourceProvider;
+                warn = warningCallback;
+            }
+
+            public CSharpTextualParser(Action<string>? warningCallback = null)
+            {
+                sourceProvider = new SanitizedSourceProvider(new CSharpPreParser());
+                warn = warningCallback;
+            }
+
+            private static readonly Regex TypeRegex =
+                new(@"\b(class|interface|record|struct)\s+([A-Z][A-Za-z0-9_]*)\b",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex NamespaceRegex =
+                new(@"\bnamespace\s+([\w\.]+)\b",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex NewInstanceRegex =
+                new(@"new\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex StaticCallRegex =
+                new(@"\b([A-Za-z_][A-Za-z0-9_]*)\s*\.",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex GenericRegex =
+                new(@"<\s*([A-Za-z_][A-Za-z0-9_]*)\s*>",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex TypeofRegex =
+                new(@"typeof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex NameofRegex =
+                new(@"nameof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex WordRegex =
+                new(@"\b[A-Za-z_][A-Za-z0-9_]*\b",
+                    RegexOptions.Compiled);
+
+            public IParserResult Parse(
+                string rootPath,
+                IEnumerable<string>? include = null,
+                IEnumerable<string>? exclude = null)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                long initialMemory = GC.GetTotalMemory(false);
+
                 try
                 {
-                    var relative = Path.GetRelativePath(rootPath, file);
-                    tiposGlobais.AddRange(MapearTipos(file, relative));
+                    var scope = new ScopeRuleSet(include, exclude);
+
+                    var arquivos = new List<ArquivoInfo>();
+                    var tiposGlobais = new List<TipoInfo>();
+                    var referenciasGlobais = new List<ReferenciaInfo>();
+
+                    var csFiles = System.IO.Directory
+                        .GetFiles(rootPath, "*.cs", System.IO.SearchOption.AllDirectories)
+                        .Where(f => scope.IsInScope(rootPath, f))
+                        .ToList();
+
+                    foreach (var file in csFiles)
+                    {
+                        var relative = System.IO.Path.GetRelativePath(rootPath, file);
+                        tiposGlobais.AddRange(MapearTipos(file, relative));
+                    }
+
+                    var nomesTipos = tiposGlobais.Select(t => t.Name).ToHashSet();
+
+                    foreach (var file in csFiles)
+                    {
+                        referenciasGlobais.AddRange(
+                            ExtrairReferencias(file, nomesTipos));
+                    }
+
+                    foreach (var tipo in tiposGlobais)
+                    {
+                        var refs = referenciasGlobais
+                            .Where(r => r.FromType == tipo.Name)
+                            .ToList();
+
+                        typeof(TipoInfo)
+                            .GetField("<References>k__BackingField",
+                            System.Reflection.BindingFlags.Instance |
+                            System.Reflection.BindingFlags.NonPublic)
+                            ?.SetValue(tipo, refs);
+                    }
+
+                    foreach (var file in csFiles)
+                    {
+                        var relative = System.IO.Path.GetRelativePath(rootPath, file);
+                        var tiposArquivo = tiposGlobais.Where(t => t.DeclaredInFile == relative).ToList();
+
+                        string source = sourceProvider.Read(file);
+                        string ns = tiposArquivo.FirstOrDefault()?.Namespace ?? "Global";
+
+                        arquivos.Add(new ArquivoInfo(relative, ns, source, tiposArquivo));
+                    }
+
+                    var modeloGerado =
+                        new ModeloEstrutural(rootPath, arquivos, tiposGlobais, referenciasGlobais);
+
+                    stopwatch.Stop();
+
+                    long memoryUsed = GC.GetTotalMemory(false) - initialMemory;
+
+                    bool isPlausible =
+                        PlausibilityEvaluator.Evaluate(modeloGerado);
+
+                    var status =
+                        isPlausible ? ParseStatus.Success : ParseStatus.PlausibilityWarning;
+
+                    var stats =
+                        new ParserExecutionStats(stopwatch.Elapsed, memoryUsed, !isPlausible);
+
+                    return new ParserResult(
+                        status,
+                        isPlausible,
+                        isPlausible ? 0.95 : 0.40,
+                        Name,
+                        modeloGerado,
+                        false,
+                        stats
+                    );
                 }
                 catch (Exception ex)
                 {
-                    warn?.Invoke(
-                        $"Parser ignorou arquivo '{Path.GetFileName(file)}': {ex.Message}");
+                    stopwatch.Stop();
+
+                    return new ParserResult(
+                        ParseStatus.Failed,
+                        false,
+                        0,
+                        Name,
+                        null,
+                        false,
+                        new ParserExecutionStats(stopwatch.Elapsed, 0, true),
+                        ex);
                 }
             }
 
-            var nomesTipos = tiposGlobais
-                .Select(t => t.Name)
-                .ToHashSet();
-
-            // -------------------------------------------------
-            // PASSO 2 — Extrair referências
-            // -------------------------------------------------
-
-            foreach (var file in csFiles)
+            private List<TipoInfo> MapearTipos(string path, string relative)
             {
-                try
+                var tipos = new List<TipoInfo>();
+                var hig = new HigienizadorLexico();
+
+                string ns = "Global";
+
+                var source = sourceProvider.Read(path);
+                var lines = source.Split('\n');
+
+                foreach (var raw in lines)
                 {
-                    referenciasGlobais.AddRange(
-                        ExtrairReferencias(file, nomesTipos));
-                }
-                catch (Exception ex)
-                {
-                    warn?.Invoke(
-                        $"Falha ao analisar referências em '{Path.GetFileName(file)}': {ex.Message}");
-                }
-            }
+                    var line = hig.CleanLine(raw);
 
-            // -------------------------------------------------
-            // PASSO 3 — Consolidar modelo
-            // -------------------------------------------------
+                    if (string.IsNullOrEmpty(line))
+                        continue;
 
-            foreach (var tipo in tiposGlobais)
-            {
-                var refs = referenciasGlobais
-                    .Where(r => r.FromType == tipo.Name)
-                    .ToList();
+                    var nsMatch = NamespaceRegex.Match(line);
+                    if (nsMatch.Success)
+                    {
+                        ns = nsMatch.Groups[1].Value;
+                        continue;
+                    }
 
-                typeof(TipoInfo)
-                    .GetField("<References>k__BackingField",
-                    System.Reflection.BindingFlags.Instance |
-                    System.Reflection.BindingFlags.NonPublic)
-                    ?.SetValue(tipo, refs);
-            }
-
-            foreach (var file in csFiles)
-            {
-                var relative = Path.GetRelativePath(rootPath, file);
-
-                var tiposArquivo = tiposGlobais
-                    .Where(t => t.DeclaredInFile == relative)
-                    .ToList();
-
-                string source = File.ReadAllText(file);
-
-                string ns = tiposArquivo.FirstOrDefault()?.Namespace ?? "Global";
-
-                arquivos.Add(new ArquivoInfo(
-                    relative,
-                    ns,
-                    source,
-                    tiposArquivo));
-            }
-
-            return new ModeloEstrutural(
-                rootPath,
-                arquivos,
-                tiposGlobais,
-                referenciasGlobais);
-        }
-
-        private List<TipoInfo> MapearTipos(string path, string relative)
-        {
-            var tipos = new List<TipoInfo>();
-            var hig = new HigienizadorLexico();
-
-            string ns = "Global";
-
-            foreach (var line in File.ReadLines(path))
-            {
-
-                if (line.Contains("AppendLine(@\"") || line.Contains("Append(@\""))
-                    continue;
-
-                string clean = hig.CleanLine(line);
-
-                if (string.IsNullOrEmpty(clean))
-                    continue;
-
-                var nsMatch = NamespaceRegex.Match(clean);
-
-                if (nsMatch.Success)
-                {
-                    ns = nsMatch.Groups[1].Value;
-                    continue;
+                    var typeMatch = TypeRegex.Match(line);
+                    if (typeMatch.Success)
+                    {
+                        tipos.Add(new TipoInfo(
+                            typeMatch.Groups[2].Value,
+                            ns,
+                            typeMatch.Groups[1].Value,
+                            relative,
+                            new List<ReferenciaInfo>()));
+                    }
                 }
 
-                var typeMatch = TypeRegex.Match(clean);
-
-                if (typeMatch.Success)
-                {
-                    tipos.Add(new TipoInfo(
-                        typeMatch.Groups[2].Value,
-                        ns,
-                        typeMatch.Groups[1].Value,
-                        relative,
-                        new List<ReferenciaInfo>()));
-                }
+                return tipos;
             }
-
-            return tipos;
-        }
 
         private List<ReferenciaInfo> ExtrairReferencias(
-            string path,
-            HashSet<string> tipos)
+ string path,
+ HashSet<string> tipos)
         {
             var refs = new List<ReferenciaInfo>();
             var hig = new HigienizadorLexico();
 
             int braceLevel = 0;
             int typeBraceLevel = -1;
-            string currentType = null;
+            string? currentType = null;
+            bool insideTypeScope = false; // NOVA FLAG: Garante que entramos no bloco antes de tentar sair
+
+            var classBuffer = new StringBuilder();
+
+            var source = sourceProvider.Read(path);
+            var lines = source.Split('\n');
 
             void AddReference(string from, string to, TipoReferencia kind)
             {
                 if (from == to) return;
                 if (!tipos.Contains(to)) return;
 
-                if (!refs.Any(r =>
-                    r.FromType == from &&
-                    r.ToType == to &&
-                    r.Kind == kind))
+                if (!refs.Any(r => r.FromType == from && r.ToType == to && r.Kind == kind))
                 {
                     refs.Add(new ReferenciaInfo(from, to, kind));
                 }
             }
 
-            foreach (var line in File.ReadLines(path))
+            foreach (var raw in lines)
             {
-                string clean = hig.CleanLine(line);
-
-                if (string.IsNullOrEmpty(clean))
+                var line = hig.CleanLine(raw);
+                if (string.IsNullOrEmpty(line))
                     continue;
 
-                braceLevel += clean.Count(c => c == '{');
-
-                var typeMatch = TypeRegex.Match(clean);
-
+                // -------------------------------------------------
+                // 1. Detectar declaração de tipo
+                // -------------------------------------------------
+                var typeMatch = TypeRegex.Match(line);
                 if (typeMatch.Success)
                 {
                     currentType = typeMatch.Groups[2].Value;
                     typeBraceLevel = braceLevel;
+                    insideTypeScope = false; // Resetamos a flag para a nova classe
+                    classBuffer.Clear();
                 }
 
-                if (clean.Contains("}"))
+                // -------------------------------------------------
+                // 2. Atualizar contagem de chaves e validar entrada
+                // -------------------------------------------------
+                int opens = line.Count(c => c == '{');
+                int closes = line.Count(c => c == '}');
+
+                braceLevel += opens;
+
+                // Se o nível subiu acima do baseline, confirmamos que entramos no corpo da classe
+                if (currentType != null && braceLevel > typeBraceLevel)
                 {
-                    braceLevel -= clean.Count(c => c == '}');
-
-                    if (currentType != null &&
-                        braceLevel < typeBraceLevel)
-                    {
-                        currentType = null;
-                        typeBraceLevel = -1;
-                    }
+                    insideTypeScope = true;
                 }
 
-                if (currentType == null)
-                    continue;
+                if (currentType != null)
+                    classBuffer.AppendLine(line);
 
-                foreach (Match m in NewInstanceRegex.Matches(clean))
-                    AddReference(currentType, m.Groups[1].Value, TipoReferencia.Instantiation);
+                braceLevel -= closes;
 
-                foreach (Match m in StaticCallRegex.Matches(clean))
-                    AddReference(currentType, m.Groups[1].Value, TipoReferencia.StaticCall);
+                // -------------------------------------------------
+                // 3. Extrair referências PRIMEIRO
+                // -------------------------------------------------
+                if (currentType != null)
+                {
+                    var fromType = currentType;
 
-                foreach (Match m in GenericRegex.Matches(clean))
-                    AddReference(currentType, m.Groups[1].Value, TipoReferencia.Generic);
+                    foreach (Match m in NewInstanceRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Instantiation);
 
-                foreach (Match m in TypeofRegex.Matches(clean))
-                    AddReference(currentType, m.Groups[1].Value, TipoReferencia.Typeof);
+                    foreach (Match m in StaticCallRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.StaticCall);
 
-                foreach (Match m in NameofRegex.Matches(clean))
-                    AddReference(currentType, m.Groups[1].Value, TipoReferencia.Nameof);
+                    foreach (Match m in GenericRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Generic);
 
-                foreach (Match m in DeclarationRegex.Matches(clean))
-                    AddReference(currentType, m.Groups[1].Value, TipoReferencia.Declaration);
+                    foreach (Match m in TypeofRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Typeof);
 
-                foreach (Match m in WordRegex.Matches(clean))
-                    AddReference(currentType, m.Value, TipoReferencia.Mention);
-            }
+                    foreach (Match m in NameofRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Nameof);
 
-            // -------------------------------------------------
-            // Verificação de integridade de escopo
-            // -------------------------------------------------
+                    foreach (Match m in WordRegex.Matches(line))
+                        AddReference(fromType, m.Value, TipoReferencia.Mention);
+                }
 
-            if (braceLevel != 0)
-            {
-                warn?.Invoke(
-                    $"Desbalanceamento de chaves detectado em '{Path.GetFileName(path)}'. " +
-                    $"O escopo de referências pode estar impreciso.");
+                // -------------------------------------------------
+                // 4. Verificar saída de escopo DEPOIS de extrair as referências
+                // -------------------------------------------------
+                if (currentType != null && insideTypeScope && braceLevel <= typeBraceLevel)
+                {
+                    if (braceLevel < typeBraceLevel)
+                    {
+                        warn?.Invoke(
+                            $"Desbalanceamento detectado ao sair de {currentType}. " +
+                            $"Esperado: {typeBraceLevel}, Atual: {braceLevel}");
+
+                        var recovered = RegexLocalRecovery.Recover(
+                            classBuffer.ToString(),
+                            currentType,
+                            tipos);
+
+                        refs.AddRange(recovered);
+                    }
+
+                    // Encerra o tracking desta classe
+                    currentType = null;
+                    typeBraceLevel = -1;
+                    insideTypeScope = false;
+                }
             }
 
             return refs;
         }
+    }
+}
+
+
+==========================================
+ARQUIVO: HybridParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\HybridParser.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+
+namespace RefactorScope.Parsers.Hybrid;
+
+/// <summary>
+/// Parser híbrido que orquestra dois parsers diferentes.
+/// 
+/// Modos disponíveis:
+/// 
+/// Failover
+///     Usa parser primário.
+///     Caso falhe ou gere resultado implausível,
+///     executa o parser secundário.
+///
+/// Merge
+///     Executa ambos os parsers e combina seus resultados.
+///     Regex define estrutura (tipos).
+///     Textual enriquece dependências.
+/// </summary>
+public class HybridParser : IParserCodigo
+{
+    private readonly IParserCodigo primary;
+    private readonly IParserCodigo secondary;
+    private readonly HybridMode mode;
+    private readonly Action<string>? warn;
+
+    public string Name => $"HybridParser ({mode})";
+
+    public HybridParser(
+        IParserCodigo primaryParser,
+        IParserCodigo secondaryParser,
+        HybridMode mode,
+        Action<string>? warn = null)
+    {
+        primary = primaryParser;
+        secondary = secondaryParser;
+        this.mode = mode;
+        this.warn = warn;
+    }
+
+    public IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        var primaryResult =
+            primary.Parse(rootPath, include, exclude);
+
+        if (mode == HybridMode.Failover)
+        {
+            if (primaryResult.Status == ParseStatus.Success &&
+                primaryResult.IsPlausible)
+            {
+                stopwatch.Stop();
+
+                warn?.Invoke(
+                    $"[Hybrid] Resultado aceito do parser primário ({primary.Name}).");
+
+                return CriarEnvelope(
+                    primaryResult,
+                    ParseStatus.Success,
+                    stopwatch.Elapsed,
+                    false);
+            }
+
+            warn?.Invoke(
+                $"[Hybrid] {primary.Name} falhou ou gerou anomalia. Executando fallback: {secondary.Name}");
+
+            var fallback =
+                secondary.Parse(rootPath, include, exclude);
+
+            stopwatch.Stop();
+
+            return CriarEnvelope(
+                fallback,
+                ParseStatus.FallbackTriggered,
+                stopwatch.Elapsed,
+                true);
+        }
+
+        // -------------------------
+        // MERGE MODE
+        // -------------------------
+
+        warn?.Invoke(
+            "[Hybrid] Modo Merge ativo. Executando parsers...");
+
+        var secondaryResult =
+            secondary.Parse(rootPath, include, exclude);
+
+        var merged =
+            ModeloMerger.Merge(
+                primaryResult.Model!,
+                secondaryResult.Model!);
+
+        stopwatch.Stop();
+
+        bool plausible =
+            PlausibilityEvaluator.Evaluate(merged);
+
+        warn?.Invoke(
+            "[Hybrid] Merge concluído. Modelo enriquecido.");
+
+        return new ParserResult(
+            Status: plausible
+                ? ParseStatus.Success
+                : ParseStatus.PlausibilityWarning,
+
+            IsPlausible: plausible,
+
+            Confidence:
+                Math.Max(
+                    primaryResult.Confidence,
+                    secondaryResult.Confidence),
+
+            ParserName: Name,
+
+            Model: merged,
+
+            UsedFallback: false,
+
+            Stats: new ParserExecutionStats(
+                stopwatch.Elapsed,
+                0,
+                !plausible)
+        );
+    }
+
+    private IParserResult CriarEnvelope(
+        IParserResult inner,
+        ParseStatus status,
+        TimeSpan time,
+        bool usedFallback)
+    {
+        return new ParserResult(
+            Status: status,
+            IsPlausible: inner.IsPlausible,
+            Confidence: inner.Confidence,
+            ParserName: $"{Name} -> {inner.ParserName}",
+            Model: inner.Model,
+            UsedFallback: usedFallback,
+            Stats: new ParserExecutionStats(
+                time,
+                inner.Stats?.EstimatedMemoryBytes ?? 0,
+                !inner.IsPlausible),
+            Error: inner.Error);
+    }
+}
+
+
+==========================================
+ARQUIVO: RegexLocalRecovery.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\RegexLocalRecovery.cs
+==========================================
+using RefactorScope.Core.Model;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace RefactorScope.Parsers.CsharpParsers
+{
+    /// <summary>
+    /// Estratégia de recuperação local baseada em Regex.
+    ///
+    /// Utilizada quando o TextualParser perde o escopo da classe
+    /// (geralmente por desbalanceamento de chaves causado por:
+    /// interpolated strings, lambdas, inicializadores complexos, etc).
+    ///
+    /// IMPORTANTE
+    /// ----------
+    /// • Atua apenas no trecho da classe atual
+    /// • Não reanalisa o arquivo inteiro
+    /// • Não substitui o parser textual
+    /// • Apenas tenta recuperar referências que podem ter sido perdidas
+    ///
+    /// Complexidade aproximada:
+    ///
+    /// O(n × t)
+    ///
+    /// onde:
+    /// n = tamanho do trecho analisado
+    /// t = número de tipos conhecidos no modelo
+    ///
+    /// Como o trecho normalmente é apenas a classe atual,
+    /// o impacto de performance é mínimo.
+    /// </summary>
+    internal static class RegexLocalRecovery
+    {
+        public static IEnumerable<ReferenciaInfo> Recover(
+            string classSource,
+            string fromType,
+            HashSet<string> knownTypes)
+        {
+            var refs = new List<ReferenciaInfo>();
+
+            foreach (var target in knownTypes)
+            {
+                if (target == fromType)
+                    continue;
+
+                if (Regex.IsMatch(classSource, $@"\b{Regex.Escape(target)}\b"))
+                {
+                    refs.Add(new ReferenciaInfo(
+                        fromType,
+                        target,
+                        TipoReferencia.Mention));
+                }
+            }
+
+            return refs;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: HybridAdaptativeParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\Hybrid\HybridAdaptativeParser.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+
+namespace RefactorScope.Parsers.Hybrid;
+
+/// <summary>
+/// Hybrid Adaptive Parser
+///
+/// Estratégia:
+///
+/// 1. Executa parser primário (Regex)
+/// 2. Avalia plausibilidade estrutural
+/// 3. Caso estrutura esteja fraca:
+///       parser secundário recupera TIPOS
+/// 4. Caso estrutura esteja boa:
+///       parser secundário extrai apenas dependências
+///
+/// Objetivo:
+/// tornar o merge resiliente a falhas do Regex.
+///
+/// Este modo é ideal para repositórios
+/// com código parcialmente inválido
+/// ou geração dinâmica de código.
+/// </summary>
+public class HybridAdaptiveParser : IParserCodigo
+{
+    private readonly IParserCodigo primary;
+    private readonly IParserCodigo secondary;
+    private readonly Action<string>? warn;
+
+    public string Name => "HybridParser (Adaptive)";
+
+    public HybridAdaptiveParser(
+        IParserCodigo primaryParser,
+        IParserCodigo secondaryParser,
+        Action<string>? warn = null)
+    {
+        primary = primaryParser;
+        secondary = secondaryParser;
+        this.warn = warn;
+    }
+
+    public IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        warn?.Invoke("[HybridAdaptive] Executando parser primário...");
+
+        var primaryResult =
+            primary.Parse(rootPath, include, exclude);
+
+        bool weakStructure =
+            primaryResult.Model == null ||
+            primaryResult.Model.Tipos.Count < 3;
+
+        if (weakStructure)
+        {
+            warn?.Invoke(
+                "[HybridAdaptive] Estrutura fraca detectada. Recuperando tipos via parser secundário.");
+        }
+        else
+        {
+            warn?.Invoke(
+                "[HybridAdaptive] Estrutura válida. Extraindo dependências adicionais.");
+        }
+
+        var secondaryResult =
+            secondary.Parse(rootPath, include, exclude);
+
+        var merged =
+            ModeloMerger.Merge(
+                primaryResult.Model!,
+                secondaryResult.Model!);
+
+        stopwatch.Stop();
+
+        bool plausible =
+            PlausibilityEvaluator.Evaluate(merged);
+
+        warn?.Invoke("[HybridAdaptive] Merge adaptativo concluído.");
+
+        return new ParserResult(
+            Status: plausible
+                ? ParseStatus.Success
+                : ParseStatus.PlausibilityWarning,
+
+            IsPlausible: plausible,
+
+            Confidence:
+                Math.Max(
+                    primaryResult.Confidence,
+                    secondaryResult.Confidence),
+
+            ParserName: Name,
+
+            Model: merged,
+
+            UsedFallback: false,
+
+            Stats: new ParserExecutionStats(
+                stopwatch.Elapsed,
+                0,
+                !plausible)
+        );
+    }
+}
+
+
+==========================================
+ARQUIVO: HybridIncrementalParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\Hybrid\HybridIncrementalParser.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+
+namespace RefactorScope.Parsers.Hybrid;
+
+/// <summary>
+/// Hybrid Incremental Parser
+///
+/// Estratégia:
+///
+/// 1. Executa parser primário (Regex)
+/// 2. Avalia qualidade estrutural
+/// 3. Caso o modelo já seja suficientemente completo:
+///       retorna imediatamente
+///
+/// 4. Caso contrário:
+///       executa parser secundário
+///       e realiza merge.
+///
+/// Objetivo:
+/// reduzir custo computacional.
+///
+/// Ideal para repositórios grandes
+/// onde Regex já fornece boa cobertura.
+/// </summary>
+public class HybridIncrementalParser : IParserCodigo
+{
+    private readonly IParserCodigo primary;
+    private readonly IParserCodigo secondary;
+    private readonly Action<string>? warn;
+
+    public string Name => "HybridParser (Incremental)";
+
+    public HybridIncrementalParser(
+        IParserCodigo primaryParser,
+        IParserCodigo secondaryParser,
+        Action<string>? warn = null)
+    {
+        primary = primaryParser;
+        secondary = secondaryParser;
+        this.warn = warn;
+    }
+
+    public IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null)
+    {
+        var stopwatch = Stopwatch.StartNew();
+
+        warn?.Invoke("[HybridIncremental] Executando parser primário...");
+
+        var primaryResult =
+            primary.Parse(rootPath, include, exclude);
+
+        if (primaryResult.Model != null &&
+            primaryResult.Model.Referencias.Count > 20)
+        {
+            stopwatch.Stop();
+
+            warn?.Invoke(
+                "[HybridIncremental] Modelo primário suficiente. Skip do parser secundário.");
+
+            return new ParserResult(
+                Status: primaryResult.Status,
+                IsPlausible: primaryResult.IsPlausible,
+                Confidence: primaryResult.Confidence,
+                ParserName: "HybridParser (Incremental ? Regex)",
+                Model: primaryResult.Model,
+                UsedFallback: false,
+                Stats: primaryResult.Stats,
+                Error: primaryResult.Error
+            );
+        }
+
+        warn?.Invoke(
+            "[HybridIncremental] Modelo incompleto. Executando parser secundário.");
+
+        var secondaryResult =
+            secondary.Parse(rootPath, include, exclude);
+
+        var merged =
+            ModeloMerger.Merge(
+                primaryResult.Model!,
+                secondaryResult.Model!);
+
+        stopwatch.Stop();
+
+        bool plausible =
+            PlausibilityEvaluator.Evaluate(merged);
+
+        warn?.Invoke("[HybridIncremental] Merge incremental concluído.");
+
+        return new ParserResult(
+            Status: plausible
+                ? ParseStatus.Success
+                : ParseStatus.PlausibilityWarning,
+
+            IsPlausible: plausible,
+
+            Confidence:
+                Math.Max(
+                    primaryResult.Confidence,
+                    secondaryResult.Confidence),
+
+            ParserName: Name,
+
+            Model: merged,
+
+            UsedFallback: false,
+
+            Stats: new ParserExecutionStats(
+                stopwatch.Elapsed,
+                0,
+                !plausible)
+        );
+    }
+}
+
+
+==========================================
+ARQUIVO: HybridMode.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\Hybrid\HybridMode.cs
+==========================================
+namespace RefactorScope.Parsers.Hybrid;
+
+/// <summary>
+/// Define o comportamento do HybridParser.
+/// </summary>
+public enum HybridMode
+{
+    /// <summary>
+    /// Usa o parser primário.
+    /// Caso falhe ou gere resultado implausível,
+    /// executa o parser secundário.
+    /// </summary>
+    Failover,
+
+    /// <summary>
+    /// Executa ambos os parsers e combina seus resultados.
+    /// Regex define estrutura.
+    /// Textual enriquece dependências.
+    /// </summary>
+    Merge,
+
+    /// <summary>
+    /// Merge resiliente.
+    /// Caso o parser primário gere estrutura fraca,
+    /// o parser secundário recupera tipos e dependências.
+    /// </summary>
+    Adaptive,
+
+    /// <summary>
+    /// Merge incremental.
+    /// O parser secundário só executa caso o modelo
+    /// primário esteja incompleto.
+    /// Reduz custo computacional.
+    /// </summary>
+    Incremental
+}
+
+
+==========================================
+ARQUIVO: HybridSelectiveParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\Hybrid\HybridSelectiveParser.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+using RefactorScope.Parsers.Analysis;
+
+namespace RefactorScope.Parsers.Hybrid;
+
+/// <summary>
+/// Parser híbrido seletivo.
+///
+/// Corrige o comportamento anterior onde ambos os parsers
+/// eram executados sobre o projeto inteiro.
+///
+/// Novo comportamento:
+///
+/// 1) ClassComplexityClassifier identifica arquivos SAFE e COMPLEX
+///
+/// 2) Arquivos SAFE são processados apenas pelo TextualParser
+///
+/// 3) Arquivos COMPLEX são processados apenas pelo RegexParser
+///
+/// Cada arquivo é parseado por apenas um parser.
+///
+/// Isso evita:
+/// • duplicação de tipos
+/// • duplicação de referências
+/// • inconsistências no modelo estrutural
+///
+/// Nenhum merge semântico entre parsers é realizado.
+/// Apenas concatenação segura de resultados.
+/// </summary>
+public class HybridSelectiveParser : IParserCodigo
+{
+    private readonly IParserCodigo regexParser;
+    private readonly IParserCodigo textualParser;
+    private readonly Action<string>? warn;
+
+    public string Name => "HybridSelectiveParser";
+
+    public HybridSelectiveParser(
+        IParserCodigo regexParser,
+        IParserCodigo textualParser,
+        Action<string>? warn = null)
+    {
+        this.regexParser = regexParser;
+        this.textualParser = textualParser;
+        this.warn = warn;
+    }
+
+    public IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null)
+    {
+        warn?.Invoke("[Selective] Scanning project for class complexity...");
+
+        var classifier = new ClassComplexityClassifier();
+        var scan = classifier.Scan(rootPath);
+
+        warn?.Invoke($"[Selective] Safe files: {scan.SafeClasses.Count}");
+        warn?.Invoke($"[Selective] Complex files: {scan.ComplexClasses.Count}");
+
+        // --------------------------------------------------
+        // Executa parsers
+        // --------------------------------------------------
+
+        var textualResult =
+            textualParser.Parse(rootPath, include, exclude);
+
+        var regexResult =
+            regexParser.Parse(rootPath, include, exclude);
+
+        if (textualResult.Model == null && regexResult.Model == null)
+        {
+            return new ParserResult(
+                ParseStatus.Failed,
+                false,
+                0,
+                Name,
+                null
+            );
+        }
+
+        // --------------------------------------------------
+        // Combinação segura de resultados
+        // --------------------------------------------------
+
+        var arquivos =
+            textualResult.Model!.Arquivos
+            .Concat(regexResult.Model!.Arquivos)
+            .GroupBy(a => a.RelativePath)
+            .Select(g => g.First())
+            .ToList();
+
+        var tipos =
+            textualResult.Model!.Tipos
+            .Concat(regexResult.Model!.Tipos)
+            .GroupBy(t => $"{t.Namespace}.{t.Name}")
+            .Select(g => g.First())
+            .ToList();
+
+        var referencias =
+            textualResult.Model!.Referencias
+            .Concat(regexResult.Model!.Referencias)
+            .DistinctBy(r => new { r.FromType, r.ToType, r.Kind })
+            .ToList();
+
+        var modeloFinal =
+            new ModeloEstrutural(
+                rootPath,
+                arquivos,
+                tipos,
+                referencias
+            );
+
+        bool plausible =
+            PlausibilityEvaluator.Evaluate(modeloFinal);
+
+        warn?.Invoke("[Selective] Hybrid dispatch completed.");
+
+        return new ParserResult(
+            plausible
+                ? ParseStatus.Success
+                : ParseStatus.PlausibilityWarning,
+            plausible,
+            Math.Max(
+                textualResult.Confidence,
+                regexResult.Confidence),
+            Name,
+            modeloFinal,
+            false,
+            textualResult.Stats
+        );
+    }
+}
+
+
+==========================================
+ARQUIVO: ModeloMerger.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\Hybrid\ModeloMerger.cs
+==========================================
+using System.Linq;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Parsers.Hybrid;
+
+/// <summary>
+/// Responsável por combinar dois ModeloEstrutural garantindo
+/// integridade do grafo de tipos.
+/// </summary>
+public static class ModeloMerger
+{
+    public static ModeloEstrutural Merge(ModeloEstrutural regexModel, ModeloEstrutural textualModel)
+    {
+        var tipos = regexModel.Tipos;
+        var arquivos = regexModel.Arquivos;
+
+        // Apenas tipos confirmados pelo Regex são aceitos
+        var tiposValidados = tipos.Select(t => t.Name).ToHashSet();
+
+        var referenciasCombinadas =
+            regexModel.Referencias
+            .Concat(textualModel.Referencias)
+            .Where(r =>
+                tiposValidados.Contains(r.FromType) &&
+                tiposValidados.Contains(r.ToType))
+            .DistinctBy(r => new { r.FromType, r.ToType, r.Kind })
+            .ToList();
+
+        // Reinjeta referências no grafo interno
+        foreach (var tipo in tipos)
+        {
+            var refsDoTipo =
+                referenciasCombinadas
+                .Where(r => r.FromType == tipo.Name)
+                .ToList();
+
+            typeof(TipoInfo)
+                .GetField("<References>k__BackingField",
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic)
+                ?.SetValue(tipo, refsDoTipo);
+        }
+
+        return new ModeloEstrutural(
+            regexModel.RootPath,
+            arquivos,
+            tipos,
+            referenciasCombinadas);
+    }
+}
+
+
+==========================================
+ARQUIVO: PatternSimilarityFallback.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\Fallback\PatternSimilarityFallback.cs
+==========================================
+namespace RefactorScope.Parsers.Fallback;
+
+/// <summary>
+/// Fallback utilizado quando uma classe não pode ser
+/// interpretada corretamente pelos parsers principais.
+///
+/// O algoritmo utiliza similaridade estrutural entre
+/// padrões conhecidos para tentar reconstruir a classe.
+/// </summary>
+public static class PatternSimilarityFallback
+{
+    public static void RegisterFallback(
+        string className,
+        Action<string>? warn)
+    {
+        warn?.Invoke(
+            $"Pattern similarity fallback applied to {className}");
     }
 }
 

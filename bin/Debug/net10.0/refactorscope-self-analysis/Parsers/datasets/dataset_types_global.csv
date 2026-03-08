@@ -1,8 +1,13 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
+ClassComplexityClassifier,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+ClassComplexityScanResult,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+CSharpPreParser,RefactorScope,Aplicação,6,DriftArquitetural,0,0,0,0
 CSharpRegexParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 HigienizadorLexico,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 CSharpTextualParser,RefactorScope,Aplicação,3,DriftArquitetural,0,0,0,0
-HybridParser,RefactorScope,Aplicação,5,DriftArquitetural,0,0,0,0
+HybridParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+RegexLocalRecovery,RefactorScope,Aplicação,3,DriftArquitetural,0,0,0,0
 HybridAdaptiveParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 HybridIncrementalParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+HybridSelectiveParser,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 ModeloMerger,RefactorScope,Aplicação,6,DriftArquitetural,0,0,0,0

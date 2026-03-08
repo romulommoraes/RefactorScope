@@ -61,5 +61,7 @@ namespace RefactorScope.Core.Configuration
         public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();
 
         public StatisticsConfig Statistics { get; set; } = new();
+
+        public EstimatorConfig? Estimator { get; set; }
     }
 }

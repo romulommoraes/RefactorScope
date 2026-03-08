@@ -53,23 +53,18 @@
   "Referencias": [
     {
       "FromType": "DumpStrategyResolver",
+      "ToType": "IDumpStrategy",
+      "Kind": 0
+    },
+    {
+      "FromType": "DumpStrategyResolver",
       "ToType": "RefactorScopeConfig",
       "Kind": 0
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "ISegmentationResolver",
-      "Kind": 0
-    },
-    {
-      "FromType": "DumpStrategyResolver",
-      "ToType": "LayerSegmentationResolver",
-      "Kind": 0
-    },
-    {
-      "FromType": "DumpStrategyResolver",
-      "ToType": "TopFolderSegmentationResolver",
-      "Kind": 0
+      "ToType": "GlobalDumpStrategy",
+      "Kind": 1
     },
     {
       "FromType": "DumpStrategyResolver",
@@ -78,8 +73,8 @@
     },
     {
       "FromType": "DumpStrategyResolver",
-      "ToType": "IDumpStrategy",
-      "Kind": 0
+      "ToType": "SegmentedDumpStrategy",
+      "Kind": 1
     },
     {
       "FromType": "DumpStrategyResolver",
@@ -87,134 +82,9 @@
       "Kind": 0
     },
     {
-      "FromType": "ISegmentationResolver",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "ISegmentationResolver",
-      "ToType": "SegmentScope",
-      "Kind": 0
-    },
-    {
-      "FromType": "LayerSegmentationResolver",
-      "ToType": "LayerRuleEvaluator",
-      "Kind": 0
-    },
-    {
-      "FromType": "LayerSegmentationResolver",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "LayerSegmentationResolver",
-      "ToType": "ModeloEstrutural",
-      "Kind": 0
-    },
-    {
-      "FromType": "LayerSegmentationResolver",
-      "ToType": "ISegmentationResolver",
-      "Kind": 0
-    },
-    {
-      "FromType": "LayerSegmentationResolver",
-      "ToType": "SegmentScope",
-      "Kind": 0
-    },
-    {
-      "FromType": "SegmentScope",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "TopFolderSegmentationResolver",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "TopFolderSegmentationResolver",
-      "ToType": "ModeloEstrutural",
-      "Kind": 0
-    },
-    {
-      "FromType": "TopFolderSegmentationResolver",
-      "ToType": "ISegmentationResolver",
-      "Kind": 0
-    },
-    {
-      "FromType": "TopFolderSegmentationResolver",
-      "ToType": "SegmentScope",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalDumpStrategy",
-      "ToType": "IExporter",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalDumpStrategy",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalDumpStrategy",
-      "ToType": "ConsolidatedReport",
-      "Kind": 0
-    },
-    {
-      "FromType": "GlobalDumpStrategy",
-      "ToType": "IDumpStrategy",
-      "Kind": 0
-    },
-    {
-      "FromType": "IDumpStrategy",
-      "ToType": "IExporter",
-      "Kind": 0
-    },
-    {
-      "FromType": "IDumpStrategy",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "IDumpStrategy",
-      "ToType": "ConsolidatedReport",
-      "Kind": 0
-    },
-    {
-      "FromType": "SegmentedDumpStrategy",
-      "ToType": "IExporter",
-      "Kind": 0
-    },
-    {
-      "FromType": "SegmentedDumpStrategy",
-      "ToType": "AnalysisContext",
-      "Kind": 0
-    },
-    {
-      "FromType": "SegmentedDumpStrategy",
-      "ToType": "ConsolidatedReport",
-      "Kind": 0
-    },
-    {
-      "FromType": "SegmentedDumpStrategy",
-      "ToType": "ISegmentationResolver",
-      "Kind": 0
-    },
-    {
-      "FromType": "SegmentedDumpStrategy",
-      "ToType": "IDumpStrategy",
-      "Kind": 0
-    },
-    {
       "FromType": "DumpStrategyResolver",
-      "ToType": "GlobalDumpStrategy",
-      "Kind": 1
-    },
-    {
-      "FromType": "DumpStrategyResolver",
-      "ToType": "SegmentedDumpStrategy",
-      "Kind": 1
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
     },
     {
       "FromType": "DumpStrategyResolver",
@@ -223,8 +93,18 @@
     },
     {
       "FromType": "DumpStrategyResolver",
+      "ToType": "TopFolderSegmentationResolver",
+      "Kind": 0
+    },
+    {
+      "FromType": "DumpStrategyResolver",
       "ToType": "LayerSegmentationResolver",
       "Kind": 1
+    },
+    {
+      "FromType": "DumpStrategyResolver",
+      "ToType": "LayerSegmentationResolver",
+      "Kind": 0
     },
     {
       "FromType": "ISegmentationResolver",
@@ -232,9 +112,34 @@
       "Kind": 3
     },
     {
+      "FromType": "ISegmentationResolver",
+      "ToType": "SegmentScope",
+      "Kind": 0
+    },
+    {
+      "FromType": "ISegmentationResolver",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
+    },
+    {
       "FromType": "LayerSegmentationResolver",
       "ToType": "SegmentScope",
       "Kind": 3
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "SegmentScope",
+      "Kind": 0
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "AnalysisContext",
+      "Kind": 0
     },
     {
       "FromType": "LayerSegmentationResolver",
@@ -243,8 +148,18 @@
     },
     {
       "FromType": "LayerSegmentationResolver",
+      "ToType": "LayerRuleEvaluator",
+      "Kind": 0
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
       "ToType": "ModeloEstrutural",
       "Kind": 1
+    },
+    {
+      "FromType": "LayerSegmentationResolver",
+      "ToType": "ModeloEstrutural",
+      "Kind": 0
     },
     {
       "FromType": "LayerSegmentationResolver",
@@ -257,14 +172,39 @@
       "Kind": 1
     },
     {
+      "FromType": "SegmentScope",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "ISegmentationResolver",
+      "Kind": 0
+    },
+    {
       "FromType": "TopFolderSegmentationResolver",
       "ToType": "SegmentScope",
       "Kind": 3
     },
     {
       "FromType": "TopFolderSegmentationResolver",
+      "ToType": "SegmentScope",
+      "Kind": 0
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
       "ToType": "ModeloEstrutural",
       "Kind": 1
+    },
+    {
+      "FromType": "TopFolderSegmentationResolver",
+      "ToType": "ModeloEstrutural",
+      "Kind": 0
     },
     {
       "FromType": "TopFolderSegmentationResolver",
@@ -278,8 +218,38 @@
     },
     {
       "FromType": "GlobalDumpStrategy",
+      "ToType": "IDumpStrategy",
+      "Kind": 0
+    },
+    {
+      "FromType": "GlobalDumpStrategy",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "GlobalDumpStrategy",
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
+    },
+    {
+      "FromType": "GlobalDumpStrategy",
       "ToType": "IExporter",
       "Kind": 3
+    },
+    {
+      "FromType": "GlobalDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 0
+    },
+    {
+      "FromType": "IDumpStrategy",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "IDumpStrategy",
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
     },
     {
       "FromType": "IDumpStrategy",
@@ -287,14 +257,39 @@
       "Kind": 3
     },
     {
+      "FromType": "IDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 0
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "IDumpStrategy",
+      "Kind": 0
+    },
+    {
       "FromType": "SegmentedDumpStrategy",
       "ToType": "ISegmentationResolver",
-      "Kind": 6
+      "Kind": 0
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "AnalysisContext",
+      "Kind": 0
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "ConsolidatedReport",
+      "Kind": 0
     },
     {
       "FromType": "SegmentedDumpStrategy",
       "ToType": "IExporter",
       "Kind": 3
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 0
     }
   ]
 }

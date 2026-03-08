@@ -84,41 +84,175 @@ namespace RefactorScope.Core.Abstractions
 ARQUIVO: IParserCodigo.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IParserCodigo.cs
 ==========================================
+using System.Collections.Generic;
+
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Contrato base para todos os parsers de código do sistema.
+/// </summary>
+public interface IParserCodigo
+{
+    /// <summary>Nome identificador do parser.</summary>
+    string Name { get; }
+
+    /// <summary>
+    /// Executa a análise do código e retorna um envelope observável contendo o modelo e as métricas.
+    /// </summary>
+    /// <param name="rootPath">Caminho raiz do projeto a ser analisado.</param>
+    /// <param name="include">Filtros de inclusão de arquivos (opcional).</param>
+    /// <param name="exclude">Filtros de exclusão de arquivos (opcional).</param>
+    /// <returns>Um IParserResult contendo o estado, métricas e o modelo gerado.</returns>
+    IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null);
+}
+
+
+==========================================
+ARQUIVO: IParserResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IParserResult.cs
+==========================================
 using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+using System;
+
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Contrato global para o envelope de retorno de qualquer parser do sistema.
+/// 
+/// O objetivo deste contrato é fornecer observabilidade completa do processo
+/// de parsing, incluindo métricas de execução, confiança do resultado e
+/// tratamento seguro de falhas.
+/// </summary>
+public interface IParserResult
+{
+    /// <summary>
+    /// Nome identificador do parser que gerou este resultado.
+    /// Exemplo: "CSharpRegex", "CSharpTextual", "HybridParser".
+    /// </summary>
+    string ParserName { get; }
+
+    /// <summary>
+    /// Status final da operação de parsing.
+    /// </summary>
+    ParseStatus Status { get; }
+
+    /// <summary>
+    /// Índice de confiança da extração estrutural (0.0 a 1.0).
+    /// </summary>
+    double Confidence { get; }
+
+    /// <summary>
+    /// Indica se o modelo gerado passou na avaliação heurística de plausibilidade.
+    /// </summary>
+    bool IsPlausible { get; }
+
+    /// <summary>
+    /// Modelo estrutural extraído do código.
+    /// Pode ser null em caso de falha total do parser.
+    /// </summary>
+    ModeloEstrutural? Model { get; }
+
+    /// <summary>
+    /// Estatísticas de execução do parser.
+    /// Contém métricas como tempo de execução e memória estimada.
+    /// </summary>
+    ParserExecutionStats? Stats { get; }
+
+    /// <summary>
+    /// Exceção capturada caso o parser tenha falhado com erro crítico.
+    /// </summary>
+    Exception? Error { get; }
+
+    bool UsedFallback { get; }
+}
+
+
+==========================================
+ARQUIVO: IPipelineStep.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IPipelineStep.cs
+==========================================
+using RefactorScope.Core.Context;
 
 namespace RefactorScope.Core.Abstractions
 {
     /// <summary>
-    /// Define o contrato para parsers de código.
-    /// Converte código fonte em Modelo Estrutural agnóstico.
+    /// Representa um módulo executável no pipeline de análise.
     /// 
-    /// O parser recebe instruções de escopo (include/exclude),
-    /// mas não conhece a configuração diretamente,
-    /// preservando o isolamento arquitetural.
+    /// Exemplos:
+    /// - AnalyzerStep
+    /// - StatisticsStep
+    /// - EstimationStep
+    /// - ExportStep (futuro)
     /// </summary>
-    public interface IParserCodigo
+    public interface IPipelineStep
     {
-        /// <summary>
-        /// Nome do parser (ex: CSharpRegex, Roslyn).
-        /// </summary>
         string Name { get; }
 
-        /// <summary>
-        /// Constrói o modelo estrutural a partir do caminho alvo.
-        /// 
-        /// Include e Exclude permitem restringir o escopo de análise
-        /// sem acoplar o parser ao sistema de configuração.
-        /// </summary>
-        /// <param name="rootPath">Raiz do escopo de análise.</param>
-        /// <param name="include">Pastas ou caminhos a incluir.</param>
-        /// <param name="exclude">Pastas ou caminhos a excluir.</param>
-        /// <returns>Modelo estrutural gerado.</returns>
-        ModeloEstrutural Parse(
-            string rootPath,
-            IEnumerable<string>? include = null,
-            IEnumerable<string>? exclude = null
-        );
+        void Execute(AnalysisContext context);
     }
+}
+
+
+==========================================
+ARQUIVO: IPreParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IPreParser.cs
+==========================================
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Contrato para pré-processadores de código fonte.
+    ///
+    /// Um PreParser é responsável por sanitizar o texto antes
+    /// da etapa de parsing estrutural, removendo construções
+    /// que podem gerar falsos positivos (comentários, strings,
+    /// código gerado, etc.).
+    ///
+    /// Essa etapa funciona como um "lexer simplificado"
+    /// no pipeline de parsing textual.
+    /// </summary>
+    public interface IPreParser
+    {
+        string Sanitize(string source);
+    }
+}
+
+
+==========================================
+ARQUIVO: ParseStatus.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\ParseStatus.cs
+==========================================
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Representa o estado final da execução de um parser.
+/// Usado para indicar sucesso, avisos estruturais ou falhas.
+/// </summary>
+public enum ParseStatus
+{
+    /// <summary>
+    /// O parsing foi concluído com sucesso e o modelo gerado é considerado confiável.
+    /// </summary>
+    Success,
+
+    /// <summary>
+    /// O parsing foi concluído, porém o avaliador de plausibilidade detectou anomalias estruturais.
+    /// O modelo pode estar incompleto ou parcialmente incorreto.
+    /// </summary>
+    PlausibilityWarning,
+
+    /// <summary>
+    /// O parser primário falhou ou retornou resultado implausível e um parser de fallback assumiu.
+    /// </summary>
+    FallbackTriggered,
+
+    /// <summary>
+    /// O parsing falhou completamente devido a erro crítico ou exceção.
+    /// </summary>
+    Failed
 }
 
 
@@ -132,6 +266,25 @@ namespace RefactorScope.Core.Configuration
     {
         public string Mode { get; set; } = "global";
         public string SplitBy { get; set; } = "layer";
+    }
+}
+
+
+==========================================
+ARQUIVO: EstimatorConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\EstimatorConfig.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Configuração do módulo de estimativa de esforço de refatoração.
+    /// </summary>
+    public class EstimatorConfig
+    {
+        /// <summary>
+        /// Ativa ou desativa o EffortEstimator.
+        /// </summary>
+        public bool Enabled { get; set; } = true;
     }
 }
 
@@ -255,6 +408,9 @@ ARQUIVO: RefactorScopeConfig.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\RefactorScopeConfig.cs
 ==========================================
 using RefactorScope.Core.Context;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Statistics.Engines;
+
 
 namespace RefactorScope.Core.Configuration
 {
@@ -312,6 +468,34 @@ namespace RefactorScope.Core.Configuration
         public FitnessGateConfig FitnessGates { get; set; } = new();
 
         public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();
+
+        public StatisticsConfig Statistics { get; set; } = new();
+
+        public EstimatorConfig? Estimator { get; set; }
+    }
+}
+
+
+==========================================
+ARQUIVO: StatisticsConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\StatisticsConfig.cs
+==========================================
+// ==========================================
+// ARQUIVO: StatisticsConfig.cs
+// CAMINHO: RefactorScope\Core\Configuration\StatisticsConfig.cs
+// ==========================================
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Configuração para o módulo de validação estatística (Self-Validation Layer).
+    /// </summary>
+    public class StatisticsConfig
+    {
+        /// <summary>
+        /// Define se a camada estatística observacional deve ser executada.
+        /// Padrão: true.
+        /// </summary>
+        public bool Enabled { get; set; } = true;
     }
 }
 
@@ -1179,6 +1363,146 @@ namespace RefactorScope.Core.Governance
 
 
 ==========================================
+ARQUIVO: ArchitecturalMetrics.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalMetrics.cs
+==========================================
+namespace RefactorScope.Core.Metrics;
+
+public record ArchitecturalMetrics(
+    double MeanCoupling,
+    double UnresolvedCandidateRatio,
+    double NamespaceDriftRatio
+);
+
+
+==========================================
+ARQUIVO: ArchitecturalMetricsBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalMetricsBuilder.cs
+==========================================
+using System;
+using System.Linq;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Metrics
+{
+    /// <summary>
+    /// Constrói métricas arquiteturais agregadas a partir do
+    /// modelo estrutural e dos resultados dos analyzers.
+    ///
+    /// Essas métricas representam sinais estruturais consolidados
+    /// utilizados por módulos de interpretação arquitetural
+    /// como Estimation (RDI).
+    ///
+    /// Importante:
+    /// • Não depende do módulo Statistics.
+    /// • Opera apenas sobre Core + Results.
+    ///
+    /// Métricas calculadas:
+    ///
+    /// • MeanCoupling
+    ///     Média de fan-out estrutural entre tipos, ajustada
+    ///     semanticamente para ignorar módulos absolvidos
+    ///     (tooling, composition root, infraestrutura).
+    ///
+    /// • UnresolvedCandidateRatio
+    ///     Proporção de tipos classificados como unresolved
+    ///     após refinamento estrutural.
+    ///
+    /// • NamespaceDriftRatio
+    ///     Proporção de tipos classificados como drift lógico
+    ///     pela análise arquitetural.
+    /// </summary>
+    public static class ArchitecturalMetricsBuilder
+    {
+        public static ArchitecturalMetrics Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var model = context.Model;
+
+            int totalTypes = Math.Max(model.Tipos.Count, 1);
+
+            double meanCoupling = ComputeEffectiveCoupling(report);
+
+            var unresolved = report.GetEffectiveUnresolvedCandidates();
+
+            double unresolvedRatio =
+                (double)unresolved.Count / totalTypes;
+
+            var arch =
+                report.GetResult<ArchitecturalClassificationResult>();
+
+            int driftCount =
+                arch?.Items.Count(i => i.StructuralStatus == "DriftLogico") ?? 0;
+
+            double driftRatio =
+                (double)driftCount / totalTypes;
+
+            return new ArchitecturalMetrics(
+                meanCoupling,
+                unresolvedRatio,
+                driftRatio
+            );
+        }
+
+        /// <summary>
+        /// Calcula o coupling efetivo ignorando módulos cuja
+        /// natureza estrutural legitima alto fan-out.
+        /// </summary>
+        private static double ComputeEffectiveCoupling(
+            ConsolidatedReport report)
+        {
+            var coupling =
+                report.GetResult<CouplingResult>();
+
+            if (coupling == null)
+                return 0;
+
+            var architectural =
+                report.GetResult<ArchitecturalClassificationResult>();
+
+            if (architectural == null)
+            {
+                return coupling.FanOutTotalByType
+                    .Values
+                    .DefaultIfEmpty(0)
+                    .Average();
+            }
+
+            var filtered =
+                coupling.FanOutTotalByType
+                    .Where(kv =>
+                    {
+                        var module =
+                            architectural.Items
+                                .FirstOrDefault(i => i.TypeName == kv.Key)
+                                ?.Folder;
+
+                        if (string.IsNullOrWhiteSpace(module))
+                            return true;
+
+                        if (ArchitecturalScoreCalculator.IsToolingModule(module))
+                            return false;
+
+                        if (ArchitecturalScoreCalculator.IsInfrastructure(module))
+                            return false;
+
+                        if (ArchitecturalScoreCalculator.IsCompositionRoot(module))
+                            return false;
+
+                        return true;
+                    })
+                    .Select(kv => kv.Value)
+                    .DefaultIfEmpty(0);
+
+            return filtered.Average();
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: ArchitecturalScoreCalculator.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalScoreCalculator.cs
 ==========================================
@@ -1194,21 +1518,30 @@ namespace RefactorScope.Core.Metrics;
 /// - Isolation (core não referenciado)
 /// - Core density (bônus estrutural)
 ///
-/// O cálculo também aplica atenuações para tipos especiais de módulo:
+/// Importante:
+/// - Todos os módulos são penalizados por zombies.
+/// - Apenas módulos arquiteturalmente relevantes recebem penalização
+///   completa de coupling.
+///
+/// Alguns módulos possuem características estruturais específicas:
 ///
 /// Composition Root
 ///     Normalmente possui alto fan-out (registro de dependências).
 ///     Penalidade de coupling é fortemente reduzida.
 ///
-/// Infrastructure
-///     Naturalmente depende de múltiplos módulos.
-///     Penalidade de coupling é parcialmente reduzida.
+/// Infrastructure / Tooling
+///     Dependem naturalmente de múltiplos módulos.
+///     Penalidade de coupling é reduzida ou ignorada.
 ///
-/// A normalização de tipos evita explosões em módulos pequenos
-/// (ex: Program.cs com apenas 1 classe).
+/// Observação:
+/// A identificação desses módulos é heurística (baseada no nome do
+/// módulo/folder). Portanto, a análise de coupling nesses casos
+/// deve ser interpretada com cautela.
 /// </summary>
 public static class ArchitecturalScoreCalculator
 {
+    private const double MAX_COUPLING_PENALTY = 50;
+
     public static double Calculate(
         string module,
         int totalTypes,
@@ -1220,13 +1553,6 @@ public static class ArchitecturalScoreCalculator
         if (totalTypes == 0)
             return 100;
 
-        // -------------------------------------------------
-        // Normalização estrutural
-        // -------------------------------------------------
-        // Evita explosões de penalidade em módulos com poucas classes.
-        // Exemplo clássico: Program.cs (1 tipo, alto fan-out).
-        // -------------------------------------------------
-
         double normalizedTypes = Math.Max(totalTypes, 3);
 
         double zombieRate = unresolvedCount / normalizedTypes;
@@ -1234,42 +1560,29 @@ public static class ArchitecturalScoreCalculator
         double couplingRate = fanOut / normalizedTypes;
         double coreDensity = coreTypes / normalizedTypes;
 
-        // -------------------------------------------------
-        // Ajustes estruturais por tipo de módulo
-        // -------------------------------------------------
-
         if (IsCompositionRoot(module))
         {
-            // Composition roots registram dependências,
-            // portanto fan-out alto é esperado.
             couplingRate *= 0.10;
-
-            // Zombie detection também é menos relevante aqui
             zombieRate *= 0.50;
         }
         else if (IsInfrastructure(module))
         {
-            // Infraestrutura depende naturalmente de outros módulos
             couplingRate *= 0.50;
         }
+        else if (IsToolingModule(module))
+        {
+            couplingRate = 0;
+        }
 
-        // -------------------------------------------------
-        // Penalidades base
-        // -------------------------------------------------
+        double rawCouplingPenalty = couplingRate * 30;
 
-        double couplingPenalty = couplingRate * 30;
+        // ?? Correção principal
+        double couplingPenalty = Math.Min(rawCouplingPenalty, MAX_COUPLING_PENALTY);
+
         double zombiePenalty = zombieRate * 25;
         double isolationPenalty = isolationRate * 20;
 
-        // -------------------------------------------------
-        // Bônus estrutural
-        // -------------------------------------------------
-
         double coreBonus = coreDensity * 15;
-
-        // -------------------------------------------------
-        // Score final
-        // -------------------------------------------------
 
         var score =
             100
@@ -1278,63 +1591,42 @@ public static class ArchitecturalScoreCalculator
             - isolationPenalty
             + coreBonus;
 
-        return Math.Max(0, Math.Min(100, score));
+        return Math.Clamp(score, 0, 100);
     }
 
-    // -------------------------------------------------
-    // Heurísticas de identificação de módulos
-    // -------------------------------------------------
-
-    /// <summary>
-    /// Detecta Composition Roots.
-    ///
-    /// Exemplos:
-    /// Program
-    /// Program.cs
-    /// RaizComposicao
-    /// CompositionRoot
-    /// Bootstrap
-    /// Startup
-    ///
-    /// Esses módulos normalmente:
-    /// - possuem alto fan-out
-    /// - possuem baixo fan-in
-    /// - registram dependências (DI)
-    /// </summary>
-    private static bool IsCompositionRoot(string module)
+    internal static bool IsCompositionRoot(string module)
     {
         if (string.IsNullOrWhiteSpace(module))
             return false;
-
-        module = module.Trim();
 
         return module.Contains("Program", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Raiz", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Composicao", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Composition", StringComparison.OrdinalIgnoreCase)
             || module.Contains("Bootstrap", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Startup", StringComparison.OrdinalIgnoreCase);
+            || module.Contains("Startup", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Composition", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Raiz", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>
-    /// Detecta módulos de infraestrutura.
-    ///
-    /// Infraestrutura normalmente:
-    /// - depende de múltiplos módulos
-    /// - contém adaptadores, exportadores, IO
-    /// - não representa domínio central
-    ///
-    /// Penalidade de coupling é reduzida.
-    /// </summary>
-    private static bool IsInfrastructure(string module)
+    internal static bool IsInfrastructure(string module)
     {
         if (string.IsNullOrWhiteSpace(module))
             return false;
 
-        module = module.Trim();
-
         return module.Equals("Infrastructure", StringComparison.OrdinalIgnoreCase)
-            || module.Equals("Infra", StringComparison.OrdinalIgnoreCase);
+            || module.Equals("Infra", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Infraestrutura", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool IsToolingModule(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        return module.Equals("CLI", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Execution", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Exporters", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Exporter", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Statistics", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Debug", StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -1646,6 +1938,8 @@ namespace RefactorScope.Core.Model
             Tipos = tipos;
             Referencias = referencias;
         }
+
+
     }
 }
 
@@ -1837,6 +2131,9 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestrat
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Estimation.Models;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Estimation;
 
 namespace RefactorScope.Core.Orchestration
 {
@@ -1862,7 +2159,9 @@ namespace RefactorScope.Core.Orchestration
         /// Atualiza o contexto incrementalmente para suportar
         /// dependência entre analisadores (two-pass model).
         /// </summary>
-        public ConsolidatedReport Execute(AnalysisContext context)
+        public ConsolidatedReport Execute(
+    AnalysisContext context,
+    StatisticsReport? statistics = null)
         {
             var activeResults = new List<IAnalysisResult>();
 
@@ -1873,21 +2172,38 @@ namespace RefactorScope.Core.Orchestration
 
                 var result = analyzer.Analyze(context);
 
-                // ?? Atualiza contexto incrementalmente
                 activeResults.Add(result);
+
+                // ?? Atualiza contexto incrementalmente
                 context.Results = activeResults;
             }
 
-            // ?? Threshold oficial da análise
             var zombieThreshold =
-                context.Config.StructuralCandidateDetection.MinUnresolvedProbabilityThreshold;
+                context.Config.StructuralCandidateDetection
+                    .MinUnresolvedProbabilityThreshold;
 
-            return new ConsolidatedReport(
+            var report = new ConsolidatedReport(
                 activeResults,
                 context.ExecutionTime,
                 context.Config.RootPath,
                 zombieThreshold
             );
+
+            // -------------------------------------------------
+            // Effort Estimation Phase
+            // -------------------------------------------------
+
+            if (statistics != null && context.Config.Estimator?.Enabled == true)
+            {
+                var estimate = EffortEstimator.Estimate(context, report);
+
+                // adiciona ao contexto para exporters / dashboards
+                activeResults.Add(new EffortEstimateResult(estimate));
+
+                context.Results = activeResults;
+            }
+
+            return report;
         }
 
         /// <summary>
@@ -1908,6 +2224,374 @@ namespace RefactorScope.Core.Orchestration
             return enabled;
         }
     }
+}
+
+
+==========================================
+ARQUIVO: ParserExecutionStats.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\ParserExecutionStats.cs
+==========================================
+using System;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Contém métricas de execução de um parser.
+/// 
+/// Estas métricas são utilizadas para:
+/// - Observabilidade do pipeline de parsing
+/// - Benchmark entre diferentes parsers
+/// - Diagnóstico de performance
+/// - Futuro auto-tuning de parsers
+/// </summary>
+public record ParserExecutionStats(
+    /// <summary>
+    /// Tempo total de execução do parser.
+    /// </summary>
+    TimeSpan ExecutionTime,
+
+    /// <summary>
+    /// Estimativa de memória utilizada durante o parsing (em bytes).
+    /// </summary>
+    long EstimatedMemoryBytes,
+
+    /// <summary>
+    /// Indica se foi detectada alguma anomalia estrutural durante o parsing.
+    /// </summary>
+    bool AnomalyDetected
+);
+
+
+==========================================
+ARQUIVO: ParserResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\ParserResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using System;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Implementação padrão imutável do envelope de resultado de parsing.
+/// 
+/// Este objeto encapsula todas as informações produzidas por um parser:
+/// - estado da execução
+/// - nível de confiança
+/// - plausibilidade estrutural
+/// - métricas de execução
+/// - exceções capturadas
+/// </summary>
+public record ParserResult(
+    /// <summary>
+    /// Status final da operação de parsing.
+    /// </summary>
+    ParseStatus Status,
+
+    /// <summary>
+    /// Indica se o modelo gerado passou na verificação de plausibilidade.
+    /// </summary>
+    bool IsPlausible,
+
+    /// <summary>
+    /// Índice de confiança da extração (0.0 a 1.0).
+    /// </summary>
+    double Confidence,
+
+    /// <summary>
+    /// Nome identificador do parser que gerou este resultado.
+    /// </summary>
+    string ParserName,
+
+    /// <summary>
+    /// Modelo estrutural extraído do código.
+    /// Pode ser null em caso de falha total.
+    /// </summary>
+    ModeloEstrutural? Model,
+
+    bool UsedFallback = false,
+
+    /// <summary>
+    /// Estatísticas de execução do parser.
+    /// </summary>
+    ParserExecutionStats? Stats = null,
+
+    /// <summary>
+    /// Exceção capturada durante a execução do parser, se houver.
+    /// </summary>
+    Exception? Error = null
+) : IParserResult;
+
+
+==========================================
+ARQUIVO: ParserSelector.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\ParserSelector.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing.Enum;
+using RefactorScope.Parsers.Common;
+using RefactorScope.Parsers.CsharpParsers;
+using RefactorScope.Parsers.Hybrid;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Responsável por resolver qual parser será utilizado.
+/// 
+/// Pode operar em dois modos:
+/// - Configuração direta
+/// - Seleção interativa via CLI
+/// </summary>
+public static class ParserSelector
+{
+    public static IParserCodigo ResolveParser(
+        string? configParserName,
+        bool interactive)
+    {
+        ParserStrategy strategy;
+
+        if (interactive)
+        {
+            strategy = PromptStrategy();
+        }
+        else if (!System.Enum.TryParse<ParserStrategy>(
+                    configParserName,
+                    true,
+                    out strategy))
+        {
+            Console.WriteLine(
+                $"[WARN] Estratégia de parser '{configParserName}' inválida. Usando Selective.");
+
+            strategy = ParserStrategy.Selective;
+        }
+
+        return Build(strategy);
+    }
+
+    private static ParserStrategy PromptStrategy()
+    {
+        Console.WriteLine();
+        Console.WriteLine("?? Parser Selection");
+        Console.WriteLine("------------------------------------------------");
+        Console.WriteLine("1) Fast Scan (Regex)");
+        Console.WriteLine("2) Accurate Scan (Selective)");
+        Console.WriteLine("3) Adaptive (Experimental)");
+        Console.WriteLine("4) Incremental (Experimental)");
+        Console.WriteLine();
+
+        Console.Write("Select parser [1-4] (default 2): ");
+
+        var input = Console.ReadLine()?.Trim();
+
+        return input switch
+        {
+            "1" => ParserStrategy.RegexFast,
+            "3" => ParserStrategy.AdaptiveExperimental,
+            "4" => ParserStrategy.IncrementalExperimental,
+            _ => ParserStrategy.Selective
+        };
+    }
+
+    private static IParserCodigo Build(ParserStrategy strategy)
+    {
+        return strategy switch
+        {
+            ParserStrategy.RegexFast => BuildRegex(),
+            ParserStrategy.Selective => BuildSelective(),
+            ParserStrategy.AdaptiveExperimental => BuildAdaptive(),
+            ParserStrategy.IncrementalExperimental => BuildIncremental(),
+            _ => BuildSelective()
+        };
+    }
+
+    private static IParserCodigo BuildRegex()
+    {
+        var provider = BuildSourceProvider();
+        return new CSharpRegexParser(provider);
+    }
+
+    private static IParserCodigo BuildTextual()
+    {
+        var provider = BuildSourceProvider();
+
+        return new CSharpTextualParser(
+            provider,
+            msg => Console.WriteLine($"[WARN][Textual] {msg}")
+        );
+    }
+
+    private static IParserCodigo BuildSelective()
+    {
+        return new HybridSelectiveParser(
+            BuildRegex(),
+            BuildTextual(),
+            msg => Console.WriteLine($"[Selective] {msg}")
+        );
+    }
+
+    private static IParserCodigo BuildAdaptive()
+    {
+        return new HybridAdaptiveParser(
+            BuildRegex(),
+            BuildTextual(),
+            msg => Console.WriteLine($"[Adaptive] {msg}")
+        );
+    }
+
+    private static IParserCodigo BuildIncremental()
+    {
+        return new HybridIncrementalParser(
+            BuildRegex(),
+            BuildTextual(),
+            msg => Console.WriteLine($"[Incremental] {msg}")
+        );
+    }
+
+    private static SanitizedSourceProvider BuildSourceProvider()
+    {
+        IPreParser preParser = new CSharpPreParser();
+        return new SanitizedSourceProvider(preParser);
+    }
+}
+
+
+==========================================
+ARQUIVO: PlausibilityEvaluator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\PlausibilityEvaluator.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using System.Linq;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Avaliador heurístico projetado para detectar falhas silenciosas em parsers 
+/// (ex: retornar um modelo válido, porém vazio ou estatisticamente improvável).
+/// </summary>
+public static class PlausibilityEvaluator
+{
+    /// <summary>
+    /// Avalia se o modelo estrutural gerado faz sentido considerando o volume de código processado.
+    /// </summary>
+    /// <param name="model">O modelo estrutural a ser avaliado.</param>
+    /// <returns>True se o modelo é plausível; False se parece ser lixo silencioso.</returns>
+    public static bool Evaluate(ModeloEstrutural model)
+    {
+        if (model == null || model.Arquivos == null || !model.Arquivos.Any())
+            return false;
+
+        int totalLines = 0;
+        int totalTipos = model.Tipos?.Count ?? 0;
+
+        foreach (var arquivo in model.Arquivos)
+        {
+            if (!string.IsNullOrEmpty(arquivo.SourceCode))
+            {
+                // Otimização: Evita alocações massivas na LOH (Large Object Heap) que ocorreriam com .Split('\n')
+                totalLines += arquivo.SourceCode.Count(c => c == '\n') + 1;
+            }
+        }
+
+        // Heurística de exemplo: Se tem mais de 500 linhas de código e 0 tipos extraídos, 
+        // o parser (provavelmente regex) engoliu o código sem quebrar, mas falhou na extração.
+        if (totalLines > 500 && totalTipos == 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+
+==========================================
+ARQUIVO: SanitizedSourceProvider.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\SanitizedSourceProvider.cs
+==========================================
+using System.IO;
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Parsing
+{
+    /// <summary>
+    /// Provedor de código fonte sanitizado.
+    ///
+    /// Centraliza a leitura de arquivos e a aplicação
+    /// de um PreParser antes do parsing estrutural.
+    /// </summary>
+    public sealed class SanitizedSourceProvider
+    {
+        private readonly IPreParser preParser;
+
+        public SanitizedSourceProvider(IPreParser preParser)
+        {
+            this.preParser = preParser;
+        }
+
+        public string Read(string path)
+        {
+            var source = File.ReadAllText(path);
+            return preParser.Sanitize(source);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ParserStrategy.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Enum\ParserStrategy.cs
+==========================================
+namespace RefactorScope.Core.Parsing.Enum;
+
+/// <summary>
+/// Define as estratégias disponíveis para parsing do código.
+///
+/// A estratégia controla qual motor principal será utilizado
+/// para construir o modelo estrutural do projeto.
+///
+/// O design é modular para permitir experimentação e evolução
+/// futura (ex.: SharpParse).
+/// </summary>
+public enum ParserStrategy
+{
+    /// <summary>
+    /// Parser baseado exclusivamente em Regex.
+    /// 
+    /// Mais rápido, porém menos resiliente para sintaxes modernas
+    /// ou construções complexas de C#.
+    /// </summary>
+    RegexFast,
+
+    /// <summary>
+    /// Parser híbrido seletivo.
+    ///
+    /// O sistema classifica previamente as classes e decide
+    /// qual engine utilizar:
+    ///
+    /// - Textual ? classes seguras
+    /// - Regex ? classes complexas
+    /// - PatternSimilarity ? fallback
+    ///
+    /// Estratégia padrão recomendada.
+    /// </summary>
+    Selective,
+
+    /// <summary>
+    /// Parser adaptativo experimental.
+    ///
+    /// O sistema tenta ajustar heurísticas dinamicamente
+    /// baseado nos resultados de parsing.
+    /// </summary>
+    AdaptiveExperimental,
+
+    /// <summary>
+    /// Parser incremental experimental.
+    ///
+    /// Utilizado para parsing parcial de projetos grandes
+    /// onde apenas arquivos alterados são reprocessados.
+    /// </summary>
+    IncrementalExperimental
 }
 
 
@@ -2178,6 +2862,144 @@ namespace RefactorScope.Core.Patterns
 
 
             return PatternSignatureResult.None();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: AnalyzerStep.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Pipeline\AnalyzerStep.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+
+namespace RefactorScope.Core.Pipeline
+{
+    public class AnalyzerStep : IPipelineStep
+    {
+        private readonly IAnalyzer _analyzer;
+
+        public AnalyzerStep(IAnalyzer analyzer)
+        {
+            _analyzer = analyzer;
+        }
+
+        public string Name => _analyzer.Name;
+
+        public void Execute(AnalysisContext context)
+        {
+            var result = _analyzer.Analyze(context);
+
+            var results = context.Results.ToList();
+            results.Add(result);
+
+            context.Results = results;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: EstimationStep.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Pipeline\EstimationStep.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+using RefactorScope.Estimation;
+
+namespace RefactorScope.Core.Pipeline
+{
+    /// <summary>
+    /// Executa o EffortEstimator no pipeline.
+    /// </summary>
+    public class EstimationStep : IPipelineStep
+    {
+        public string Name => "RefactorEffort";
+
+        public void Execute(AnalysisContext context)
+        {
+            var statsResult =
+                context.GetResult<StatisticsResult>();
+
+            if (statsResult == null)
+                return;
+
+            var threshold =
+                context.Config.StructuralCandidateDetection
+                .MinUnresolvedProbabilityThreshold;
+
+            var consolidated =
+                new ConsolidatedReport(
+                    context.Results.ToList(),
+                    context.ExecutionTime,
+                    context.Config.RootPath,
+                    threshold
+                );
+
+            var estimate =
+                EffortEstimator.Estimate(
+                    context,
+                    consolidated
+                );
+
+            var results = context.Results.ToList();
+
+            results.Add(new EffortEstimateResult(estimate));
+
+            context.Results = results;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StatisticsStep.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Pipeline\StatisticsStep.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+using RefactorScope.Statistics.Engines;
+
+namespace RefactorScope.Core.Pipeline
+{
+    /// <summary>
+    /// Executa a camada estatística do RefactorScope.
+    /// </summary>
+    public class StatisticsStep : IPipelineStep
+    {
+        public string Name => "Statistics";
+
+        public void Execute(AnalysisContext context)
+        {
+            var zombieThreshold =
+                context.Config.StructuralCandidateDetection
+                .MinUnresolvedProbabilityThreshold;
+
+            // recria relatório consolidado a partir do contexto atual
+            var report = new ConsolidatedReport(
+                context.Results,
+                context.ExecutionTime,
+                context.Config.RootPath,
+                zombieThreshold
+            );
+
+            var stats = ValidationEngine.RunSafely(
+                context,
+                report,
+                Infrastructure.CrashLogger.Log
+            );
+
+            if (stats == null)
+                return;
+
+            var results = context.Results.ToList();
+
+            results.Add(new StatisticsResult(stats));
+
+            context.Results = results;
         }
     }
 }
@@ -2542,6 +3364,32 @@ namespace RefactorScope.Core.Results
 
 
 ==========================================
+ARQUIVO: EffortEstimateResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\EffortEstimateResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Estimation.Models;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da estimativa de esforço de refatoração.
+    /// </summary>
+    public class EffortEstimateResult : IAnalysisResult
+    {
+        public string Name => "RefactorEffort";
+
+        public EffortEstimate Estimate { get; }
+
+        public EffortEstimateResult(EffortEstimate estimate)
+        {
+            Estimate = estimate;
+        }
+    }
+}
+
+
+==========================================
 ARQUIVO: EntryPointHeuristicResult.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\EntryPointHeuristicResult.cs
 ==========================================
@@ -2662,6 +3510,32 @@ namespace RefactorScope.Core.Results
         public ProjectStructureResult(IEnumerable<string> lines)
         {
             Lines = lines.ToList();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StatisticsResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StatisticsResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Statistics.Models;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado do módulo de estatísticas.
+    /// </summary>
+    public class StatisticsResult : IAnalysisResult
+    {
+        public string Name => "Statistics";
+
+        public StatisticsReport Report { get; }
+
+        public StatisticsResult(StatisticsReport report)
+        {
+            Report = report;
         }
     }
 }

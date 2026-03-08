@@ -1,6 +1,6 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
 DumpStrategyResolver,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
-ISegmentationResolver,RefactorScope,Aplicação,5,DriftArquitetural,0,0,0,0
+ISegmentationResolver,RefactorScope,Aplicação,4,DriftArquitetural,0,0,0,0
 LayerSegmentationResolver,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 SegmentScope,RefactorScope,Aplicação,8,DriftArquitetural,0,0,0,0
 TopFolderSegmentationResolver,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0

@@ -1,18 +1,29 @@
-﻿using System;
+﻿using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+using RefactorScope.Core.Scope;
+using RefactorScope.Parsers.Common;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using RefactorScope.Core.Abstractions;
-using RefactorScope.Core.Parsing;
-using RefactorScope.Core.Model;
-using RefactorScope.Core.Scope;
 
 namespace RefactorScope.Parsers.CsharpParsers
 {
     /// <summary>
-    /// Higienizador lexical simplificado para código C#.
+    /// Higienizador lexical incremental para parsing linha-a-linha.
+    ///
+    /// O PreParser já remove comentários e strings no nível de arquivo.
+    /// Este higienizador atua apenas como proteção incremental
+    /// durante parsing streaming.
+    ///
+    /// Resolve principalmente:
+    ///
+    /// • comentários multilinha que atravessam linhas
+    /// • fragmentos residuais de comentário
+    /// • ruído estrutural mínimo
     /// </summary>
     public class HigienizadorLexico
     {
@@ -23,8 +34,6 @@ namespace RefactorScope.Parsers.CsharpParsers
             if (string.IsNullOrWhiteSpace(line))
                 return string.Empty;
 
-            line = Regex.Replace(line, "\"(?:\\\\.|[^\"])*\"", "\"\"");
-
             if (insideBlockComment)
             {
                 int end = line.IndexOf("*/");
@@ -33,6 +42,7 @@ namespace RefactorScope.Parsers.CsharpParsers
                     insideBlockComment = false;
                     return CleanLine(line.Substring(end + 2));
                 }
+
                 return string.Empty;
             }
 
@@ -40,17 +50,16 @@ namespace RefactorScope.Parsers.CsharpParsers
             if (startBlock != -1)
             {
                 int endBlock = line.IndexOf("*/", startBlock + 2);
+
                 if (endBlock != -1)
                 {
                     string before = line.Substring(0, startBlock);
                     string after = line.Substring(endBlock + 2);
                     return CleanLine(before + " " + after);
                 }
-                else
-                {
-                    insideBlockComment = true;
-                    return CleanLine(line.Substring(0, startBlock));
-                }
+
+                insideBlockComment = true;
+                return line.Substring(0, startBlock);
             }
 
             int lineComment = line.IndexOf("//");
@@ -63,182 +72,238 @@ namespace RefactorScope.Parsers.CsharpParsers
 
     /// <summary>
     /// Parser textual estrutural para código C#.
-    /// Agora envelopado pela arquitetura de ParseResult para segurança e telemetria.
+    ///
+    /// Estratégia geral:
+    ///
+    ///     File
+    ///        ↓
+    ///     PreParser
+    ///        ↓
+    ///     TextualParser
+    ///        ↓
+    ///     HigienizadorLexico
+    ///        ↓
+    ///     Parsing estrutural
+    ///
+    /// Caso ocorra desbalanceamento de chaves:
+    ///
+    ///     TextualParser
+    ///         ↓
+    ///     HeuristicFix
+    ///         ↓
+    ///     RegexFallback (escopo da classe)
+    ///         ↓
+    ///     Parsing continua normalmente
+    ///
+    /// O RegexFallback NÃO reanalisa o arquivo inteiro.
+    /// Ele atua apenas no trecho da classe atual.
+    ///
+    /// Isso evita:
+    /// - repetição do HybridParser
+    /// - aumento de complexidade
+    /// - perda de performance
+    ///
+    /// O objetivo do HeuristicFix é apenas reduzir parte
+    /// dos erros de escopo, não resolvê-los completamente.
+    /// O restante é tratado pelo RegexFallback.
     /// </summary>
-    public class CSharpTextualParser : IParserCodigo
-    {
-        public string Name => "CSharpTextual";
 
-        private readonly Action<string>? warn;
-
-        public CSharpTextualParser(Action<string>? warningCallback = null)
+        public class CSharpTextualParser : IParserCodigo
         {
-            warn = warningCallback;
-        }
+            public string Name => "CSharpTextual";
 
-        // Regex de estrutura
-        private static readonly Regex TypeRegex = new(@"\b(class|interface|record|struct)\s+([A-Z][A-Za-z0-9_]*)\b", RegexOptions.Compiled);
-        private static readonly Regex NamespaceRegex = new(@"\bnamespace\s+([\w\.]+)\b", RegexOptions.Compiled);
+            private readonly SanitizedSourceProvider sourceProvider;
+            private readonly Action<string>? warn;
 
-        // Regex de evidência
-        private static readonly Regex GenericRegex = new(@"<\s*([A-Za-z_][A-Za-z0-9_]*)\s*>", RegexOptions.Compiled);
-        private static readonly Regex TypeofRegex = new(@"typeof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)", RegexOptions.Compiled);
-        private static readonly Regex NameofRegex = new(@"nameof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)", RegexOptions.Compiled);
-        private static readonly Regex NewInstanceRegex = new(@"new\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", RegexOptions.Compiled);
-        private static readonly Regex StaticCallRegex = new(@"\b([A-Za-z_][A-Za-z0-9_]*)\s*\.", RegexOptions.Compiled);
-        private static readonly Regex DeclarationRegex = new(@"\b([A-Za-z_][A-Za-z0-9_]*)\s+[A-Za-z_][A-Za-z0-9_]*\s*(=|;)", RegexOptions.Compiled);
-        private static readonly Regex WordRegex = new(@"\b[A-Za-z_][A-Za-z0-9_]*\b", RegexOptions.Compiled);
-
-        public IParserResult Parse(
-            string rootPath,
-            IEnumerable<string>? include = null,
-            IEnumerable<string>? exclude = null)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            long initialMemory = GC.GetTotalMemory(false);
-
-            try
+            public CSharpTextualParser(
+                SanitizedSourceProvider sourceProvider,
+                Action<string>? warningCallback = null)
             {
-                var scope = new ScopeRuleSet(include, exclude);
+                this.sourceProvider = sourceProvider;
+                warn = warningCallback;
+            }
 
-                var arquivos = new List<ArquivoInfo>();
-                var tiposGlobais = new List<TipoInfo>();
-                var referenciasGlobais = new List<ReferenciaInfo>();
+            public CSharpTextualParser(Action<string>? warningCallback = null)
+            {
+                sourceProvider = new SanitizedSourceProvider(new CSharpPreParser());
+                warn = warningCallback;
+            }
 
-                var csFiles = Directory
-                    .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
-                    .Where(f => scope.IsInScope(rootPath, f))
-                    .ToList();
+            private static readonly Regex TypeRegex =
+                new(@"\b(class|interface|record|struct)\s+([A-Z][A-Za-z0-9_]*)\b",
+                    RegexOptions.Compiled);
 
-                // -------------------------------------------------
-                // PASSO 1 — Mapear todos os tipos do projeto
-                // -------------------------------------------------
-                foreach (var file in csFiles)
+            private static readonly Regex NamespaceRegex =
+                new(@"\bnamespace\s+([\w\.]+)\b",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex NewInstanceRegex =
+                new(@"new\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex StaticCallRegex =
+                new(@"\b([A-Za-z_][A-Za-z0-9_]*)\s*\.",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex GenericRegex =
+                new(@"<\s*([A-Za-z_][A-Za-z0-9_]*)\s*>",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex TypeofRegex =
+                new(@"typeof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex NameofRegex =
+                new(@"nameof\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)",
+                    RegexOptions.Compiled);
+
+            private static readonly Regex WordRegex =
+                new(@"\b[A-Za-z_][A-Za-z0-9_]*\b",
+                    RegexOptions.Compiled);
+
+            public IParserResult Parse(
+                string rootPath,
+                IEnumerable<string>? include = null,
+                IEnumerable<string>? exclude = null)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                long initialMemory = GC.GetTotalMemory(false);
+
+                try
                 {
-                    try
-                    {
-                        var relative = Path.GetRelativePath(rootPath, file);
-                        tiposGlobais.AddRange(MapearTipos(file, relative));
-                    }
-                    catch (Exception ex)
-                    {
-                        warn?.Invoke($"Parser ignorou arquivo '{Path.GetFileName(file)}': {ex.Message}");
-                    }
-                }
+                    var scope = new ScopeRuleSet(include, exclude);
 
-                var nomesTipos = tiposGlobais.Select(t => t.Name).ToHashSet();
+                    var arquivos = new List<ArquivoInfo>();
+                    var tiposGlobais = new List<TipoInfo>();
+                    var referenciasGlobais = new List<ReferenciaInfo>();
 
-                // -------------------------------------------------
-                // PASSO 2 — Extrair referências
-                // -------------------------------------------------
-                foreach (var file in csFiles)
-                {
-                    try
-                    {
-                        referenciasGlobais.AddRange(ExtrairReferencias(file, nomesTipos));
-                    }
-                    catch (Exception ex)
-                    {
-                        warn?.Invoke($"Falha ao analisar referências em '{Path.GetFileName(file)}': {ex.Message}");
-                    }
-                }
-
-                // -------------------------------------------------
-                // PASSO 3 — Consolidar modelo
-                // -------------------------------------------------
-                foreach (var tipo in tiposGlobais)
-                {
-                    var refs = referenciasGlobais
-                        .Where(r => r.FromType == tipo.Name)
+                    var csFiles = System.IO.Directory
+                        .GetFiles(rootPath, "*.cs", System.IO.SearchOption.AllDirectories)
+                        .Where(f => scope.IsInScope(rootPath, f))
                         .ToList();
 
-                    typeof(TipoInfo)
-                        .GetField("<References>k__BackingField",
-                        System.Reflection.BindingFlags.Instance |
-                        System.Reflection.BindingFlags.NonPublic)
-                        ?.SetValue(tipo, refs);
-                }
+                    foreach (var file in csFiles)
+                    {
+                        var relative = System.IO.Path.GetRelativePath(rootPath, file);
+                        tiposGlobais.AddRange(MapearTipos(file, relative));
+                    }
 
-                foreach (var file in csFiles)
+                    var nomesTipos = tiposGlobais.Select(t => t.Name).ToHashSet();
+
+                    foreach (var file in csFiles)
+                    {
+                        referenciasGlobais.AddRange(
+                            ExtrairReferencias(file, nomesTipos));
+                    }
+
+                    foreach (var tipo in tiposGlobais)
+                    {
+                        var refs = referenciasGlobais
+                            .Where(r => r.FromType == tipo.Name)
+                            .ToList();
+
+                        typeof(TipoInfo)
+                            .GetField("<References>k__BackingField",
+                            System.Reflection.BindingFlags.Instance |
+                            System.Reflection.BindingFlags.NonPublic)
+                            ?.SetValue(tipo, refs);
+                    }
+
+                    foreach (var file in csFiles)
+                    {
+                        var relative = System.IO.Path.GetRelativePath(rootPath, file);
+                        var tiposArquivo = tiposGlobais.Where(t => t.DeclaredInFile == relative).ToList();
+
+                        string source = sourceProvider.Read(file);
+                        string ns = tiposArquivo.FirstOrDefault()?.Namespace ?? "Global";
+
+                        arquivos.Add(new ArquivoInfo(relative, ns, source, tiposArquivo));
+                    }
+
+                    var modeloGerado =
+                        new ModeloEstrutural(rootPath, arquivos, tiposGlobais, referenciasGlobais);
+
+                    stopwatch.Stop();
+
+                    long memoryUsed = GC.GetTotalMemory(false) - initialMemory;
+
+                    bool isPlausible =
+                        PlausibilityEvaluator.Evaluate(modeloGerado);
+
+                    var status =
+                        isPlausible ? ParseStatus.Success : ParseStatus.PlausibilityWarning;
+
+                    var stats =
+                        new ParserExecutionStats(stopwatch.Elapsed, memoryUsed, !isPlausible);
+
+                    return new ParserResult(
+                        status,
+                        isPlausible,
+                        isPlausible ? 0.95 : 0.40,
+                        Name,
+                        modeloGerado,
+                        false,
+                        stats
+                    );
+                }
+                catch (Exception ex)
                 {
-                    var relative = Path.GetRelativePath(rootPath, file);
-                    var tiposArquivo = tiposGlobais.Where(t => t.DeclaredInFile == relative).ToList();
-                    string source = File.ReadAllText(file);
-                    string ns = tiposArquivo.FirstOrDefault()?.Namespace ?? "Global";
+                    stopwatch.Stop();
 
-                    arquivos.Add(new ArquivoInfo(relative, ns, source, tiposArquivo));
+                    return new ParserResult(
+                        ParseStatus.Failed,
+                        false,
+                        0,
+                        Name,
+                        null,
+                        false,
+                        new ParserExecutionStats(stopwatch.Elapsed, 0, true),
+                        ex);
                 }
-
-                var modeloGerado = new ModeloEstrutural(rootPath, arquivos, tiposGlobais, referenciasGlobais);
-
-                // =====================================================
-                // 4️⃣ Finalização e Observabilidade
-                // =====================================================
-                stopwatch.Stop();
-                long memoryUsed = GC.GetTotalMemory(false) - initialMemory;
-
-                bool isPlausible = PlausibilityEvaluator.Evaluate(modeloGerado);
-                var status = isPlausible ? ParseStatus.Success : ParseStatus.PlausibilityWarning;
-
-                var stats = new ParserExecutionStats(stopwatch.Elapsed, memoryUsed, !isPlausible);
-
-                // Confiança maior no Textual Parser devido à higienização
-                double confidence = isPlausible ? 0.95 : 0.40;
-
-                return new ParserResult(
-                Status: status,
-                IsPlausible: isPlausible,
-                Confidence: confidence,
-                ParserName: Name,
-                Model: modeloGerado,
-                UsedFallback: false,
-                Stats: stats
-            );
             }
-            catch (Exception ex)
+
+            private List<TipoInfo> MapearTipos(string path, string relative)
             {
-                stopwatch.Stop();
-                var stats = new ParserExecutionStats(stopwatch.Elapsed, 0, true);
-                return new ParserResult(ParseStatus.Failed, false, 0.0, Name, null, false, stats, ex);
-            }
-        }
+                var tipos = new List<TipoInfo>();
+                var hig = new HigienizadorLexico();
 
-        private List<TipoInfo> MapearTipos(string path, string relative)
-        {
-            var tipos = new List<TipoInfo>();
-            var hig = new HigienizadorLexico();
-            string ns = "Global";
+                string ns = "Global";
 
-            foreach (var line in File.ReadLines(path))
-            {
-                if (line.Contains("AppendLine(@\"") || line.Contains("Append(@\""))
-                    continue;
+                var source = sourceProvider.Read(path);
+                var lines = source.Split('\n');
 
-                string clean = hig.CleanLine(line);
-                if (string.IsNullOrEmpty(clean))
-                    continue;
-
-                var nsMatch = NamespaceRegex.Match(clean);
-                if (nsMatch.Success)
+                foreach (var raw in lines)
                 {
-                    ns = nsMatch.Groups[1].Value;
-                    continue;
+                    var line = hig.CleanLine(raw);
+
+                    if (string.IsNullOrEmpty(line))
+                        continue;
+
+                    var nsMatch = NamespaceRegex.Match(line);
+                    if (nsMatch.Success)
+                    {
+                        ns = nsMatch.Groups[1].Value;
+                        continue;
+                    }
+
+                    var typeMatch = TypeRegex.Match(line);
+                    if (typeMatch.Success)
+                    {
+                        tipos.Add(new TipoInfo(
+                            typeMatch.Groups[2].Value,
+                            ns,
+                            typeMatch.Groups[1].Value,
+                            relative,
+                            new List<ReferenciaInfo>()));
+                    }
                 }
 
-                var typeMatch = TypeRegex.Match(clean);
-                if (typeMatch.Success)
-                {
-                    tipos.Add(new TipoInfo(
-                        typeMatch.Groups[2].Value,
-                        ns,
-                        typeMatch.Groups[1].Value,
-                        relative,
-                        new List<ReferenciaInfo>()));
-                }
+                return tipos;
             }
-            return tipos;
-        }
-        private List<ReferenciaInfo> ExtrairReferencias(string path, HashSet<string> tipos)
+
+        private List<ReferenciaInfo> ExtrairReferencias(
+ string path,
+ HashSet<string> tipos)
         {
             var refs = new List<ReferenciaInfo>();
             var hig = new HigienizadorLexico();
@@ -246,6 +311,12 @@ namespace RefactorScope.Parsers.CsharpParsers
             int braceLevel = 0;
             int typeBraceLevel = -1;
             string? currentType = null;
+            bool insideTypeScope = false; // NOVA FLAG: Garante que entramos no bloco antes de tentar sair
+
+            var classBuffer = new StringBuilder();
+
+            var source = sourceProvider.Read(path);
+            var lines = source.Split('\n');
 
             void AddReference(string from, string to, TipoReferencia kind)
             {
@@ -258,62 +329,93 @@ namespace RefactorScope.Parsers.CsharpParsers
                 }
             }
 
-            foreach (var line in File.ReadLines(path))
+            foreach (var raw in lines)
             {
-                string clean = hig.CleanLine(line);
-                if (string.IsNullOrEmpty(clean)) continue;
+                var line = hig.CleanLine(raw);
+                if (string.IsNullOrEmpty(line))
+                    continue;
 
-                braceLevel += clean.Count(c => c == '{');
-
-                var typeMatch = TypeRegex.Match(clean);
+                // -------------------------------------------------
+                // 1. Detectar declaração de tipo
+                // -------------------------------------------------
+                var typeMatch = TypeRegex.Match(line);
                 if (typeMatch.Success)
                 {
                     currentType = typeMatch.Groups[2].Value;
                     typeBraceLevel = braceLevel;
+                    insideTypeScope = false; // Resetamos a flag para a nova classe
+                    classBuffer.Clear();
                 }
 
-                if (clean.Contains("}"))
+                // -------------------------------------------------
+                // 2. Atualizar contagem de chaves e validar entrada
+                // -------------------------------------------------
+                int opens = line.Count(c => c == '{');
+                int closes = line.Count(c => c == '}');
+
+                braceLevel += opens;
+
+                // Se o nível subiu acima do baseline, confirmamos que entramos no corpo da classe
+                if (currentType != null && braceLevel > typeBraceLevel)
                 {
-                    braceLevel -= clean.Count(c => c == '}');
-
-                    if (currentType != null && braceLevel < typeBraceLevel)
-                    {
-                        currentType = null;
-                        typeBraceLevel = -1;
-                    }
+                    insideTypeScope = true;
                 }
 
-                if (currentType == null) continue;
+                if (currentType != null)
+                    classBuffer.AppendLine(line);
 
-                var fromType = currentType!;
+                braceLevel -= closes;
 
-                foreach (Match m in NewInstanceRegex.Matches(clean))
-                    AddReference(fromType, m.Groups[1].Value, TipoReferencia.Instantiation);
+                // -------------------------------------------------
+                // 3. Extrair referências PRIMEIRO
+                // -------------------------------------------------
+                if (currentType != null)
+                {
+                    var fromType = currentType;
 
-                foreach (Match m in StaticCallRegex.Matches(clean))
-                    AddReference(fromType, m.Groups[1].Value, TipoReferencia.StaticCall);
+                    foreach (Match m in NewInstanceRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Instantiation);
 
-                foreach (Match m in GenericRegex.Matches(clean))
-                    AddReference(fromType, m.Groups[1].Value, TipoReferencia.Generic);
+                    foreach (Match m in StaticCallRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.StaticCall);
 
-                foreach (Match m in TypeofRegex.Matches(clean))
-                    AddReference(fromType, m.Groups[1].Value, TipoReferencia.Typeof);
+                    foreach (Match m in GenericRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Generic);
 
-                foreach (Match m in NameofRegex.Matches(clean))
-                    AddReference(fromType, m.Groups[1].Value, TipoReferencia.Nameof);
+                    foreach (Match m in TypeofRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Typeof);
 
-                foreach (Match m in DeclarationRegex.Matches(clean))
-                    AddReference(fromType, m.Groups[1].Value, TipoReferencia.Declaration);
+                    foreach (Match m in NameofRegex.Matches(line))
+                        AddReference(fromType, m.Groups[1].Value, TipoReferencia.Nameof);
 
-                foreach (Match m in WordRegex.Matches(clean))
-                    AddReference(fromType, m.Value, TipoReferencia.Mention);
-            }
+                    foreach (Match m in WordRegex.Matches(line))
+                        AddReference(fromType, m.Value, TipoReferencia.Mention);
+                }
 
-            if (braceLevel != 0)
-            {
-                warn?.Invoke(
-                    $"Desbalanceamento de chaves detectado em '{Path.GetFileName(path)}'. " +
-                    $"O escopo de referências pode estar impreciso.");
+                // -------------------------------------------------
+                // 4. Verificar saída de escopo DEPOIS de extrair as referências
+                // -------------------------------------------------
+                if (currentType != null && insideTypeScope && braceLevel <= typeBraceLevel)
+                {
+                    if (braceLevel < typeBraceLevel)
+                    {
+                        warn?.Invoke(
+                            $"Desbalanceamento detectado ao sair de {currentType}. " +
+                            $"Esperado: {typeBraceLevel}, Atual: {braceLevel}");
+
+                        var recovered = RegexLocalRecovery.Recover(
+                            classBuffer.ToString(),
+                            currentType,
+                            tipos);
+
+                        refs.AddRange(recovered);
+                    }
+
+                    // Encerra o tracking desta classe
+                    currentType = null;
+                    typeBraceLevel = -1;
+                    insideTypeScope = false;
+                }
             }
 
             return refs;

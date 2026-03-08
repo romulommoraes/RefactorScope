@@ -1,3 +1,2 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
-ParserSelector,RefactorScope,UI,0,DriftArquitetural,1,0,0,0
 SelfAnalysisSelector,RefactorScope,UI,0,DriftArquitetural,1,0,0,0

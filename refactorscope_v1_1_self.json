@@ -11,7 +11,7 @@
     "refactorscope-self-analysis"
   ],
 
-  "parser": "HybridFailover",
+  "parser": "Selective",
 
   "parserOptions": {
     "enableInteractiveSelector": true,
@@ -20,6 +20,10 @@
   },
 
   "statistics": {
+    "enabled": true
+  },
+
+  "estimator": {
     "enabled": true
   },
 
@@ -49,7 +53,7 @@
     },
 
     "Core": {
-      "namespaceContains": [ "Core", "Analyzers", "Model", "Nucleo", "Limbic" ]
+      "namespaceContains": [ "Core", "Analyzers", "Model", "Nucleo" ]
     },
 
     "Infra": {

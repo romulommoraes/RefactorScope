@@ -10,21 +10,30 @@
 /// - Isolation (core não referenciado)
 /// - Core density (bônus estrutural)
 ///
-/// O cálculo também aplica atenuações para tipos especiais de módulo:
+/// Importante:
+/// - Todos os módulos são penalizados por zombies.
+/// - Apenas módulos arquiteturalmente relevantes recebem penalização
+///   completa de coupling.
+///
+/// Alguns módulos possuem características estruturais específicas:
 ///
 /// Composition Root
 ///     Normalmente possui alto fan-out (registro de dependências).
 ///     Penalidade de coupling é fortemente reduzida.
 ///
-/// Infrastructure
-///     Naturalmente depende de múltiplos módulos.
-///     Penalidade de coupling é parcialmente reduzida.
+/// Infrastructure / Tooling
+///     Dependem naturalmente de múltiplos módulos.
+///     Penalidade de coupling é reduzida ou ignorada.
 ///
-/// A normalização de tipos evita explosões em módulos pequenos
-/// (ex: Program.cs com apenas 1 classe).
+/// Observação:
+/// A identificação desses módulos é heurística (baseada no nome do
+/// módulo/folder). Portanto, a análise de coupling nesses casos
+/// deve ser interpretada com cautela.
 /// </summary>
 public static class ArchitecturalScoreCalculator
 {
+    private const double MAX_COUPLING_PENALTY = 50;
+
     public static double Calculate(
         string module,
         int totalTypes,
@@ -36,13 +45,6 @@ public static class ArchitecturalScoreCalculator
         if (totalTypes == 0)
             return 100;
 
-        // -------------------------------------------------
-        // Normalização estrutural
-        // -------------------------------------------------
-        // Evita explosões de penalidade em módulos com poucas classes.
-        // Exemplo clássico: Program.cs (1 tipo, alto fan-out).
-        // -------------------------------------------------
-
         double normalizedTypes = Math.Max(totalTypes, 3);
 
         double zombieRate = unresolvedCount / normalizedTypes;
@@ -50,42 +52,29 @@ public static class ArchitecturalScoreCalculator
         double couplingRate = fanOut / normalizedTypes;
         double coreDensity = coreTypes / normalizedTypes;
 
-        // -------------------------------------------------
-        // Ajustes estruturais por tipo de módulo
-        // -------------------------------------------------
-
         if (IsCompositionRoot(module))
         {
-            // Composition roots registram dependências,
-            // portanto fan-out alto é esperado.
             couplingRate *= 0.10;
-
-            // Zombie detection também é menos relevante aqui
             zombieRate *= 0.50;
         }
         else if (IsInfrastructure(module))
         {
-            // Infraestrutura depende naturalmente de outros módulos
             couplingRate *= 0.50;
         }
+        else if (IsToolingModule(module))
+        {
+            couplingRate = 0;
+        }
 
-        // -------------------------------------------------
-        // Penalidades base
-        // -------------------------------------------------
+        double rawCouplingPenalty = couplingRate * 30;
 
-        double couplingPenalty = couplingRate * 30;
+        // 🔧 Correção principal
+        double couplingPenalty = Math.Min(rawCouplingPenalty, MAX_COUPLING_PENALTY);
+
         double zombiePenalty = zombieRate * 25;
         double isolationPenalty = isolationRate * 20;
 
-        // -------------------------------------------------
-        // Bônus estrutural
-        // -------------------------------------------------
-
         double coreBonus = coreDensity * 15;
-
-        // -------------------------------------------------
-        // Score final
-        // -------------------------------------------------
 
         var score =
             100
@@ -94,62 +83,41 @@ public static class ArchitecturalScoreCalculator
             - isolationPenalty
             + coreBonus;
 
-        return Math.Max(0, Math.Min(100, score));
+        return Math.Clamp(score, 0, 100);
     }
 
-    // -------------------------------------------------
-    // Heurísticas de identificação de módulos
-    // -------------------------------------------------
-
-    /// <summary>
-    /// Detecta Composition Roots.
-    ///
-    /// Exemplos:
-    /// Program
-    /// Program.cs
-    /// RaizComposicao
-    /// CompositionRoot
-    /// Bootstrap
-    /// Startup
-    ///
-    /// Esses módulos normalmente:
-    /// - possuem alto fan-out
-    /// - possuem baixo fan-in
-    /// - registram dependências (DI)
-    /// </summary>
-    private static bool IsCompositionRoot(string module)
+    internal static bool IsCompositionRoot(string module)
     {
         if (string.IsNullOrWhiteSpace(module))
             return false;
-
-        module = module.Trim();
 
         return module.Contains("Program", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Raiz", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Composicao", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Composition", StringComparison.OrdinalIgnoreCase)
             || module.Contains("Bootstrap", StringComparison.OrdinalIgnoreCase)
-            || module.Contains("Startup", StringComparison.OrdinalIgnoreCase);
+            || module.Contains("Startup", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Composition", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Raiz", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>
-    /// Detecta módulos de infraestrutura.
-    ///
-    /// Infraestrutura normalmente:
-    /// - depende de múltiplos módulos
-    /// - contém adaptadores, exportadores, IO
-    /// - não representa domínio central
-    ///
-    /// Penalidade de coupling é reduzida.
-    /// </summary>
-    private static bool IsInfrastructure(string module)
+    internal static bool IsInfrastructure(string module)
     {
         if (string.IsNullOrWhiteSpace(module))
             return false;
 
-        module = module.Trim();
-
         return module.Equals("Infrastructure", StringComparison.OrdinalIgnoreCase)
-            || module.Equals("Infra", StringComparison.OrdinalIgnoreCase);
+            || module.Equals("Infra", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Infraestrutura", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool IsToolingModule(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        return module.Equals("CLI", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Execution", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Exporters", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Exporter", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Statistics", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Debug", StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -1,2 +1,5 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
-ValidationEngine,RefactorScope,Aplicação,0,DriftArquitetural,1,1,0,0
+ValidationEngine,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+ParsingConfidence,RefactorScope,Core,3,DriftArquitetural,0,0,0,0
+MetricsStatisticsSummary,RefactorScope,Core,3,DriftArquitetural,0,0,0,0
+StatisticsReport,RefactorScope,Core,5,DriftArquitetural,0,0,0,0

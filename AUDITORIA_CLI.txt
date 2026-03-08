@@ -1,93 +1,67 @@
 ==========================================
-ARQUIVO: ParserSelector.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\ParserSelector.cs
-==========================================
-using RefactorScope.Core.Abstractions;
-using RefactorScope.Parsers.CsharpParsers;
-
-
-namespace RefactorScope.CLI
-{
-    public static class ParserSelector
-    {
-        public static IParserCodigo ResolveParser(bool enableInteractiveSelector)
-        {
-            if (!enableInteractiveSelector)
-                return new CSharpRegexParser();
-
-            Console.WriteLine();
-            Console.WriteLine("?? Parser Selection");
-            Console.WriteLine("---------------------------");
-            Console.WriteLine("1) Regex Parser (estável)");
-            Console.WriteLine("2) Textual Parser (experimental)");
-            Console.WriteLine();
-
-            Console.Write("Select parser (1 or 2) [default=1]: ");
-
-            var input = Console.ReadLine();
-
-            if (input?.Trim() == "2")
-            {
-                Console.WriteLine("?? Textual Parser Enabled");
-                return new CSharpTextualParser();
-            }
-
-            Console.WriteLine("?? Regex Parser Enabled");
-            return new CSharpRegexParser();
-        }
-    }
-}
-
-
-==========================================
 ARQUIVO: Program.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs
 ==========================================
 using RefactorScope.Analyzers;
 using RefactorScope.Analyzers.Solid;
 using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Analyzers;
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Datasets;
 using RefactorScope.Core.Metrics;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
+using RefactorScope.Core.Parsing;
+using RefactorScope.Core.Parsing.Enum;
 using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
+using RefactorScope.Estimation;
 using RefactorScope.Execution.Dump;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
+using RefactorScope.Statistics.Engines;
 using Spectre.Console;
-
 
 Console.WriteLine();
 
 // ?? TESTE DI CONTROLADO (linha textual apenas)
 var __fake = "services.AddScoped<FakeZombieService>();";
 
+IParserResult? parsingResult = null;
 
 // =====================================================
-// ?? FLUXO PRINCIPAL
+// ?? PIPELINE DE EXECUÇÃO
 // =====================================================
 
 if (!TryRunConfiguration(out var config)) return;
-if (!TryRunParsing(config, out var context)) return;
+
+if (!TryRunParsing(
+        config,
+        out var context,
+        out parsingResult)) return;
+
 if (!TryRunAnalysis(context, out var report)) return;
 
-// ?? DEBUG — Structural Candidate Breakdown
-var breakdown = report.GetStructuralCandidateBreakdown();
+var hygieneAnalyzer = new ArchitecturalHygieneAnalyzer();
 
-AnsiConsole.WriteLine();
-AnsiConsole.MarkupLine("[bold cyan]Structural Candidates Analysis Breakdown[/]");
-AnsiConsole.WriteLine($"Structural Candidates : {breakdown.StructuralCandidates}");
-AnsiConsole.WriteLine($"Probabilistic Confirmed (= {report.UnresolvedProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
-AnsiConsole.WriteLine($"Absolved : {breakdown.PatternSimilarity}");
-AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
-AnsiConsole.WriteLine();
+var hygiene = hygieneAnalyzer.Analyze(report);
 
-if (!TryRunExport(config, context, report)) return;
+TerminalRenderer.Section("Code Hygiene");
+
+TerminalRenderer.HygieneSummary(hygiene);
+
+RunStatisticsIfEnabled(config, context, ref report);
+
+RunEffortEstimator(context, report);
+
+
+PrintStructuralBreakdown(report);
+
+if (!TryRunExport(config, context, report, parsingResult)) return;
 
 RunVisualization(report);
+
 ApplyCiExitCode(report);
 
 
@@ -125,6 +99,7 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
         }
 
         TerminalRenderer.ShowHeader(config.RootPath);
+
         return true;
     }
     catch (Exception ex)
@@ -140,36 +115,105 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
 // =====================================================
 // ?? BLOCO 2 — PARSING
 // =====================================================
-static bool TryRunParsing(RefactorScopeConfig config, out AnalysisContext context)
+
+static bool TryRunParsing(
+    RefactorScopeConfig config,
+    out AnalysisContext context,
+    out IParserResult? parsingResult)
 {
     context = null!;
+    parsingResult = null;
 
     try
     {
+
+        if (!Enum.TryParse<ParserStrategy>(
+                config.Parser,
+                true,
+                out var strategy))
+        {
+            Console.WriteLine(
+                $"[WARN] Estratégia de parser '{config.Parser}' inválida. Usando Selective.");
+
+            strategy = ParserStrategy.Selective;
+        }
+
         bool enableParserSelector = true;
 
-        IParserCodigo parser = RefactorScope.CLI.ParserSelector
-            .ResolveParser(enableParserSelector);
+        IParserCodigo parser =
+            ParserSelector.ResolveParser(
+                config.Parser,
+                enableParserSelector);
 
-        var model = TerminalRenderer.WithSpinner(
-            "Parsing código...",
-            () => parser.Parse(config.RootPath, config.Include, config.Exclude));
+        IParserResult result =
+            TerminalRenderer.WithSpinner(
+                "Parsing código...",
+                () => parser.Parse(
+                    config.RootPath,
+                    config.Include,
+                    config.Exclude));
 
-        TerminalRenderer.Success("Parsing concluído");
+        parsingResult = result;
 
-        // ?? SANITY CHECK — apenas detecta duplicatas
-        WarnDuplicateTipos(model.Tipos);
+        if (result.Status == ParseStatus.Failed || result.Model == null)
+        {
+            Console.WriteLine(
+                $"[ERRO CRÍTICO NO PARSING]: O parser {result.ParserName} falhou.");
 
-        context = new AnalysisContext(config, model);
+            if (result.Error != null)
+                CrashLogger.Log(result.Error, "PARSING_CRITICAL");
+
+            return false;
+        }
+
+        TerminalRenderer.ParsingStrategy(result.ParserName);
+
+        if (result.UsedFallback)
+            TerminalRenderer.ParsingFallback("Primary", "Fallback");
+
+        if (result.ParserName.Contains("Merge"))
+            TerminalRenderer.ParsingMerge();
+
+        TerminalRenderer.ParsingSummary(
+            result.Model.Arquivos.Count,
+            result.Model.Tipos.Count,
+            result.Model.Referencias.Count,
+            result.Stats?.ExecutionTime ?? TimeSpan.Zero
+        );
+
+        TerminalRenderer.Success(
+            $"Parsing concluído em {result.Stats?.ExecutionTime.TotalMilliseconds:F0}ms usando {result.ParserName}"
+        );
+
+        if (result.UsedFallback)
+        {
+            TerminalRenderer.Warn(
+                "Atenção: O parser primário falhou. O resultado foi garantido pelo fallback.");
+        }
+        else if (result.Status == ParseStatus.PlausibilityWarning)
+        {
+            TerminalRenderer.Warn(
+                $"Aviso: O modelo extraído apresentou anomalias heurísticas. Confiança: {result.Confidence:P0}");
+        }
+
+        WarnDuplicateTipos(result.Model.Tipos);
+
+        context = new AnalysisContext(config, result.Model);
+
         return true;
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"[ERRO NO PARSING]: {ex.Message}");
-        CrashLogger.Log(ex, "PARSING");
+        Console.WriteLine(
+            $"[ERRO NÃO TRATADO NO PARSING]: {ex.Message}");
+
+        CrashLogger.Log(ex, "PARSING_UNHANDLED");
+
         return false;
     }
 }
+
+
 
 static void WarnDuplicateTipos(IEnumerable<TipoInfo> tipos)
 {
@@ -189,45 +233,16 @@ static void WarnDuplicateTipos(IEnumerable<TipoInfo> tipos)
 
 
 // =====================================================
-// ?? BLOCO 3 — ANÁLISE + CONSOLIDAÇÃO
+// ?? BLOCO 3 — ANÁLISE
 // =====================================================
+
 static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport report)
 {
     report = null!;
 
     try
     {
-        var analyzers = new List<IAnalyzer>();
-        analyzers.Add(new ProjectStructureAnalyzer());
-
-        if (IsEnabled(context, "zombie"))
-            analyzers.Add(new StructuralCandidateAnalyzer());
-
-        if (IsEnabled(context, "zombieRefinement") &&
-            context.Config.StructuralCandidateDetection.EnableRefinement)
-        {
-            analyzers.Add(new StructuralCandidateRefinementAnalyzer());
-        }
-
-        if (IsEnabled(context, "architecture"))
-            analyzers.Add(new ArchitecturalClassificationAnalyzer());
-
-        if (IsEnabled(context, "entrypoints"))
-            analyzers.Add(new EntryPointHeuristicAnalyzer());
-
-        if (IsEnabled(context, "coreIsolation"))
-            analyzers.Add(new CoreIsolationAnalyzer());
-
-        if (IsEnabled(context, "coupling"))
-            analyzers.Add(new CouplingAnalyzer());
-
-        if (IsEnabled(context, "coupling"))
-            analyzers.Add(new ImplicitCouplingAnalyzer());
-
-        if (IsEnabled(context, "solid"))
-            analyzers.Add(new SolidAnalyzer());
-
-        analyzers.Add(new FitnessGateAnalyzer(context.Config.FitnessGates));
+        var analyzers = BuildAnalyzers(context);
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
@@ -239,6 +254,7 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
 
         var consolidator = new ReportConsolidator();
         report = consolidator.Consolidate(rawReport);
+
 
         return true;
     }
@@ -252,39 +268,127 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
 
 
 
+static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
+{
+    var analyzers = new List<IAnalyzer>
+    {
+        new ProjectStructureAnalyzer()
+    };
+
+    if (IsEnabled(context, "zombie"))
+        analyzers.Add(new StructuralCandidateAnalyzer());
+
+    if (IsEnabled(context, "zombieRefinement") &&
+        context.Config.StructuralCandidateDetection.EnableRefinement)
+    {
+        analyzers.Add(new StructuralCandidateRefinementAnalyzer());
+    }
+
+    if (IsEnabled(context, "architecture"))
+        analyzers.Add(new ArchitecturalClassificationAnalyzer());
+
+    if (IsEnabled(context, "entrypoints"))
+        analyzers.Add(new EntryPointHeuristicAnalyzer());
+
+    if (IsEnabled(context, "coreIsolation"))
+        analyzers.Add(new CoreIsolationAnalyzer());
+
+    if (IsEnabled(context, "coupling"))
+    {
+        analyzers.Add(new CouplingAnalyzer());
+        analyzers.Add(new ImplicitCouplingAnalyzer());
+    }
+
+    if (IsEnabled(context, "solid"))
+        analyzers.Add(new SolidAnalyzer());
+
+    analyzers.Add(new FitnessGateAnalyzer(context.Config.FitnessGates));
+
+    return analyzers;
+}
+
+
+
 // =====================================================
-// ?? BLOCO 4 — EXPORTAÇÃO
+// ?? BLOCO 4 — VALIDAÇÃO ESTATÍSTICA
 // =====================================================
+
+static void RunStatisticsIfEnabled(
+    RefactorScopeConfig config,
+    AnalysisContext context,
+    ref ConsolidatedReport report)
+{
+    if (config.Statistics?.Enabled != true)
+        return;
+
+    TerminalRenderer.Step("Executando camada de validação estatística...");
+
+    var statsReport = ValidationEngine.RunSafely(
+        context,
+        report,
+        (ex, phase) => CrashLogger.Log(ex, phase)
+    );
+
+    if (statsReport != null)
+    {
+        TerminalRenderer.Success(
+            $"Validação concluída (Confiança do Parser: {statsReport.Confidence.ClassesPerFile:0.00} classes/arquivo)"
+        );
+
+        // ?? Inserir StatisticsReport no ConsolidatedReport
+
+        var results = report.Results.ToList();
+
+        results.Add(statsReport);
+
+        report = new ConsolidatedReport(
+            results,
+            report.ExecutionTime,
+            report.TargetScope,
+            report.UnresolvedProbabilityThreshold
+        );
+    }
+}
+
+
+
+// =====================================================
+// ?? DEBUG — STRUCTURAL BREAKDOWN
+// =====================================================
+
+static void PrintStructuralBreakdown(ConsolidatedReport report)
+{
+    var breakdown = report.GetStructuralCandidateBreakdown();
+
+    AnsiConsole.WriteLine();
+    AnsiConsole.MarkupLine("[bold cyan]Structural Candidates Analysis Breakdown[/]");
+
+    AnsiConsole.WriteLine($"Structural Candidates : {breakdown.StructuralCandidates}");
+    AnsiConsole.WriteLine($"Probabilistic Confirmed (= {report.UnresolvedProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
+    AnsiConsole.WriteLine($"Absolved : {breakdown.PatternSimilarity}");
+    AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
+
+    AnsiConsole.WriteLine();
+}
+
+
+
+// =====================================================
+// ?? BLOCO 5 — EXPORTAÇÃO
+// =====================================================
+
 static bool TryRunExport(
     RefactorScopeConfig config,
     AnalysisContext context,
-    ConsolidatedReport report)
+    ConsolidatedReport report,
+    IParserResult? parsingResult)
 {
     try
     {
-        TerminalRenderer.Step("Gerando dumps e datasets...");
+        TerminalRenderer.Step("Gerando dumps, datasets e dashboards...");
 
-        var datasetBuilders = new List<IAnalyticalDatasetBuilder>
-        {
-            new GlobalTypesDatasetBuilder(),
-            new StructuralOverviewDatasetBuilder(),
-            new ArchitecturalHealthDatasetBuilder(),
-            new ModuleContributionDatasetBuilder(),
-            new TypeContributionDatasetBuilder(),
-            new GlobalMetricsDatasetBuilder(),
-            new StructuralScoreDatasetBuilder(),
-            new StructuralTrendDatasetBuilder()
-        };
-
-        var exporters = new List<IExporter>
-        {
-            new DumpAnaliseExporter(),
-            new DumpIaExporter(),
-            new DatasetExporter(datasetBuilders),
-            new ProjectStructureExporter(),
-            new FitnessGateCsvExporter(),
-            new HtmlDashboardExporter()
-        };
+        var datasetBuilders = BuildDatasetBuilders();
+        var exporters = BuildExporters(datasetBuilders);
 
         var strategy = DumpStrategyResolver.Resolve(config);
 
@@ -293,22 +397,69 @@ static bool TryRunExport(
         GenerateMarkdownReport(report, config.OutputPath);
         GenerateStructuralDashboard(report, config.OutputPath);
 
-        TerminalRenderer.Success("Dumps e relatório gerados com sucesso");
+        if (parsingResult != null)
+        {
+            var parsingDashboard = new ParsingDashboardExporter();
+
+            parsingDashboard.Export(
+                parsingResult,
+                config.OutputPath);
+        }
+
+        TerminalRenderer.Success(
+            "Dumps, datasets e dashboards gerados com sucesso");
 
         return true;
     }
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NA EXPORTAÇÃO]: {ex.Message}");
+
         CrashLogger.Log(ex, "EXPORT");
+
         return false;
     }
 }
 
 
+
+static List<IAnalyticalDatasetBuilder> BuildDatasetBuilders()
+{
+    return new List<IAnalyticalDatasetBuilder>
+    {
+        new GlobalTypesDatasetBuilder(),
+        new StructuralOverviewDatasetBuilder(),
+        new ArchitecturalHealthDatasetBuilder(),
+        new ModuleContributionDatasetBuilder(),
+        new TypeContributionDatasetBuilder(),
+        new GlobalMetricsDatasetBuilder(),
+        new StructuralScoreDatasetBuilder(),
+        new StructuralTrendDatasetBuilder()
+    };
+}
+
+
+
+static List<IExporter> BuildExporters(
+    List<IAnalyticalDatasetBuilder> datasetBuilders)
+{
+    return new List<IExporter>
+    {
+        new DumpAnaliseExporter(),
+        new DumpIaExporter(),
+        new DatasetExporter(datasetBuilders),
+        new ProjectStructureExporter(),
+        new FitnessGateCsvExporter(),
+        new HtmlDashboardExporter()
+    };
+}
+
+
+
 // =====================================================
-// ?? BLOCO 5 — RELATÓRIOS
+// ?? RELATÓRIOS
 // =====================================================
+
 static void GenerateMarkdownReport(
     ConsolidatedReport report,
     string outputDirectory)
@@ -334,6 +485,7 @@ static void GenerateMarkdownReport(
 }
 
 
+
 static void GenerateStructuralDashboard(
     ConsolidatedReport report,
     string outputDirectory)
@@ -357,8 +509,9 @@ static void GenerateStructuralDashboard(
 
 
 // =====================================================
-// ?? BLOCO 6 — VISUALIZAÇÃO TERMINAL
+// ?? VISUALIZAÇÃO
 // =====================================================
+
 static void RunVisualization(ConsolidatedReport report)
 {
     TerminalRenderer.Section("Architectural Health");
@@ -373,6 +526,8 @@ static void RunVisualization(ConsolidatedReport report)
     var coupling = report.GetResult<CouplingResult>();
 
     var effectiveUnresolved = report.GetEffectiveUnresolvedCandidates();
+
+    var rows = new List<(string Module, double Score, string Unresolved, double Coupling, double Isolation)>();
 
     foreach (var module in modules)
     {
@@ -391,11 +546,10 @@ static void RunVisualization(ConsolidatedReport report)
         var zombieRate = zombieCount / (double)total;
         var isolationRate = isolatedCount / (double)total;
         var couplingRate = fanOut / (double)total;
-        var coreDensity = module.Count(t => t.Layer == "Core") / (double)total;
-
-        var zombieDisplay = $"{zombieCount} ({zombieRate:0%})";
 
         var coreTypes = module.Count(t => t.Layer == "Core");
+
+        var zombieDisplay = $"{zombieCount} ({zombieRate:0%})";
 
         var score = ArchitecturalScoreCalculator.Calculate(
             module.Key,
@@ -405,14 +559,17 @@ static void RunVisualization(ConsolidatedReport report)
             fanOut,
             coreTypes);
 
-        TerminalRenderer.ModuleHealth(
+        rows.Add((
             module.Key,
             score,
             zombieDisplay,
             couplingRate,
             isolationRate
-        );
+        ));
     }
+
+    TerminalRenderer.RenderArchitecturalHealthTable(rows);
+    TerminalRenderer.CouplingHeuristicNotice();
 
     RenderFitnessGates(report);
 }
@@ -420,8 +577,9 @@ static void RunVisualization(ConsolidatedReport report)
 
 
 // =====================================================
-// ?? BLOCO 7 — FITNESS GATES
+// ?? FITNESS GATES
 // =====================================================
+
 static void RenderFitnessGates(ConsolidatedReport report)
 {
     var gates = report.Results
@@ -459,8 +617,9 @@ static void RenderFitnessGates(ConsolidatedReport report)
 
 
 // =====================================================
-// ?? BLOCO 8 — CI EXIT CODE
+// ?? CI EXIT CODE
 // =====================================================
+
 static void ApplyCiExitCode(ConsolidatedReport report)
 {
     var gates = report.Results
@@ -470,16 +629,7 @@ static void ApplyCiExitCode(ConsolidatedReport report)
     if (gates == null)
         return;
 
-    if (gates.HasFailure)
-    {
-        Console.WriteLine();
-        Console.WriteLine("[CI] Fitness Gates falharam.");
-        Environment.ExitCode = 1;
-    }
-    else
-    {
-        Environment.ExitCode = 0;
-    }
+    Environment.ExitCode = gates.HasFailure ? 1 : 0;
 }
 
 
@@ -487,39 +637,32 @@ static void ApplyCiExitCode(ConsolidatedReport report)
 // =====================================================
 // ?? HELPERS
 // =====================================================
+
 static bool IsEnabled(AnalysisContext context, string analyzerName)
 {
     return context.Config.Analyzers.TryGetValue(analyzerName, out var enabled)
            && enabled;
 }
 
+static void RunEffortEstimator(
+    AnalysisContext context,
+    ConsolidatedReport report)
+{
+    try
+    {
+        TerminalRenderer.Section("Refactor Effort Estimation");
 
+        var estimate = EffortEstimator.Estimate(context, report);
 
-// =====================================================
-// ?? CRASH LOGGER
-// =====================================================
-/// <summary>
-/// Sistema simples de logging de falhas para RefactorScope.
-///
-/// Objetivo:
-/// Preservar Stack Trace completa sem poluir a interface do terminal.
-///
-/// Estratégia:
-/// - Console mostra apenas mensagem amigável
-/// - Arquivo físico armazena detalhes completos
-///
-/// Arquivo gerado:
-///     refactorscope-crash.log
-///
-/// Conteúdo:
-///     Timestamp
-///     Fase da execução
-///     Stack Trace completa
-///
-/// Isso facilita diagnosticar falhas ocorridas
-/// em repositórios externos ou ambientes CI.
-/// </summary>
-
+        TerminalRenderer.RenderEffortEstimate(estimate);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("[WARN] Effort estimation failed.");
+        Console.WriteLine(ex.ToString());
+        CrashLogger.Log(ex, "EFFORT_ESTIMATION");
+    }
+}
 
 
 ==========================================

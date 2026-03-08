@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-07 05:37 UTC  
+📅 **Execution Time:** 2026-03-08 03:32 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -24,6 +24,7 @@
 │   │   │   ├── Model
 │   │   │   ├── Orchestration
 │   │   │   ├── Parsing
+│   │   │   │   ├── Enum
 │   │   │   ├── Patterns
 │   │   │   ├── Reporting
 │   │   │   ├── Results
@@ -31,6 +32,10 @@
 │   │   │   ├── Structure
 │   │   ├── Debug
 │   │   ├── Docs
+│   │   ├── Estimation
+│   │   │   ├── Classification
+│   │   │   ├── Models
+│   │   │   ├── Scoring
 │   │   ├── Execution
 │   │   │   ├── Dump
 │   │   │   │   ├── Segmentation
@@ -38,6 +43,8 @@
 │   │   ├── Exporters
 │   │   ├── Infrastructure
 │   │   ├── Parsers
+│   │   │   ├── Analysis
+│   │   │   ├── Common
 │   │   │   ├── CsharpParsers
 │   │   │   │   ├── Hybrid
 │   │   │   ├── Results
@@ -50,27 +57,27 @@
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 43
+- **Structural Candidates:** 42
 - **Pattern Similarity:** 41
-- **Unresolved:** 2
+- **Unresolved:** 1
 
 ---
 
 ## 🏥 Architectural Health by Module
 
-### 🔴 Analyzers
+### 🟡 Analyzers
 
-- **Score:** `0,0`
+- **Score:** `54,5`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 4,79
+- **Coupling:** 4,74
 - **Isolation:** 0,53
 - **Core Density:** 1,00
 
-### 🔴 CLI
+### 🟢 CLI
 
-- **Score:** `0,0`
+- **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 5,50
+- **Coupling:** 0,00
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -82,19 +89,27 @@
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
-### 🔴 Exporters
+### 🟡 Estimation
 
-- **Score:** `0,0`
+- **Score:** `66,3`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 5,92
+- **Coupling:** 1,25
+- **Isolation:** 0,00
+- **Core Density:** 0,25
+
+### 🟢 Exporters
+
+- **Score:** `100,0`
+- **Unresolved Candidates:** 🟢 0 (0%)
+- **Coupling:** 6,08
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟢 Infrastructure
 
-- **Score:** `85,0`
+- **Score:** `79,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 1,00
+- **Coupling:** 1,40
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -102,33 +117,33 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 0,02
-- **Isolation:** 0,26
-- **Core Density:** 0,97
+- **Coupling:** 0,28
+- **Isolation:** 0,25
+- **Core Density:** 0,99
 
-### 🔴 Execution
+### 🟢 Execution
 
-- **Score:** `6,3`
+- **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
 - **Coupling:** 3,13
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
-### 🔴 Parsers
+### 🟡 Parsers
 
-- **Score:** `0,0`
+- **Score:** `50,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 9,00
+- **Coupling:** 8,00
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
-### 🔴 Statistics
+### 🟢 Statistics
 
-- **Score:** `31,7`
-- **Unresolved Candidates:** 🔴 1 (100%)
-- **Coupling:** 6,00
+- **Score:** `100,0`
+- **Unresolved Candidates:** 🟢 0 (0%)
+- **Coupling:** 1,75
 - **Isolation:** 0,00
-- **Core Density:** 0,00
+- **Core Density:** 0,75
 
 ---
 
@@ -140,30 +155,36 @@
 | CoreIsolationAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
 | CouplingAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
 | EntryPointHeuristicAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
-| FitnessGateAnalyzer | Analyzers | Core | 13 | 0 | 1,00 | 13 |
+| FitnessGateAnalyzer | Analyzers | Core | 12 | 0 | 1,00 | 12 |
 | ImplicitCouplingAnalyzer | Analyzers | Core | 8 | 0 | 1,00 | 8 |
 | ProjectStructureAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
 | StructuralCandidateAnalyzer | Analyzers | Core | 6 | 0 | 1,00 | 6 |
 | StructuralCandidateRefinementAnalyzer | Analyzers | Core | 11 | 0 | 1,00 | 11 |
-| ParserSelector | CLI | Parsers | 11 | 0 | 1,00 | 11 |
+| EffortEstimator | Estimation | Core | 10 | 2 | 0,83 | 10 |
 | DatasetExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
 | DumpAnaliseExporter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | FitnessGateCsvExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
 | MarkdownReportExporter | Exporters | Core | 15 | 0 | 1,00 | 15 |
+| ParsingDashboardExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
 | StructuralInventoryExporter | Exporters | Core | 18 | 1 | 0,95 | 18 |
-| misuse | Exporters | Core | 11 | 1 | 0,92 | 11 |
-| SolidAnalyzer | Analyzers | Core | 22 | 0 | 1,00 | 22 |
+| SolidAnalyzer | Analyzers | Core | 21 | 0 | 1,00 | 21 |
+| AnalysisOrchestrator | Core | Infrastructure | 15 | 0 | 1,00 | 15 |
+| ParserSelector | Core | Parsers | 16 | 0 | 1,00 | 16 |
+| RDICalculator | Estimation | Core | 12 | 2 | 0,86 | 12 |
 | DumpStrategyResolver | Execution | Core | 11 | 0 | 1,00 | 11 |
-| CSharpRegexParser | Parsers | Core | 18 | 2 | 0,90 | 18 |
-| HigienizadorLexico | Parsers | Core | 9 | 2 | 0,82 | 9 |
-| CSharpTextualParser | Parsers | Core | 20 | 3 | 0,87 | 20 |
-| ValidationEngine | Statistics | Core | 6 | 0 | 1,00 | 6 |
+| CSharpRegexParser | Parsers | Core | 22 | 2 | 0,92 | 22 |
+| HigienizadorLexico | Parsers | Core | 12 | 2 | 0,86 | 12 |
+| CSharpTextualParser | Parsers | Core | 30 | 3 | 0,91 | 30 |
+| HybridParser | Parsers | Core | 10 | 2 | 0,83 | 10 |
+| ValidationEngine | Statistics | Core | 12 | 2 | 0,86 | 12 |
 | PublicZeroUsageOmissionRule | Analyzers | Core | 6 | 2 | 0,75 | 6 |
 | LayerSegmentationResolver | Execution | Core | 10 | 2 | 0,83 | 10 |
 | TopFolderSegmentationResolver | Execution | Core | 8 | 2 | 0,80 | 8 |
-| SegmentedDumpStrategy | Execution | Core | 7 | 2 | 0,78 | 7 |
-| HybridAdaptiveParser | Parsers | Core | 8 | 2 | 0,80 | 8 |
-| HybridIncrementalParser | Parsers | Core | 8 | 2 | 0,80 | 8 |
+| SegmentedDumpStrategy | Execution | Core | 6 | 2 | 0,75 | 6 |
+| HybridAdaptiveParser | Parsers | Core | 11 | 2 | 0,85 | 11 |
+| HybridIncrementalParser | Parsers | Core | 11 | 2 | 0,85 | 11 |
+| HybridSelectiveParser | Parsers | Core | 10 | 2 | 0,83 | 10 |
+| misuse | Exporters | Core | 11 | 1 | 0,92 | 11 |
 
 Possible architectural coupling detected based on structural heuristics.
 Manual inspection is recommended.
@@ -174,15 +195,16 @@ Manual inspection is recommended.
 
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
-| Analyzers | 0,11 | 0,69 | 0,20 |
-| CLI | 0,00 | 1,00 | 0,00 |
+| Analyzers | 0,11 | 0,71 | 0,19 |
+| CLI | 0,00 | 0,00 | 1,00 |
 | Debug | 0,00 | 0,00 | 1,00 |
-| Exporters | 0,08 | 0,91 | 0,01 |
-| Infrastructure | 0,00 | 0,45 | 0,55 |
-| Core | 0,10 | 0,00 | 0,89 |
-| Execution | 0,25 | 0,51 | 0,24 |
+| Estimation | 0,00 | 0,36 | 0,64 |
+| Exporters | 0,08 | 0,91 | 0,00 |
+| Infrastructure | 0,00 | 0,47 | 0,53 |
+| Core | 0,11 | 0,04 | 0,85 |
+| Execution | 0,25 | 0,52 | 0,23 |
 | Parsers | 0,00 | 0,74 | 0,26 |
-| Statistics | 0,00 | 1,00 | 0,00 |
+| Statistics | 0,00 | 0,35 | 0,65 |
 
 ---
 

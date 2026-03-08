@@ -4,9 +4,14 @@
   "outputPath": "refactorscope-output",
 
   "include": [],
-  "exclude": [],
+  "exclude": [
+    "bin",
+    "obj",
+    ".vs",
+    "refactorscope-output"
+  ],
 
-  "parser": "HybridFailover",
+  "parser": "Selective",
 
   "parserOptions": {
     "enableInteractiveSelector": true,
@@ -15,6 +20,10 @@
   },
 
   "statistics": {
+    "enabled": true
+  },
+
+  "estimator": {
     "enabled": true
   },
 
@@ -42,9 +51,11 @@
       "nameStartsWith": [ "Aba" ],
       "namespaceContains": [ "Reporting", "CLI" ]
     },
+
     "Core": {
-      "namespaceContains": [ "Nucleo", "Limbic", "Core", "Analyzers", "Model" ]
+      "namespaceContains": [ "Core", "Analyzers", "Model", "Nucleo" ]
     },
+
     "Infra": {
       "namespaceContains": [ "Infrastructure" ],
       "nameEquals": [ "Program" ]
@@ -52,9 +63,9 @@
   },
 
   "exporters": [
+    "htmlDashboard",
     "dumpAnalysis",
-    "dumpIA",
-    "htmlDashboard"
+    "dumpIA"
   ],
 
   "dumpStrategy": {

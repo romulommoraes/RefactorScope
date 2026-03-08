@@ -4,6 +4,7 @@
     "DivergenceScore",
     "EstadoIdentidade",
     "ModuloEtogramaV2",
+    "MotorEtogramaHeuristico",
     "MotorIntencionalV1",
     "LeitorBaseline",
     "ExecutorValidacaoJung",
@@ -28,6 +29,7 @@
   ],
   "PatternSimilarity": [
     "DivergenceLogger",
+    "MotorEtogramaHeuristico",
     "MotorIntencionalV1",
     "ExportadorBaselineJung",
     "ScriptomeDashboardPipeline",
@@ -56,15 +58,9 @@
     "ResultadoModuloLimbic"
   ],
   "IsolatedCoreTypes": [
+    "ContextoIdentidadeFingerprint",
     "EstadoIdentidade",
-    "CalculadoraTensao",
-    "CalculadoraModalidade",
-    "LematizadorCatalyst",
-    "LematizadorVerbal",
-    "CarregadorLimbic",
-    "ConfiguradorLimbic",
-    "ILimbicAnalyzer",
-    "IMotorLexico",
+    "ExpressaoIdentidade",
     "InfoPalavra",
     "AdaptadorDiagnostico",
     "EspecialistaDinamica",

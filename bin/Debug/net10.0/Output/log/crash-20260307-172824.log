@@ -1,0 +1,10 @@
+================================================
+RefactorScope Crash Report
+Timestamp: 07/03/2026 17:28:24
+Phase: EFFORT_ESTIMATION
+
+System.InvalidOperationException: StatisticsReport not found in ConsolidatedReport.
+   at RefactorScope.Core.Estimation.EffortEstimator.Estimate(AnalysisContext context, ConsolidatedReport report) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Estimation\EffortEstimator.cs:line 18
+   at Program.<<Main>$>g__RunEffortEstimator|0_16(AnalysisContext context, ConsolidatedReport report) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs:line 624
+
+================================================

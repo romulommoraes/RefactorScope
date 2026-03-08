@@ -1,101 +1,63 @@
-﻿using Spectre.Console;
+﻿using RefactorScope.Core.Model;
+using Spectre.Console;
+using RefactorScope.Estimation.Models;
 
 namespace RefactorScope.Infrastructure
 {
     public static class TerminalRenderer
     {
-        public static void Warn(string message)
-        {
-            AnsiConsole.MarkupLine($"[yellow][WARN][/]: {message}");
-        }
+        // -------------------------------------------------
+        // Backwards compatibility
+        // -------------------------------------------------
 
-        public static void ShowHeader(string root)
-        {
-            var panel = new Panel($"[bold yellow]{root}[/]")
-                .Header("[green]RefactorScope v1.0[/]")
-                .Border(BoxBorder.Rounded);
-
-            AnsiConsole.Write(panel);
-        }
-
-        public static void Step(string message)
-        {
-            AnsiConsole.MarkupLine($"[blue]→[/] {message}");
-        }
-
-        public static void Success(string message)
-        {
-            AnsiConsole.MarkupLine($"[green]✔[/] {message}");
-        }
+        public static void Step(string message) => Stage(message);
+        public static void Success(string message) => StageSuccess(message);
+        public static void Warn(string message) => StageWarning(message);
 
         public static void Section(string title)
         {
             AnsiConsole.WriteLine();
             AnsiConsole.Write(
-                new Rule($"[bold]{title}[/]").RuleStyle("grey").Centered()
-            );
+                new Rule($"[bold]{title}[/]")
+                .RuleStyle("grey")
+                .Centered());
         }
 
-        public static void TableSummary(int unresolved, int isolated, int entryPoints)
-        {
-            var table = new Table();
-
-            table.AddColumn("Metric");
-            table.AddColumn("Value");
-
-            table.AddRow("Unresolved Candidates", unresolved.ToString());
-            table.AddRow("Isolated Core Types", isolated.ToString());
-            table.AddRow("Entry Points", entryPoints.ToString());
-
-            AnsiConsole.Write(table);
-        }
-
-        public static void ModuleHealth(
-            string module,
-            double score,
-            string unresolved,
-            double coupling,
-            double isolation)
-        {
-            var moduleColor = ResolveModuleColor(module);
-            var scoreColor = ResolveScoreColor(score);
-            var unresolvedColor = unresolved.StartsWith("0") ? "green" : "red";
-
-            AnsiConsole.MarkupLine(
-                $"[{moduleColor}]{module,-15}[/] " +
-                $"| Score: [{scoreColor} bold]{score:0.0}[/] " +
-                $"| Unresolved: [{unresolvedColor}]{unresolved}[/] " +
-                $"| Coupling: {coupling:0.00} " +
-                $"| Isolation: {isolation:0.00}"
-            );
-        }
-
-        private static string ResolveModuleColor(string module)
-        {
-            return module.ToLower() switch
-            {
-                "core" => "cyan",
-                "nucleo" => "cyan",
-                "limbic" => "magenta",
-                "fingerprint" => "blue",
-                "infrastructure" => "yellow",
-                "infra" => "yellow",
-                "ui" => "purple",
-                _ => "white"
-            };
-        }
-
-        private static string ResolveScoreColor(double score)
-        {
-            return score switch
-            {
-                >= 70 => "green",
-                >= 40 => "yellow",
-                _ => "red"
-            };
-        }
         // -------------------------------------------------
-        // Parsing Rendering
+        // Header
+        // -------------------------------------------------
+
+        public static void ShowHeader(string root)
+        {
+            var panel = new Panel($"[bold yellow]{root}[/]")
+                .Header("[bold green]RefactorScope v1.0[/]")
+                .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(panel);
+            AnsiConsole.WriteLine();
+        }
+
+        // -------------------------------------------------
+        // Pipeline Stages
+        // -------------------------------------------------
+
+        public static void Stage(string name)
+        {
+            AnsiConsole.MarkupLine($"[bold cyan]▶ {name}[/]");
+        }
+
+        public static void StageSuccess(string message)
+        {
+            AnsiConsole.MarkupLine($"[green]✔[/] {message}");
+        }
+
+        public static void StageWarning(string message)
+        {
+            AnsiConsole.MarkupLine($"[yellow]⚠[/] {message}");
+        }
+
+        // -------------------------------------------------
+        // Parsing
         // -------------------------------------------------
 
         public static void ParsingStrategy(string parserName)
@@ -122,11 +84,9 @@ namespace RefactorScope.Infrastructure
             int references,
             TimeSpan execution)
         {
-            AnsiConsole.WriteLine();
-
             var table = new Table()
                 .Border(TableBorder.Rounded)
-                .AddColumn("[bold]Parsing Metric[/]")
+                .AddColumn("[bold]Metric[/]")
                 .AddColumn("[bold]Value[/]");
 
             table.AddRow("Files", files.ToString());
@@ -136,6 +96,99 @@ namespace RefactorScope.Infrastructure
 
             AnsiConsole.Write(table);
         }
+
+        // -------------------------------------------------
+        // Architecture Health (TABLE)
+        // -------------------------------------------------
+
+        public static void RenderArchitecturalHealthTable(
+            IEnumerable<(string Module,
+                         double Score,
+                         string Unresolved,
+                         double Coupling,
+                         double Isolation)> rows)
+        {
+            var table = new Table()
+                .Border(TableBorder.Rounded)
+                .Expand();
+
+            table.AddColumn("[bold]Module[/]");
+            table.AddColumn("[bold]Score[/]");
+            table.AddColumn("[bold]Unresolved[/]");
+            table.AddColumn("[bold]Coupling[/]");
+            table.AddColumn("[bold]Isolation[/]");
+
+            foreach (var r in rows)
+            {
+                var scoreColor = ResolveScoreColor(r.Score);
+                var unresolvedColor = r.Unresolved.StartsWith("0") ? "green" : "red";
+                var moduleColor = ResolveModuleColor(r.Module);
+
+                table.AddRow(
+                    $"[{moduleColor}]{r.Module}[/]",
+                    $"[{scoreColor}]{r.Score:0.0}[/]",
+                    $"[{unresolvedColor}]{r.Unresolved}[/]",
+                    $"{r.Coupling:0.00}",
+                    $"{r.Isolation:0.00}"
+                );
+            }
+
+            AnsiConsole.Write(table);
+        }
+
+        public static void CouplingHeuristicNotice()
+        {
+            AnsiConsole.MarkupLine(
+            "[red]Note: Unresolved refers to the remaining Dead Code Candidates that could not be excluded by the probabilistic validation steps of the methodology. These require manual inspection. [/]");
+            AnsiConsole.MarkupLine(
+            "[grey]Note: Coupling penalties are heuristically reduced for tooling modules (CLI, Execution, Exporters, Statistics). Interpret with caution.[/]");
+        }
+
+        // -------------------------------------------------
+        // Hygiene
+        // -------------------------------------------------
+
+        public static void HygieneSummary(HygieneReport hygiene)
+        {
+            var smellColor = ResolveSmellColor(hygiene.SmellIndex);
+
+            var panel = new Panel(
+                $"[bold]CodeSmellIndex[/]: [{smellColor}]{hygiene.SmellIndex:0.0}[/]\n" +
+                $"[bold]Hygiene[/]: {hygiene.HygieneLevel}\n\n" +
+                $"Dead Code Candidates: {hygiene.UnreferencedCount}\n" +
+                $"Namespace Drift: {hygiene.NamespaceDriftCount}\n" +
+                $"Global Namespace: {hygiene.GlobalNamespaceCount}\n" +
+                $"Isolated Core: {hygiene.IsolatedCoreCount}"
+            )
+            .Header("[bold yellow]Code Hygiene[/]")
+            .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(panel);
+        }
+
+        // -------------------------------------------------
+        // Effort Estimation
+        // -------------------------------------------------
+
+        public static void EstimationSummary(EffortEstimate estimate)
+        {
+            AnsiConsole.WriteLine();
+
+            var panel = new Panel(
+                $"[bold]RDI[/]: {estimate.RDI}\n" +
+                $"[bold]Difficulty[/]: {estimate.Difficulty}\n" +
+                $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
+                $"[bold]Confidence[/]: {estimate.Confidence:0.00}")
+            .Header("[bold yellow]Refactor Effort Estimation[/]")
+            .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(panel);
+        }
+
+        // -------------------------------------------------
+        // Spinner
+        // -------------------------------------------------
+
         public static T WithSpinner<T>(string message, Func<T> action)
         {
             return AnsiConsole.Status()
@@ -146,6 +199,103 @@ namespace RefactorScope.Infrastructure
 
                     return action();
                 });
+        }
+
+        // -------------------------------------------------
+        // Module Ordering
+        // -------------------------------------------------
+
+        public static IEnumerable<IGrouping<string, T>> OrderModules<T>(
+            IEnumerable<IGrouping<string, T>> modules)
+        {
+            return modules
+                .OrderBy(m => m.Key, StringComparer.OrdinalIgnoreCase);
+        }
+
+        // -------------------------------------------------
+        // Color Resolver
+        // -------------------------------------------------
+
+        private static string ResolveModuleColor(string module)
+        {
+            return module.ToLower() switch
+            {
+                "core" => "cyan",
+                "analyzers" => "green",
+                "parsers" => "yellow",
+                "statistics" => "magenta",
+                "cli" => "orange1",
+                "debug" => "grey",
+                "exporters" => "deepskyblue1",
+                "execution" => "steelblue1",
+                "infrastructure" => "gold1",
+                "datasets" => "darkseagreen1",
+                "metrics" => "mediumpurple",
+                "model" => "cadetblue1",
+                "reporting" => "lightpink1",
+                "scope" => "turquoise2",
+                _ => "white"
+            };
+        }
+
+        private static string ResolveScoreColor(double score)
+        {
+            return score switch
+            {
+                >= 70 => "green",
+                >= 40 => "yellow",
+                _ => "red"
+            };
+        }
+
+        private static string ResolveSmellColor(double smell)
+        {
+            return smell switch
+            {
+                <= 20 => "green",
+                <= 40 => "yellow",
+                <= 60 => "orange1",
+                <= 80 => "red",
+                _ => "maroon"
+            };
+        }
+
+        public static void RenderEffortEstimate(EffortEstimate estimate)
+        {
+            var difficultyColor = estimate.Difficulty switch
+            {
+                "Low" => "green",
+                "Medium" => "yellow",
+                "High" => "orange1",
+                _ => "red"
+            };
+
+            var effortBar = BuildEffortBar(estimate.EstimatedHours);
+
+            var panel = new Panel(
+                $"[bold]RDI[/]: {estimate.RDI}\n" +
+                $"[bold]Difficulty[/]: [{difficultyColor}]{estimate.Difficulty}[/]\n" +
+                $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
+                $"[bold]Confidence[/]: {estimate.Confidence:0.00}\n\n" +
+                $"[bold]Effort[/]: {effortBar}"
+            )
+            .Header("[bold yellow]Refactor Effort Estimation[/]")
+            .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(panel);
+        }
+
+        private static string BuildEffortBar(double hours)
+        {
+            const int maxHours = 80;
+            const int width = 20;
+
+            var normalized = Math.Min(hours / maxHours, 1.0);
+
+            int filled = (int)Math.Round(normalized * width);
+            int empty = width - filled;
+
+            return $"[orange1]{new string('█', filled)}[/][grey]{new string('░', empty)}[/]";
         }
     }
 }

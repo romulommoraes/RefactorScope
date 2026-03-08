@@ -9,7 +9,6 @@
     "ProjectStructureAnalyzer",
     "StructuralCandidateAnalyzer",
     "StructuralCandidateRefinementAnalyzer",
-    "ParserSelector",
     "SelfAnalysisSelector",
     "FakeZombieService",
     "DatasetExporter",
@@ -22,7 +21,6 @@
     "ProjectStructureExporter",
     "ConfigLoader",
     "ConfigValidator",
-    "CrashLogger",
     "TerminalRenderer",
     "SolidAnalyzer",
     "FitnessGateConfigResolver",
@@ -37,12 +35,13 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
+    "ParserSelector",
     "ReportConsolidator",
     "ConsolidatedReportExtensions",
+    "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
-    "DumpStrategyResolver",
-    "ValidationEngine"
+    "DumpStrategyResolver"
   ],
   "PatternSimilarity": [
     "ArchitecturalClassificationAnalyzer",
@@ -54,7 +53,6 @@
     "ProjectStructureAnalyzer",
     "StructuralCandidateAnalyzer",
     "StructuralCandidateRefinementAnalyzer",
-    "ParserSelector",
     "SelfAnalysisSelector",
     "DatasetExporter",
     "DumpAnaliseExporter",
@@ -66,7 +64,6 @@
     "ProjectStructureExporter",
     "ConfigLoader",
     "ConfigValidator",
-    "CrashLogger",
     "TerminalRenderer",
     "SolidAnalyzer",
     "FitnessGateConfigResolver",
@@ -81,15 +78,16 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
+    "ParserSelector",
     "ReportConsolidator",
     "ConsolidatedReportExtensions",
+    "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
     "DumpStrategyResolver"
   ],
   "Unresolved": [
-    "FakeZombieService",
-    "ValidationEngine"
+    "FakeZombieService"
   ],
   "IsolatedCoreTypes": [
     "ArchitecturalClassificationAnalyzer",
@@ -102,6 +100,7 @@
     "StructuralCandidateAnalyzer",
     "StructuralCandidateRefinementAnalyzer",
     "SolidAnalyzer",
+    "IPipelineStep",
     "FitnessGateConfigResolver",
     "AnalysisContextExtensions",
     "ArchitecturalHealthDatasetBuilder",
@@ -114,7 +113,9 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
+    "ParserSelector",
     "ConsolidatedReportExtensions",
+    "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery"
   ],

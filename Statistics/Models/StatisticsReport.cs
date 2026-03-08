@@ -1,7 +1,5 @@
-﻿// ==========================================
-// ARQUIVO: StatisticsReport.cs
-// CAMINHO: RefactorScope.Statistics\Models\StatisticsReport.cs
-// ==========================================
+﻿using RefactorScope.Core.Abstractions;
+
 namespace RefactorScope.Statistics.Models
 {
     /// <summary>
@@ -27,5 +25,5 @@ namespace RefactorScope.Statistics.Models
     public record StatisticsReport(
         ParsingConfidence Confidence,
         MetricsStatisticsSummary Summary
-    );
+    ) : IAnalysisResult;
 }

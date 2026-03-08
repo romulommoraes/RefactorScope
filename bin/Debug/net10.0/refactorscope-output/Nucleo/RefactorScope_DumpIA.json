@@ -188,10 +188,40 @@
       "Code": "namespace Scriptome.Nucleo.Modelos\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa uma aresta no grafo social do roteiro.\r\n    /// Indica que o Personagem A interagiu com o Personagem B X vezes.\r\n    /// \u003C/summary\u003E\r\n    public class ResultadoInteracao\r\n    {\r\n        public string PersonagemA { get; set; }\r\n        public string PersonagemB { get; set; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Quantidade de trocas de turno (fala seguida de fala) entre os dois.\r\n        /// \u003C/summary\u003E\r\n        public int Peso { get; set; }\r\n    }\r\n}"
     },
     {
+      "Name": "ExpressaoEnergetica",
+      "Namespace": "Scriptome.Nucleo.Modelos.Fenotipo",
+      "File": "AvaliaRoteiro\\Nucleo\\Modelos\\Fenotipo\\ExpressaoEnergetica.cs",
+      "Code": "namespace Scriptome.Nucleo.Modelos.Fenotipo\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// EXPRESS\u00C3O ENERG\u00C9TICA DO PERSONAGEM.\r\n    ///\r\n    /// Representa a din\u00E2mica de energia ps\u00EDquica e comportamental,\r\n    /// incluindo intensidade discursiva, termodin\u00E2mica e \u00EDndices\r\n    /// de perversidade.\r\n    ///\r\n    /// Todos os valores derivam diretamente do gen\u00F3tipo lingu\u00EDstico\r\n    /// (DERIVA \u002B Karma \u002B Burst).\r\n    /// \u003C/summary\u003E\r\n    public sealed record ExpressaoEnergetica\r\n    (\r\n        double IntensidadeDiscursiva,\r\n        string ClassificacaoIntensidade,\r\n\r\n        string ClimaTermico,\r\n\r\n        double NivelCrueldade,\r\n        double NivelManipulacao,\r\n        double NivelErotizacao,\r\n        double IndicePerversidade,\r\n        string ClassificacaoPerversidade\r\n    );\r\n}"
+    },
+    {
+      "Name": "ExpressaoNarrativa",
+      "Namespace": "Scriptome.Nucleo.Modelos.Fenotipo",
+      "File": "AvaliaRoteiro\\Nucleo\\Modelos\\Fenotipo\\ExpressaoNarrativa.cs",
+      "Code": "namespace Scriptome.Nucleo.Modelos.Fenotipo\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// EXPRESS\u00C3O NARRATIVA.\r\n    ///\r\n    /// Representa a classifica\u00E7\u00E3o arquet\u00EDpica e simb\u00F3lica\r\n    /// do personagem dentro da estrutura dram\u00E1tica.\r\n    ///\r\n    /// Derivada exclusivamente de classificadores narrativos.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ExpressaoNarrativa\r\n    (\r\n        string ArquetipoScriptome,\r\n        string CategoriaNarrativa\r\n    );\r\n}"
+    },
+    {
+      "Name": "ExpressaoPsicodinamica",
+      "Namespace": "Scriptome.Nucleo.Modelos.Fenotipo",
+      "File": "AvaliaRoteiro\\Nucleo\\Modelos\\Fenotipo\\ExpressaoPsicodinamica.cs",
+      "Code": "namespace Scriptome.Nucleo.Modelos.Fenotipo\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// EXPRESS\u00C3O PSICODIN\u00C2MICA E ESTRUTURAL.\r\n    ///\r\n    /// Consolida os resultados derivados da an\u00E1lise topol\u00F3gica\r\n    /// (Lacan), tipologia cognitiva (MBTI) e organiza\u00E7\u00E3o\r\n    /// estrutural dominante.\r\n    ///\r\n    /// N\u00E3o cont\u00E9m m\u00E9tricas energ\u00E9ticas ou narrativas.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ExpressaoPsicodinamica\r\n    (\r\n        string TipoMbtiRsi,\r\n        double ScoreImaginario,\r\n        double ScoreSimbolico,\r\n        double ScoreReal,\r\n        string RegistroDominante,\r\n        string EstruturaPsiquica\r\n    );\r\n}"
+    },
+    {
+      "Name": "ExpressaoVetorial",
+      "Namespace": "Scriptome.Nucleo.Modelos.Fenotipo",
+      "File": "AvaliaRoteiro\\Nucleo\\Modelos\\Fenotipo\\ExpressaoVetorial.cs",
+      "Code": "namespace Scriptome.Nucleo.Modelos.Fenotipo\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// EXPRESS\u00C3O VETORIAL PURA.\r\n    ///\r\n    /// Representa a posi\u00E7\u00E3o do personagem no espa\u00E7o etogram\u00E1tico 3D\r\n    /// derivado do DERIVA.\r\n    ///\r\n    /// X \u2192 Ego\u00EDsmo \u00D7 Altru\u00EDsmo\r\n    /// Y \u2192 Impulso (Id) \u00D7 Norma (Superego)\r\n    /// Z \u2192 Concreto \u00D7 Abstrato\r\n    ///\r\n    /// N\u00E3o realiza classifica\u00E7\u00E3o.\r\n    /// N\u00E3o possui centroides.\r\n    /// N\u00E3o determina arqu\u00E9tipos.\r\n    ///\r\n    /// \u00C9 uma representa\u00E7\u00E3o geom\u00E9trica do fen\u00F3tipo comportamental.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ExpressaoVetorial\r\n    (\r\n        double EgoismoAltruismo,\r\n        double ImpulsoNorma,\r\n        double ConcretoAbstrato\r\n    )\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Calcula a dist\u00E2ncia euclidiana at\u00E9 outro vetor.\r\n        /// Pode ser utilizada futuramente para clustering\r\n        /// ou an\u00E1lises comparativas.\r\n        /// \u003C/summary\u003E\r\n        public double Distancia(ExpressaoVetorial outro)\r\n        {\r\n            return System.Math.Sqrt(\r\n                System.Math.Pow(EgoismoAltruismo - outro.EgoismoAltruismo, 2) \u002B\r\n                System.Math.Pow(ImpulsoNorma - outro.ImpulsoNorma, 2) \u002B\r\n                System.Math.Pow(ConcretoAbstrato - outro.ConcretoAbstrato, 2)\r\n            );\r\n        }\r\n    }\r\n}"
+    },
+    {
       "Name": "PerfilPersonagemConsolidado",
       "Namespace": "Global",
       "File": "AvaliaRoteiro\\Nucleo\\Modelos\\Fenotipo\\PerfilPersonagemConsolidado.cs",
       "Code": "using Scriptome.Nucleo.Modelos.Fenotipo;\r\n\r\npublic sealed record PerfilPersonagemConsolidado\r\n{\r\n    // =============================\r\n    // IDENTIDADE\r\n    // =============================\r\n    public string Nome { get; init; }\r\n    public int QuantidadeFalas { get; init; }\r\n\r\n    // =============================\r\n    // BASE LINGU\u00CDSTICA\r\n    // =============================\r\n    public string AlinhamentoMoral { get; init; }\r\n    public double KarmaMoral { get; init; }\r\n    public double DramatismoMedio { get; init; }\r\n    public string ArquetipoTermico { get; init; }\r\n    public string DnaVisual { get; init; }\r\n\r\n    // =============================\r\n    // EXPRESS\u00C3O NARRATIVA\r\n    // =============================\r\n    public string ArquetipoNarrativoFinal { get; init; }\r\n    public string DescricaoArquetipo { get; init; }\r\n\r\n    // =============================\r\n    // PSICODIN\u00C2MICA\r\n    // =============================\r\n    public string ArquetipoJung { get; init; }\r\n    public string EstruturaPsiquica { get; init; }\r\n\r\n    public double ScoreReal { get; init; }\r\n    public double ScoreSimbolico { get; init; }\r\n    public double ScoreImaginario { get; init; }\r\n\r\n    public string RegistroDominante { get; init; }\r\n\r\n    public double IndicePerversidade { get; init; }\r\n    public string ClassificacaoPerversidade { get; init; }\r\n\r\n    public double NivelCrueldade { get; init; }\r\n    public double NivelManipulacao { get; init; }\r\n\r\n    public string TipoMbti { get; init; }\r\n\r\n    // =============================\r\n    // DERIVA (Energia)\r\n    // =============================\r\n    public double Dominancia { get; init; }\r\n    public double Ego { get; init; }\r\n    public double Racionalidade { get; init; }\r\n    public double Ironia { get; init; }\r\n    public double Volicao { get; init; }\r\n    public double Afeto { get; init; }\r\n    public double Erudicao { get; init; }\r\n    public double Sensorium { get; init; }\r\n\r\n    // =============================\r\n    // ET\u00D3GRAMA VETORIAL\r\n    // =============================\r\n    public double EgoismoAltruismo { get; init; }\r\n    public double ImpulsoNorma { get; init; }\r\n    public double ConcretoAbstrato { get; init; }\r\n\r\n    // =============================\r\n    // SNAPSHOT INTERNO (opcional)\r\n    // =============================\r\n    public ResultadoBaseLinguistico Base { get; init; }\r\n    public ExpressaoEnergetica Energia { get; init; }\r\n    public ExpressaoPsicodinamica Psique { get; init; }\r\n    public ExpressaoNarrativa Narrativa { get; init; }\r\n    public ExpressaoVetorial Vetorial { get; init; }\r\n}"
+    },
+    {
+      "Name": "ResultadoBaseLinguistico",
+      "Namespace": "Scriptome.Nucleo.Modelos.Fenotipo",
+      "File": "AvaliaRoteiro\\Nucleo\\Modelos\\Fenotipo\\ResultadoBaseLinguistico.cs",
+      "Code": "using System;\r\nusing System.Collections.Generic;\r\nusing System.Text;\r\nnamespace Scriptome.Nucleo.Modelos.Fenotipo\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// REPRESENTA O GEN\u00D3TIPO NARRATIVO DO PERSONAGEM.\r\n    /// \r\n    /// Cont\u00E9m exclusivamente dados derivados da extra\u00E7\u00E3o l\u00E9xica (DERIVA)\r\n    /// e m\u00E9tricas estruturais do roteiro.\r\n    /// \r\n    /// \u00C9 imut\u00E1vel e n\u00E3o sofre altera\u00E7\u00F5es ap\u00F3s cria\u00E7\u00E3o.\r\n    /// \u003C/summary\u003E\r\n    public sealed record ResultadoBaseLinguistico\r\n    (\r\n        string Nome,\r\n        int QuantidadeFalas,\r\n        double DramatismoMedio,\r\n        double BurstMedio,\r\n\r\n        double ScoreDominancia,\r\n        double ScoreEgo,\r\n        double ScoreRacionalidade,\r\n        double ScoreIronia,\r\n        double ScoreVolicao,\r\n        double ScoreAfeto,\r\n        double ScoreErudicao,\r\n        double ScoreSensorium,\r\n\r\n        string DnaVisual,\r\n\r\n        double KarmaMoral,\r\n        double KarmaOrdem,\r\n        string AlinhamentoMoral\r\n    );\r\n}"
     },
     {
       "Name": "BaseImutavel",
@@ -281,8 +311,8 @@
   "Referencias": [
     {
       "FromType": "OrquestradorNucleo",
-      "ToType": "ExtratorEtogramaDeriva6",
-      "Kind": 0
+      "ToType": "IModuloAnalise",
+      "Kind": 3
     },
     {
       "FromType": "OrquestradorNucleo",
@@ -291,22 +321,7 @@
     },
     {
       "FromType": "OrquestradorNucleo",
-      "ToType": "MotorFenotipoV2",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrquestradorNucleo",
       "ToType": "EstatisticasRoteiro",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "PerfilPersonagemConsolidado",
       "Kind": 0
     },
     {
@@ -315,13 +330,48 @@
       "Kind": 0
     },
     {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 1
+    },
+    {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 3
+    },
+    {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 0
+    },
+    {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "ExtratorEtogramaDeriva6",
+      "Kind": 1
+    },
+    {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "ExtratorEtogramaDeriva6",
+      "Kind": 0
+    },
+    {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "MotorFenotipoV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "OrquestradorNucleo",
+      "ToType": "MotorFenotipoV2",
+      "Kind": 0
+    },
+    {
       "FromType": "AdaptadorBasico",
       "ToType": "IModuloAnalise",
       "Kind": 0
     },
     {
       "FromType": "AdaptadorBasico",
-      "ToType": "EstatisticasCena",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -331,8 +381,8 @@
     },
     {
       "FromType": "AdaptadorBasico",
-      "ToType": "Cena",
-      "Kind": 0
+      "ToType": "Dialogo",
+      "Kind": 3
     },
     {
       "FromType": "AdaptadorBasico",
@@ -342,11 +392,21 @@
     {
       "FromType": "AdaptadorBasico",
       "ToType": "Acao",
+      "Kind": 3
+    },
+    {
+      "FromType": "AdaptadorBasico",
+      "ToType": "Acao",
       "Kind": 0
     },
     {
       "FromType": "AdaptadorBasico",
-      "ToType": "Roteiro",
+      "ToType": "EstatisticasCena",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorBeats",
+      "ToType": "IModuloAnalise",
       "Kind": 0
     },
     {
@@ -356,7 +416,12 @@
     },
     {
       "FromType": "AdaptadorBeats",
-      "ToType": "IModuloAnalise",
+      "ToType": "EspecialistaBeats",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorBeats",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -365,23 +430,18 @@
       "Kind": 0
     },
     {
-      "FromType": "AdaptadorBeats",
-      "ToType": "Roteiro",
-      "Kind": 0
-    },
-    {
       "FromType": "AdaptadorDiagnostico",
       "ToType": "IModuloAnalise",
       "Kind": 0
     },
     {
       "FromType": "AdaptadorDiagnostico",
-      "ToType": "EstatisticasRoteiro",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
       "FromType": "AdaptadorDiagnostico",
-      "ToType": "Roteiro",
+      "ToType": "EstatisticasRoteiro",
       "Kind": 0
     },
     {
@@ -391,12 +451,17 @@
     },
     {
       "FromType": "AdaptadorDinamica",
-      "ToType": "EstatisticasRoteiro",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
       "FromType": "AdaptadorDinamica",
-      "ToType": "Roteiro",
+      "ToType": "EstatisticasRoteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorDuracao",
+      "ToType": "IModuloAnalise",
       "Kind": 0
     },
     {
@@ -406,7 +471,12 @@
     },
     {
       "FromType": "AdaptadorDuracao",
-      "ToType": "IModuloAnalise",
+      "ToType": "EspecialistaDuracao",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorDuracao",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -415,9 +485,14 @@
       "Kind": 0
     },
     {
-      "FromType": "AdaptadorDuracao",
-      "ToType": "Roteiro",
+      "FromType": "AdaptadorInteracao",
+      "ToType": "IModuloAnalise",
       "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorInteracao",
+      "ToType": "EspecialistaInteracao",
+      "Kind": 1
     },
     {
       "FromType": "AdaptadorInteracao",
@@ -426,7 +501,7 @@
     },
     {
       "FromType": "AdaptadorInteracao",
-      "ToType": "IModuloAnalise",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -435,38 +510,8 @@
       "Kind": 0
     },
     {
-      "FromType": "AdaptadorInteracao",
-      "ToType": "Roteiro",
-      "Kind": 0
-    },
-    {
       "FromType": "AdaptadorLimbic",
-      "ToType": "IMotorIdentidadeRNA",
-      "Kind": 0
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ProcessadorLinguistico",
-      "Kind": 0
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ResultadoDeriva",
-      "Kind": 0
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorLimbic",
-      "Kind": 0
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ContextoLimbic",
-      "Kind": 0
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeFusao",
+      "ToType": "IModuloAnalise",
       "Kind": 0
     },
     {
@@ -481,7 +526,57 @@
     },
     {
       "FromType": "AdaptadorLimbic",
-      "ToType": "IModuloAnalise",
+      "ToType": "MotorDeFusao",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "MotorLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "IMotorIdentidadeRNA",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "MotorDeTranscricao",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "MotorDeTranscricao",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "PipelineLimbic",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "EspecialistaVocabulario",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "MotorDeFusao",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -491,18 +586,18 @@
     },
     {
       "FromType": "AdaptadorLimbic",
-      "ToType": "PerfilPersonagem",
+      "ToType": "ContextoLimbic",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ContextoLimbic",
       "Kind": 0
     },
     {
       "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeTranscricao",
-      "Kind": 0
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "RnaBruto",
-      "Kind": 0
+      "ToType": "Dialogo",
+      "Kind": 3
     },
     {
       "FromType": "AdaptadorLimbic",
@@ -511,7 +606,57 @@
     },
     {
       "FromType": "AdaptadorLimbic",
-      "ToType": "Roteiro",
+      "ToType": "ResultadoDeriva",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "RnaBruto",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "RnaBruto",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 1
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorLimbic",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "ConversorFenotipo",
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "ConversorFenotipo",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
+      "FromType": "ConversorFenotipo",
+      "ToType": "RnaBruto",
       "Kind": 0
     },
     {
@@ -521,13 +666,8 @@
     },
     {
       "FromType": "ConversorFenotipo",
-      "ToType": "PerfilPersonagem",
-      "Kind": 0
-    },
-    {
-      "FromType": "ConversorFenotipo",
       "ToType": "RnaBruto",
-      "Kind": 0
+      "Kind": 1
     },
     {
       "FromType": "ExtratorEtogramaAdapter",
@@ -541,22 +681,22 @@
     },
     {
       "FromType": "ExtratorEtogramaAdapter",
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExtratorEtogramaAdapter",
       "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
       "FromType": "EspecialistaBeats",
-      "ToType": "EstatisticasRoteiro",
-      "Kind": 0
-    },
-    {
-      "FromType": "EspecialistaBeats",
-      "ToType": "Cena",
-      "Kind": 0
-    },
-    {
-      "FromType": "EspecialistaBeats",
       "ToType": "Roteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaBeats",
+      "ToType": "EstatisticasRoteiro",
       "Kind": 0
     },
     {
@@ -571,8 +711,23 @@
     },
     {
       "FromType": "EspecialistaDinamica",
+      "ToType": "ResultadoDinamica",
+      "Kind": 1
+    },
+    {
+      "FromType": "EspecialistaDinamica",
+      "ToType": "Dialogo",
+      "Kind": 3
+    },
+    {
+      "FromType": "EspecialistaDinamica",
       "ToType": "Dialogo",
       "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaDinamica",
+      "ToType": "Acao",
+      "Kind": 3
     },
     {
       "FromType": "EspecialistaDinamica",
@@ -580,7 +735,7 @@
       "Kind": 0
     },
     {
-      "FromType": "EspecialistaDinamica",
+      "FromType": "EspecialistaDuracao",
       "ToType": "Roteiro",
       "Kind": 0
     },
@@ -600,9 +755,9 @@
       "Kind": 0
     },
     {
-      "FromType": "EspecialistaDuracao",
-      "ToType": "Roteiro",
-      "Kind": 0
+      "FromType": "EspecialistaInteracao",
+      "ToType": "ResultadoInteracao",
+      "Kind": 3
     },
     {
       "FromType": "EspecialistaInteracao",
@@ -611,7 +766,7 @@
     },
     {
       "FromType": "EspecialistaInteracao",
-      "ToType": "Cena",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -620,43 +775,28 @@
       "Kind": 0
     },
     {
-      "FromType": "EspecialistaInteracao",
-      "ToType": "Roteiro",
-      "Kind": 0
-    },
-    {
-      "FromType": "EspecialistaProducao",
-      "ToType": "Cena",
-      "Kind": 0
-    },
-    {
-      "FromType": "EspecialistaProducao",
+      "FromType": "EspecialistaVocabulario",
       "ToType": "Roteiro",
       "Kind": 0
     },
     {
       "FromType": "EspecialistaVocabulario",
       "ToType": "Dialogo",
-      "Kind": 0
+      "Kind": 3
     },
     {
       "FromType": "EspecialistaVocabulario",
-      "ToType": "Roteiro",
+      "ToType": "Dialogo",
       "Kind": 0
     },
     {
       "FromType": "IModuloAnalise",
-      "ToType": "OrquestradorNucleo",
+      "ToType": "Roteiro",
       "Kind": 0
     },
     {
       "FromType": "IModuloAnalise",
       "ToType": "EstatisticasRoteiro",
-      "Kind": 0
-    },
-    {
-      "FromType": "IModuloAnalise",
-      "ToType": "Roteiro",
       "Kind": 0
     },
     {
@@ -671,13 +811,23 @@
     },
     {
       "FromType": "IMotorDeTranscricao",
-      "ToType": "BaseImutavel",
+      "ToType": "RnaLimbic",
       "Kind": 0
     },
     {
       "FromType": "IMotorDeTranscricao",
-      "ToType": "RnaLimbic",
+      "ToType": "BaseImutavel",
       "Kind": 0
+    },
+    {
+      "FromType": "LeitorFountain",
+      "ToType": "Roteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "LeitorFountain",
+      "ToType": "Roteiro",
+      "Kind": 1
     },
     {
       "FromType": "LeitorFountain",
@@ -696,8 +846,8 @@
     },
     {
       "FromType": "LeitorFountain",
-      "ToType": "Roteiro",
-      "Kind": 0
+      "ToType": "Cena",
+      "Kind": 1
     },
     {
       "FromType": "ScriptomeDashboardPipeline",
@@ -706,37 +856,12 @@
     },
     {
       "FromType": "ScriptomeDashboardPipeline",
+      "ToType": "ScriptomeJsonExporter",
+      "Kind": 1
+    },
+    {
+      "FromType": "ScriptomeDashboardPipeline",
       "ToType": "EstatisticasRoteiro",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "IExtratorEtograma",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "MotorVetorialV2",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ConversorFenotipo",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ExtratorEtogramaAdapter",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "IMotorSplicing",
-      "Kind": 0
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "MotorSplicing",
       "Kind": 0
     },
     {
@@ -751,12 +876,82 @@
     },
     {
       "FromType": "MotorFenotipoV2",
+      "ToType": "ExtratorEtogramaAdapter",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "MotorVetorialV2",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "IMotorSplicing",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "IExtratorEtograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "MotorSplicing",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "MotorSplicing",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "ClassificadorEnergia_V2",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "ClassificadorNarrativaV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "ExtratorEtogramaAdapter",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "MotorVetorialV2",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
       "ToType": "PerfilPersonagem",
       "Kind": 0
     },
     {
       "FromType": "MotorFenotipoV2",
-      "ToType": "PerfilPersonagemConsolidado",
+      "ToType": "ConversorFenotipo",
+      "Kind": 2
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "ConversorFenotipo",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "ExpressaoPsicodinamica",
       "Kind": 0
     },
     {
@@ -775,9 +970,24 @@
       "Kind": 0
     },
     {
+      "FromType": "MotorSplicing",
+      "ToType": "ResultadoSplice",
+      "Kind": 1
+    },
+    {
+      "FromType": "EstatisticasRoteiro",
+      "ToType": "EstatisticasCena",
+      "Kind": 3
+    },
+    {
       "FromType": "EstatisticasRoteiro",
       "ToType": "EstatisticasCena",
       "Kind": 0
+    },
+    {
+      "FromType": "EstatisticasRoteiro",
+      "ToType": "PerfilPersonagem",
+      "Kind": 3
     },
     {
       "FromType": "EstatisticasRoteiro",
@@ -787,12 +997,27 @@
     {
       "FromType": "EstatisticasRoteiro",
       "ToType": "ResultadoInteracao",
+      "Kind": 3
+    },
+    {
+      "FromType": "EstatisticasRoteiro",
+      "ToType": "ResultadoInteracao",
       "Kind": 0
     },
     {
       "FromType": "EstatisticasRoteiro",
       "ToType": "PerfilPersonagemConsolidado",
+      "Kind": 3
+    },
+    {
+      "FromType": "EstatisticasRoteiro",
+      "ToType": "PerfilPersonagemConsolidado",
       "Kind": 0
+    },
+    {
+      "FromType": "PerfilPersonagem",
+      "ToType": "Etograma",
+      "Kind": 1
     },
     {
       "FromType": "PerfilPersonagem",
@@ -805,23 +1030,58 @@
       "Kind": 0
     },
     {
+      "FromType": "PerfilPersonagem",
+      "ToType": "ResultadoEtograma",
+      "Kind": 0
+    },
+    {
+      "FromType": "PerfilPersonagem",
+      "ToType": "ResultadoIdentidadeConsolidada",
+      "Kind": 0
+    },
+    {
+      "FromType": "ResultadoAnalise",
+      "ToType": "TermoInfluente",
+      "Kind": 3
+    },
+    {
       "FromType": "ResultadoAnalise",
       "ToType": "TermoInfluente",
       "Kind": 0
     },
     {
-      "FromType": "TermoInfluente",
-      "ToType": "ResultadoAnalise",
+      "FromType": "PerfilPersonagemConsolidado",
+      "ToType": "ResultadoBaseLinguistico",
+      "Kind": 0
+    },
+    {
+      "FromType": "PerfilPersonagemConsolidado",
+      "ToType": "ExpressaoEnergetica",
+      "Kind": 0
+    },
+    {
+      "FromType": "PerfilPersonagemConsolidado",
+      "ToType": "ExpressaoPsicodinamica",
+      "Kind": 0
+    },
+    {
+      "FromType": "PerfilPersonagemConsolidado",
+      "ToType": "ExpressaoNarrativa",
+      "Kind": 0
+    },
+    {
+      "FromType": "PerfilPersonagemConsolidado",
+      "ToType": "ExpressaoVetorial",
       "Kind": 0
     },
     {
       "FromType": "BaseImutavel",
       "ToType": "GeneDiscursivo",
-      "Kind": 0
+      "Kind": 3
     },
     {
-      "FromType": "MotorDeTranscricao",
-      "ToType": "Token",
+      "FromType": "BaseImutavel",
+      "ToType": "GeneDiscursivo",
       "Kind": 0
     },
     {
@@ -831,13 +1091,28 @@
     },
     {
       "FromType": "MotorDeTranscricao",
+      "ToType": "RnaLimbic",
+      "Kind": 0
+    },
+    {
+      "FromType": "MotorDeTranscricao",
       "ToType": "BaseImutavel",
       "Kind": 0
     },
     {
       "FromType": "MotorDeTranscricao",
-      "ToType": "RnaLimbic",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorDeTranscricao",
+      "ToType": "Token",
       "Kind": 0
+    },
+    {
+      "FromType": "MotorDeTranscricao",
+      "ToType": "RnaLimbic",
+      "Kind": 1
     },
     {
       "FromType": "RnaBruto",
@@ -852,16 +1127,11 @@
     {
       "FromType": "RnaLimbic",
       "ToType": "Token",
-      "Kind": 0
+      "Kind": 3
     },
     {
-      "FromType": "ResultadoModuloLimbic",
-      "ToType": "AdaptadorLimbic",
-      "Kind": 0
-    },
-    {
-      "FromType": "ResultadoModuloLimbic",
-      "ToType": "PerfilPersonagem",
+      "FromType": "RnaLimbic",
+      "ToType": "Token",
       "Kind": 0
     },
     {
@@ -870,399 +1140,134 @@
       "Kind": 0
     },
     {
-      "FromType": "Cena",
-      "ToType": "ElementoCena",
-      "Kind": 0
-    },
-    {
-      "FromType": "ElementoCena",
-      "ToType": "Dialogo",
-      "Kind": 0
-    },
-    {
-      "FromType": "ElementoCena",
-      "ToType": "Acao",
-      "Kind": 0
-    },
-    {
-      "FromType": "ElementoCena",
-      "ToType": "Transicao",
-      "Kind": 0
-    },
-    {
-      "FromType": "Dialogo",
-      "ToType": "ElementoCena",
-      "Kind": 0
-    },
-    {
-      "FromType": "Dialogo",
-      "ToType": "Acao",
-      "Kind": 0
-    },
-    {
-      "FromType": "Dialogo",
-      "ToType": "Transicao",
-      "Kind": 0
-    },
-    {
-      "FromType": "Acao",
-      "ToType": "ElementoCena",
-      "Kind": 0
-    },
-    {
-      "FromType": "Acao",
-      "ToType": "Dialogo",
-      "Kind": 0
-    },
-    {
-      "FromType": "Acao",
-      "ToType": "Transicao",
-      "Kind": 0
-    },
-    {
-      "FromType": "Transicao",
-      "ToType": "ElementoCena",
-      "Kind": 0
-    },
-    {
-      "FromType": "Transicao",
-      "ToType": "Dialogo",
-      "Kind": 0
-    },
-    {
-      "FromType": "Transicao",
-      "ToType": "Acao",
-      "Kind": 0
-    },
-    {
-      "FromType": "Roteiro",
-      "ToType": "Cena",
-      "Kind": 0
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "IModuloAnalise",
-      "Kind": 3
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "EstatisticasRoteiro",
-      "Kind": 1
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "ExtratorEtogramaDeriva6",
-      "Kind": 1
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "MotorFenotipoV2",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorBasico",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "AdaptadorBasico",
-      "ToType": "Acao",
-      "Kind": 3
-    },
-    {
-      "FromType": "AdaptadorBeats",
-      "ToType": "EspecialistaBeats",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorBeats",
-      "ToType": "EspecialistaBeats",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorDuracao",
-      "ToType": "EspecialistaDuracao",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorDuracao",
-      "ToType": "EspecialistaDuracao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorInteracao",
-      "ToType": "EspecialistaInteracao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorInteracao",
-      "ToType": "EspecialistaInteracao",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "PipelineLimbic",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "EspecialistaVocabulario",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeFusao",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorLimbic",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "IMotorIdentidadeRNA",
-      "Kind": 6
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeTranscricao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ProcessadorLinguistico",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "PipelineLimbic",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "EspecialistaVocabulario",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeFusao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ContextoLimbic",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "RnaBruto",
-      "Kind": 1
-    },
-    {
-      "FromType": "ConversorFenotipo",
-      "ToType": "RnaBruto",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExtratorEtogramaAdapter",
-      "ToType": "IExtratorEtograma",
-      "Kind": 6
-    },
-    {
-      "FromType": "EspecialistaDinamica",
-      "ToType": "ResultadoDinamica",
-      "Kind": 1
-    },
-    {
-      "FromType": "EspecialistaDinamica",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "EspecialistaDinamica",
-      "ToType": "Acao",
-      "Kind": 3
-    },
-    {
-      "FromType": "EspecialistaInteracao",
-      "ToType": "ResultadoInteracao",
-      "Kind": 3
-    },
-    {
-      "FromType": "EspecialistaVocabulario",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "LeitorFountain",
-      "ToType": "Roteiro",
-      "Kind": 1
-    },
-    {
-      "FromType": "LeitorFountain",
-      "ToType": "Cena",
-      "Kind": 6
-    },
-    {
-      "FromType": "LeitorFountain",
-      "ToType": "Dialogo",
-      "Kind": 6
-    },
-    {
-      "FromType": "LeitorFountain",
-      "ToType": "Cena",
-      "Kind": 1
-    },
-    {
-      "FromType": "ScriptomeDashboardPipeline",
-      "ToType": "ScriptomeJsonExporter",
-      "Kind": 6
-    },
-    {
-      "FromType": "ScriptomeDashboardPipeline",
-      "ToType": "ScriptomeJsonExporter",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ClassificadorEnergia_V2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ClassificadorNarrativaV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ExtratorEtogramaAdapter",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "MotorVetorialV2",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "IMotorSplicing",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "MotorSplicing",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ClassificadorEnergia_V2",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ClassificadorNarrativaV2",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ExtratorEtogramaAdapter",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "MotorVetorialV2",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorFenotipoV2",
-      "ToType": "ConversorFenotipo",
-      "Kind": 2
-    },
-    {
-      "FromType": "MotorSplicing",
-      "ToType": "ResultadoSplice",
-      "Kind": 1
-    },
-    {
-      "FromType": "EstatisticasRoteiro",
-      "ToType": "EstatisticasCena",
-      "Kind": 3
-    },
-    {
-      "FromType": "EstatisticasRoteiro",
-      "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "EstatisticasRoteiro",
-      "ToType": "ResultadoInteracao",
-      "Kind": 3
-    },
-    {
-      "FromType": "EstatisticasRoteiro",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
-    },
-    {
-      "FromType": "PerfilPersonagem",
-      "ToType": "Etograma",
-      "Kind": 1
-    },
-    {
-      "FromType": "ResultadoAnalise",
-      "ToType": "TermoInfluente",
-      "Kind": 3
-    },
-    {
-      "FromType": "BaseImutavel",
-      "ToType": "GeneDiscursivo",
-      "Kind": 3
-    },
-    {
-      "FromType": "MotorDeTranscricao",
-      "ToType": "IPipelineLinguistico",
-      "Kind": 6
-    },
-    {
-      "FromType": "MotorDeTranscricao",
-      "ToType": "Token",
-      "Kind": 3
-    },
-    {
-      "FromType": "MotorDeTranscricao",
-      "ToType": "RnaLimbic",
-      "Kind": 1
-    },
-    {
-      "FromType": "RnaLimbic",
-      "ToType": "Token",
-      "Kind": 3
-    },
-    {
       "FromType": "ResultadoModuloLimbic",
       "ToType": "PerfilPersonagem",
       "Kind": 3
     },
     {
+      "FromType": "ResultadoModuloLimbic",
+      "ToType": "PerfilPersonagem",
+      "Kind": 0
+    },
+    {
       "FromType": "Cena",
       "ToType": "ElementoCena",
       "Kind": 3
     },
     {
+      "FromType": "Cena",
+      "ToType": "ElementoCena",
+      "Kind": 0
+    },
+    {
+      "FromType": "Dialogo",
+      "ToType": "ElementoCena",
+      "Kind": 0
+    },
+    {
+      "FromType": "Acao",
+      "ToType": "ElementoCena",
+      "Kind": 0
+    },
+    {
+      "FromType": "Transicao",
+      "ToType": "ElementoCena",
+      "Kind": 0
+    },
+    {
       "FromType": "Roteiro",
       "ToType": "Cena",
       "Kind": 3
+    },
+    {
+      "FromType": "Roteiro",
+      "ToType": "Cena",
+      "Kind": 0
+    },
+    {
+      "FromType": "AdaptadorBasico",
+      "ToType": "Cena",
+      "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaBeats",
+      "ToType": "Cena",
+      "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaDinamica",
+      "ToType": "Roteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaInteracao",
+      "ToType": "Cena",
+      "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaProducao",
+      "ToType": "Cena",
+      "Kind": 0
+    },
+    {
+      "FromType": "EspecialistaProducao",
+      "ToType": "Roteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "IModuloAnalise",
+      "ToType": "OrquestradorNucleo",
+      "Kind": 0
+    },
+    {
+      "FromType": "TermoInfluente",
+      "ToType": "ResultadoAnalise",
+      "Kind": 0
+    },
+    {
+      "FromType": "ElementoCena",
+      "ToType": "Dialogo",
+      "Kind": 0
+    },
+    {
+      "FromType": "Acao",
+      "ToType": "Dialogo",
+      "Kind": 0
+    },
+    {
+      "FromType": "Transicao",
+      "ToType": "Dialogo",
+      "Kind": 0
+    },
+    {
+      "FromType": "ElementoCena",
+      "ToType": "Acao",
+      "Kind": 0
+    },
+    {
+      "FromType": "Dialogo",
+      "ToType": "Acao",
+      "Kind": 0
+    },
+    {
+      "FromType": "Transicao",
+      "ToType": "Acao",
+      "Kind": 0
+    },
+    {
+      "FromType": "ElementoCena",
+      "ToType": "Transicao",
+      "Kind": 0
+    },
+    {
+      "FromType": "Dialogo",
+      "ToType": "Transicao",
+      "Kind": 0
+    },
+    {
+      "FromType": "Acao",
+      "ToType": "Transicao",
+      "Kind": 0
     }
   ]
 }
