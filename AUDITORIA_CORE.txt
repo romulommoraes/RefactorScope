@@ -2131,19 +2131,26 @@ CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestrat
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Estimation;
 using RefactorScope.Estimation.Models;
 using RefactorScope.Statistics.Models;
-using RefactorScope.Estimation;
+using RefactorScope.Statistics.Engines;
 
 namespace RefactorScope.Core.Orchestration
 {
     /// <summary>
-    /// Responsável por executar os analisadores habilitados
-    /// e consolidar seus resultados.
+    /// Orquestra a execução das etapas de análise do RefactorScope.
     ///
-    /// ?? Importante:
-    /// O threshold probabilístico de zombie passa a fazer parte
-    /// do estado consolidado da análise (ConsolidatedReport).
+    /// Este fluxo substitui a antiga PipelineStep architecture
+    /// mantendo as mesmas fases conceituais:
+    ///
+    /// 1) AnalyzerStep
+    /// 2) StatisticsStep
+    /// 3) EstimationStep
+    ///
+    /// Cada etapa está isolada em um método.
+    /// Caso uma pipeline formal seja necessária no futuro,
+    /// basta extrair cada método como um Step.
     /// </summary>
     public class AnalysisOrchestrator
     {
@@ -2154,62 +2161,160 @@ namespace RefactorScope.Core.Orchestration
             _analyzers = analyzers;
         }
 
-        /// <summary>
-        /// Executa os analisadores ativos conforme configuração.
-        /// Atualiza o contexto incrementalmente para suportar
-        /// dependência entre analisadores (two-pass model).
-        /// </summary>
-        public ConsolidatedReport Execute(
-    AnalysisContext context,
-    StatisticsReport? statistics = null)
+        public ConsolidatedReport Execute(AnalysisContext context)
         {
-            var activeResults = new List<IAnalysisResult>();
+            var results = new List<IAnalysisResult>();
 
+            //------------------------------------------
+            // STEP 1 — AnalyzerStep
+            //------------------------------------------
+
+            RunAnalyzers(context, results);
+
+            //------------------------------------------
+            // STEP 2 — Build consolidated report
+            //------------------------------------------
+
+            var report = BuildReport(context, results);
+
+            //------------------------------------------
+            // STEP 3 — StatisticsStep
+            //------------------------------------------
+
+            RunStatistics(context, ref report, results);
+
+            //------------------------------------------
+            // STEP 4 — EstimationStep
+            //------------------------------------------
+
+            RunEffortEstimation(context, report, results);
+
+            return report;
+        }
+
+        // =====================================================
+        // AnalyzerStep
+        // =====================================================
+
+        private void RunAnalyzers(
+            AnalysisContext context,
+            List<IAnalysisResult> results)
+        {
             foreach (var analyzer in _analyzers)
             {
                 if (!IsAnalyzerEnabled(context, analyzer))
                     continue;
 
-                var result = analyzer.Analyze(context);
+                try
+                {
+                    var result = analyzer.Analyze(context);
 
-                activeResults.Add(result);
+                    results.Add(result);
 
-                // ?? Atualiza contexto incrementalmente
-                context.Results = activeResults;
+                    // Atualiza contexto incremental
+                    context.Results = results;
+                }
+                catch (Exception ex)
+                {
+                    Infrastructure.CrashLogger.Log(
+                        ex,
+                        $"ANALYZER_{analyzer.Name}");
+                }
             }
+        }
 
+        // =====================================================
+        // Build Report
+        // =====================================================
+
+        private ConsolidatedReport BuildReport(
+            AnalysisContext context,
+            List<IAnalysisResult> results)
+        {
             var zombieThreshold =
                 context.Config.StructuralCandidateDetection
                     .MinUnresolvedProbabilityThreshold;
 
-            var report = new ConsolidatedReport(
-                activeResults,
+            return new ConsolidatedReport(
+                results,
                 context.ExecutionTime,
                 context.Config.RootPath,
                 zombieThreshold
             );
+        }
 
-            // -------------------------------------------------
-            // Effort Estimation Phase
-            // -------------------------------------------------
+        // =====================================================
+        // StatisticsStep
+        // =====================================================
 
-            if (statistics != null && context.Config.Estimator?.Enabled == true)
+        private void RunStatistics(
+            AnalysisContext context,
+            ref ConsolidatedReport report,
+            List<IAnalysisResult> results)
+        {
+            if (context.Config.Statistics?.Enabled != true)
+                return;
+
+            try
+            {
+                var statsReport = ValidationEngine.RunSafely(
+                    context,
+                    report,
+                    (ex, phase) => Infrastructure.CrashLogger.Log(ex, phase)
+                );
+
+                if (statsReport == null)
+                    return;
+
+                results.Add(statsReport);
+
+                context.Results = results;
+
+                report = new ConsolidatedReport(
+                    results,
+                    report.ExecutionTime,
+                    report.TargetScope,
+                    report.UnresolvedProbabilityThreshold
+                );
+            }
+            catch (Exception ex)
+            {
+                Infrastructure.CrashLogger.Log(ex, "STATISTICS_STEP");
+            }
+        }
+
+        // =====================================================
+        // EstimationStep
+        // =====================================================
+
+        private void RunEffortEstimation(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            List<IAnalysisResult> results)
+        {
+            if (context.Config.Estimator?.Enabled != true)
+                return;
+
+            try
             {
                 var estimate = EffortEstimator.Estimate(context, report);
 
-                // adiciona ao contexto para exporters / dashboards
-                activeResults.Add(new EffortEstimateResult(estimate));
+                var estimateResult = new EffortEstimateResult(estimate);
 
-                context.Results = activeResults;
+                results.Add(estimateResult);
+
+                context.Results = results;
             }
-
-            return report;
+            catch (Exception ex)
+            {
+                Infrastructure.CrashLogger.Log(ex, "ESTIMATION_STEP");
+            }
         }
 
-        /// <summary>
-        /// Verifica se o analisador está habilitado na configuração.
-        /// Se não houver configuração explícita, assume habilitado.
-        /// </summary>
+        // =====================================================
+        // Helper
+        // =====================================================
+
         private bool IsAnalyzerEnabled(
             AnalysisContext context,
             IAnalyzer analyzer)
@@ -2862,144 +2967,6 @@ namespace RefactorScope.Core.Patterns
 
 
             return PatternSignatureResult.None();
-        }
-    }
-}
-
-
-==========================================
-ARQUIVO: AnalyzerStep.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Pipeline\AnalyzerStep.cs
-==========================================
-using RefactorScope.Core.Abstractions;
-using RefactorScope.Core.Context;
-
-namespace RefactorScope.Core.Pipeline
-{
-    public class AnalyzerStep : IPipelineStep
-    {
-        private readonly IAnalyzer _analyzer;
-
-        public AnalyzerStep(IAnalyzer analyzer)
-        {
-            _analyzer = analyzer;
-        }
-
-        public string Name => _analyzer.Name;
-
-        public void Execute(AnalysisContext context)
-        {
-            var result = _analyzer.Analyze(context);
-
-            var results = context.Results.ToList();
-            results.Add(result);
-
-            context.Results = results;
-        }
-    }
-}
-
-
-==========================================
-ARQUIVO: EstimationStep.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Pipeline\EstimationStep.cs
-==========================================
-using RefactorScope.Core.Abstractions;
-using RefactorScope.Core.Context;
-using RefactorScope.Core.Results;
-using RefactorScope.Estimation;
-
-namespace RefactorScope.Core.Pipeline
-{
-    /// <summary>
-    /// Executa o EffortEstimator no pipeline.
-    /// </summary>
-    public class EstimationStep : IPipelineStep
-    {
-        public string Name => "RefactorEffort";
-
-        public void Execute(AnalysisContext context)
-        {
-            var statsResult =
-                context.GetResult<StatisticsResult>();
-
-            if (statsResult == null)
-                return;
-
-            var threshold =
-                context.Config.StructuralCandidateDetection
-                .MinUnresolvedProbabilityThreshold;
-
-            var consolidated =
-                new ConsolidatedReport(
-                    context.Results.ToList(),
-                    context.ExecutionTime,
-                    context.Config.RootPath,
-                    threshold
-                );
-
-            var estimate =
-                EffortEstimator.Estimate(
-                    context,
-                    consolidated
-                );
-
-            var results = context.Results.ToList();
-
-            results.Add(new EffortEstimateResult(estimate));
-
-            context.Results = results;
-        }
-    }
-}
-
-
-==========================================
-ARQUIVO: StatisticsStep.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Pipeline\StatisticsStep.cs
-==========================================
-using RefactorScope.Core.Abstractions;
-using RefactorScope.Core.Context;
-using RefactorScope.Core.Results;
-using RefactorScope.Statistics.Engines;
-
-namespace RefactorScope.Core.Pipeline
-{
-    /// <summary>
-    /// Executa a camada estatística do RefactorScope.
-    /// </summary>
-    public class StatisticsStep : IPipelineStep
-    {
-        public string Name => "Statistics";
-
-        public void Execute(AnalysisContext context)
-        {
-            var zombieThreshold =
-                context.Config.StructuralCandidateDetection
-                .MinUnresolvedProbabilityThreshold;
-
-            // recria relatório consolidado a partir do contexto atual
-            var report = new ConsolidatedReport(
-                context.Results,
-                context.ExecutionTime,
-                context.Config.RootPath,
-                zombieThreshold
-            );
-
-            var stats = ValidationEngine.RunSafely(
-                context,
-                report,
-                Infrastructure.CrashLogger.Log
-            );
-
-            if (stats == null)
-                return;
-
-            var results = context.Results.ToList();
-
-            results.Add(new StatisticsResult(stats));
-
-            context.Results = results;
         }
     }
 }

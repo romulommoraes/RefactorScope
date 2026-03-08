@@ -616,7 +616,7 @@ function sortTable(n) {
             double couplingRating =
                 hygiene.TotalClasses == 0
                     ? 0
-                    : implicitCoupling?.Suspicions.Count ?? 0 / (double)hygiene.TotalClasses;
+                    : (implicitCoupling?.Suspicions.Count ?? 0 )/ (double)hygiene.TotalClasses;
             var implicitCouplingDiagnosis =
     couplingRating switch
     {

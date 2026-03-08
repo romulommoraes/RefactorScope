@@ -710,6 +710,23 @@ loadCSV('../dataset_arch_health.csv', data => {{
 
 
 ==========================================
+ARQUIVO: HubDashboardExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\HubDashboardExporter.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Exporters
+{
+    internal class HubDashboardExporter
+    {
+    }
+}
+
+
+
+==========================================
 ARQUIVO: MarkdownReportExporter.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\MarkdownReportExporter.cs
 ==========================================
@@ -2162,7 +2179,7 @@ function sortTable(n) {
             double couplingRating =
                 hygiene.TotalClasses == 0
                     ? 0
-                    : implicitCoupling?.Suspicions.Count ?? 0 / (double)hygiene.TotalClasses;
+                    : (implicitCoupling?.Suspicions.Count ?? 0 )/ (double)hygiene.TotalClasses;
             var implicitCouplingDiagnosis =
     couplingRating switch
     {

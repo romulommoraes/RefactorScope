@@ -201,8 +201,8 @@ namespace RefactorScope.Parsers.Common
 ARQUIVO: CSharpRegexParser.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\CsharpParsers\CSharpRegexParser.cs
 ==========================================
-using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Scope;
@@ -210,30 +210,68 @@ using RefactorScope.Core.Parsing;
 
 namespace RefactorScope.Parsers.CsharpParsers
 {
+    /// <summary>
+    /// Parser C# baseado em Regex.
+    ///
+    /// Objetivos desta implementação:
+    /// 
+    /// - Preservar compatibilidade com a arquitetura atual do RefactorScope.
+    /// - Utilizar SanitizedSourceProvider para evitar interferência de comentários XML.
+    /// - Evitar múltiplos acessos a disco (cache de conteúdo).
+    /// - Detectar tipos estruturais de forma conservadora.
+    /// - Detectar referências com heurística segura para C#.
+    ///
+    /// Este parser NÃO realiza parsing sintático completo (AST).
+    /// Ele extrai apenas a estrutura necessária para análise arquitetural.
+    /// </summary>
     public class CSharpRegexParser : IParserCodigo
     {
         public string Name => "CSharpRegex";
 
         private readonly SanitizedSourceProvider _sourceProvider;
 
+        /// <summary>
+        /// Construtor principal utilizado pelo ParserSelector.
+        /// </summary>
         public CSharpRegexParser(SanitizedSourceProvider sourceProvider)
         {
             _sourceProvider = sourceProvider;
         }
 
+        /// <summary>
+        /// Construtor de fallback para cenários de instância direta.
+        /// </summary>
         public CSharpRegexParser()
         {
-            _sourceProvider = new SanitizedSourceProvider(new Parsers.Common.CSharpPreParser());
+            _sourceProvider = new SanitizedSourceProvider(
+                new Parsers.Common.CSharpPreParser());
         }
 
+        /// <summary>
+        /// Regex para detecção de namespace.
+        /// </summary>
         private static readonly Regex NamespaceRegex =
-            new(@"namespace\s+([\w\.]+)", RegexOptions.Compiled | RegexOptions.Multiline);
+            new(@"namespace\s+([\w\.]+)",
+                RegexOptions.Compiled | RegexOptions.Multiline);
 
-        // SUA REGEX ORIGINAL DE TIPOS (Endurecida)
+        /// <summary>
+        /// Regex restritiva para declaração de tipos C#.
+        /// 
+        /// Exige que após o nome exista:
+        ///     {
+        ///     :
+        ///     <
+        ///     where
+        /// 
+        /// Isso evita capturar identificadores falsos.
+        /// </summary>
         private static readonly Regex TypeRegex =
             new(@"\b(class|interface|record|struct)\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:<|\{|:|where)",
                 RegexOptions.Compiled | RegexOptions.Multiline);
 
+        /// <summary>
+        /// Palavras reservadas que não devem ser tratadas como tipos.
+        /// </summary>
         private static readonly HashSet<string> ReservedKeywords =
             new(StringComparer.OrdinalIgnoreCase)
             {
@@ -243,6 +281,9 @@ namespace RefactorScope.Parsers.CsharpParsers
                 "namespace","class","interface","record","struct"
             };
 
+        /// <summary>
+        /// Método principal de parsing exigido por IParserCodigo.
+        /// </summary>
         public IParserResult Parse(
             string rootPath,
             IEnumerable<string>? include = null,
@@ -251,6 +292,7 @@ namespace RefactorScope.Parsers.CsharpParsers
             try
             {
                 var stopwatch = Stopwatch.StartNew();
+
                 var scope = new ScopeRuleSet(include, exclude);
 
                 var arquivos = new List<ArquivoInfo>();
@@ -262,6 +304,7 @@ namespace RefactorScope.Parsers.CsharpParsers
                     .Where(f => scope.IsInScope(rootPath, f))
                     .ToList();
 
+                /// Cache de conteúdo para evitar múltiplos acessos a disco.
                 var fileContents = new Dictionary<string, string>();
 
                 // =====================================================
@@ -270,13 +313,25 @@ namespace RefactorScope.Parsers.CsharpParsers
                 foreach (var file in csFiles)
                 {
                     string source;
-                    try { source = _sourceProvider.Read(file); } catch { continue; }
+
+                    try
+                    {
+                        source = _sourceProvider.Read(file);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
 
                     var relativePath = Path.GetRelativePath(rootPath, file);
+
                     fileContents[relativePath] = source;
 
                     var nsMatch = NamespaceRegex.Match(source);
-                    var ns = nsMatch.Success ? nsMatch.Groups[1].Value : "Global";
+
+                    var ns = nsMatch.Success
+                        ? nsMatch.Groups[1].Value
+                        : "Global";
 
                     var matches = TypeRegex.Matches(source);
 
@@ -285,8 +340,11 @@ namespace RefactorScope.Parsers.CsharpParsers
                         var kind = match.Groups[1].Value;
                         var typeName = match.Groups[2].Value;
 
-                        if (ReservedKeywords.Contains(typeName)) continue;
-                        if (!IsValidIdentifier(typeName)) continue;
+                        if (ReservedKeywords.Contains(typeName))
+                            continue;
+
+                        if (!IsValidIdentifier(typeName))
+                            continue;
 
                         tipos.Add(new TipoInfo(
                             typeName,
@@ -298,7 +356,9 @@ namespace RefactorScope.Parsers.CsharpParsers
                     }
                 }
 
-                var tipoNames = tipos.Select(t => t.Name).ToHashSet();
+                var tipoNames = tipos
+                    .Select(t => t.Name)
+                    .ToHashSet();
 
                 // =====================================================
                 // 2?? Detecção de referências
@@ -306,37 +366,42 @@ namespace RefactorScope.Parsers.CsharpParsers
                 foreach (var file in csFiles)
                 {
                     var relativePath = Path.GetRelativePath(rootPath, file);
-                    if (!fileContents.TryGetValue(relativePath, out var source)) continue;
 
-                    // ?? CORREÇÃO 1: FAKE ZOMBIE
-                    // Remove conteúdo das aspas apenas na cópia do texto usada para buscar referências
-                    var searchSource = StripStringLiterals(source);
+                    if (!fileContents.TryGetValue(relativePath, out var source))
+                        continue;
 
-                    var tiposDoArquivo = tipos.Where(t => t.DeclaredInFile == relativePath).ToList();
-                    var fromTypes = tiposDoArquivo.Select(t => t.Name).ToList();
+                    var tiposDoArquivo = tipos
+                        .Where(t => t.DeclaredInFile == relativePath)
+                        .ToList();
 
-                    // ?? CORREÇÃO 2: PROGRAM.CS / STEPS
-                    // Se o arquivo não tiver classe, assume o nome do arquivo (ex: Program)
-                    if (fromTypes.Count == 0)
+                    if (tiposDoArquivo.Count == 0)
                     {
-                        fromTypes.Add(Path.GetFileNameWithoutExtension(relativePath));
+                        // ainda escanear referências
+                        tiposDoArquivo = new List<TipoInfo>();
                     }
 
                     foreach (var target in tipoNames)
                     {
-                        // Usa a SUA busca padrão, respeitando namespaces e generics
-                        if (Regex.IsMatch(searchSource, $@"\b{Regex.Escape(target)}\b"))
-                        {
-                            foreach (var fromType in fromTypes)
-                            {
-                                if (target == fromType) continue;
+                        /// Heurística robusta para identificar uso de tipo
+                        /// mesmo em generics, namespaces qualificados e arrays.
+                        var pattern =
+                            $@"(?<![\w\.]){Regex.Escape(target)}(?![\w])";
 
-                                // Evita duplicidade simples
-                                if (!referencias.Any(r => r.FromType == fromType && r.ToType == target && r.Kind == TipoReferencia.Mention))
-                                {
-                                    referencias.Add(new ReferenciaInfo(fromType, target, TipoReferencia.Mention));
-                                }
-                            }
+                        if (!Regex.IsMatch(source, pattern))
+                            continue;
+
+                        foreach (var tipo in tiposDoArquivo)
+                        {
+                            if (target == tipo.Name)
+                                continue;
+
+                            referencias.Add(
+                                new ReferenciaInfo(
+                                    tipo.Name,
+                                    target,
+                                    TipoReferencia.Mention
+                                )
+                            );
                         }
                     }
                 }
@@ -346,7 +411,9 @@ namespace RefactorScope.Parsers.CsharpParsers
                 // =====================================================
                 foreach (var tipo in tipos)
                 {
-                    var refs = referencias.Where(r => r.FromType == tipo.Name).ToList();
+                    var refs = referencias
+                        .Where(r => r.FromType == tipo.Name)
+                        .ToList();
 
                     typeof(TipoInfo)
                         .GetField("<References>k__BackingField",
@@ -361,48 +428,79 @@ namespace RefactorScope.Parsers.CsharpParsers
                 foreach (var file in csFiles)
                 {
                     var relativePath = Path.GetRelativePath(rootPath, file);
-                    if (!fileContents.TryGetValue(relativePath, out var source)) continue;
+
+                    if (!fileContents.TryGetValue(relativePath, out var source))
+                        continue;
 
                     var nsMatch = NamespaceRegex.Match(source);
-                    var ns = nsMatch.Success ? nsMatch.Groups[1].Value : "Global";
-                    var tiposDoArquivo = tipos.Where(t => t.DeclaredInFile == relativePath).ToList();
 
-                    arquivos.Add(new ArquivoInfo(relativePath, ns, source, tiposDoArquivo));
+                    var ns = nsMatch.Success
+                        ? nsMatch.Groups[1].Value
+                        : "Global";
+
+                    var tiposDoArquivo = tipos
+                        .Where(t => t.DeclaredInFile == relativePath)
+                        .ToList();
+
+                    arquivos.Add(
+                        new ArquivoInfo(
+                            relativePath,
+                            ns,
+                            source,
+                            tiposDoArquivo
+                        )
+                    );
                 }
 
-                var model = new ModeloEstrutural(rootPath, arquivos, tipos, referencias);
+                var model = new ModeloEstrutural(
+                    rootPath,
+                    arquivos,
+                    tipos,
+                    referencias
+                );
+
                 stopwatch.Stop();
+
+                ParserExecutionStats? stats = null;
 
                 return new ParserResult(
                     ParseStatus.Success,
                     true,
-                    0.95,
+                    tipos.Count / (double)Math.Max(arquivos.Count, 1),
                     Name,
                     model,
                     false,
-                    new ParserExecutionStats(stopwatch.Elapsed, 0, false)
+                    stats
                 );
             }
             catch (Exception ex)
             {
-                return new ParserResult(ParseStatus.Failed, false, 0, Name, null, false, null, ex);
+                return new ParserResult(
+                    ParseStatus.Failed,
+                    false,
+                    0,
+                    Name,
+                    null,
+                    false,
+                    null,
+                    ex
+                );
             }
         }
 
         /// <summary>
-        /// Remove apenas o conteúdo de strings literais para evitar referências zumbis
-        /// Ex: "services.AddScoped<FakeZombieService>();" vira ""
+        /// Validação básica de identificador C#.
         /// </summary>
-        private static string StripStringLiterals(string input)
-        {
-            return Regex.Replace(input, @"""(?:\\.|[^""])*""", "\"\"");
-        }
-
         private static bool IsValidIdentifier(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) return false;
-            if (!char.IsLetter(name[0]) && name[0] != '_') return false;
-            return name.All(c => char.IsLetterOrDigit(c) || c == '_');
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            if (!char.IsLetter(name[0]) && name[0] != '_')
+                return false;
+
+            return name.All(c =>
+                char.IsLetterOrDigit(c) || c == '_');
         }
     }
 }
@@ -1545,31 +1643,6 @@ public static class ModeloMerger
             arquivos,
             tipos,
             referenciasCombinadas);
-    }
-}
-
-
-==========================================
-ARQUIVO: PatternSimilarityFallback.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Parsers\Fallback\PatternSimilarityFallback.cs
-==========================================
-namespace RefactorScope.Parsers.Fallback;
-
-/// <summary>
-/// Fallback utilizado quando uma classe não pode ser
-/// interpretada corretamente pelos parsers principais.
-///
-/// O algoritmo utiliza similaridade estrutural entre
-/// padrões conhecidos para tentar reconstruir a classe.
-/// </summary>
-public static class PatternSimilarityFallback
-{
-    public static void RegisterFallback(
-        string className,
-        Action<string>? warn)
-    {
-        warn?.Invoke(
-            $"Pattern similarity fallback applied to {className}");
     }
 }
 

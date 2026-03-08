@@ -317,6 +317,8 @@ namespace RefactorScope.Infrastructure
         public static void CouplingHeuristicNotice()
         {
             AnsiConsole.MarkupLine(
+            "[red]Note: Unresolved refers to the remaining Dead Code Candidates that could not be excluded by the probabilistic validation steps of the methodology. These require manual inspection. [/]");
+            AnsiConsole.MarkupLine(
             "[grey]Note: Coupling penalties are heuristically reduced for tooling modules (CLI, Execution, Exporters, Statistics). Interpret with caution.[/]");
         }
 
@@ -331,7 +333,7 @@ namespace RefactorScope.Infrastructure
             var panel = new Panel(
                 $"[bold]CodeSmellIndex[/]: [{smellColor}]{hygiene.SmellIndex:0.0}[/]\n" +
                 $"[bold]Hygiene[/]: {hygiene.HygieneLevel}\n\n" +
-                $"Dead Code: {hygiene.UnreferencedCount}\n" +
+                $"Dead Code Candidates: {hygiene.UnreferencedCount}\n" +
                 $"Namespace Drift: {hygiene.NamespaceDriftCount}\n" +
                 $"Global Namespace: {hygiene.GlobalNamespaceCount}\n" +
                 $"Isolated Core: {hygiene.IsolatedCoreCount}"

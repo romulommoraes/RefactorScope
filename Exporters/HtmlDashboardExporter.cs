@@ -1,6 +1,7 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Estimation.Models;
 using System.Text;
 
 namespace RefactorScope.Exporters
@@ -14,169 +15,188 @@ namespace RefactorScope.Exporters
             var dashboardDir = Path.Combine(outputPath, "dashboard");
             Directory.CreateDirectory(dashboardDir);
 
-            var htmlPath = Path.Combine(dashboardDir, "index.html");
+            EnsureVendorAssets(dashboardDir);
 
-            var unresolved = report.GetEffectiveUnresolvedCandidates();
-            var structural = report.GetStructuralCandidates();
-            var patternSimilarity = report.GetPatternSimilarityCandidates();
+            // -------------------------------------------------
+            // 1) Structural dashboard
+            // -------------------------------------------------
+            var structuralExporter = new StructuralInventoryExporter();
+            structuralExporter.Export(report, dashboardDir);
 
-            var html = BuildHtml(unresolved, structural, patternSimilarity);
+            // -------------------------------------------------
+            // 2) Parsing dashboard
+            // -------------------------------------------------
+            string parsingFileName = "ParsingDashboard.html";
 
-            File.WriteAllText(htmlPath, html);
+            var parserResult = TryGetParserResult(context);
+
+            if (parserResult != null)
+            {
+                var parsingExporter = new ParsingDashboardExporter();
+                parsingExporter.Export(parserResult, dashboardDir);
+            }
+
+            // -------------------------------------------------
+            // 3) Architectural report (markdown for now)
+            // -------------------------------------------------
+            string architecturalFileName = "Relatorio_Arquitetural.md";
+            var markdownPath = Path.Combine(dashboardDir, architecturalFileName);
+
+            var markdownExporter = new MarkdownReportExporter();
+            markdownExporter.Export(report, markdownPath);
+
+            // -------------------------------------------------
+            // 4) Hub index.html
+            // -------------------------------------------------
+            var hubExporter = new HubDashboardExporter();
+
+            var parserName = parserResult?.ParserName ?? "Unknown";
+            var parserConfidence = parserResult?.Confidence ?? 0;
+            var parsingExecution = parserResult?.Stats?.ExecutionTime ?? TimeSpan.Zero;
+            var parsingFiles = parserResult?.Model?.Arquivos.Count ?? 0;
+            var parsingTypes = parserResult?.Model?.Tipos.Count ?? 0;
+            var parsingReferences = parserResult?.Model?.Referencias.Count ?? 0;
+
+            var effort = TryGetEffortEstimate(context);
+
+            hubExporter.Export(
+                report,
+                dashboardDir,
+                parserName,
+                parserConfidence,
+                parsingExecution,
+                parsingFiles,
+                parsingTypes,
+                parsingReferences,
+                effort,
+                structuralFileName: "StructuralDashboard.html",
+                architecturalFileName: architecturalFileName,
+                parsingFileName: parsingFileName,
+                qualityFileName: "QualityDashboard.html");
         }
 
-        private string BuildHtml(
-            IReadOnlyList<string> unresolved,
-            IReadOnlyList<string> structural,
-            IReadOnlyList<string> patternSimilarity)
+        // -------------------------------------------------
+        // Helpers
+        // -------------------------------------------------
+
+        private static void EnsureVendorAssets(string dashboardDir)
         {
-            var unresolvedList = new StringBuilder();
-            foreach (var item in unresolved)
-                unresolvedList.AppendLine($"<li class='unresolved'>{item}</li>");
+            var vendorDir = Path.Combine(dashboardDir, "assets", "vendor");
+            Directory.CreateDirectory(vendorDir);
 
-            var structuralList = new StringBuilder();
-            foreach (var item in structural)
-                structuralList.AppendLine($"<li>{item}</li>");
+            var chartsCssPath = Path.Combine(vendorDir, "charts.min.css");
+            var augmentedUiPath = Path.Combine(vendorDir, "augmented-ui.min.css");
 
-            var patternSimilarityList = new StringBuilder();
-            foreach (var item in patternSimilarity)
-                patternSimilarityList.AppendLine($"<li class='pattern'>{item}</li>");
+            // Placeholder local vendor files.
+            // Replace with the real library contents when you add them to the project.
+            if (!File.Exists(chartsCssPath))
+            {
+                File.WriteAllText(chartsCssPath, PlaceholderChartsCss(), Encoding.UTF8);
+            }
 
-            return $@"
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset='UTF-8'>
-<title>RefactorScope Dashboard</title>
-<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+            if (!File.Exists(augmentedUiPath))
+            {
+                File.WriteAllText(augmentedUiPath, PlaceholderAugmentedUiCss(), Encoding.UTF8);
+            }
+        }
 
-<style>
-body {{ background:#111; color:#eee; font-family:Arial; }}
+        private static string PlaceholderChartsCss()
+        {
+            return """
+/* Placeholder Charts.css file.
+   Replace with the official minified Charts.css file for production. */
 
-.container {{ display:flex; flex-wrap:wrap; }}
+.charts-css {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-.card {{
-    background:#1b1b1b;
-    margin:20px;
-    padding:20px;
-    border-radius:8px;
-    width:45%;
-}}
+.charts-css caption {
+    margin-bottom: 10px;
+}
 
-.section {{
-    margin:20px;
-    padding:20px;
-    background:#1b1b1b;
-    border-radius:8px;
-}}
+.charts-css tbody tr {
+    height: 42px;
+}
 
-.count {{
-    font-size:20px;
-    font-weight:bold;
-}}
+.charts-css tbody tr th {
+    text-align: left;
+    font-weight: 600;
+    padding-right: 12px;
+    white-space: nowrap;
+}
 
-.unresolved {{
-    color:#ff4c4c;
-    font-weight:bold;
-}}
+.charts-css tbody tr td {
+    position: relative;
+    background: rgba(255,255,255,0.03);
+    overflow: hidden;
+}
 
-.pattern {{
-    color:#06d6a0;
-}}
+.charts-css tbody tr td::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: calc(var(--size, 0) * 100%);
+    background: var(--color, linear-gradient(180deg, #39d5ff, #2f88ff));
+    opacity: .9;
+}
 
-</style>
+.charts-css tbody tr td .data {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    padding: 10px 12px;
+    color: #fff;
+    font-weight: 700;
+}
+""";
+        }
 
-</head>
-<body>
+        private static string PlaceholderAugmentedUiCss()
+        {
+            return """
+/* Placeholder augmented-ui file.
+   Replace with the official augmented-ui CSS file for production. */
 
-<h1>RefactorScope Dashboard</h1>
+[augmented-ui] {
+    clip-path: polygon(
+        10px 0,
+        calc(100% - 10px) 0,
+        100% 10px,
+        100% calc(100% - 10px),
+        calc(100% - 10px) 100%,
+        10px 100%,
+        0 calc(100% - 10px),
+        0 10px
+    );
+}
+""";
+        }
 
-<div class='section'>
-<h2>Structural Candidate Analysis (ADR-EXP-007)</h2>
+        private static dynamic? TryGetParserResult(AnalysisContext context)
+        {
+            try
+            {
+                var prop = context.GetType().GetProperty("ParserResult");
+                return prop?.GetValue(context);
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
-<p class='count'>Structural Candidates: {structural.Count}</p>
-
-<p class='count'>
-Pattern Similarity: 
-<span style='color:#06d6a0'>{patternSimilarity.Count}</span>
-</p>
-
-<p class='count'>
-Unresolved: 
-<span style='color:#ff4c4c'>{unresolved.Count}</span>
-</p>
-
-<h3>Unresolved Candidates</h3>
-<ul>
-{unresolvedList}
-</ul>
-
-<h3>Pattern Similarity</h3>
-<ul>
-{patternSimilarityList}
-</ul>
-
-<h3>All Structural Candidates</h3>
-<ul>
-{structuralList}
-</ul>
-
-</div>
-
-<div class='container'>
-<div class='card'>
-<canvas id='radarChart'></canvas>
-</div>
-
-<div class='card'>
-<canvas id='heatChart'></canvas>
-</div>
-</div>
-
-<script>
-
-function loadCSV(path, callback) {{
-    Papa.parse(path, {{
-        download: true,
-        header: true,
-        complete: results => callback(results.data)
-    }});
-}}
-
-loadCSV('../dataset_arch_health.csv', data => {{
-
-    const modules = data.map(x => x.Module);
-    const candidates = data.map(x => parseFloat(x.CandidateRate));
-    const isolation = data.map(x => parseFloat(x.IsolationRate));
-
-    new Chart(document.getElementById('radarChart'), {{
-        type: 'radar',
-        data: {{
-            labels: modules,
-            datasets: [
-                {{ label: 'Structural Candidates', data: candidates }},
-                {{ label: 'Isolation', data: isolation }}
-            ]
-        }}
-    }});
-
-    new Chart(document.getElementById('heatChart'), {{
-        type: 'bar',
-        data: {{
-            labels: modules,
-            datasets: [
-                {{ label: 'Candidate Density', data: candidates }}
-            ]
-        }}
-    }});
-
-}});
-
-</script>
-
-</body>
-</html>";
+        private static EffortEstimate? TryGetEffortEstimate(AnalysisContext context)
+        {
+            try
+            {
+                var prop = context.GetType().GetProperty("EffortEstimate");
+                return prop?.GetValue(context) as EffortEstimate;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

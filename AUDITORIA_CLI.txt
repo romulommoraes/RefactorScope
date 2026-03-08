@@ -16,49 +16,35 @@ using RefactorScope.Core.Parsing;
 using RefactorScope.Core.Parsing.Enum;
 using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
-using RefactorScope.Estimation;
 using RefactorScope.Execution.Dump;
 using RefactorScope.Exporters;
 using RefactorScope.Infrastructure;
-using RefactorScope.Statistics.Engines;
 using Spectre.Console;
 
 Console.WriteLine();
 
-// ?? TESTE DI CONTROLADO (linha textual apenas)
+// ?? TESTE DI CONTROLADO
 var __fake = "services.AddScoped<FakeZombieService>();";
 
 IParserResult? parsingResult = null;
 
 // =====================================================
-// ?? PIPELINE DE EXECUÇÃO
+// PIPELINE PRINCIPAL
 // =====================================================
 
-if (!TryRunConfiguration(out var config)) return;
+if (!RunConfiguration(out var config)) return;
 
-if (!TryRunParsing(
-        config,
-        out var context,
-        out parsingResult)) return;
+if (!RunParsing(config, out var context, out parsingResult)) return;
 
-if (!TryRunAnalysis(context, out var report)) return;
+RunTopLevelRecovery(context);
 
-var hygieneAnalyzer = new ArchitecturalHygieneAnalyzer();
+if (!RunAnalysis(context, out var report)) return;
 
-var hygiene = hygieneAnalyzer.Analyze(report);
-
-TerminalRenderer.Section("Code Hygiene");
-
-TerminalRenderer.HygieneSummary(hygiene);
-
-RunStatisticsIfEnabled(config, context, ref report);
-
-RunEffortEstimator(context, report);
-
+RunArchitecturalHygiene(report);
 
 PrintStructuralBreakdown(report);
 
-if (!TryRunExport(config, context, report, parsingResult)) return;
+if (!RunExport(config, context, report, parsingResult)) return;
 
 RunVisualization(report);
 
@@ -66,10 +52,11 @@ ApplyCiExitCode(report);
 
 
 
-// =====================================================
-// ?? BLOCO 1 — CONFIGURAÇÃO
-// =====================================================
-static bool TryRunConfiguration(out RefactorScopeConfig config)
+/* =====================================================
+   CONFIGURAÇÃO
+   ===================================================== */
+
+static bool RunConfiguration(out RefactorScopeConfig config)
 {
     config = null!;
 
@@ -77,8 +64,8 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
     {
         bool enableSelfSelector = true;
 
-        var configPath = RefactorScope.CLI.SelfAnalysisSelector
-            .ResolveConfigPath(
+        var configPath =
+            RefactorScope.CLI.SelfAnalysisSelector.ResolveConfigPath(
                 "refactorscope.json",
                 "refactorscope_v1_1_self.json",
                 enableSelfSelector);
@@ -87,10 +74,10 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
 
         ConfigValidator.Validate(config);
 
-        config.FitnessGates = FitnessGateConfigResolver.Resolve(
-            config.FitnessGates,
-            msg => TerminalRenderer.Warn(msg)
-        );
+        config.FitnessGates =
+            FitnessGateConfigResolver.Resolve(
+                config.FitnessGates,
+                msg => TerminalRenderer.Warn(msg));
 
         if (!Directory.Exists(config.RootPath))
         {
@@ -112,11 +99,11 @@ static bool TryRunConfiguration(out RefactorScopeConfig config)
 
 
 
-// =====================================================
-// ?? BLOCO 2 — PARSING
-// =====================================================
+/* =====================================================
+   PARSING
+   ===================================================== */
 
-static bool TryRunParsing(
+static bool RunParsing(
     RefactorScopeConfig config,
     out AnalysisContext context,
     out IParserResult? parsingResult)
@@ -126,7 +113,6 @@ static bool TryRunParsing(
 
     try
     {
-
         if (!Enum.TryParse<ParserStrategy>(
                 config.Parser,
                 true,
@@ -145,7 +131,7 @@ static bool TryRunParsing(
                 config.Parser,
                 enableParserSelector);
 
-        IParserResult result =
+        var result =
             TerminalRenderer.WithSpinner(
                 "Parsing código...",
                 () => parser.Parse(
@@ -182,19 +168,7 @@ static bool TryRunParsing(
         );
 
         TerminalRenderer.Success(
-            $"Parsing concluído em {result.Stats?.ExecutionTime.TotalMilliseconds:F0}ms usando {result.ParserName}"
-        );
-
-        if (result.UsedFallback)
-        {
-            TerminalRenderer.Warn(
-                "Atenção: O parser primário falhou. O resultado foi garantido pelo fallback.");
-        }
-        else if (result.Status == ParseStatus.PlausibilityWarning)
-        {
-            TerminalRenderer.Warn(
-                $"Aviso: O modelo extraído apresentou anomalias heurísticas. Confiança: {result.Confidence:P0}");
-        }
+            $"Parsing concluído em {result.Stats?.ExecutionTime.TotalMilliseconds:F0}ms usando {result.ParserName}");
 
         WarnDuplicateTipos(result.Model.Tipos);
 
@@ -204,11 +178,8 @@ static bool TryRunParsing(
     }
     catch (Exception ex)
     {
-        Console.WriteLine(
-            $"[ERRO NÃO TRATADO NO PARSING]: {ex.Message}");
-
+        Console.WriteLine($"[ERRO NÃO TRATADO NO PARSING]: {ex.Message}");
         CrashLogger.Log(ex, "PARSING_UNHANDLED");
-
         return false;
     }
 }
@@ -217,26 +188,56 @@ static bool TryRunParsing(
 
 static void WarnDuplicateTipos(IEnumerable<TipoInfo> tipos)
 {
-    var duplicates = tipos
+    var duplicates =
+        tipos
         .GroupBy(t => $"{t.Namespace}.{t.Name}")
-        .Where(g => g.Count() > 1)
-        .ToList();
+        .Where(g => g.Count() > 1);
 
     foreach (var dup in duplicates)
     {
         TerminalRenderer.Warn(
-            $"Tipo duplicado detectado: {dup.Key} (ocorrências: {dup.Count()})"
-        );
+            $"Tipo duplicado detectado: {dup.Key} (ocorrências: {dup.Count()})");
     }
 }
 
 
 
-// =====================================================
-// ?? BLOCO 3 — ANÁLISE
-// =====================================================
+/* =====================================================
+   RECOVERY - A SER IMPLEMENTADO FUTURAMENTE
+   ===================================================== */
 
-static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport report)
+static void RunTopLevelRecovery(AnalysisContext context)
+{
+    try
+    {
+        //TopLevelReferenceRecovery.Run(context);
+        /*
+//            FUTURE IMPLEMENTATION
+
+//            Strategy:
+
+//            1. Detect unreferenced types
+//            2. Scan bootstrap files (Program.cs)
+//            3. Sanitize comments and strings
+//            4. Detect textual references
+//            5. Rebuild structural snapshot with recovered references
+//            */
+    }
+    catch (Exception ex)
+    {
+        CrashLogger.Log(ex, "TOPLEVEL_RECOVERY");
+    }
+}
+
+
+
+/* =====================================================
+   ANÁLISE
+   ===================================================== */
+
+static bool RunAnalysis(
+    AnalysisContext context,
+    out ConsolidatedReport report)
 {
     report = null!;
 
@@ -246,15 +247,12 @@ static bool TryRunAnalysis(AnalysisContext context, out ConsolidatedReport repor
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
-        var rawReport = TerminalRenderer.WithSpinner(
-            "Executando analisadores...",
-            () => orchestrator.Execute(context));
+        report =
+            TerminalRenderer.WithSpinner(
+                "Executando motor de análise...",
+                () => orchestrator.Execute(context));
 
         TerminalRenderer.Success("Análise concluída");
-
-        var consolidator = new ReportConsolidator();
-        report = consolidator.Consolidate(rawReport);
-
 
         return true;
     }
@@ -309,52 +307,26 @@ static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
 
 
 
-// =====================================================
-// ?? BLOCO 4 — VALIDAÇÃO ESTATÍSTICA
-// =====================================================
+/* =====================================================
+   HIGIENE
+   ===================================================== */
 
-static void RunStatisticsIfEnabled(
-    RefactorScopeConfig config,
-    AnalysisContext context,
-    ref ConsolidatedReport report)
+static void RunArchitecturalHygiene(ConsolidatedReport report)
 {
-    if (config.Statistics?.Enabled != true)
-        return;
+    var hygieneAnalyzer = new ArchitecturalHygieneAnalyzer();
 
-    TerminalRenderer.Step("Executando camada de validação estatística...");
+    var hygiene = hygieneAnalyzer.Analyze(report);
 
-    var statsReport = ValidationEngine.RunSafely(
-        context,
-        report,
-        (ex, phase) => CrashLogger.Log(ex, phase)
-    );
+    TerminalRenderer.Section("Code Hygiene");
 
-    if (statsReport != null)
-    {
-        TerminalRenderer.Success(
-            $"Validação concluída (Confiança do Parser: {statsReport.Confidence.ClassesPerFile:0.00} classes/arquivo)"
-        );
-
-        // ?? Inserir StatisticsReport no ConsolidatedReport
-
-        var results = report.Results.ToList();
-
-        results.Add(statsReport);
-
-        report = new ConsolidatedReport(
-            results,
-            report.ExecutionTime,
-            report.TargetScope,
-            report.UnresolvedProbabilityThreshold
-        );
-    }
+    TerminalRenderer.HygieneSummary(hygiene);
 }
 
 
 
-// =====================================================
-// ?? DEBUG — STRUCTURAL BREAKDOWN
-// =====================================================
+/* =====================================================
+   DEBUG
+   ===================================================== */
 
 static void PrintStructuralBreakdown(ConsolidatedReport report)
 {
@@ -373,11 +345,11 @@ static void PrintStructuralBreakdown(ConsolidatedReport report)
 
 
 
-// =====================================================
-// ?? BLOCO 5 — EXPORTAÇÃO
-// =====================================================
+/* =====================================================
+   EXPORTAÇÃO
+   ===================================================== */
 
-static bool TryRunExport(
+static bool RunExport(
     RefactorScopeConfig config,
     AnalysisContext context,
     ConsolidatedReport report,
@@ -401,9 +373,7 @@ static bool TryRunExport(
         {
             var parsingDashboard = new ParsingDashboardExporter();
 
-            parsingDashboard.Export(
-                parsingResult,
-                config.OutputPath);
+            parsingDashboard.Export(parsingResult, config.OutputPath);
         }
 
         TerminalRenderer.Success(
@@ -414,9 +384,7 @@ static bool TryRunExport(
     catch (Exception ex)
     {
         Console.WriteLine($"[ERRO NA EXPORTAÇÃO]: {ex.Message}");
-
         CrashLogger.Log(ex, "EXPORT");
-
         return false;
     }
 }
@@ -456,9 +424,9 @@ static List<IExporter> BuildExporters(
 
 
 
-// =====================================================
-// ?? RELATÓRIOS
-// =====================================================
+/* =====================================================
+   RELATÓRIOS
+   ===================================================== */
 
 static void GenerateMarkdownReport(
     ConsolidatedReport report,
@@ -468,11 +436,11 @@ static void GenerateMarkdownReport(
     {
         Directory.CreateDirectory(outputDirectory);
 
-        var outputPath = Path.Combine(
-            outputDirectory,
-            "Relatorio_Arquitetural.md");
+        var outputPath =
+            Path.Combine(outputDirectory, "Relatorio_Arquitetural.md");
 
         var exporter = new MarkdownReportExporter();
+
         exporter.Export(report, outputPath);
 
         TerminalRenderer.Success("Relatório Markdown gerado");
@@ -495,6 +463,7 @@ static void GenerateStructuralDashboard(
         Directory.CreateDirectory(outputDirectory);
 
         var exporter = new StructuralInventoryExporter();
+
         exporter.Export(report, outputDirectory);
 
         TerminalRenderer.Success("Structural Dashboard gerado");
@@ -508,15 +477,16 @@ static void GenerateStructuralDashboard(
 
 
 
-// =====================================================
-// ?? VISUALIZAÇÃO
-// =====================================================
+/* =====================================================
+   VISUALIZAÇÃO
+   ===================================================== */
 
 static void RunVisualization(ConsolidatedReport report)
 {
     TerminalRenderer.Section("Architectural Health");
 
     var architecture = report.GetResult<ArchitecturalClassificationResult>();
+
     if (architecture == null)
         return;
 
@@ -527,20 +497,23 @@ static void RunVisualization(ConsolidatedReport report)
 
     var effectiveUnresolved = report.GetEffectiveUnresolvedCandidates();
 
-    var rows = new List<(string Module, double Score, string Unresolved, double Coupling, double Isolation)>();
+    var rows =
+        new List<(string Module, double Score, string Unresolved, double Coupling, double Isolation)>();
 
     foreach (var module in modules)
     {
         var total = module.Count();
         if (total == 0) continue;
 
-        var zombieCount = effectiveUnresolved
-            .Count(z => module.Any(m => m.TypeName == z));
+        var zombieCount =
+            effectiveUnresolved.Count(z => module.Any(m => m.TypeName == z));
 
-        var isolatedCount = isolated?.IsolatedCoreTypes
+        var isolatedCount =
+            isolated?.IsolatedCoreTypes
             .Count(i => module.Any(m => m.TypeName == i)) ?? 0;
 
-        var fanOut = coupling?.ModuleFanOut
+        var fanOut =
+            coupling?.ModuleFanOut
             .GetValueOrDefault(module.Key) ?? 0;
 
         var zombieRate = zombieCount / (double)total;
@@ -576,17 +549,19 @@ static void RunVisualization(ConsolidatedReport report)
 
 
 
-// =====================================================
-// ?? FITNESS GATES
-// =====================================================
+/* =====================================================
+   FITNESS GATES
+   ===================================================== */
 
 static void RenderFitnessGates(ConsolidatedReport report)
 {
-    var gates = report.Results
+    var gates =
+        report.Results
         .OfType<FitnessGateResult>()
         .FirstOrDefault();
 
-    if (gates == null) return;
+    if (gates == null)
+        return;
 
     TerminalRenderer.Section("Architecture Fitness Gates");
 
@@ -616,13 +591,14 @@ static void RenderFitnessGates(ConsolidatedReport report)
 
 
 
-// =====================================================
-// ?? CI EXIT CODE
-// =====================================================
+/* =====================================================
+   CI EXIT CODE
+   ===================================================== */
 
 static void ApplyCiExitCode(ConsolidatedReport report)
 {
-    var gates = report.Results
+    var gates =
+        report.Results
         .OfType<FitnessGateResult>()
         .FirstOrDefault();
 
@@ -634,34 +610,14 @@ static void ApplyCiExitCode(ConsolidatedReport report)
 
 
 
-// =====================================================
-// ?? HELPERS
-// =====================================================
+/* =====================================================
+   HELPERS
+   ===================================================== */
 
 static bool IsEnabled(AnalysisContext context, string analyzerName)
 {
     return context.Config.Analyzers.TryGetValue(analyzerName, out var enabled)
            && enabled;
-}
-
-static void RunEffortEstimator(
-    AnalysisContext context,
-    ConsolidatedReport report)
-{
-    try
-    {
-        TerminalRenderer.Section("Refactor Effort Estimation");
-
-        var estimate = EffortEstimator.Estimate(context, report);
-
-        TerminalRenderer.RenderEffortEstimate(estimate);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("[WARN] Effort estimation failed.");
-        Console.WriteLine(ex.ToString());
-        CrashLogger.Log(ex, "EFFORT_ESTIMATION");
-    }
 }
 
 
