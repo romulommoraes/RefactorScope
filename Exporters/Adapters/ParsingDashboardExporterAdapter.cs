@@ -1,38 +1,31 @@
 ﻿using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Exporters.Styling;
 
 namespace RefactorScope.Exporters.Adapters
 {
     /// <summary>
-    /// Adapter temporário para integrar o ParsingDashboardExporter
-    /// ao pipeline padronizado de IExporter.
+    /// Adapter da família de parsing.
     ///
-    /// Motivação
-    /// ---------
-    /// ParsingDashboardExporter já gera corretamente seu artefato HTML,
-    /// mas ainda opera fora do contrato IExporter utilizado pelo fluxo
-    /// principal do CLI.
-    ///
-    /// Este adapter permite que o dashboard de parsing entre no novo
-    /// bloco de dashboards HTML mantendo a implementação atual intacta.
+    /// Objetivo
+    /// --------
+    /// Integrar o dashboard de parsing ao pipeline padronizado de IExporter,
+    /// alinhando-o ao shell visual compartilhado da suíte HTML.
     ///
     /// Estratégia atual
     /// ----------------
-    /// - recuperar ParserResult a partir do AnalysisContext
-    /// - chamar ParsingDashboardExporter sem alterar sua assinatura atual
-    /// - publicar no mesmo diretório compartilhado da suíte HTML
-    ///
-    /// Caminho de refatoração futura
-    /// ----------------------------
-    /// 1. Expor ParserResult de forma explícita e estável no contexto
-    /// 2. Fazer ParsingDashboardExporter implementar IExporter nativamente
-    /// 3. Eliminar reflexão/fallback e remover este adapter
+    /// Este adapter:
+    /// - recupera o parser result a partir do contexto
+    /// - resolve o tema configurado
+    /// - garante os assets compartilhados
+    /// - delega a geração do HTML ao exporter de parsing
     ///
     /// Observação
     /// ----------
-    /// Este adapter existe apenas como camada de compatibilidade.
-    /// A lógica de geração do HTML continua centralizada no exporter original.
+    /// A lógica analítica continua concentrada em ParsingDashboardExporter.
+    /// Este adapter apenas orquestra a integração com a suíte HTML.
     /// </summary>
     public sealed class ParsingDashboardExporterAdapter : IExporter
     {
@@ -47,21 +40,54 @@ namespace RefactorScope.Exporters.Adapters
             if (parserResult == null)
                 return;
 
+            Directory.CreateDirectory(outputPath);
+
+            var htmlPath = Path.Combine(outputPath, "ParsingDashboard.html");
+            var themeFileName = ResolveThemeFileName(context);
+
+            DashboardAssetCopier.CopyAll(outputPath, themeFileName);
+
             var exporter = new ParsingDashboardExporter();
-            exporter.Export(parserResult, outputPath);
+            exporter.Export(parserResult, htmlPath, themeFileName);
         }
 
-        private static dynamic? TryGetParserResult(AnalysisContext context)
+        private static IParserResult? TryGetParserResult(AnalysisContext context)
         {
             try
             {
                 var prop = context.GetType().GetProperty("ParserResult");
-                return prop?.GetValue(context);
+                return prop?.GetValue(context) as IParserResult;
             }
             catch
             {
                 return null;
             }
+        }
+
+        private static string ResolveThemeFileName(AnalysisContext context)
+        {
+            try
+            {
+                var config = context?.Config;
+                var themeName = TryReadDashboardTheme(config);
+                return DashboardThemeSelector.ResolveFileName(themeName);
+            }
+            catch
+            {
+                return DashboardThemeSelector.DefaultThemeFile;
+            }
+        }
+
+        private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+        {
+            if (config == null)
+                return null;
+
+            var prop = config.GetType().GetProperty("DashboardTheme");
+            if (prop == null)
+                return null;
+
+            return prop.GetValue(config) as string;
         }
     }
 }

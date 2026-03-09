@@ -1,1885 +1,2051 @@
-﻿<html><head><meta charset='UTF-8'>
-<style>
-body { background:#0f1117; color:#e6edf3; font-family:Segoe UI; margin:30px; }
-.card { display:inline-block; padding:20px; margin:10px; background:#161b22; border-radius:10px; min-width:220px; vertical-align:top; }
-.danger { color:#ff6b6b; }
-.warning { color:#ffd166; }
-.ok { color:#06d6a0; }
-table { border-collapse: collapse; width:100%; margin-top:20px; }
-th, td { border:1px solid #30363d; padding:8px; }
-th { cursor:pointer; background:#21262d; }
-tr.danger { background:#2d1117; color:#ff6b6b; }
-tr.warning { background:#332701; color:#ffd166; }
-tr.core { background:#0d1b2a; }
-tr.ok { background:#0f1f14; color:#7ee787; }
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Structural Dashboard</title>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+</head>
+<body>
+<div class='wrapper'>
 
-.tooltip { position: relative; cursor: help; }
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 320px;
-  background-color: #1f2937;
-  color: #fff;
-  text-align: left;
-  padding: 14px;
-  border-radius: 6px;
-  position: absolute;
-  z-index: 1;
-  top: 125%;
-  left: 50%;
-  margin-left: -160px;
-  opacity: 0;
-  transition: opacity 0.3s;
-  font-size: 12px;
-}
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-  opacity: 1;
-}
-</style>
-<script>
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Structural Module</div>
+        <h1>Structural Dashboard</h1>
+        <div class="subtitle">Target Project: <b>Scriptome</b></div>
+    </div>
 
-function searchTable() {
-  var input = document.getElementById('search');
-  var filter = input.value.toLowerCase();
-  var rows = document.getElementById('table').rows;
-  for (var i = 1; i < rows.length; i++) {
-    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
-  }
-}
-function sortTable(n) {
-  var table = document.getElementById('table');
-  var switching = true;
-  var dir = 'asc';
-  while (switching) {
-    switching = false;
-    var rows = table.rows;
-    for (var i = 1; i < rows.length - 1; i++) {
-      var x = rows[i].getElementsByTagName('TD')[n];
-      var y = rows[i + 1].getElementsByTagName('TD')[n];
-      var shouldSwitch = false;
-      if (dir == 'asc' && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) shouldSwitch = true;
-      if (dir == 'desc' && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) shouldSwitch = true;
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-      }
-    }
-    if (!switching && dir == 'asc') { dir = 'desc'; switching = true; }
-}
-</script>
-</head><body>
-<h1>🧬 Structural Dashboard</h1>
-<p>Generated: 2026-03-08 22:53 UTC</p>
-<div>
-<div class='card'>Total Classes<br><b>161</b></div>
-<div class='card tooltip warning'>
-                Structural Candidates<br>
-                <b>28</b>
-                <span class='tooltiptext'>
-                    Types with zero structural references inside the analyzed scope.
-                    This does NOT indicate dead code.
-                    It only means the type is not directly referenced in the parsed graph.
-                    Common cases:
-                    - CLI commands
-                    - plugin rules
-                    - reflection usage
-                    - framework entry points
-                </span></div>
-<div class='card tooltip ok'>
-            Pattern Similarity<br>
-            <b>11</b>
-            <span class='tooltiptext'>
-            Classes that exhibit structural similarity
-            to known design patterns.
-            </span></div>
-<div class='card tooltip danger'>
-            Unresolved<br>
-            <b>17</b>
-            <span class='tooltiptext'>
-                References that could not be resolved by the structural parser.
-
-                May indicate:
-                - missing dependencies
-                - incomplete parsing
-                - namespace mismatch
-                - broken architecture links
-            </span></div>
-<div class='card tooltip warning'>Namespace Drift<br><b>35</b><span class='tooltiptext'>Namespace Drift (Strict Rule): Exact correspondence to folder structure</span></div>
-<div class='card tooltip'>
-                Global Namespace<br>
-                <b>6</b>
-                <span class='tooltiptext'>
-                Number of classes declared without a namespace.
-
-                Using the global namespace reduces architectural clarity
-                and weakens modular organization.
-
-                Well-structured projects usually avoid global namespace usage.
-                </span></div>
-<div class='card tooltip'>Isolated Core<br><b>9</b> <span class='tooltiptext'>Number of Core types that remain structurally independent from the rest of the system. These elements represent stable architectural foundations. If the value is low, the Core may be leaking responsibilities or depending on outer layers.</span></div>
-<div class='card tooltip'>
-            Smell Index<br>
-            <b>12,7</b>
-            <span class='tooltiptext'>
-            Composite structural smell indicator.
-
-            Components:
-            • Dead Code Ratio (Unreferenced classes)
-            • Namespace Drift Ratio (namespace vs folder misalignment)
-            • Global Namespace Ratio (legacy structural usage)
-            • Core Isolation Ratio (core architectural boundary integrity)
-            • Structural Entropy (distribution disorder across modules)
-
-            Higher values indicate architectural degradation
-            and increased maintenance risk.
-            </span>
-            </div>
-<div class='card tooltip'>
-            Hygiene Level<br>
-            <b>🟢 Healthy</b>
-            <span class='tooltiptext'>
-            Overall structural health classification derived
-            from the SmellIndex score.
-
-            Evaluates architectural hygiene considering
-            dead code probability, legacy structure,
-            core isolation and structural entropy.
-            </span>
-            </div>
-<div class='card tooltip'>
-            SOLID Alerts<br>
-            <b>2</b>
-            <span class='tooltiptext'>Two-pass heuristic detection, SOLID Alerts
-            Number of detected violations of SOLID design principles.
-            Low values indicate stable object-oriented design.
-            High values indicate architectural erosion or responsibility leaks.
-            Examples:
-            • SRP violations
-            • LSP violations
-            • interface misuse</span>
-            </div>
-<div class='card tooltip warning'>
-            Implicit Coupling<br>
-            <b>17</b>
-            <span class='tooltiptext'>
-            Classes whose dependencies concentrate strongly toward a single module.
-
-            Detection considers:
-            • Fan-out asymmetry
-            • Dominant dependency direction
-            • Structural concentration of references
-
-            These signals highlight potential architectural coupling hotspots,
-            but do not necessarily indicate design violations.
-            </span></div>
-<div class='card tooltip'>
-            Abstractness (A)<br>
-            <b>0,11</b>
-            <span class='tooltiptext'>
-            Architectural abstraction ratio.
-
-            A = Na / Nc
-
-            Where:
-            Na = number of abstract types
-            Nc = total types in module
-
-            Higher values indicate greater use of abstraction.
-            </span></div>
-<div class='card tooltip'>
-            Instability (I)<br>
-            <b>0,45</b>
-            <span class='tooltiptext'>
-            Architectural instability.
-
-            I = Ce / (Ce + Ca)
-
-            Where:
-            Ce = outgoing dependencies
-            Ca = incoming dependencies
-
-            Values closer to 1 indicate modules
-            that depend heavily on other modules.
-            </span></div>
-<div class='card tooltip'>
-            Distance (D)<br>
-            <b>0,43</b>
-            <span class='tooltiptext'>
-            Distance from Main Sequence.
-
-            D = | A + I − 1 |
-
-            Measures how far a module is from the
-            ideal architectural balance between
-            abstraction and stability.
-            </span></div>
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-09 05:03 UTC</div>
+        <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
+        <div><b>Total Types:</b> 161</div>
+        <div><b>Hygiene:</b> 🟢 Healthy</div>
+    </div>
 </div>
-<div style='margin-top:40px;'>
-<div style='display:flex; gap:40px; flex-wrap:wrap;'>
+<div class="section">
+    <div class="section-title">
+        <h2>Structural Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis structural-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Total Classes</div>
+        <div class="value">161</div>
+        <div class="hint">Total number of structurally classified types</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+    <div class="label">Namespaces</div>
+    <div class="value">42</div>
+    <div class="hint">Distinct namespaces represented in the scope</div>
+</div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Dead Code Candidates</div>
+        <div class="value">29</div>
+        <div class="hint">Possible dead code types</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Pattern Similarity</div>
+        <div class="value">11</div>
+        <div class="hint">Candidates compatible with known architectural patterns</div>
+    </div>
+
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Unresolved</div>
+        <div class="value">18</div>
+        <div class="hint">Candidates who could not be refuted as dead code</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Namespace Drift</div>
+        <div class="value">35</div>
+        <div class="hint">Types whose namespace remains incompatible with folder structure</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Global Namespace</div>
+        <div class="value">6</div>
+        <div class="hint">Types declared without an explicit namespace boundary</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Isolated Core</div>
+        <div class="value">9</div>
+        <div class="hint">Number of core types structurally isolated from outer layers</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Code Smell Index</div>
+        <div class="value">13,0</div>
+        <div class="hint">Composite structural hygiene score. Lower is better</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Implicit Coupling</div>
+        <div class="value">14</div>
+        <div class="hint">Types suggesting concentrated dependency flow toward specific modules</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">SOLID Alerts</div>
+        <div class="value">2</div>
+        <div class="hint">Heuristic object-oriented design signals that deserve review</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">A / I / D</div>
+        <div class="value" style="font-size:22px;">0,11 / 0,46 / 0,42</div>
+        <div class="hint">Average abstractness, instability and distance from main sequence</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Structural Reading</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Structural Interpretation</h3>
+    <ul class="clean">
+        <li>Core isolation detected. Architectural boundaries appear preserved.</li>
+        <li>High namespace drift detected. Folder structure may not reflect architectural boundaries.</li>
+        <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
+        <li>Potential dead or orphaned code detected through structural analysis.</li>
+        <li>Minor SOLID design alerts detected.</li>
+        <li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 18</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 35</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 2</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 14</div>
+    </div>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Method Snapshot</h3>
+    <ul class="clean">
+        <li><b>Structural Candidates:</b> types with zero structural references in the parsed graph.</li>
+        <li><b>Pattern Similarity:</b> candidate classes compatible with known structural patterns.</li>
+        <li><b>Unresolved:</b> strongest dead-code or broken-link signal after refinement.</li>
+        <li><b>Implicit Coupling:</b> dependency concentration toward a dominant module.</li>
+        <li><b>A / I / D:</b> Robert Martin architectural balance indicators.</li>
+    </ul>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>
 <div class='chart-container'>
 <h3>Architectural Risk Radar</h3>
+<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Higher area indicates stronger concentration of structural signals.</div>
 <div class='tooltip'>
-<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
-<circle cx='160' cy='160' r='27.5' fill='none' stroke='#30363d' stroke-width='1' />
-<circle cx='160' cy='160' r='55' fill='none' stroke='#30363d' stroke-width='1' />
-<circle cx='160' cy='160' r='82.5' fill='none' stroke='#30363d' stroke-width='1' />
-<circle cx='160' cy='160' r='110' fill='none' stroke='#30363d' stroke-width='1' />
-<line x1='160' y1='160' x2='160' y2='50' stroke='#30363d' />
-<text x='160' y='28' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Structural Candidates — 17% of classes</title>Structural Candidates</text>
-<line x1='160' y1='160' x2='237.78174593052023' y2='82.21825406947977' stroke='#30363d' />
-<text x='253.3380951166243' y='66.66190488337573' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Pattern Similarity — 7% of classes</title>Pattern Similarity</text>
-<line x1='160' y1='160' x2='270' y2='160' stroke='#30363d' />
-<text x='292' y='160' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Unresolved — 11% of classes</title>Unresolved</text>
-<line x1='160' y1='160' x2='237.78174593052023' y2='237.78174593052023' stroke='#30363d' />
-<text x='253.3380951166243' y='253.3380951166243' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Namespace Drift — 22% of classes</title>Namespace Drift</text>
-<line x1='160' y1='160' x2='160' y2='270' stroke='#30363d' />
-<text x='160' y='292' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Global Namespace — 4% of classes</title>Global Namespace</text>
-<line x1='160' y1='160' x2='82.21825406947978' y2='237.78174593052023' stroke='#30363d' />
-<text x='66.66190488337574' y='253.3380951166243' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Core Isolation — 6% of classes</title>Core Isolation</text>
-<line x1='160' y1='160' x2='50' y2='160' stroke='#30363d' />
-<text x='28' y='160.00000000000003' fill='#e6edf3' font-size='11' text-anchor='middle'><title>Implicit Coupling — 11% of classes</title>Implicit Coupling</text>
-<line x1='160' y1='160' x2='82.21825406947976' y2='82.21825406947978' stroke='#30363d' />
-<text x='66.66190488337571' y='66.66190488337574' fill='#e6edf3' font-size='11' text-anchor='middle'><title>SOLID Alerts — 6% of classes</title>SOLID Alerts</text>
-<polygon points='160,140.8695652173913 165.31428077786163,154.68571922213837 171.61490683229815,160 176.909075202287,176.909075202287 160,164.09937888198758 155.6519520908405,164.3480479091595 148.38509316770185,160 155.16883565648942,155.16883565648942' fill='rgba(255,99,132,0.35)' stroke='#ff6384' stroke-width='2'/>
+<svg width="410" height="456" viewBox="0 0 410 456" style="border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="radarBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="radarGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="410" height="456" rx="16" fill="url(#radarBg)" />
+<polygon points='205,77 295.51,114.49 333,205 295.51,295.51 205,333 114.49,295.51 77,205 114.49,114.49' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='205,102.6 277.408,132.592 307.4,205 277.408,277.408 205,307.4 132.592,277.408 102.6,205 132.592,132.592' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='205,128.2 259.306,150.694 281.8,205 259.306,259.306 205,281.8 150.694,259.306 128.2,205 150.694,150.694' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='205,153.8 241.204,168.796 256.2,205 241.204,241.204 205,256.2 168.796,241.204 153.8,205 168.796,168.796' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='205,179.4 223.102,186.898 230.6,205 223.102,223.102 205,230.6 186.898,223.102 179.4,205 186.898,186.898' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<line x1='205' y1='205' x2='205' y2='77' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='295.51' y2='114.49' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='333' y2='205' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='295.51' y2='295.51' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='205' y2='333' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='114.49' y2='295.51' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='77' y2='205' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='205' y1='205' x2='114.49' y2='114.49' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<text x='211' y='190.4' fill='rgba(235,214,194,0.42)' font-size='9'>20%</text>
+<text x='211' y='164.8' fill='rgba(235,214,194,0.42)' font-size='9'>40%</text>
+<text x='211' y='139.2' fill='rgba(235,214,194,0.42)' font-size='9'>60%</text>
+<text x='211' y='113.6' fill='rgba(235,214,194,0.42)' font-size='9'>80%</text>
+<text x='211' y='88' fill='rgba(235,214,194,0.42)' font-size='9'>100%</text>
+<text x='205' y='61' fill='#f2e1d2' font-size='11' text-anchor='middle'><title>Dead Code — 18% of classes</title>Dead Code</text>
+<text x='306.823' y='103.177' fill='#f2e1d2' font-size='11' text-anchor='start'><title>Pattern — 7% of classes</title>Pattern</text>
+<text x='349' y='205' fill='#f2e1d2' font-size='11' text-anchor='start'><title>Unresolved — 11% of classes</title>Unresolved</text>
+<text x='306.823' y='306.823' fill='#f2e1d2' font-size='11' text-anchor='start'><title>Drift — 22% of classes</title>Drift</text>
+<text x='205' y='349' fill='#f2e1d2' font-size='11' text-anchor='middle'><title>Global — 4% of classes</title>Global</text>
+<text x='103.177' y='306.823' fill='#f2e1d2' font-size='11' text-anchor='end'><title>Core — 6% of classes</title>Core</text>
+<text x='61' y='205' fill='#f2e1d2' font-size='11' text-anchor='end'><title>Coupling — 9% of classes</title>Coupling</text>
+<text x='103.177' y='103.177' fill='#f2e1d2' font-size='11' text-anchor='end'><title>SOLID — 6% of classes</title>SOLID</text>
+<polygon points='205,181.944 211.184,198.816 219.311,205 224.676,224.676 205,209.77 199.94,210.06 193.87,205 199.378,199.378' fill='rgba(255,140,60,0.18)' stroke='#ff9a3c' stroke-width='2.4' filter='url(#radarGlow)'/>
+<circle cx="205" cy="181.944" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Dead Code — 18,0% of classes</title>
+</circle>
+<circle cx="211.184" cy="198.816" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Pattern — 6,8% of classes</title>
+</circle>
+<circle cx="219.311" cy="205" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Unresolved — 11,2% of classes</title>
+</circle>
+<circle cx="224.676" cy="224.676" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Drift — 21,7% of classes</title>
+</circle>
+<circle cx="205" cy="209.77" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Global — 3,7% of classes</title>
+</circle>
+<circle cx="199.94" cy="210.06" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Core — 5,6% of classes</title>
+</circle>
+<circle cx="193.87" cy="205" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>Coupling — 8,7% of classes</title>
+</circle>
+<circle cx="199.378" cy="199.378" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
+    <title>SOLID — 6,2% of classes</title>
+</circle>
+<circle cx='205' cy='205' r='2.5' fill='rgba(255,240,214,0.92)'/>
+<g transform="translate(20,428)">
+    <rect x="0" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="#ff9a3c" stroke-width="1.2"/>
+    <text x="18" y="-2" fill="#d9c8b8" font-size="10">Normalized structural signal distribution</text>
+</g>
 </svg>
 <span class='tooltiptext'>
-Radar summarizing architectural risk indicators.
+Enhanced radar of structural signals.
 
-Higher values indicate larger concentration of potential structural issues:
-• Dead code candidates
-• Pattern similarity clusters
-• Namespace drift
-• Hidden coupling
-• SOLID violations
+Interpretation:
+• Larger area = stronger concentration of structural findings
+• Unresolved is the strongest manual-review bucket
+• Core should be interpreted in context, not as an error by itself
 </span>
 </div>
 </div>
 
 <div class='chart-container'>
 <h3>Architectural Galaxy (A/I Distribution)</h3>
+<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Bubble size reflects module fan-out. Warmer colors suggest higher coupling intensity.</div>
 <div class='tooltip'>
-<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
-<line x1='35' y1='285' x2='285' y2='285' stroke='#30363d'/>
-<line x1='35' y1='285' x2='35' y2='35' stroke='#30363d'/>
-<text x='240' y='312' fill='#e6edf3' font-size='11'>Instability</text>
-<text x='5' y='20' fill='#e6edf3' font-size='11'>Abstractness</text>
-<line x1='35' y1='35' x2='285' y2='285' stroke='#444' stroke-dasharray='4,4'/>
-<circle cx='285' cy='285' r='9.333333333333332' fill='#ffd166' opacity='0.9'><title>Program.cs
-Abstractness: 0,00
-Instability: 1,00
-FanOut: 16</title></circle>
-<circle cx='105' cy='220' r='14' fill='#ff6b6b' opacity='0.9'><title>Fingerprint
+<svg width="430" height="474" viewBox="0 0 430 474" style="border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="galaxyBg" cx="50%" cy="45%" r="78%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="bubbleGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="3.4" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="430" height="474" rx="16" fill="url(#galaxyBg)" />
+<rect x="44" y="44" width="342" height="342" fill="rgba(255,140,40,0.020)" />
+<polygon points="44,44 386,386 44,386"
+         fill="rgba(255,180,90,0.030)" />
+<polygon points="44,44 386,44 386,386"
+         fill="rgba(255,120,40,0.020)" />
+<line x1='44' y1='44' x2='44' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<line x1='44' y1='386' x2='386' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<text x='44' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0</text>
+<text x='34' y='389' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0</text>
+<line x1='129.5' y1='44' x2='129.5' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<line x1='44' y1='300.5' x2='386' y2='300.5' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<text x='129.5' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0,25</text>
+<text x='34' y='303.5' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0,25</text>
+<line x1='215' y1='44' x2='215' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<line x1='44' y1='215' x2='386' y2='215' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<text x='215' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0,5</text>
+<text x='34' y='218' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0,5</text>
+<line x1='300.5' y1='44' x2='300.5' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<line x1='44' y1='129.5' x2='386' y2='129.5' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<text x='300.5' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0,75</text>
+<text x='34' y='132.5' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0,75</text>
+<line x1='386' y1='44' x2='386' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<line x1='44' y1='44' x2='386' y2='44' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
+<text x='386' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>1</text>
+<text x='34' y='47' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>1</text>
+<line x1='44' y1='386' x2='386' y2='386' stroke='rgba(235,150,70,0.38)' stroke-width='1.2'/>
+<line x1='44' y1='386' x2='44' y2='44' stroke='rgba(235,150,70,0.38)' stroke-width='1.2'/>
+<line x1='44' y1='44' x2='386' y2='386' stroke='rgba(255,190,100,0.40)' stroke-width='1.2' stroke-dasharray='5,5'/>
+<text x='354' y='420' fill='#f2e1d2' font-size='11'>Instability</text>
+<text x='10' y='20' fill='#f2e1d2' font-size='11'>Abstractness</text>
+<text x='292' y='56' fill='rgba(255,205,140,0.58)' font-size='9'>Main Sequence</text>
+<circle cx="276.351" cy="360.667" r="17" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
+    <title>Infrastructure
+Abstractness: 0,07
+Instability: 0,68
+Distance: 0,25
+FanOut: 89</title>
+</circle>
+<text x="299.351" y="339.667" fill="#f4e6d8" font-size="10" text-anchor="start">Infrastructure</text>
+<circle cx="140.61" cy="297.08" r="17" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
+    <title>Fingerprint
 Abstractness: 0,26
 Instability: 0,28
-FanOut: 56</title></circle>
-<circle cx='195.47297297297297' cy='266.48148148148147' r='14' fill='#ff6b6b' opacity='0.9'><title>Infrastructure
-Abstractness: 0,07
-Instability: 0,64
-FanOut: 95</title></circle>
-<circle cx='62.68729641693811' cy='268.69565217391306' r='14' fill='#ff6b6b' opacity='0.9'><title>Nucleo
+Distance: 0,46
+FanOut: 50</title>
+</circle>
+<text x="163.61" y="276.08" fill="#f4e6d8" font-size="10" text-anchor="start">Fingerprint</text>
+<circle cx="130.098" cy="330.541" r="17" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
+    <title>Limbic
+Abstractness: 0,16
+Instability: 0,25
+Distance: 0,59
+FanOut: 36</title>
+</circle>
+<text x="153.098" y="309.541" fill="#f4e6d8" font-size="10" text-anchor="start">Limbic</text>
+<circle cx="79.935" cy="363.696" r="15.357" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
+    <title>Nucleo
 Abstractness: 0,07
 Instability: 0,11
-FanOut: 34</title></circle>
-<circle cx='93.44155844155844' cy='244.45945945945945' r='14' fill='#ff6b6b' opacity='0.9'><title>Limbic
-Abstractness: 0,16
-Instability: 0,23
-FanOut: 36</title></circle>
+Distance: 0,83
+FanOut: 29</title>
+</circle>
+<text x="101.292" y="344.339" fill="#f4e6d8" font-size="10" text-anchor="start">Nucleo</text>
+<circle cx="386" cy="386" r="10.714" fill="#ffc15d" fill-opacity="0.84" stroke="#fff1cc" stroke-width="1.5" filter="url(#bubbleGlow)">
+    <title>Program.cs
+Abstractness: 0,00
+Instability: 1,00
+Distance: 0,00
+FanOut: 16</title>
+</circle>
+<g transform="translate(44,448)">
+    <circle cx="8" cy="0" r="5" fill="#ffb14d" fill-opacity="0.84" stroke="#fff0d6" stroke-width="1"/>
+    <text x="20" y="4" fill="#d9c8b8" font-size="10">Low coupling</text>
+
+    <circle cx="128" cy="0" r="6.5" fill="#ffc15d" fill-opacity="0.84" stroke="#fff1cc" stroke-width="1"/>
+    <text x="142" y="4" fill="#d9c8b8" font-size="10">Moderate coupling</text>
+
+    <circle cx="298" cy="0" r="8" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1"/>
+    <text x="312" y="4" fill="#d9c8b8" font-size="10">High coupling</text>
+</g>
 </svg>
 <span class='tooltiptext'>
-Architectural Galaxy visualizes module positioning based on
-Robert Martin's A/I model.
+Enhanced A/I distribution view.
 
-A = Abstractness
-I = Instability
-
-Modules should ideally lie near the Main Sequence (A + I = 1).
-Points far from this line indicate architectural tension.
-Circle size represents coupling intensity.
+Interpretation:
+• X axis = Instability
+• Y axis = Abstractness
+• Bubble size = fan-out intensity
+• Dashed diagonal = Main Sequence
+• Labeled bubbles highlight the most coupled modules
 </span>
 </div>
 </div>
 
-<ul>
+<div style='flex:1; min-width:280px;'>
+<ul class='clean'>
 <li>Core isolation detected. Architectural boundaries appear preserved.</li>
 <li>High namespace drift detected. Folder structure may not reflect architectural boundaries.</li>
 <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
 <li>Potential dead or orphaned code detected through structural analysis.</li>
 <li>Minor SOLID design alerts detected.</li>
-<li>Significant implicit coupling detected. Hidden dependencies may reduce modularity.</li>
+<li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
 </ul>
 </div>
-
 </div>
-<table id='table'>
-<tr>
-<th onclick='sortTable(0)'>Classe</th>
-<th onclick='sortTable(1)'>Arquivo</th>
-<th onclick='sortTable(2)'>Namespace</th>
-<th onclick='sortTable(3)'>Usos</th>
-<th onclick='sortTable(4)'>Status</th>
-<th onclick='sortTable(5)'>Remoção</th>
-</tr>
-<tr class='danger'>
-<td>AdaptadorDiagnostico</td>
-<td>Nucleo\Adaptadores\AdaptadorDiagnostico.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>CalculadoraModalidade</td>
-<td>Limbic\Algoritimos\CalculadorModalidade.cs</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>CalculadoraTensao</td>
-<td>Limbic\Algoritimos\CalculadoraTensao.cs</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>CarregadorLimbic</td>
-<td>Limbic\Dados\CarregadorLimbic.cs</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>ConfiguradorLimbic</td>
-<td>Limbic\Dados\ConfiguradorLimbic.cs</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>DivergenceScore</td>
-<td>Fingerprint\Forense\DivergenceScore.cs</td>
-<td>Scriptome.Fingerprint.Forense</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>EspecialistaDinamica</td>
-<td>Nucleo\Especialistas\EspecialistaDinamica.cs</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>EspecialistaProducao</td>
-<td>Nucleo\Especialistas\EspecialistaProducao.cs</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>EstadoIdentidade</td>
-<td>Fingerprint\Modelos\EstadoIdentidade.cs</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>ExecutorValidacaoJung</td>
-<td>Infrastructure\Validador\ExecutorValidacaoJung.cs</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>InfoPalavra</td>
-<td>Limbic\Modelos\InfoPalavra.cs</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>LeitorBaseline</td>
-<td>Infrastructure\Baseline\LeitorBaseline.cs</td>
-<td>Scriptome.Infrastructure.Baseline</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>LematizadorCatalyst</td>
-<td>Limbic\Algoritimos\LematizadorCatalyst.cs</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>LematizadorVerbal</td>
-<td>Limbic\Algoritimos\LematizadorVerbal.cs</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>ModuloEtogramaV2</td>
-<td>Fingerprint\Modulos\ModuloEtogramaV2.cs</td>
-<td>Scriptome.Fingerprint.Modulos</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>ResultadoModuloLimbic</td>
-<td>Nucleo\Modelos\Resultados\ResultadoModuloLimbic.cs</td>
-<td>Scriptome.Nucleo.Modelos.Resultados</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='danger'>
-<td>RnaCartesiano</td>
-<td>Nucleo\Modelos\Genoma\RnaCartesiano.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>AbaEstrutura</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaEstrutura.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>AppConfig</td>
-<td>Nucleo\Modelos\Analise\AppConfig.cs</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>ClassificadorHibrido</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorHibrido.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>ClassificadorLacaniano</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorLacaniano.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>ClassificadorLacanianoV2Legado</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2Legado.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>ClassificadorMBTI</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorMBTI.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>DivergenceLogger</td>
-<td>Fingerprint\Forense\DivergenceLogger.cs</td>
-<td>Scriptome.Fingerprint.Forense</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>ExportadorBaselineJung</td>
-<td>Infrastructure\Validador\ExportadorBaselineJung.cs</td>
-<td>Global</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>MotorEtogramaHeuristico</td>
-<td>Fingerprint\MotoresEtograma\MotorEtogramaHeuristico.cs</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>MotorIntencionalV1</td>
-<td>Fingerprint\MotoresInterpretativos\MotorIntencionalV1.cs</td>
-<td>Global</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='warning'>
-<td>ScriptomeDashboardPipeline</td>
-<td>Nucleo\Modelos\ScriptomeDashboardPipeline.cs</td>
-<td>Scriptome.Infrastructure</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='core'>
-<td>Acao</td>
-<td>Nucleo\Modelos\Script\Elementos.cs</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>11</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>AdaptadorBasico</td>
-<td>Nucleo\Adaptadores\AdaptadorBasico.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>AdaptadorBeats</td>
-<td>Nucleo\Adaptadores\AdaptadorBeats.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>AdaptadorDinamica</td>
-<td>Nucleo\Adaptadores\AdaptadorDinamica.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>AdaptadorDuracao</td>
-<td>Nucleo\Adaptadores\AdaptadorDuracao.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>AdaptadorInteracao</td>
-<td>Nucleo\Adaptadores\AdaptadorInteracao.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>AdaptadorLimbic</td>
-<td>Nucleo\Adaptadores\AdaptadorLimbic.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>BaseImutavel</td>
-<td>Nucleo\Modelos\Genoma\BaseImutavel.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>8</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>Cena</td>
-<td>Nucleo\Modelos\Script\Cena.cs</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>7</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ConversorFenotipo</td>
-<td>Nucleo\Adaptadores\ConversorFenotipo.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>Dialogo</td>
-<td>Nucleo\Modelos\Script\Elementos.cs</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>17</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ElementoCena</td>
-<td>Nucleo\Modelos\Script\Elementos.cs</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>5</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EntradaLimbic</td>
-<td>Limbic\Modelos\EntradaLimbic.cs</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EspecialistaBeats</td>
-<td>Nucleo\Especialistas\EspecialistaBeats.cs</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EspecialistaDuracao</td>
-<td>Nucleo\Especialistas\EspecialistaDuracao.cs</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EspecialistaInteracao</td>
-<td>Nucleo\Especialistas\EspecialistaInteracao.cs</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EspecialistaVocabulario</td>
-<td>Nucleo\Especialistas\EspecialistaVocabulario.cs</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EstatisticasCena</td>
-<td>Nucleo\Modelos\Analise\EstatisticasCena.cs</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>7</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>EstatisticasRoteiro</td>
-<td>Nucleo\Modelos\Analise\EstatisticasRoteiro.cs</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>29</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>Etograma</td>
-<td>Fingerprint\Modelos\Etograma.cs</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>32</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ExtratorEtogramaAdapter</td>
-<td>Nucleo\Adaptadores\ExtratorEtogramaAdapter.cs</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>GeneDiscursivo</td>
-<td>Nucleo\Modelos\Genoma\GeneDiscursivo.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>8</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>IModuloAnalise</td>
-<td>Nucleo\Interfaces\IModuloAnalise.cs</td>
-<td>Scriptome.Nucleo.Interfaces</td>
-<td>12</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>IMotorDeTranscricao</td>
-<td>Nucleo\Interfaces\MotorDeTranscricao.cs</td>
-<td>Scriptome.Nucleo.Interfaces</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='core'>
-<td>IMotorSplicing</td>
-<td>Nucleo\Interfaces\IMotorSplicing.cs</td>
-<td>Scriptome.Nucleo.Interfaces</td>
-<td>7</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>LeitorFountain</td>
-<td>Nucleo\Leitores\LeitorFountain.cs</td>
-<td>Scriptome.Nucleo.Leitores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>MotorDeTranscricao</td>
-<td>Nucleo\Modelos\Genoma\MotorDeTranscricao.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>7</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>MotorFenotipoV2</td>
-<td>Nucleo\Motores\MotorFenotipoV2.cs</td>
-<td>Scriptome.Nucleo.Fenotipo</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>MotorSplicing</td>
-<td>Nucleo\Motores\MotorSplicing.cs</td>
-<td>Scriptome.Nucleo.Motores</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>MotorVetorialV2</td>
-<td>Fingerprint\MotoresEtograma\MotorVetorial_V2.cs</td>
-<td>Scriptome.Nucleo.Motores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>OrquestradorNucleo</td>
-<td>Nucleo\OrquestradorNucleo.cs</td>
-<td>Scriptome.Nucleo</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>PerfilPersonagem</td>
-<td>Nucleo\Modelos\Analise\PerfilPersonagem.cs</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>42</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoAnalise</td>
-<td>Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoDeriva</td>
-<td>Limbic\Modelos\ResultadoDeriva.cs</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>9</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoDinamica</td>
-<td>Nucleo\Modelos\Analise\ResultadoDinamica.cs</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoInteracao</td>
-<td>Nucleo\Modelos\Analise\ResultadoInteracao.cs</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoJung</td>
-<td>Fingerprint\Modelos\ResultadoJung.cs</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoLimbic</td>
-<td>Limbic\Modelos\ResultadoLimbic.cs</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>ResultadoSplice</td>
-<td>Nucleo\Modelos\Genoma\ResultadoSplice.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>RnaBruto</td>
-<td>Nucleo\Modelos\Genoma\RnaBruto.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>29</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>RnaLimbic</td>
-<td>Nucleo\Modelos\Genoma\RnaLimbic.cs</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>5</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>Roteiro</td>
-<td>Nucleo\Modelos\Script\Roteiro.cs</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>17</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>TermoInfluente</td>
-<td>Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>TermoLexical</td>
-<td>Limbic\Modelos\TermoLexical.cs</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>TokenPontuado</td>
-<td>Limbic\Modelos\TokenPontuado.cs</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>Transicao</td>
-<td>Nucleo\Modelos\Script\Elementos.cs</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='core'>
-<td>VetorEtograma3D</td>
-<td>Fingerprint\Modelos\VetorEtograma3D.cs</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>6</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AbaAnaliseDeCenas</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaAnaliseDeCenas.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AbaBeatSheet</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaBeatSheet.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AbaDashboard</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaDashboard.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AbaElenco</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaElenco.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AbaMatrizSocial</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaMatrizSocial.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AbaTaxonomia</td>
-<td>Infrastructure\Exportacao\Excel\Abas\AbaTaxonomia.cs</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AcumuladorForense</td>
-<td>Limbic\Pipeline\ContextoLimbic.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AnalisadorContextual</td>
-<td>Limbic\Pipeline\AnalisadorContextual.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>AnalisadorLexico</td>
-<td>Limbic\Pipeline\AnalisadorLexico.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>BancoDeDadosLexico</td>
-<td>Limbic\Dados\BancoDeDadosLexico.cs</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>BibliotecaArquetipos</td>
-<td>Fingerprint\Dados\BibliotecaArquetipos.cs</td>
-<td>Scriptome.Fingerprint.Dados</td>
-<td>5</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>BibliotecaCentroidesEtograma</td>
-<td>Fingerprint\Modelos\BibliotecaCentroidesEtograma.cs</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClasseInfo</td>
-<td>Infrastructure\ZumbiScanner.cs</td>
-<td>Scriptome.Infrastructure</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorEnergia_V2</td>
-<td>Fingerprint\Classificadores\Energia\ClassificadorEnergia_V2.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Energia</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorEtogramaCartesiano</td>
-<td>Fingerprint\Classificadores\Cartesianos\ClassificadorEtogramaCartesiano.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Cartesianos</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorIntensidade</td>
-<td>Fingerprint\Classificadores\Energia\ClassificadorIntensidade.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Energia</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorJung</td>
-<td>Fingerprint\Classificadores\Arquetipos\ClassificadorJung.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorJungV2</td>
-<td>Fingerprint\Classificadores\Arquetipos\ClassificadorJungV2.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorLacanianoV2</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorMBTIV2</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorMBTIV2.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorNarrativaV2</td>
-<td>Fingerprint\Classificadores\Narrativa\ClassificadorNarrativaUnificado.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorPsicodinamico</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorPsicodinamico.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorPsicodinamicoAvancado</td>
-<td>Fingerprint\Classificadores\Psique\ClassificadorPsicodinamico.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorScriptome</td>
-<td>Fingerprint\Classificadores\Narrativa\ClassificadorScriptome.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ClassificadorTermico</td>
-<td>Fingerprint\Classificadores\Energia\ClassificadorTermico.cs</td>
-<td>Scriptome.Fingerprint.Classificadores.Energia</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>Cluster</td>
-<td>Fingerprint\MotorTaxonomia.cs</td>
-<td>Scriptome.Fingerprint</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ComparacaoJung</td>
-<td>Infrastructure\Validador\ComparacaoJung.cs</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>7</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ComparadorJung</td>
-<td>Infrastructure\Validador\ComparadorJung.cs</td>
-<td>Global</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ConfigService</td>
-<td>Infrastructure\ConfigService.cs</td>
-<td>Global</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ConstrutorDeCena</td>
-<td>Limbic\Pipeline\ConstrutorDeCena.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ContextoLimbic</td>
-<td>Limbic\Pipeline\ContextoLimbic.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>8</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>EstatisticaForense</td>
-<td>Fingerprint\EstatisticaForense.cs</td>
-<td>Scriptome.Fingerprint</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ExportadorBaselineElencoLegacyJson</td>
-<td>Infrastructure\Baseline\ExportadorBaselineElencoLegacyJson.cs</td>
-<td>Scriptome.Infrastructure.Baseline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ExportadorBaselineEtograma</td>
-<td>Infrastructure\Baseline\ExportadorBaselineEtograma.cs</td>
-<td>Scriptome.Infrastructure.Baseline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ExportadorExcelModular</td>
-<td>Infrastructure\Exportacao\ExportadorExcelModular.cs</td>
-<td>Scriptome.Exportacao</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ExtratorEtogramaDeriva6</td>
-<td>Fingerprint\MotoresEtograma\ExtratorEtogramaDeriva6.cs</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>HeuristicaContextual</td>
-<td>Limbic\Algoritimos\HeuristicaContextual.cs</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IAbaExcel</td>
-<td>Infrastructure\Interfaces\IAbaExcel.cs</td>
-<td>Scriptome.Infrastructure.Interfaces</td>
-<td>9</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorBiometrico</td>
-<td>Fingerprint\Interfaces\IClassificadorBiometrico.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorColetivo</td>
-<td>Fingerprint\Interfaces\IClassificadorColetivo.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorEtogramaV2</td>
-<td>Fingerprint\Interfaces\IClassificadorEtogramaV2.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorIndividual</td>
-<td>Fingerprint\Interfaces\IClassificadorIndividual.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>13</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorJungV2</td>
-<td>Fingerprint\Interfaces\IClassificadorJungV2.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorLacanianoV2</td>
-<td>Fingerprint\Interfaces\IClassificadorLacanianoV2.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorMBTIV2</td>
-<td>Fingerprint\Interfaces\IClassificadorMBTIV2.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IClassificadorNarrativaV2</td>
-<td>Fingerprint\Interfaces\IClassificadorNarrativaV2.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IExportadorScriptome</td>
-<td>Infrastructure\Interfaces\IExportadorScriptome.cs</td>
-<td>Scriptome.Infrastructure.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IExtratorEtograma</td>
-<td>Fingerprint\Interfaces\IExtratorEtograma.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ILimbicAnalyzer</td>
-<td>Limbic\Interfaces\AnalisadorLimbic.cs</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='ok'>
-<td>IMotorDeriva</td>
-<td>Limbic\Interfaces\IMotorDeriva.cs</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>5</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IMotorEtograma</td>
-<td>Fingerprint\Interfaces\IMotorEtograma.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IMotorEtogramaCartesiano</td>
-<td>Fingerprint\Interfaces\IMotorEtogramaCartesiano.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IMotorIdentidadeRNA</td>
-<td>Fingerprint\Interfaces\IMotorIdentidadeRNA.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IMotorIntencional</td>
-<td>Fingerprint\Interfaces\IMotorIntencional.cs</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IMotorLexico</td>
-<td>Limbic\Interfaces\IMotorLexico.cs</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>Requer Análise</td>
-</tr>
-<tr class='ok'>
-<td>IMotorLimbic</td>
-<td>Limbic\Interfaces\IMotorLimbic.cs</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ImpactoVetorial</td>
-<td>Limbic\Pipeline\ContextoLimbic.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>InfoArquetipo</td>
-<td>Fingerprint\Dados\BibliotecaArquetipos.cs</td>
-<td>Scriptome.Fingerprint.Dados</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IPipelineLinguistico</td>
-<td>Limbic\Linguistica\DefinicoesLingusticas.cs</td>
-<td>Scriptome.Linguistica</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>IServicoVocabulario</td>
-<td>Limbic\Interfaces\IServicoVocabulario.cs</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>5</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>LematizadorHibrido</td>
-<td>Limbic\Linguistica\LematizadorHibrido.cs</td>
-<td>Scriptome.Linguistica</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MetricasDivergencia</td>
-<td>Infrastructure\Validador\MetricasDivergencia.cs</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorDeFusao</td>
-<td>Limbic\Pipeline\MotorDeFusao.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorDeIdentidade</td>
-<td>Fingerprint\MotorDeIdentidade.cs</td>
-<td>Scriptome.Fingerprint</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorDeriva6</td>
-<td>Limbic\Algoritimos\MotorDeriva6.cs</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>4</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorEtogramaCartesiano3D</td>
-<td>Fingerprint\MotoresEtograma\MotorEtogramaCartesiano3D.cs</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorEtogramaV2</td>
-<td>Fingerprint\MotoresEtograma\MotorEtogramaV2.cs</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorIdentidadeRNA</td>
-<td>Fingerprint\Motores\MotorDeIdentidadeRNA.cs</td>
-<td>Scriptome.Fingerprint.Motores</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorLimbic</td>
-<td>Limbic\Motor\MotorLimbic.cs</td>
-<td>Scriptome.Limbic.Motor</td>
-<td>8</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>MotorTaxonomia</td>
-<td>Fingerprint\MotorTaxonomia.cs</td>
-<td>Scriptome.Fingerprint</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ParametrosVader</td>
-<td>Limbic\Dados\ParametrosVader.cs</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>10</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>PathResolver</td>
-<td>Infrastructure\ConfigService.cs</td>
-<td>Global</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>PerfilPersonagemConsolidado</td>
-<td>Nucleo\Modelos\Fenotipo\PerfilPersonagemConsolidado.cs</td>
-<td>Global</td>
-<td>12</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>PipelineLimbic</td>
-<td>Limbic\Pipeline\PipelineLimbic.cs</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ProcessadorLinguistico</td>
-<td>Limbic\Linguistica\ProcessadorLinguistico.cs</td>
-<td>Scriptome.Linguistica</td>
-<td>6</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>Program</td>
-<td>Program.cs</td>
-<td>Scriptome</td>
-<td>0</td>
-<td>Sem Referência Estrutural</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>RaizComposicao</td>
-<td>Infrastructure\RaizComposicao.cs</td>
-<td>Scriptome.Infrastructure</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>RepositorioLexicoUnificado</td>
-<td>Limbic\Dados\RepositorioLexicoUnificado.cs</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ScriptomeJsonExporter</td>
-<td>Infrastructure\ScriptomeJsonExporter.cs</td>
-<td>Scriptome.Infrastructure</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ScriptomeVisualizer</td>
-<td>Infrastructure\ScriptomeVisualizer.cs</td>
-<td>Scriptome.Infrastructure</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>Token</td>
-<td>Limbic\Linguistica\DefinicoesLingusticas.cs</td>
-<td>Scriptome.Linguistica</td>
-<td>16</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ValidadorJung</td>
-<td>Infrastructure\Validador\ValidadorJung.cs</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>1</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>VerificadorDerivaCompleto</td>
-<td>Limbic\Testes\VerificadorLimbicCompleto.cs</td>
-<td>Scriptome.Testes</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>VerificadorLimbic</td>
-<td>Limbic\Testes\VerificadorLimbic.cs</td>
-<td>Scriptome.Testes</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>VisualizadorEtograma</td>
-<td>Infrastructure\Exportacao\VisualizadorEtograma.cs</td>
-<td>Scriptome.Infrastructure.Exportacao</td>
-<td>2</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
-<tr class='ok'>
-<td>ZumbiScanner</td>
-<td>Infrastructure\ZumbiScanner.cs</td>
-<td>Scriptome.Infrastructure</td>
-<td>3</td>
-<td>Referenciado</td>
-<td>N/A</td>
-</tr>
+
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Structural Candidate Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="search"
+           type="text"
+           onkeyup="searchTable()"
+           placeholder="Search class, folder, status..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
+</div>
+<div class="table-shell">
+<table id="table" class="link-table structural-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Class</th>
+            <th onclick="sortTable(1)">Folder</th>
+            <th onclick="sortTable(2)">Uses</th>
+            <th onclick="sortTable(3)">Status</th>
+            <th onclick="sortTable(4)">Removal</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr class='row-alert'>
+    <td>AdaptadorDiagnostico.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>CalculadorModalidade.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>CalculadoraTensao.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>CarregadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ConfiguradorLimbic.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>DivergenceScore.cs</td>
+    <td>Scriptome\Fingerprint\Forense</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>EspecialistaDinamica.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>EspecialistaProducao.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>EstadoIdentidade.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ExecutorValidacaoJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>InfoPalavra.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>LeitorBaseline.cs</td>
+    <td>Scriptome\Infrastructure\Baseline</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>LematizadorCatalyst.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>LematizadorVerbal.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ModuloEtogramaV2.cs</td>
+    <td>Scriptome\Fingerprint\Modulos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ResultadoModuloLimbic.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Resultados</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>RnaCartesiano.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ScriptomeVisualizer.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>AbaEstrutura.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>AppConfig.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorHibrido.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorLacaniano.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorLacanianoV2Legado.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorMBTI.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>DivergenceLogger.cs</td>
+    <td>Scriptome\Fingerprint\Forense</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ExportadorBaselineJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>MotorEtogramaHeuristico.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>MotorIntencionalV1.cs</td>
+    <td>Scriptome\Fingerprint\MotoresInterpretativos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ScriptomeDashboardPipeline.cs</td>
+    <td>Scriptome\Nucleo\Modelos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>10</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorBasico.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorBeats.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorDinamica.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorDuracao.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorInteracao.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorLimbic.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>BaseImutavel.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Cena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ConversorFenotipo.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>14</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EntradaLimbic.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaBeats.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaDuracao.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaInteracao.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaVocabulario.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EstatisticasCena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>7</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EstatisticasRoteiro.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>28</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Etograma.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>25</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ExtratorEtogramaAdapter.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>GeneDiscursivo.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>IModuloAnalise.cs</td>
+    <td>Scriptome\Nucleo\Interfaces</td>
+    <td>11</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorDeTranscricao.cs</td>
+    <td>Scriptome\Nucleo\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-core'>
+    <td>IMotorSplicing.cs</td>
+    <td>Scriptome\Nucleo\Interfaces</td>
+    <td>7</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>LeitorFountain.cs</td>
+    <td>Scriptome\Nucleo\Leitores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorDeTranscricao.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorFenotipoV2.cs</td>
+    <td>Scriptome\Nucleo\Motores</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorSplicing.cs</td>
+    <td>Scriptome\Nucleo\Motores</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorVetorial_V2.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>OrquestradorNucleo.cs</td>
+    <td>Scriptome\Nucleo</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>PerfilPersonagem.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>40</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoAnalise.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoDeriva.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoDinamica.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoInteracao.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoJung.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoLimbic.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoSplice.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>RnaBruto.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>25</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>RnaLimbic.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Roteiro.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>16</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoAnalise.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>TermoLexical.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>TokenPontuado.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>VetorEtograma3D.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaAnaliseDeCenas.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaBeatSheet.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaDashboard.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaElenco.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaMatrizSocial.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaTaxonomia.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ContextoLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AnalisadorContextual.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AnalisadorLexico.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BancoDeDadosLexico.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BibliotecaArquetipos.cs</td>
+    <td>Scriptome\Fingerprint\Dados</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BibliotecaCentroidesEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ZumbiScanner.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorEnergia_V2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Energia</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorEtogramaCartesiano.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Cartesianos</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorIntensidade.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Energia</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorJung.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Arquetipos</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorJungV2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Arquetipos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorLacanianoV2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorMBTIV2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorNarrativaUnificado.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorPsicodinamico.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorPsicodinamico.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorScriptome.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorTermico.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Energia</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorTaxonomia.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ComparacaoJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ComparadorJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ConstrutorDeCena.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ContextoLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>7</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>EstatisticaForense.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExportadorBaselineElencoLegacyJson.cs</td>
+    <td>Scriptome\Infrastructure\Baseline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExportadorBaselineEtograma.cs</td>
+    <td>Scriptome\Infrastructure\Baseline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExportadorExcelModular.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExtratorEtogramaDeriva6.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>HeuristicaContextual.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IAbaExcel.cs</td>
+    <td>Scriptome\Infrastructure\Interfaces</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorBiometrico.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorColetivo.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr >
+    <td>IClassificadorEtogramaV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorIndividual.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>13</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorJungV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorLacanianoV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorMBTIV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorNarrativaV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IExportadorScriptome.cs</td>
+    <td>Scriptome\Infrastructure\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IExtratorEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AnalisadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr >
+    <td>IMotorDeriva.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorEtogramaCartesiano.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorIdentidadeRNA.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorIntencional.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorLexico.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr >
+    <td>IMotorLimbic.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ContextoLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BibliotecaArquetipos.cs</td>
+    <td>Scriptome\Fingerprint\Dados</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IServicoVocabulario.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>LematizadorHibrido.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MetricasDivergencia.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeFusao.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeIdentidade.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeriva6.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorEtogramaCartesiano3D.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorEtogramaV2.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeIdentidadeRNA.cs</td>
+    <td>Scriptome\Fingerprint\Motores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorLimbic.cs</td>
+    <td>Scriptome\Limbic\Motor</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorTaxonomia.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ParametrosVader.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>9</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>PerfilPersonagemConsolidado.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Fenotipo</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>PipelineLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ProcessadorLinguistico.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>Program.cs</td>
+    <td>Scriptome</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>RaizComposicao.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>RepositorioLexicoUnificado.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ScriptomeJsonExporter.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>14</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ValidadorJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>VerificadorLimbicCompleto.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>VerificadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>VisualizadorEtograma.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ZumbiScanner.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+    </tbody>
 </table>
-<h2 style='margin-top:50px;'>⚠ Implicit Coupling Candidates</h2>
-<table>
+</div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Namespace Drift Review</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Folder</th>
+                    <th>Namespace</th>
+                    <th>Expected Namespace</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr class="row-warning">
+    <td>BibliotecaCentroidesEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>Scriptome.Fingerprint.Modelos</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorVetorial_V2.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>Scriptome.Nucleo.Motores</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorIntencionalV1.cs</td>
+    <td>Scriptome\Fingerprint\MotoresInterpretativos</td>
+    <td>Global</td>
+    <td>Scriptome.Fingerprint.MotoresInterpretativos</td>
+</tr>
+<tr class="row-warning">
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure</td>
+</tr>
+<tr class="row-warning">
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure</td>
+</tr>
+<tr class="row-warning">
+    <td>ExportadorExcelModular.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao</td>
+    <td>Scriptome.Exportacao</td>
+    <td>Scriptome.Infrastructure.Exportacao</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaAnaliseDeCenas.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaBeatSheet.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaDashboard.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaElenco.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaEstrutura.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaMatrizSocial.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaTaxonomia.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>ComparadorJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+</tr>
+<tr class="row-warning">
+    <td>ExportadorBaselineJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+</tr>
+<tr class="row-warning">
+    <td>CalculadorModalidade.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>CalculadoraTensao.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>HeuristicaContextual.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>LematizadorCatalyst.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>LematizadorVerbal.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorDeriva6.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>LematizadorHibrido.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>ProcessadorLinguistico.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>VerificadorLimbicCompleto.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>Scriptome.Testes</td>
+    <td>Scriptome.Limbic.Testes</td>
+</tr>
+<tr class="row-warning">
+    <td>VerificadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>Scriptome.Testes</td>
+    <td>Scriptome.Limbic.Testes</td>
+</tr>
+<tr class="row-warning">
+    <td>ScriptomeDashboardPipeline.cs</td>
+    <td>Scriptome\Nucleo\Modelos</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+</tr>
+<tr class="row-warning">
+    <td>EstatisticasCena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+</tr>
+<tr class="row-warning">
+    <td>EstatisticasRoteiro.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+</tr>
+<tr class="row-warning">
+    <td>ResultadoInteracao.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+</tr>
+<tr class="row-warning">
+    <td>PerfilPersonagemConsolidado.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Fenotipo</td>
+    <td>Global</td>
+    <td>Scriptome.Nucleo.Modelos.Fenotipo</td>
+</tr>
+<tr class="row-warning">
+    <td>Cena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorFenotipoV2.cs</td>
+    <td>Scriptome\Nucleo\Motores</td>
+    <td>Scriptome.Nucleo.Fenotipo</td>
+    <td>Scriptome.Nucleo.Motores</td>
+</tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Implicit Coupling Candidates</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Module</th>
+                    <th>Target Module</th>
+                    <th>Fan-Out</th>
+                    <th>Fan-In</th>
+                    <th>Dominance</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody>
 <tr>
-<th>Type</th>
-<th>Module</th>
-<th>Target Module</th>
-<th>Fan-Out</th>
-<th>Fan-In</th>
-<th>Dominance</th>
-<th>Volume</th>
+    <td>Program</td>
+    <td>Program.cs</td>
+    <td>Infrastructure</td>
+    <td>17</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>17</td>
 </tr>
 <tr>
-<td>Program</td>
-<td>Program.cs</td>
-<td>Infrastructure</td>
-<td>16</td>
-<td>0</td>
-<td>1,00</td>
-<td>16</td>
+    <td>MotorDeIdentidade</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>8</td>
+    <td>2</td>
+    <td>0,80</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>MotorDeIdentidade</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>8</td>
-<td>2</td>
-<td>0,80</td>
-<td>8</td>
+    <td>OrquestradorNucleo</td>
+    <td>Nucleo</td>
+    <td>Fingerprint</td>
+    <td>6</td>
+    <td>2</td>
+    <td>0,75</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>OrquestradorNucleo</td>
-<td>Nucleo</td>
-<td>Fingerprint</td>
-<td>11</td>
-<td>2</td>
-<td>0,85</td>
-<td>11</td>
+    <td>ModuloEtogramaV2</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>5</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>ModuloEtogramaV2</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>5</td>
-<td>0</td>
-<td>1,00</td>
-<td>5</td>
+    <td>MotorIdentidadeRNA</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>6</td>
+    <td>2</td>
+    <td>0,75</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>MotorIdentidadeRNA</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>6</td>
-<td>2</td>
-<td>0,75</td>
-<td>6</td>
+    <td>MotorEtogramaV2</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>5</td>
+    <td>1</td>
+    <td>0,83</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>MotorEtogramaCartesiano3D</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>7</td>
-<td>2</td>
-<td>0,78</td>
-<td>7</td>
+    <td>AnalisadorContextual</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>10</td>
+    <td>2</td>
+    <td>0,83</td>
+    <td>10</td>
 </tr>
 <tr>
-<td>MotorEtogramaHeuristico</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>6</td>
-<td>0</td>
-<td>1,00</td>
-<td>6</td>
+    <td>AnalisadorLexico</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>8</td>
+    <td>2</td>
+    <td>0,80</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>MotorEtogramaV2</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>5</td>
-<td>1</td>
-<td>0,83</td>
-<td>5</td>
+    <td>PipelineLimbic</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>14</td>
+    <td>1</td>
+    <td>0,93</td>
+    <td>14</td>
 </tr>
 <tr>
-<td>AnalisadorContextual</td>
-<td>Limbic</td>
-<td>Nucleo</td>
-<td>10</td>
-<td>2</td>
-<td>0,83</td>
-<td>10</td>
+    <td>VerificadorLimbic</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>23</td>
+    <td>2</td>
+    <td>0,92</td>
+    <td>23</td>
 </tr>
 <tr>
-<td>AnalisadorLexico</td>
-<td>Limbic</td>
-<td>Nucleo</td>
-<td>8</td>
-<td>2</td>
-<td>0,80</td>
-<td>8</td>
+    <td>AdaptadorLimbic</td>
+    <td>Nucleo</td>
+    <td>Limbic</td>
+    <td>15</td>
+    <td>2</td>
+    <td>0,88</td>
+    <td>15</td>
 </tr>
 <tr>
-<td>PipelineLimbic</td>
-<td>Limbic</td>
-<td>Nucleo</td>
-<td>13</td>
-<td>2</td>
-<td>0,87</td>
-<td>13</td>
+    <td>EspecialistaDinamica</td>
+    <td>Nucleo</td>
+    <td>Unknown</td>
+    <td>8</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>VerificadorLimbic</td>
-<td>Limbic</td>
-<td>Nucleo</td>
-<td>23</td>
-<td>2</td>
-<td>0,92</td>
-<td>23</td>
+    <td>MotorFenotipoV2</td>
+    <td>Nucleo</td>
+    <td>Fingerprint</td>
+    <td>17</td>
+    <td>1</td>
+    <td>0,94</td>
+    <td>17</td>
 </tr>
 <tr>
-<td>AdaptadorLimbic</td>
-<td>Nucleo</td>
-<td>Limbic</td>
-<td>23</td>
-<td>2</td>
-<td>0,92</td>
-<td>23</td>
+    <td>ClassificadorPsicodinamicoAvancado</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>4</td>
+    <td>1</td>
+    <td>0,80</td>
+    <td>4</td>
+</tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:12px;" class="muted">
+            <b>Fan-Out</b> = outgoing dependencies |
+            <b>Fan-In</b> = incoming dependencies |
+            <b>Dominance</b> = relative structural concentration |
+            <b>Volume</b> = dependency interaction load
+        </div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>SOLID Alerts</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Principle</th>
+                    <th>Class</th>
+                    <th>Namespace</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr>
+    <td>SRP</td>
+    <td>Program</td>
+    <td>Program.cs</td>
+    <td>FanOut &gt; 15</td>
 </tr>
 <tr>
-<td>MotorFenotipoV2</td>
-<td>Nucleo</td>
-<td>Fingerprint</td>
-<td>16</td>
-<td>2</td>
-<td>0,89</td>
-<td>16</td>
+    <td>SRP</td>
+    <td>RaizComposicao</td>
+    <td>Infrastructure</td>
+    <td>FanOut &gt; 15</td>
 </tr>
-<tr>
-<td>ClassificadorJungV2</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>6</td>
-<td>2</td>
-<td>0,75</td>
-<td>6</td>
-</tr>
-<tr>
-<td>ClassificadorTermico</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>7</td>
-<td>2</td>
-<td>0,78</td>
-<td>7</td>
-</tr>
-<tr>
-<td>ClassificadorPsicodinamicoAvancado</td>
-<td>Fingerprint</td>
-<td>Nucleo</td>
-<td>4</td>
-<td>1</td>
-<td>0,80</td>
-<td>4</td>
-</tr>
-</table>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Limitations</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard is based on heuristic static structural analysis.</li>
+            <li>Structural Candidates are not automatically dead code.</li>
+            <li>Pattern Similarity often indicates intentional architecture, not removal targets.</li>
+            <li>Unresolved candidates are the strongest manual-review bucket.</li>
+            <li>Reflection, DI wiring and framework conventions may generate false positives.</li>
+            <li>Final decisions should always include human review.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.structural-kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
 
-                    <div style='margin-top:8px;font-size:12px;color:#9aa4b2;max-width:800px;'>
+@media (max-width: 1400px) {
+    .grid-kpis.structural-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
 
-                    <b>Metric Definitions</b><br>
+@media (max-width: 980px) {
+    .grid-kpis.structural-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
 
-                    <b>Fan-Out</b> — Number of outgoing dependencies from the module.<br>
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
 
-                    <b>Fan-In</b> — Number of incoming dependencies targeting the module.<br>
+.structural-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
 
-                    <b>Dominance</b> — Relative structural influence derived from Fan-Out versus Fan-In. 
-                    Higher values indicate modules exerting stronger control over other modules.<br>
+.row-alert td {
+    background: rgba(255, 90, 90, 0.14);
+}
 
-                    <b>Volume</b> — Total dependency interaction involving the module 
-                    (Fan-In + Fan-Out), representing the structural traffic of the component.
+.row-warning td {
+    background: rgba(255, 196, 0, 0.11);
+}
 
-                    </div>
-<h2 style='margin-top:50px;'>⚠ SOLID Alerts</h2>
-<table>
-<tr><th>Principle</th><th>Class</th><th>Namespace</th><th>Reason</th></tr>
-<tr>
-<td>SRP</td>
-<td>Program</td>
-<td>Program.cs</td>
-<td>FanOut > 15</td>
-</tr>
-<tr>
-<td>SRP</td>
-<td>RaizComposicao</td>
-<td>Infrastructure</td>
-<td>FanOut > 15</td>
-</tr>
-</table>
+.row-core td {
+    background: rgba(64, 160, 255, 0.12);
+}
+</style>
 
-                <div style='margin-top:60px; padding:20px; background:#111827; border-radius:10px; font-size:13px; color:#9ca3af;'>
-                <h3>📘 Methodology & Limitations</h3>
-                This dashboard is based on heuristic static structural analysis of the analyzed codebase.
-                Metrics highlight architectural signals and potential anomalies, not definitive violations.
+<script>
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('table');
+  var rows = table.getElementsByTagName('tr');
 
-                Structural Candidates
-                Classes with zero structural references in the analyzed graph.
-                These are not automatically dead code.
-                Typical causes include CLI entry points, plugin rules, reflection usage, or framework wiring.
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
 
-                Pattern Similarity
-                Subset of candidates that resemble known structural patterns (interfaces, DI adapters, factories, etc.).
-                Higher values usually indicate intentional architectural structures rather than dead code.
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
 
-                Unresolved
-                Candidates that remain unexplained after probabilistic refinement.
-                These are the strongest signals of potential dead code or incomplete integration.
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
 
-                Namespace Drift
-                Classes whose namespace does not match the folder hierarchy under the project root.
-                Strict rule: namespace should reflect the physical module structure.
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
 
-                Global Namespace
-                Classes declared without a namespace.
-                These reduce modular clarity and should normally be avoided.
+      if (!x || !y) continue;
 
-                Isolated Core
-                Core-layer classes that remain structurally independent from outer layers.
-                Healthy architectures usually keep Core stable and referenced by other modules,
-                while avoiding dependencies from Core to infrastructure.
+      if (dir === 'asc' && x.innerText.toLowerCase() > y.innerText.toLowerCase()) shouldSwitch = true;
+      if (dir === 'desc' && x.innerText.toLowerCase() < y.innerText.toLowerCase()) shouldSwitch = true;
 
-                SOLID Alerts
-                Heuristic detection of potential violations of object-oriented design principles.
-                Examples include Single Responsibility violations, Liskov Substitution conflicts,
-                and interface misuse.
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
 
-                Radar Interpretation
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Structural Dashboard // Shared Hub Layout</div>
+</div>
+</body>
+</html>
 
-                Radar values are normalized between 0 and 1 relative to the total number of classes.
-
-                Typical interpretation:
-
-                0.00 – 0.10  Healthy signal  
-                0.10 – 0.25  Moderate architectural signal  
-                0.25 – 0.50  Structural attention recommended  
-                0.50 – 1.00  High architectural risk indicator
-
-                Important:
-                High values do not necessarily indicate errors, but highlight areas that deserve architectural review.
-
-                This analysis operates purely at the static structural level.
-                Runtime mechanisms such as reflection, dependency injection, or framework behavior may produce false positives.
-                Final architectural decisions should always involve human review.
-
-                    <br><br>
-                    <b>Implicit Coupling</b><br>
-                    Implicit coupling highlights classes whose dependencies concentrate toward a single module or subsystem.
-                    This signal may reveal architectural hotspots such as orchestration layers,
-                    integration adapters, or hidden dependency concentration.
-
-                    These detections are heuristic and should be interpreted as architectural signals rather than definitive issues.
-
-                    <br><br>
-                    <b>Architectural Stability Metrics (Robert Martin)</b><br>
-
-                    Abstractness (A) measures how much of a module consists of abstractions.
-
-                    Instability (I) measures how dependent a module is on other modules.
-
-                    Distance from Main Sequence (D) measures how far a module is from the ideal balance
-                    between abstraction and stability.
-
-                    Architectures close to the main sequence tend to be easier to evolve and maintain.
-
-                    These metrics are widely used in architectural analysis tools such as NDepend.
-                </div>
-</body></html>

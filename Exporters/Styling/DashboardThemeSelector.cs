@@ -3,52 +3,42 @@
     /// <summary>
     /// Resolve o arquivo CSS do tema visual dos dashboards.
     ///
-    /// Estratégia
-    /// ----------
+    /// Convenção
+    /// ---------
     /// O sistema usa:
     /// - dashboard-base.css
     /// - dashboard-components.css
-    /// - theme-*.css
+    /// - dashboard-theme-*.css
     ///
-    /// Este seletor mapeia o nome informado em configuração
-    /// para o arquivo de tema correspondente.
+    /// Esta classe recebe o nome lógico do tema vindo da configuração
+    /// e retorna o nome do arquivo CSS correspondente.
     ///
-    /// Convenção
-    /// ---------
-    /// O valor retornado deve apontar apenas para o nome do arquivo.
-    /// O chamador é responsável por montar o path final:
-    ///
-    /// assets/css/{themeFile}
+    /// Temas suportados
+    /// ----------------
+    /// - midnight-blue
+    /// - ember-ops
+    /// - neon-grid
     ///
     /// Fallback
     /// --------
     /// Quando o tema não é informado ou é inválido,
-    /// o sistema usa CyberBlue como padrão.
+    /// o sistema usa midnight-blue como padrão.
     /// </summary>
     public static class DashboardThemeSelector
     {
-        public const string DefaultTheme = "theme-cyberblue.css";
+        public const string DefaultThemeFile = "dashboard-theme-midnight-blue.css";
 
         public static string ResolveFileName(string? themeName)
         {
             if (string.IsNullOrWhiteSpace(themeName))
-                return DefaultTheme;
+                return DefaultThemeFile;
 
             return themeName.Trim().ToLowerInvariant() switch
             {
-                "cyberblue" => "theme-cyberblue.css",
-                "blue" => "theme-cyberblue.css",
-
-                "cyberorange" => "theme-cyberorange.css",
-                "orange" => "theme-cyberorange.css",
-
-                "cyberyellow" => "theme-cyberyellow.css",
-                "yellow" => "theme-cyberyellow.css",
-
-                "matrixcyan" => "theme-matrixcyan.css",
-                "cyan" => "theme-matrixcyan.css",
-
-                _ => DefaultTheme
+                "midnight-blue" => "dashboard-theme-midnight-blue.css",
+                "ember-ops" => "dashboard-theme-ember-ops.css",
+                "neon-grid" => "dashboard-theme-neon-grid.css",
+                _ => DefaultThemeFile
             };
         }
     }

@@ -8,7 +8,7 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/theme-cyberblue.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
 </head>
 <body>
 <div class='wrapper'>
@@ -21,8 +21,8 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-08 22:53 UTC</div>
-        <div><b>Parser:</b> HybridParser (Incremental)</div>
+        <div><b>Generated:</b> 2026-03-09 05:03 UTC</div>
+        <div><b>Parser:</b> HybridSelectiveParser</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
         <div><b>Readiness:</b> Ready</div>
     </div>
@@ -31,89 +31,118 @@
 <a class="nav-card" augmented-ui="tr-clip bl-clip border" href="StructuralDashboard.html">
     <div class="tag">Module // 01</div>
     <div class="title">Structural</div>
-    <div class="desc">Dead code candidates, namespace drift, coupling suspicion and removal analysis.</div>
+    <div class="desc">Dead code candidates, namespace drift, unresolved review and structural classification.</div>
     <div class="accent"></div>
 </a>
 <a class="nav-card" augmented-ui="tr-clip bl-clip border" href="ArchitecturalDashboard.html">
     <div class="tag">Module // 02</div>
     <div class="title">Architectural</div>
-    <div class="desc">Health by module, score, Robert Martin metrics and architectural balance.</div>
+    <div class="desc">Health by module, balance metrics, coupling and isolation analysis.</div>
     <div class="accent"></div>
 </a>
 <a class="nav-card" augmented-ui="tr-clip bl-clip border" href="ParsingDashboard.html">
     <div class="tag">Module // 03</div>
     <div class="title">Parsing</div>
-    <div class="desc">Parser confidence, structural density, throughput and parsed type coverage.</div>
+    <div class="desc">Parser confidence, extraction density, throughput and parsed type coverage.</div>
     <div class="accent"></div>
 </a>
-<a class="nav-card is-disabled" aria-disabled="true" augmented-ui="tr-clip bl-clip border">
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="QualityDashboard.html">
     <div class="tag">Module // 04</div>
     <div class="title">Quality / Gates</div>
-    <div class="desc">Not generated yet.</div>
+    <div class="desc">Fitness gates, warnings, quality signals and execution stability.</div>
     <div class="accent"></div>
 </a>
 </div>
-<div class="grid-kpis">
+<div class="grid-kpis hub-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Total Classes</div>
         <div class="value">161</div>
-        <div class="hint">Structural inventory</div>
+        <div class="hint">Structurally classified types in the analyzed scope</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Structural Candidates</div>
-        <div class="value">28</div>
-        <div class="hint">Zero-reference candidates</div>
-    </div>
-
-    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Pattern Similarity</div>
-        <div class="value">11</div>
-        <div class="hint">Pattern-compatible candidates</div>
+        <div class="label">Dead Code Candidates</div>
+        <div class="value">29</div>
+        <div class="hint">Types still compatible with the dead code hypothesis</div>
     </div>
 
     <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">17</div>
-        <div class="hint">Manual inspection required</div>
-    </div>
-
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Namespace Drift</div>
-        <div class="value">35</div>
-        <div class="hint">Namespace ↔ folder mismatch</div>
-    </div>
-
-    <div class="kpi" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Global Namespace</div>
-        <div class="value">6</div>
-        <div class="hint">Legacy structural smell</div>
+        <div class="value">18</div>
+        <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
     </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Isolated Core</div>
-        <div class="value">9</div>
-        <div class="hint">Protected boundaries</div>
-    </div>
-
-    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Smell Index</div>
-        <div class="value">12,7</div>
-        <div class="hint">Composite hygiene indicator</div>
-    </div>
-
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Hygiene Level</div>
-        <div class="value" style="font-size:24px;">🟢 Healthy</div>
-        <div class="hint">Structural health classification</div>
+        <div class="label">Code Smell Index</div>
+        <div class="value">13,0</div>
+        <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Implicit Coupling</div>
-        <div class="value">17</div>
-        <div class="hint">Directional dependency hotspots</div>
+        <div class="value">14</div>
+        <div class="hint">Detected structural concentration toward specific modules</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Statistical Support</div>
+        <div class="value" style="font-size:24px;">Moderate</div>
+        <div class="hint">Overall heuristic support level for the current analysis snapshot</div>
     </div>
 </div>
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Statistical Support</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Support Matrix</h3>
+    <table class="link-table compact-table">
+        <thead>
+            <tr>
+                <th>Signal</th>
+                <th>Support</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Parser</td>
+                <td><span class="badge green"><span class="badge-dot"></span> High</span></td>
+            </tr>
+            <tr>
+                <td>Structural</td>
+                <td><span class="badge red"><span class="badge-dot"></span> Low</span></td>
+            </tr>
+            <tr>
+                <td>Coupling</td>
+                <td><span class="badge green"><span class="badge-dot"></span> High</span></td>
+            </tr>
+            <tr>
+                <td>Effort</td>
+                <td><span class="badge amber"><span class="badge-dot"></span> Moderate</span></td>
+            </tr>
+            <tr>
+                <td><b>Overall</b></td>
+                <td><span class="badge amber"><span class="badge-dot"></span> <b>Moderate</b></span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Interpretation</h3>
+    <p style="margin-top:0;">
+        The current analysis has moderate overall heuristic support. Parsing confidence is high, structural classification is low, coupling interpretation is high, and effort estimates should be read with moderate support.
+    </p>
+
+    <ul class="clean" style="margin-top:16px;">
+        <li>Support levels are heuristic and should be read as evidence strength, not absolute certainty.</li>
+        <li>Parser support reflects extraction confidence and structural usability.</li>
+        <li>Structural support reflects how much of the dead code hypothesis could be refined or narrowed.</li>
+        <li>Effort support should be interpreted cautiously when confidence is limited.</li>
+    </ul>
+</div>
+</div></div>
 <div class="section">
     <div class="section-title">
         <h2>Run Overview</h2>
@@ -124,7 +153,7 @@
     <h3>Pipeline Telemetry</h3>
 
     <div class="status-row" style="margin-bottom:14px;">
-        <div class="badge green"><span class="badge-dot"></span> Parser: HybridParser (Incremental)</div>
+        <div class="badge green"><span class="badge-dot"></span> Parser: HybridSelectiveParser</div>
         <div class="badge green"><span class="badge-dot"></span> Confidence: 95%</div>
         <div class="badge green"><span class="badge-dot"></span> Gates: Ready</div>
     </div>
@@ -135,20 +164,20 @@
             <tbody>
                 <tr>
                     <th scope="row">Files</th>
-                    <td style="--size: 0.301;">
+                    <td style="--size: 0.3327;">
                         <span class="data">177</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Types</th>
-                    <td style="--size: 0.2738;">
+                    <td style="--size: 0.3026;">
                         <span class="data">161</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Refs</th>
                     <td style="--size: 1;">
-                        <span class="data">588</span>
+                        <span class="data">532</span>
                     </td>
                 </tr>
                 <tr>
@@ -162,29 +191,29 @@
     </div>
 
     <ul class="clean" style="margin-top:14px;">
-        <li><b>Execution:</b> 569 ms</li>
-        <li><b>Files:</b> 177 / <b>Types:</b> 161 / <b>References:</b> 588</li>
+        <li><b>Execution:</b> 598 ms</li>
+        <li><b>Files:</b> 177 / <b>Types:</b> 161 / <b>References:</b> 532</li>
         <li><b>Average Abstractness:</b> 0,11</li>
-        <li><b>Average Instability:</b> 0,45</li>
-        <li><b>Average Distance:</b> 0,43</li>
+        <li><b>Average Instability:</b> 0,46</li>
+        <li><b>Average Distance:</b> 0,42</li>
     </ul>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Analysis</h3>
     <ul class="clean">
-        <li>Core isolation detected and architectural boundaries appear preserved.</li>
-        <li>Namespace drift detected. Folder hierarchy and namespace map need review.</li>
-        <li>Remaining structural candidates persist after refinement.</li>
-        <li>Smell index remains in a healthy range.</li>
-        <li>SOLID alerts detected: 2.</li>
-        <li>Implicit coupling hotspots detected: 17.</li>
+        <li>Core isolation signals are present and architectural boundaries appear reasonably preserved.</li>
+        <li>Namespace drift was detected. Folder structure and namespace alignment deserve review.</li>
+        <li>Some dead code candidates remain unresolved after refinement and still deserve manual review.</li>
+        <li>Code smell index remains in a healthy range.</li>
+        <li>SOLID alerts were detected: 2.</li>
+        <li>Implicit coupling hotspots were detected: 14.</li>
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge red"><span class="badge-dot"></span> Unresolved: 17</div>
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 18</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 35</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 2</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 17</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 14</div>
     </div>
 </div>
 </div></div>
@@ -207,8 +236,8 @@
             <tbody>
 <tr>
     <td>Structural</td>
-    <td>Dead code probability / structural risk</td>
-    <td>Structural Candidates, Pattern Similarity, Unresolved, Namespace Drift</td>
+    <td>Dead code review / structural risk</td>
+    <td>Dead Code Candidates, Pattern Similarity, Unresolved, Namespace Drift</td>
     <td><a href="StructuralDashboard.html">Open Structural Dashboard</a></td>
 </tr>
 <tr>
@@ -226,8 +255,14 @@
 <tr>
     <td>Parsing</td>
     <td>Parser quality / structural extraction</td>
-    <td>Confidence, Files, Types, References, Time/Class</td>
+    <td>Confidence, Files, Types, References, Throughput</td>
     <td><a href="ParsingDashboard.html">Open Parsing Dashboard</a></td>
+</tr>
+<tr>
+    <td>Quality / Gates</td>
+    <td>Validation / execution quality</td>
+    <td>Fitness Gates, Warnings, Stability, Crash Reports</td>
+    <td><a href="QualityDashboard.html">Open Quality Dashboard</a></td>
 </tr>
             </tbody>
         </table>
@@ -240,23 +275,23 @@
     </div>
     <div class="dual">
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    <h3>Code Hygiene</h3>
+    <h3>Code Hygiene Summary</h3>
     <ul class="clean">
-        <li><b>CodeSmellIndex:</b> 12,7</li>
-        <li><b>Hygiene:</b> 🟢 Healthy</li>
-        <li><b>Dead Code Candidates:</b> 33</li>
+        <li><b>Code Smell Index:</b> 13,0</li>
+        <li><b>Hygiene Level:</b> 🟢 Healthy</li>
+        <li><b>Dead Code Candidates:</b> 29</li>
+        <li><b>Unresolved:</b> 18</li>
         <li><b>Namespace Drift:</b> 35</li>
-        <li><b>Global Namespace:</b> 6</li>
         <li><b>Isolated Core:</b> 9</li>
     </ul>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Refactor Effort Estimation</h3>
     <ul class="clean">
-        <li><b>RDI:</b> 48</li>
+        <li><b>RDI:</b> 45</li>
         <li><b>Difficulty:</b> Moderate</li>
-        <li><b>Estimated Hours:</b> 19,2</li>
-        <li><b>Confidence:</b> 0,64</li>
+        <li><b>Estimated Hours:</b> 18,0</li>
+        <li><b>Confidence:</b> 0,60</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -265,14 +300,14 @@
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.24;">
-                        <span class="data">19,2h</span>
+                    <td style="--size: 0.225;">
+                        <span class="data">18,0h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.6381;">
-                        <span class="data">0,64</span>
+                    <td style="--size: 0.6033;">
+                        <span class="data">0,60</span>
                     </td>
                 </tr>
             </tbody>

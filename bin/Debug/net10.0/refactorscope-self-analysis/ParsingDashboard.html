@@ -1,37 +1,169 @@
-﻿<html><head><meta charset='UTF-8'>
-<style>
-body { background:#0f1117; color:#e6edf3; font-family:Segoe UI; margin:30px; }
-.card { display:inline-block; padding:20px; margin:10px; background:#161b22; border-radius:10px; min-width:180px; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:40px; }
-table { border-collapse: collapse; width:100%; margin-top:40px; }
-th, td { border:1px solid #30363d; padding:8px; }
-th { background:#21262d; }
-</style>
-</head><body>
-<h1>🧠 Parsing Dashboard</h1>
-<div>
-<div class='card'>Parser<br><b>HybridSelectiveParser</b></div>
-<div class='card'>Files<br><b>142</b></div>
-<div class='card'>Types<br><b>142</b></div>
-<div class='card'>References<br><b>657</b></div>
-<div class='card'>Execution<br><b>271 ms</b></div>
-<div class='card'>Classes/File<br><b>1,00</b></div>
-<div class='card'>Refs/Class<br><b>4,63</b></div>
-<div class='card'>Time/Class<br><b>1,91 ms</b></div>
-<div class='card'>Confidence<br><b>95%</b></div>
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Parsing Dashboard</title>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+</head>
+<body>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Parsing Module</div>
+        <h1>Parsing Dashboard</h1>
+        <div class="subtitle">Parser: <b>HybridSelectiveParser</b></div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-09 05:00 UTC</div>
+        <div><b>Target:</b> RefactorScope</div>
+        <div><b>Confidence:</b> 95%</div>
+        <div><b>Confidence Band:</b> High</div>
+    </div>
 </div>
-<div class='grid'>
-<div>
-<div class='chart-container'>
+<div class="section">
+    <div class="section-title">
+        <h2>Parsing Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis parsing-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Parser</div>
+        <div class="value" style="font-size:22px;">HybridSelectiveParser</div>
+        <div class="hint">Parsing strategy used to extract structural data from the codebase</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Files</div>
+        <div class="value">155</div>
+        <div class="hint">Source files parsed into the structural model</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Types</div>
+        <div class="value">146</div>
+        <div class="hint">Distinct types extracted into the parsing model</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">References</div>
+        <div class="value">518</div>
+        <div class="hint">Structural references extracted between parsed types</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Confidence</div>
+        <div class="value">95%</div>
+        <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Confidence Band</div>
+        <div class="value" style="font-size:24px;">High</div>
+        <div class="hint">High, Medium or Low confidence band derived from parser confidence</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Execution</div>
+        <div class="value">554 ms</div>
+        <div class="hint">Total parsing execution time for the analyzed scope</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Types / File</div>
+        <div class="value">0,94</div>
+        <div class="hint">Average number of extracted types per parsed file</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Refs / Type</div>
+        <div class="value">3,55</div>
+        <div class="hint">Average extracted reference density per parsed type</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">ms / File</div>
+        <div class="value">3,58</div>
+        <div class="hint">Average parsing cost per file</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">ms / Type</div>
+        <div class="value">3,80</div>
+        <div class="hint">Average parsing cost per extracted type</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Sparse Extraction</div>
+        <div class="value" style="font-size:24px;">No</div>
+        <div class="hint">Indicates extraction density lower than expected for a structurally healthy parse</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Extended Parsing Statistics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Telemetry Summary</h3>
+    <ul class="clean">
+        <li><b>Files:</b> 155</li>
+        <li><b>Types:</b> 146</li>
+        <li><b>References:</b> 518</li>
+        <li><b>Execution Time:</b> 554,50 ms</li>
+        <li><b>Types per File:</b> 0,94</li>
+        <li><b>References per Type:</b> 3,55</li>
+        <li><b>Milliseconds per File:</b> 3,58</li>
+        <li><b>Milliseconds per Type:</b> 3,80</li>
+        <li><b>Memory per File:</b> 0,00 KB</li>
+        <li><b>Memory per Type:</b> 0,00 KB</li>
+        <li><b>Extraction Index:</b> 85,27</li>
+        <li><b>Anomaly Detected:</b> No</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Reading</h3>
+    <ul class="clean">
+        <li>Parser confidence is high. The extracted structural model appears reliable for downstream analysis.</li>
+        <li>Structural density appears healthy. Parsed types and references show consistent extraction volume.</li>
+        <li>Parsing cost remains in an acceptable range for the extracted structural volume.</li>
+        <li>No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.</li>
+        <li>No anomaly flag was raised during parsing telemetry.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 95%</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Sparse Extraction: No</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Anomaly Detected: No</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Density Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Structure Density</h3>
+    <div class='chart-container'>
 <h3>Structure Density</h3>
 <svg width='320' height='320' style='background:#161b22;border-radius:12px'>
 <line x1='40' y1='280' x2='280' y2='280' stroke='#30363d'/>
-<rect x='110' y='228.12785388127855' width='30' height='51.87214611872146' fill='#4f8cff'/>
-<rect x='180' y='228.12785388127855' width='30' height='51.87214611872146' fill='#1dd1a1'/>
+<rect x='110' y='208.1853281853282' width='30' height='71.81467181467181' fill='#4f8cff'/>
+<rect x='180' y='212.35521235521236' width='30' height='67.64478764478764' fill='#1dd1a1'/>
 <rect x='250' y='40' width='30' height='240' fill='#ffd166'/>
-<text x='125' y='222.12785388127855' text-anchor='middle' fill='#e6edf3' font-size='11'>142</text>
-<text x='195' y='222.12785388127855' text-anchor='middle' fill='#e6edf3' font-size='11'>142</text>
-<text x='265' y='34' text-anchor='middle' fill='#e6edf3' font-size='11'>657</text>
+<text x='125' y='202.1853281853282' text-anchor='middle' fill='#e6edf3' font-size='11'>155</text>
+<text x='195' y='206.35521235521236' text-anchor='middle' fill='#e6edf3' font-size='11'>146</text>
+<text x='265' y='34' text-anchor='middle' fill='#e6edf3' font-size='11'>518</text>
 <text x='125' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Files</text>
 <text x='195' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Types</text>
 <text x='265' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Refs</text>
@@ -39,8 +171,9 @@ th { background:#21262d; }
 </div>
 
 </div>
-<div>
-<div class='chart-container'>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Parsing Radar</h3>
+    <div class='chart-container'>
 <h3>Parsing Quality Radar</h3>
 <svg width='320' height='320' style='background:#161b22;border-radius:12px'>
 <circle cx='160' cy='160' r='27.5' fill='none' stroke='#30363d' stroke-width='1' />
@@ -55,871 +188,1013 @@ th { background:#21262d; }
 <text x='160' y='292' fill='#e6edf3' font-size='11' text-anchor='middle'>Confidence</text>
 <line x1='160' y1='160' x2='50' y2='160' stroke='#30363d' />
 <text x='28' y='160.00000000000003' fill='#e6edf3' font-size='11' text-anchor='middle'>Time/Class</text>
-<polygon points='160,105 210.8943661971831,160 160,264.5 155.80616323943661,160' fill='rgba(88,166,255,0.35)' stroke='#58a6ff' stroke-width='2'/>
+<polygon points='160,108.19354838709677 199.02739726027397,160 160,264.5 151.64454767123289,160' fill='rgba(88,166,255,0.35)' stroke='#58a6ff' stroke-width='2'/>
 </svg>
 </div>
 
 </div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Parsed Types</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="search"
+           type="text"
+           onkeyup="searchTable()"
+           placeholder="Search type, namespace, file..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
 </div>
-<h2 style='margin-top:50px;'>Parsed Types</h2>
-<table>
+<div class="table-shell">
+<table id="table" class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Type</th>
+            <th onclick="sortTable(1)">Namespace</th>
+            <th onclick="sortTable(2)">File</th>
+            <th onclick="sortTable(3)">References</th>
+        </tr>
+    </thead>
+    <tbody>
 <tr>
-<th>Type</th>
-<th>Namespace</th>
-<th>File</th>
-<th>References</th>
+    <td>ArchitecturalClassificationAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\ArchitecturalClassificationAnalyzer.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>ArchitecturalClassificationAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\ArchitecturalClassificationAnalyzer.cs</td>
-<td>11</td>
+    <td>ArchitecturalHygieneAnalyzer</td>
+    <td>RefactorScope.Core.Analyzers</td>
+    <td>RefactorScope\Analyzers\ArchitecturalHygieneAnalyzer.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ArchitecturalHygieneAnalyzer</td>
-<td>RefactorScope.Core.Analyzers</td>
-<td>RefactorScope\Analyzers\ArchitecturalHygieneAnalyzer.cs</td>
-<td>7</td>
+    <td>CoreIsolationAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\CoreIsolationAnalyzer.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>CoreIsolationAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\CoreIsolationAnalyzer.cs</td>
-<td>7</td>
+    <td>CouplingAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\CouplingAnalyser.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>CouplingAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\CouplingAnalyser.cs</td>
-<td>5</td>
+    <td>EntryPointHeuristicAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\EntryPointHeuristicAnalyzer.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>EntryPointHeuristicAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\EntryPointHeuristicAnalyzer.cs</td>
-<td>5</td>
+    <td>FitnessGateAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\FitnessGateAnalyzer.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>FitnessGateAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\FitnessGateAnalyzer.cs</td>
-<td>12</td>
+    <td>ImplicitCouplingAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\ImplicitCouplingAnalyzer.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>ImplicitCouplingAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\ImplicitCouplingAnalyzer.cs</td>
-<td>8</td>
+    <td>ProjectStructureAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\ProjectStructureAnalyzer.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ProjectStructureAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\ProjectStructureAnalyzer.cs</td>
-<td>5</td>
+    <td>StructuralCandidateAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\StructuralCandidateAnalyzer.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>StructuralCandidateAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\StructuralCandidateAnalyzer.cs</td>
-<td>6</td>
+    <td>StructuralCandidateRefinementAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\StructuralCandidateRefinementAnalyzer.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>StructuralCandidateRefinementAnalyzer</td>
-<td>RefactorScope.Analyzers</td>
-<td>RefactorScope\Analyzers\StructuralCandidateRefinementAnalyzer.cs</td>
-<td>11</td>
+    <td>SelfAnalysisSelector</td>
+    <td>RefactorScope.CLI</td>
+    <td>RefactorScope\CLI\SelfAnalysisSelector.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>SelfAnalysisSelector</td>
-<td>RefactorScope.CLI</td>
-<td>RefactorScope\CLI\SelfAnalysisSelector.cs</td>
-<td>0</td>
+    <td>FakeZombieService</td>
+    <td>RefactorScope.Debug</td>
+    <td>RefactorScope\Debug\FakeZombieService.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>FakeZombieService</td>
-<td>RefactorScope.Debug</td>
-<td>RefactorScope\Debug\FakeZombieService.cs</td>
-<td>0</td>
+    <td>EffortEstimator</td>
+    <td>RefactorScope.Estimation</td>
+    <td>RefactorScope\Estimation\EffortEstimator.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>EffortEstimator</td>
-<td>RefactorScope.Estimation</td>
-<td>RefactorScope\Estimation\EffortEstimator.cs</td>
-<td>10</td>
+    <td>ArchitecturalDashboardExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\ArchitecturalDashboardExporter.cs</td>
+    <td>11</td>
 </tr>
 <tr>
-<td>ChartsRenderer</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\ChartsRenderer.cs</td>
-<td>5</td>
+    <td>ChartsRenderer</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\ChartsRenderer.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>DatasetExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\DatasetExporter.cs</td>
-<td>5</td>
+    <td>DashboardMetricsCalculator</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\DashboardMetricsCalculator.cs</td>
+    <td>14</td>
 </tr>
 <tr>
-<td>DumpAnaliseExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\DumpAnaliseExporter.cs</td>
-<td>7</td>
+    <td>HubDashboardMetrics</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\DashboardMetricsCalculator.cs</td>
+    <td>14</td>
 </tr>
 <tr>
-<td>DumpIaExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\DumpIaExporter.cs</td>
-<td>3</td>
+    <td>ArchitecturalDashboardMetrics</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\DashboardMetricsCalculator.cs</td>
+    <td>14</td>
 </tr>
 <tr>
-<td>FitnessGateCsvExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\FitnessGateCsvExporter.cs</td>
-<td>5</td>
+    <td>DatasetExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\DatasetExporter.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>HtmlDashboardExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\HtmlDashboardExporter.cs</td>
-<td>13</td>
+    <td>DumpAnaliseExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\DumpAnaliseExporter.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>HubDashboardExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\HubDashboardExporter.cs</td>
-<td>12</td>
+    <td>DumpIaExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\DumpIaExporter.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>MarkdownReportExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\MarkdownReportExporter.cs</td>
-<td>15</td>
+    <td>FitnessGateCsvExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\FitnessGateCsvExporter.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ParsingChartsRenderer</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\ParsingChartsRenderer.cs</td>
-<td>0</td>
+    <td>HtmlDashboardExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\HtmlDashboardExporter.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>ParsingDashboardExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\ParsingDashboardExporter.cs</td>
-<td>5</td>
+    <td>HubDashboardExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\HubDashboardExporter.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ProjectStructureExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\ProjectStructureExporter.cs</td>
-<td>3</td>
+    <td>MarkdownReportExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\MarkdownReportExporter.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>StructuralInventoryExporter</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\StructuralInventoryExporter.cs</td>
-<td>18</td>
+    <td>ParsingChartsRenderer</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\ParsingChartsRenderer.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ConfigLoader</td>
-<td>RefactorScope.Infrastructure</td>
-<td>RefactorScope\Infrastructure\ConfigLoader.cs</td>
-<td>2</td>
+    <td>ParsingDashboardExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\ParsingDashboardExporter.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>ConfigValidator</td>
-<td>RefactorScope.Infrastructure</td>
-<td>RefactorScope\Infrastructure\ConfigValidator.cs</td>
-<td>1</td>
+    <td>ProjectStructureExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\ProjectStructureExporter.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>CrashLogger</td>
-<td>RefactorScope.Infrastructure</td>
-<td>RefactorScope\Infrastructure\CrashLogger.cs</td>
-<td>0</td>
+    <td>QualityDashboardExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\QualityDashboardExporter.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>LayerRuleEvaluator</td>
-<td>RefactorScope.Infrastructure</td>
-<td>RefactorScope\Infrastructure\LayerRuleEvaluator.cs</td>
-<td>2</td>
+    <td>StructuralInventoryExporter</td>
+    <td>RefactorScope.Exporters</td>
+    <td>RefactorScope\Exporters\StructuralInventoryExporter.cs</td>
+    <td>11</td>
 </tr>
 <tr>
-<td>TerminalRenderer</td>
-<td>RefactorScope.Infrastructure</td>
-<td>RefactorScope\Infrastructure\TerminalRenderer.cs</td>
-<td>2</td>
+    <td>ConfigLoader</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\ConfigLoader.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>SolidAnalyzer</td>
-<td>RefactorScope.Analyzers.Solid</td>
-<td>RefactorScope\Analyzers\Solid\SolidAnalyzer.cs</td>
-<td>21</td>
+    <td>ConfigValidator</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\ConfigValidator.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>SolidConfig</td>
-<td>RefactorScope.Analyzers.Solid</td>
-<td>RefactorScope\Analyzers\Solid\SolidConfig.cs</td>
-<td>0</td>
+    <td>CrashLogger</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\CrashLogger.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>SolidResult</td>
-<td>RefactorScope.Analyzers.Solid</td>
-<td>RefactorScope\Analyzers\Solid\SolidResult.cs</td>
-<td>3</td>
+    <td>LayerRuleEvaluator</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\LayerRuleEvaluator.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>SolidSuspicion</td>
-<td>RefactorScope.Analyzers.Solid</td>
-<td>RefactorScope\Analyzers\Solid\SolidSuspicion.cs</td>
-<td>0</td>
+    <td>TerminalRenderer</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\TerminalRenderer.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>IAnalysisResult</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IAnalysisResult.cs</td>
-<td>0</td>
+    <td>SolidAnalyzer</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidAnalyzer.cs</td>
+    <td>12</td>
 </tr>
 <tr>
-<td>IAnalyzer</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IAnalyzer.cs</td>
-<td>2</td>
+    <td>SolidConfig</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidConfig.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>IExporter</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IExporter.cs</td>
-<td>2</td>
+    <td>SolidResult</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidResult.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IParserCodigo</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IParserCodigo.cs</td>
-<td>1</td>
+    <td>SolidSuspicion</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidSuspicion.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>IParserResult</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IParserResult.cs</td>
-<td>2</td>
+    <td>IAnalysisResult</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IAnalysisResult.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>IPipelineStep</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IPipelineStep.cs</td>
-<td>1</td>
+    <td>IAnalyzer</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IAnalyzer.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IPreParser</td>
-<td>RefactorScope.Core.Abstractions</td>
-<td>RefactorScope\Core\Abstractions\IPreParser.cs</td>
-<td>0</td>
+    <td>IExporter</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IExporter.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>DumpStrategyConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\DumpStrategyConfig.cs</td>
-<td>0</td>
+    <td>IParserCodigo</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IParserCodigo.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>EstimatorConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\EstimatorConfig.cs</td>
-<td>0</td>
+    <td>IParserResult</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IParserResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>FitnessGateConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
-<td>3</td>
+    <td>IPipelineStep</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IPipelineStep.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>DeadCodeGateConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
-<td>3</td>
+    <td>IPreParser</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IPreParser.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>CouplingGateConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
-<td>3</td>
+    <td>DashboardOptions</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\DashboardOptions.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>CoreIsolationGateConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
-<td>3</td>
+    <td>DumpStrategyConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\DumpStrategyConfig.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>FitnessGateConfigResolver</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\FitnessGateConfigResolver.cs</td>
-<td>8</td>
+    <td>EstimatorConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\EstimatorConfig.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>RefactorScopeConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\RefactorScopeConfig.cs</td>
-<td>6</td>
+    <td>FitnessGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>StatisticsConfig</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\StatisticsConfig.cs</td>
-<td>0</td>
+    <td>DeadCodeGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>StructuralCandidateDetectionOptions</td>
-<td>RefactorScope.Core.Configuration</td>
-<td>RefactorScope\Core\Configuration\StructuralCandidateDetectionOptions.cs</td>
-<td>0</td>
+    <td>CouplingGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>AnalysisContext</td>
-<td>RefactorScope.Core.Context</td>
-<td>RefactorScope\Core\Context\AnalysisContext.cs</td>
-<td>4</td>
+    <td>CoreIsolationGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>AnalysisContextExtensions</td>
-<td>RefactorScope.Core.Context</td>
-<td>RefactorScope\Core\Context\AnalysisContextExtensions.cs</td>
-<td>2</td>
+    <td>FitnessGateConfigResolver</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfigResolver.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>LayerRuleConfig</td>
-<td>RefactorScope.Core.Context</td>
-<td>RefactorScope\Core\Context\LayerRuleConfig.cs</td>
-<td>0</td>
+    <td>RefactorScopeConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\RefactorScopeConfig.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>ArchitecturalHealthDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\ArchitecturalHealthDatasetBuilder.cs</td>
-<td>11</td>
+    <td>StatisticsConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\StatisticsConfig.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>GlobalMetricsDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\GlobalMetricsDatasetBuilder.cs</td>
-<td>11</td>
+    <td>StructuralCandidateDetectionOptions</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\StructuralCandidateDetectionOptions.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>GlobalTypesDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\GlobalTypesDatasetBuilder.cs</td>
-<td>9</td>
+    <td>AnalysisContext</td>
+    <td>RefactorScope.Core.Context</td>
+    <td>RefactorScope\Core\Context\AnalysisContext.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>IAnalyticalDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\IAnalyticalDatasetBuilder.cs</td>
-<td>2</td>
+    <td>AnalysisContextExtensions</td>
+    <td>RefactorScope.Core.Context</td>
+    <td>RefactorScope\Core\Context\AnalysisContextExtensions.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ModuleContributionDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\ModuleContributionDatasetBuilder.cs</td>
-<td>5</td>
+    <td>LayerRuleConfig</td>
+    <td>RefactorScope.Core.Context</td>
+    <td>RefactorScope\Core\Context\LayerRuleConfig.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>StructuralOverviewDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\StructuralOverviewDatasetBuilder.cs</td>
-<td>11</td>
+    <td>ArchitecturalHealthDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\ArchitecturalHealthDatasetBuilder.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>StructuralScoreDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\StructuralScoreDatasetBuilder.cs</td>
-<td>13</td>
+    <td>GlobalMetricsDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\GlobalMetricsDatasetBuilder.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>StructuralTrendDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\StructuralTrendDatasetBuilder.cs</td>
-<td>9</td>
+    <td>GlobalTypesDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\GlobalTypesDatasetBuilder.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>TypeContributionDatasetBuilder</td>
-<td>RefactorScope.Core.Datasets</td>
-<td>RefactorScope\Core\Datasets\TypeContributionDatasetBuilder.cs</td>
-<td>5</td>
+    <td>IAnalyticalDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\IAnalyticalDatasetBuilder.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>FitnessGateEvaluator</td>
-<td>RefactorScope.Core.Governance</td>
-<td>RefactorScope\Core\Governance\FitnessGateEvaluator.cs</td>
-<td>3</td>
+    <td>ModuleContributionDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\ModuleContributionDatasetBuilder.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ArchitecturalMetrics</td>
-<td>RefactorScope.Core.Metrics</td>
-<td>RefactorScope\Core\Metrics\ArchitecturalMetrics.cs</td>
-<td>0</td>
+    <td>StructuralOverviewDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\StructuralOverviewDatasetBuilder.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>ArchitecturalMetricsBuilder</td>
-<td>RefactorScope.Core.Metrics</td>
-<td>RefactorScope\Core\Metrics\ArchitecturalMetricsBuilder.cs</td>
-<td>10</td>
+    <td>StructuralScoreDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\StructuralScoreDatasetBuilder.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>ArchitecturalScoreCalculator</td>
-<td>RefactorScope.Core.Metrics</td>
-<td>RefactorScope\Core\Metrics\ArchitecturalScoreCalculator.cs</td>
-<td>0</td>
+    <td>StructuralTrendDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\StructuralTrendDatasetBuilder.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>ArchitecturalClassificationItem</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\ArchitecturalClassificationItem.cs</td>
-<td>0</td>
+    <td>TypeContributionDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\TypeContributionDatasetBuilder.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ArquivoInfo</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\ArquivoInfo.cs</td>
-<td>2</td>
+    <td>FitnessGateEvaluator</td>
+    <td>RefactorScope.Core.Governance</td>
+    <td>RefactorScope\Core\Governance\FitnessGateEvaluator.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>CouplingSuspicion</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\CouplingSuspicion.cs</td>
-<td>0</td>
+    <td>ArchitecturalMetricsBuilder</td>
+    <td>RefactorScope.Core.Metrics</td>
+    <td>RefactorScope\Core\Metrics\ArchitecturalMetricsBuilder.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>HygieneReport</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\HygieneReport.cs</td>
-<td>0</td>
+    <td>ArchitecturalScoreCalculator</td>
+    <td>RefactorScope.Core.Metrics</td>
+    <td>RefactorScope\Core\Metrics\ArchitecturalScoreCalculator.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ModeloEstrutural</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\ModeloEstrutural.cs</td>
-<td>6</td>
+    <td>ArchitecturalClassificationItem</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ArchitecturalClassificationItem.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ReferenciaInfo</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\ReferenciaInfo.cs</td>
-<td>0</td>
+    <td>ArquivoInfo</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ArquivoInfo.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>TipoInfo</td>
-<td>RefactorScope.Core.Model</td>
-<td>RefactorScope\Core\Model\TipoInfo.cs</td>
-<td>2</td>
+    <td>CouplingSuspicion</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\CouplingSuspicion.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>AnalysisOrchestrator</td>
-<td>RefactorScope.Core.Orchestration</td>
-<td>RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs</td>
-<td>15</td>
+    <td>HygieneReport</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\HygieneReport.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ParserExecutionStats</td>
-<td>RefactorScope.Core.Parsing</td>
-<td>RefactorScope\Core\Parsing\ParserExecutionStats.cs</td>
-<td>0</td>
+    <td>ModeloEstrutural</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ModeloEstrutural.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>ParserResult</td>
-<td>RefactorScope.Core.Parsing</td>
-<td>RefactorScope\Core\Parsing\ParserResult.cs</td>
-<td>3</td>
+    <td>ReferenciaInfo</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ReferenciaInfo.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ParserSelector</td>
-<td>RefactorScope.Core.Parsing</td>
-<td>RefactorScope\Core\Parsing\ParserSelector.cs</td>
-<td>16</td>
+    <td>TipoInfo</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\TipoInfo.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>PlausibilityEvaluator</td>
-<td>RefactorScope.Core.Parsing</td>
-<td>RefactorScope\Core\Parsing\PlausibilityEvaluator.cs</td>
-<td>1</td>
+    <td>AnalysisOrchestrator</td>
+    <td>RefactorScope.Core.Orchestration</td>
+    <td>RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>SanitizedSourceProvider</td>
-<td>RefactorScope.Core.Parsing</td>
-<td>RefactorScope\Core\Parsing\SanitizedSourceProvider.cs</td>
-<td>1</td>
+    <td>ParserSelector</td>
+    <td>RefactorScope.Core.Parsing</td>
+    <td>RefactorScope\Core\Parsing\ParserSelector.cs</td>
+    <td>9</td>
 </tr>
 <tr>
-<td>DesignPatternSignatureLibrary</td>
-<td>RefactorScope.Core.Patterns</td>
-<td>RefactorScope\Core\Patterns\PatternSignatureLibrary.cs</td>
-<td>7</td>
+    <td>PlausibilityEvaluator</td>
+    <td>RefactorScope.Core.Parsing</td>
+    <td>RefactorScope\Core\Parsing\PlausibilityEvaluator.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>PatternRule</td>
-<td>RefactorScope.Core.Patterns</td>
-<td>RefactorScope\Core\Patterns\PatternSignatureLibrary.cs</td>
-<td>1</td>
+    <td>SanitizedSourceProvider</td>
+    <td>RefactorScope.Core.Parsing</td>
+    <td>RefactorScope\Core\Parsing\SanitizedSourceProvider.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>PatternSignatureResult</td>
-<td>RefactorScope.Core.Patterns</td>
-<td>RefactorScope\Core\Patterns\PatternSignatureLibrary.cs</td>
-<td>0</td>
+    <td>DesignPatternSignatureLibrary</td>
+    <td>RefactorScope.Core.Patterns</td>
+    <td>RefactorScope\Core\Patterns\PatternSignatureLibrary.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>StructuralHeuristicLibrary</td>
-<td>RefactorScope.Core.Patterns</td>
-<td>RefactorScope\Core\Patterns\StructuralHeuristicLibrary.cs</td>
-<td>3</td>
+    <td>StructuralHeuristicLibrary</td>
+    <td>RefactorScope.Core.Patterns</td>
+    <td>RefactorScope\Core\Patterns\StructuralHeuristicLibrary.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ReportConsolidator</td>
-<td>RefactorScope.Core.Reporting</td>
-<td>RefactorScope\Core\Reporting\ReportConsolidator.cs</td>
-<td>1</td>
+    <td>ReportConsolidator</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportConsolidator.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ArchitecturalClassificationResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\ArchitecturalClassificationResult.cs</td>
-<td>3</td>
+    <td>ArchitecturalClassificationResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ArchitecturalClassificationResult.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ConsolidatedReport</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\ConsolidatedReport.cs</td>
-<td>8</td>
+    <td>ConsolidatedReport</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ConsolidatedReport.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ConsolidatedReportExtensions</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\ConsolidatedReportExtensions.cs</td>
-<td>3</td>
+    <td>ConsolidatedReportExtensions</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ConsolidatedReportExtensions.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>CoreIsolationResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\CoreIsolationResult.cs</td>
-<td>1</td>
+    <td>CoreIsolationResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\CoreIsolationResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>CouplingResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\CouplingResult.cs</td>
-<td>1</td>
+    <td>CouplingResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\CouplingResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>EffortEstimateResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\EffortEstimateResult.cs</td>
-<td>2</td>
+    <td>EffortEstimateResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\EffortEstimateResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>EntryPointHeuristicResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\EntryPointHeuristicResult.cs</td>
-<td>1</td>
+    <td>EntryPointHeuristicResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\EntryPointHeuristicResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>FitnessGateResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\FitnessGateResult.cs</td>
-<td>3</td>
+    <td>FitnessGateResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\FitnessGateResult.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>FitnessGateStatus</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\FitnessGateStatus.cs</td>
-<td>0</td>
+    <td>FitnessGateStatus</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\FitnessGateStatus.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ImplicitCouplingResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\ImplicitCouplingResult.cs</td>
-<td>3</td>
+    <td>ImplicitCouplingResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ImplicitCouplingResult.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ProjectStructureResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\ProjectStructureResult.cs</td>
-<td>1</td>
+    <td>ProjectStructureResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ProjectStructureResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>StatisticsResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\StatisticsResult.cs</td>
-<td>2</td>
+    <td>StatisticsResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StatisticsResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>StructuralBreakdownExtensions</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\StructuralBreakdownExtensions.cs</td>
-<td>3</td>
+    <td>StructuralBreakdownExtensions</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralBreakdownExtensions.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>StructuralCandidateAnalysisBreakdown</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\StructuralCandidateAnalysisBreakdown.cs</td>
-<td>0</td>
+    <td>StructuralCandidateAnalysisBreakdown</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateAnalysisBreakdown.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>StructuralCandidateProbabilityItem</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\StructuralCandidateProbabilityItem.cs</td>
-<td>0</td>
+    <td>StructuralCandidateProbabilityItem</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateProbabilityItem.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>StructuralCandidateProbabilityResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\StructuralCandidateProbabilityResult.cs</td>
-<td>3</td>
+    <td>StructuralCandidateProbabilityResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateProbabilityResult.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>StructuralCandidateResult</td>
-<td>RefactorScope.Core.Results</td>
-<td>RefactorScope\Core\Results\StructuralCandidateResult.cs</td>
-<td>1</td>
+    <td>StructuralCandidateResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateResult.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ScopeFilteredFileDiscovery</td>
-<td>RefactorScope.Core.Scope</td>
-<td>RefactorScope\Core\Scope\ScopeFilteredFileDiscovery.cs</td>
-<td>1</td>
+    <td>ScopeFilteredFileDiscovery</td>
+    <td>RefactorScope.Core.Scope</td>
+    <td>RefactorScope\Core\Scope\ScopeFilteredFileDiscovery.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ScopeRuleSet</td>
-<td>RefactorScope.Core.Scope</td>
-<td>RefactorScope\Core\Scope\ScopeRuleSet.cs</td>
-<td>0</td>
+    <td>ScopeRuleSet</td>
+    <td>RefactorScope.Core.Scope</td>
+    <td>RefactorScope\Core\Scope\ScopeRuleSet.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>StructuralAlignmentEvaluator</td>
-<td>RefactorScope.Core.Structure</td>
-<td>RefactorScope\Core\Structure\StructuralAlignmentEvaluator.cs</td>
-<td>0</td>
+    <td>StructuralAlignmentEvaluator</td>
+    <td>RefactorScope.Core.Structure</td>
+    <td>RefactorScope\Core\Structure\StructuralAlignmentEvaluator.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>RefactorClassifier</td>
-<td>RefactorScope.Estimation.Classification</td>
-<td>RefactorScope\Estimation\Classification\RefactorClassifier.cs</td>
-<td>1</td>
+    <td>RefactorClassifier</td>
+    <td>RefactorScope.Estimation.Classification</td>
+    <td>RefactorScope\Estimation\Classification\RefactorClassifier.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>EffortEstimate</td>
-<td>RefactorScope.Estimation.Models</td>
-<td>RefactorScope\Estimation\Models\EffortEstimate.cs</td>
-<td>0</td>
+    <td>CouplingPressureModel</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\CouplingPressureModel.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>RefactorDifficultyIndex</td>
-<td>RefactorScope.Estimation.Models</td>
-<td>RefactorScope\Estimation\Models\RefactorDifficultyIndex.cs</td>
-<td>0</td>
+    <td>RDICalculator</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\RDICalculator.cs</td>
+    <td>9</td>
 </tr>
 <tr>
-<td>CouplingPressureModel</td>
-<td>RefactorScope.Estimation.Scoring</td>
-<td>RefactorScope\Estimation\Scoring\CouplingPressureModel.cs</td>
-<td>0</td>
+    <td>SizePressureModel</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\SizePressureModel.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>RDICalculator</td>
-<td>RefactorScope.Estimation.Scoring</td>
-<td>RefactorScope\Estimation\Scoring\RDICalculator.cs</td>
-<td>12</td>
+    <td>StructuralRiskModel</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\StructuralRiskModel.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>SizePressureModel</td>
-<td>RefactorScope.Estimation.Scoring</td>
-<td>RefactorScope\Estimation\Scoring\SizePressureModel.cs</td>
-<td>1</td>
+    <td>DumpStrategyResolver</td>
+    <td>RefactorScope.Execution.Dump</td>
+    <td>RefactorScope\Execution\Dump\DumpStrategyResolver.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>StructuralRiskModel</td>
-<td>RefactorScope.Estimation.Scoring</td>
-<td>RefactorScope\Estimation\Scoring\StructuralRiskModel.cs</td>
-<td>0</td>
+    <td>ArchitecturalDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\ArchitecturalDashboardExporterAdapter.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>DumpStrategyResolver</td>
-<td>RefactorScope.Execution.Dump</td>
-<td>RefactorScope\Execution\Dump\DumpStrategyResolver.cs</td>
-<td>11</td>
+    <td>ParsingDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\ParsingDashboardExporterAdapter.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>ClassComplexityClassifier</td>
-<td>RefactorScope.Parsers.Analysis</td>
-<td>RefactorScope\Parsers\Analysis\ClassComplexityClassifier.cs</td>
-<td>4</td>
+    <td>QualityDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\QualityDashboardExporterAdapter.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>ClassComplexityScanResult</td>
-<td>RefactorScope.Parsers.Analysis</td>
-<td>RefactorScope\Parsers\Analysis\ClassComplexityScanResult.cs</td>
-<td>0</td>
+    <td>StructuralDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\StructuralDashboardExporterAdapter.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>CSharpPreParser</td>
-<td>RefactorScope.Parsers.Common</td>
-<td>RefactorScope\Parsers\Common\CSharpPreParser.cs</td>
-<td>1</td>
+    <td>DashboardAssetCopier</td>
+    <td>RefactorScope.Exporters.Styling</td>
+    <td>RefactorScope\Exporters\Styling\DashboardAssetCopier.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>CSharpRegexParser</td>
-<td>RefactorScope.Parsers.CsharpParsers</td>
-<td>RefactorScope\Parsers\CsharpParsers\CSharpRegexParser.cs</td>
-<td>22</td>
+    <td>DashboardHtmlShell</td>
+    <td>RefactorScope.Exporters.Styling</td>
+    <td>RefactorScope\Exporters\Styling\DashboardHtmlShell.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>HigienizadorLexico</td>
-<td>RefactorScope.Parsers.CsharpParsers</td>
-<td>RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs</td>
-<td>12</td>
+    <td>DashboardThemeSelector</td>
+    <td>RefactorScope.Exporters.Styling</td>
+    <td>RefactorScope\Exporters\Styling\DashboardThemeSelector.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>CSharpTextualParser</td>
-<td>RefactorScope.Parsers.CsharpParsers</td>
-<td>RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs</td>
-<td>30</td>
+    <td>ClassComplexityClassifier</td>
+    <td>RefactorScope.Parsers.Analysis</td>
+    <td>RefactorScope\Parsers\Analysis\ClassComplexityClassifier.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>HybridParser</td>
-<td>RefactorScope.Parsers.Hybrid</td>
-<td>RefactorScope\Parsers\CsharpParsers\HybridParser.cs</td>
-<td>10</td>
+    <td>ClassComplexityScanResult</td>
+    <td>RefactorScope.Parsers.Analysis</td>
+    <td>RefactorScope\Parsers\Analysis\ClassComplexityScanResult.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>RegexLocalRecovery</td>
-<td>RefactorScope.Parsers.CsharpParsers</td>
-<td>RefactorScope\Parsers\CsharpParsers\RegexLocalRecovery.cs</td>
-<td>3</td>
+    <td>CSharpPreParser</td>
+    <td>RefactorScope.Parsers.Common</td>
+    <td>RefactorScope\Parsers\Common\CSharpPreParser.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ValidationEngine</td>
-<td>RefactorScope.Statistics.Engines</td>
-<td>RefactorScope\Statistics\Engines\ValidationEngine.cs</td>
-<td>12</td>
+    <td>FileSelectionScope</td>
+    <td>RefactorScope.Parsers.Common</td>
+    <td>RefactorScope\Parsers\Common\FileSelectionScope.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ParsingConfidence</td>
-<td>RefactorScope.Statistics.Models</td>
-<td>RefactorScope\Statistics\Models\StatisticsReport.cs</td>
-<td>0</td>
+    <td>StructuralTokenGuard</td>
+    <td>RefactorScope.Parsers.Common</td>
+    <td>RefactorScope\Parsers\Common\StructuralTokenGuard.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>MetricsStatisticsSummary</td>
-<td>RefactorScope.Statistics.Models</td>
-<td>RefactorScope\Statistics\Models\StatisticsReport.cs</td>
-<td>0</td>
+    <td>CSharpRegexParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\CSharpRegexParser.cs</td>
+    <td>11</td>
 </tr>
 <tr>
-<td>StatisticsReport</td>
-<td>RefactorScope.Statistics.Models</td>
-<td>RefactorScope\Statistics\Models\StatisticsReport.cs</td>
-<td>3</td>
+    <td>HigienizadorLexico</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs</td>
+    <td>13</td>
 </tr>
 <tr>
-<td>CoreDependencyAbsolutionRule</td>
-<td>RefactorScope.Analyzers.Solid.Rules</td>
-<td>RefactorScope\Analyzers\Solid\Rules\CoreDependencyAbsolutionRule.cs</td>
-<td>4</td>
+    <td>CSharpTextualParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs</td>
+    <td>13</td>
 </tr>
 <tr>
-<td>IAbsolutionRule</td>
-<td>RefactorScope.Analyzers.Solid.Rules</td>
-<td>RefactorScope\Analyzers\Solid\Rules\IAbsolutionRule.cs</td>
-<td>2</td>
+    <td>RegexLocalRecovery</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\RegexLocalRecovery.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IOmissionRule</td>
-<td>RefactorScope.Analyzers.Solid.Rules</td>
-<td>RefactorScope\Analyzers\Solid\Rules\IOmissionRule.cs</td>
-<td>3</td>
+    <td>ValidationEngine</td>
+    <td>RefactorScope.Statistics.Engines</td>
+    <td>RefactorScope\Statistics\Engines\ValidationEngine.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>OrchestratorAbsolutionRule</td>
-<td>RefactorScope.Analyzers.Solid.Rules</td>
-<td>RefactorScope\Analyzers\Solid\Rules\OrchestratorAbsolutionRule.cs</td>
-<td>4</td>
+    <td>CoreDependencyAbsolutionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\CoreDependencyAbsolutionRule.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>PublicZeroUsageOmissionRule</td>
-<td>RefactorScope.Analyzers.Solid.Rules</td>
-<td>RefactorScope\Analyzers\Solid\Rules\PublicZeroUsageOmissionRule.cs</td>
-<td>6</td>
+    <td>IAbsolutionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\IAbsolutionRule.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ISegmentationResolver</td>
-<td>RefactorScope.Execution.Dump.Segmentation</td>
-<td>RefactorScope\Execution\Dump\Segmentation\ISegmentationResolver.cs</td>
-<td>3</td>
+    <td>IOmissionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\IOmissionRule.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>LayerSegmentationResolver</td>
-<td>RefactorScope.Execution.Dump.Segmentation</td>
-<td>RefactorScope\Execution\Dump\Segmentation\LayerSegmentationResolver.cs</td>
-<td>10</td>
+    <td>OrchestratorAbsolutionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\OrchestratorAbsolutionRule.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>SegmentScope</td>
-<td>RefactorScope.Execution.Dump.Segmentation</td>
-<td>RefactorScope\Execution\Dump\Segmentation\SegmentScope.cs</td>
-<td>1</td>
+    <td>PublicZeroUsageOmissionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\PublicZeroUsageOmissionRule.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>TopFolderSegmentationResolver</td>
-<td>RefactorScope.Execution.Dump.Segmentation</td>
-<td>RefactorScope\Execution\Dump\Segmentation\TopFolderSegmentationResolver.cs</td>
-<td>8</td>
+    <td>ISegmentationResolver</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\ISegmentationResolver.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>GlobalDumpStrategy</td>
-<td>RefactorScope.Execution.Dump.Strategies</td>
-<td>RefactorScope\Execution\Dump\Strategies\GlobalDumpStrategy.cs</td>
-<td>5</td>
+    <td>LayerSegmentationResolver</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\LayerSegmentationResolver.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>IDumpStrategy</td>
-<td>RefactorScope.Execution.Dump.Strategies</td>
-<td>RefactorScope\Execution\Dump\Strategies\IDumpStrategy.cs</td>
-<td>4</td>
+    <td>SegmentScope</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\SegmentScope.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>SegmentedDumpStrategy</td>
-<td>RefactorScope.Execution.Dump.Strategies</td>
-<td>RefactorScope\Execution\Dump\Strategies\SegmentedDumpStrategy.cs</td>
-<td>6</td>
+    <td>TopFolderSegmentationResolver</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\TopFolderSegmentationResolver.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>HybridAdaptiveParser</td>
-<td>RefactorScope.Parsers.Hybrid</td>
-<td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridAdaptativeParser.cs</td>
-<td>11</td>
+    <td>GlobalDumpStrategy</td>
+    <td>RefactorScope.Execution.Dump.Strategies</td>
+    <td>RefactorScope\Execution\Dump\Strategies\GlobalDumpStrategy.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>HybridIncrementalParser</td>
-<td>RefactorScope.Parsers.Hybrid</td>
-<td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridIncrementalParser.cs</td>
-<td>11</td>
+    <td>IDumpStrategy</td>
+    <td>RefactorScope.Execution.Dump.Strategies</td>
+    <td>RefactorScope\Execution\Dump\Strategies\IDumpStrategy.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>HybridSelectiveParser</td>
-<td>RefactorScope.Parsers.Hybrid</td>
-<td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridSelectiveParser.cs</td>
-<td>10</td>
+    <td>SegmentedDumpStrategy</td>
+    <td>RefactorScope.Execution.Dump.Strategies</td>
+    <td>RefactorScope\Execution\Dump\Strategies\SegmentedDumpStrategy.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>ModeloMerger</td>
-<td>RefactorScope.Parsers.Hybrid</td>
-<td>RefactorScope\Parsers\CsharpParsers\Hybrid\ModeloMerger.cs</td>
-<td>4</td>
+    <td>HybridAdaptiveParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridAdaptativeParser.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>misuse</td>
-<td>RefactorScope.Exporters</td>
-<td>RefactorScope\Exporters\StructuralInventoryExporter.cs</td>
-<td>11</td>
+    <td>HybridIncrementalParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridIncrementalParser.cs</td>
+    <td>4</td>
 </tr>
+<tr>
+    <td>HybridParser</td>
+    <td>RefactorScope.Parsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridParser.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>HybridSelectiveParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridSelectiveParser.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>ModeloMerger</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\ModeloMerger.cs</td>
+    <td>2</td>
+</tr>
+    </tbody>
 </table>
-</body></html>
+</div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Interpretation</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard describes parser output quality and structural extraction density.</li>
+            <li>Low reference density may suggest sparse extraction, but does not prove parser failure.</li>
+            <li>Confidence is heuristic and should be interpreted as structural usability, not absolute correctness.</li>
+            <li>Anomaly flags indicate atypical parse characteristics that deserve review.</li>
+            <li>Performance ratios help compare parser strategies across projects and baselines.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.parsing-kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.parsing-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.parsing-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.parsing-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+</style>
+
+<script>
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('table');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      if (dir === 'asc' && x.innerText.toLowerCase() > y.innerText.toLowerCase()) shouldSwitch = true;
+      if (dir === 'desc' && x.innerText.toLowerCase() < y.innerText.toLowerCase()) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Parsing Dashboard // Shared Hub Layout</div>
+</div>
+</body>
+</html>
+

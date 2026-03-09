@@ -741,76 +741,6 @@
       "Kind": 1
     },
     {
-      "FromType": "ZumbiScanner",
-      "ToType": "ClasseInfo",
-      "Kind": 3
-    },
-    {
-      "FromType": "ExportadorBaselineElencoLegacyJson",
-      "ToType": "Etograma",
-      "Kind": 2
-    },
-    {
-      "FromType": "ExportadorBaselineElencoLegacyJson",
-      "ToType": "Etograma",
-      "Kind": 0
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "IAbaExcel",
-      "Kind": 3
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "AbaDashboard",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "AbaBeatSheet",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "AbaAnaliseDeCenas",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "AbaElenco",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "AbaMatrizSocial",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "AbaTaxonomia",
-      "Kind": 1
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "ScriptomeVisualizer",
-      "Kind": 0
-    },
-    {
-      "FromType": "ExportadorExcelModular",
-      "ToType": "VisualizadorEtograma",
-      "Kind": 2
-    },
-    {
-      "FromType": "VisualizadorEtograma",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
-    },
-    {
-      "FromType": "VisualizadorEtograma",
-      "ToType": "BibliotecaCentroidesEtograma",
-      "Kind": 2
-    },
-    {
       "FromType": "ComparadorJung",
       "ToType": "ComparacaoJung",
       "Kind": 1
@@ -831,24 +761,14 @@
       "Kind": 3
     },
     {
-      "FromType": "ExportadorBaselineJung",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
-    },
-    {
-      "FromType": "MetricasDivergencia",
-      "ToType": "ComparacaoJung",
-      "Kind": 3
-    },
-    {
       "FromType": "ValidadorJung",
       "ToType": "Etograma",
       "Kind": 1
     },
     {
-      "FromType": "AbaTaxonomia",
-      "ToType": "MotorTaxonomia",
-      "Kind": 1
+      "FromType": "ValidadorJung",
+      "ToType": "etograma",
+      "Kind": 2
     }
   ]
 }

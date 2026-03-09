@@ -37,12 +37,12 @@
     "ParserSelector",
     "ReportConsolidator",
     "ConsolidatedReportExtensions",
-    "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
     "DumpStrategyResolver",
     "ArchitecturalDashboardExporterAdapter",
     "ParsingDashboardExporterAdapter",
+    "QualityDashboardExporterAdapter",
     "StructuralDashboardExporterAdapter",
     "HybridParser"
   ],
@@ -83,12 +83,12 @@
     "ParserSelector",
     "ReportConsolidator",
     "ConsolidatedReportExtensions",
-    "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery",
     "DumpStrategyResolver",
     "ArchitecturalDashboardExporterAdapter",
     "ParsingDashboardExporterAdapter",
+    "QualityDashboardExporterAdapter",
     "StructuralDashboardExporterAdapter"
   ],
   "Unresolved": [
@@ -121,7 +121,6 @@
     "AnalysisOrchestrator",
     "ParserSelector",
     "ConsolidatedReportExtensions",
-    "StatisticsResult",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery"
   ],

@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-08 22:53 UTC  
+📅 **Execution Time:** 2026-03-09 05:03 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\Scriptome`  
 
 ---
@@ -75,9 +75,9 @@
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 28
+- **Structural Candidates:** 29
 - **Pattern Similarity:** 11
-- **Unresolved:** 17
+- **Unresolved:** 18
 
 ---
 
@@ -93,25 +93,25 @@
 
 ### 🟡 Fingerprint
 
-- **Score:** `66,0`
+- **Score:** `69,6`
 - **Unresolved Candidates:** 🔴 3 (6%)
-- **Coupling:** 1,12
+- **Coupling:** 1,00
 - **Isolation:** 0,02
 - **Core Density:** 0,10
 
 ### 🟡 Infrastructure
 
-- **Score:** `48,1`
-- **Unresolved Candidates:** 🔴 2 (7%)
-- **Coupling:** 3,52
+- **Score:** `47,8`
+- **Unresolved Candidates:** 🔴 3 (11%)
+- **Coupling:** 3,30
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟢 Nucleo
 
-- **Score:** `86,4`
+- **Score:** `89,7`
 - **Unresolved Candidates:** 🔴 5 (11%)
-- **Coupling:** 0,74
+- **Coupling:** 0,63
 - **Isolation:** 0,15
 - **Core Density:** 0,96
 
@@ -129,22 +129,19 @@
 
 | Type | Module | Target Module | Fan-Out | Fan-In | Dominance | Volume |
 |------|--------|---------------|--------|--------|-----------|--------|
-| Program | Program.cs | Infrastructure | 16 | 0 | 1,00 | 16 |
+| Program | Program.cs | Infrastructure | 17 | 0 | 1,00 | 17 |
 | MotorDeIdentidade | Fingerprint | Nucleo | 8 | 2 | 0,80 | 8 |
-| OrquestradorNucleo | Nucleo | Fingerprint | 11 | 2 | 0,85 | 11 |
+| OrquestradorNucleo | Nucleo | Fingerprint | 6 | 2 | 0,75 | 6 |
 | ModuloEtogramaV2 | Fingerprint | Nucleo | 5 | 0 | 1,00 | 5 |
 | MotorIdentidadeRNA | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
-| MotorEtogramaCartesiano3D | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
-| MotorEtogramaHeuristico | Fingerprint | Nucleo | 6 | 0 | 1,00 | 6 |
 | MotorEtogramaV2 | Fingerprint | Nucleo | 5 | 1 | 0,83 | 5 |
 | AnalisadorContextual | Limbic | Nucleo | 10 | 2 | 0,83 | 10 |
 | AnalisadorLexico | Limbic | Nucleo | 8 | 2 | 0,80 | 8 |
-| PipelineLimbic | Limbic | Nucleo | 13 | 2 | 0,87 | 13 |
+| PipelineLimbic | Limbic | Nucleo | 14 | 1 | 0,93 | 14 |
 | VerificadorLimbic | Limbic | Nucleo | 23 | 2 | 0,92 | 23 |
-| AdaptadorLimbic | Nucleo | Limbic | 23 | 2 | 0,92 | 23 |
-| MotorFenotipoV2 | Nucleo | Fingerprint | 16 | 2 | 0,89 | 16 |
-| ClassificadorJungV2 | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
-| ClassificadorTermico | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
+| AdaptadorLimbic | Nucleo | Limbic | 15 | 2 | 0,88 | 15 |
+| EspecialistaDinamica | Nucleo | Unknown | 8 | 0 | 1,00 | 8 |
+| MotorFenotipoV2 | Nucleo | Fingerprint | 17 | 1 | 0,94 | 17 |
 | ClassificadorPsicodinamicoAvancado | Fingerprint | Nucleo | 4 | 1 | 0,80 | 4 |
 
 Possible architectural coupling detected based on structural heuristics.
@@ -158,9 +155,9 @@ Manual inspection is recommended.
 |--------|------------------|-----------------|--------------|
 | Program.cs | 0,00 | 1,00 | 0,00 |
 | Fingerprint | 0,26 | 0,28 | 0,46 |
-| Infrastructure | 0,07 | 0,64 | 0,28 |
-| Nucleo | 0,07 | 0,11 | 0,82 |
-| Limbic | 0,16 | 0,23 | 0,60 |
+| Infrastructure | 0,07 | 0,68 | 0,25 |
+| Nucleo | 0,07 | 0,11 | 0,83 |
+| Limbic | 0,16 | 0,25 | 0,59 |
 
 ---
 

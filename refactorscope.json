@@ -68,6 +68,10 @@
     "dumpIA"
   ],
 
+  "dashboard": {
+    "theme": "midnight-blue"
+  },
+
   "dumpStrategy": {
     "mode": "segmented",
     "splitBy": "topFolder"

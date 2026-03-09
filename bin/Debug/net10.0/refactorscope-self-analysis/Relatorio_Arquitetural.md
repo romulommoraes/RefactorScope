@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-08 22:41 UTC  
+📅 **Execution Time:** 2026-03-09 05:00 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -106,15 +106,15 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 4,06
+- **Coupling:** 4,83
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟢 Infrastructure
 
-- **Score:** `85,0`
+- **Score:** `82,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 1,00
+- **Coupling:** 1,20
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -123,14 +123,14 @@
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
 - **Coupling:** 0,12
-- **Isolation:** 0,27
-- **Core Density:** 0,98
+- **Isolation:** 0,25
+- **Core Density:** 0,99
 
 ### 🟢 Execution
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 2,13
+- **Coupling:** 2,50
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -163,19 +163,26 @@
 | StructuralCandidateAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
 | StructuralCandidateRefinementAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
 | EffortEstimator | Estimation | Core | 4 | 1 | 0,80 | 4 |
-| ArchitecturalDashboardExporter | Exporters | Core | 9 | 1 | 0,90 | 9 |
+| ArchitecturalDashboardExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
 | ChartsRenderer | Exporters | Core | 5 | 1 | 0,83 | 5 |
+| DashboardMetricsCalculator | Exporters | Core | 14 | 4 | 0,78 | 14 |
+| HubDashboardMetrics | Exporters | Core | 14 | 2 | 0,88 | 14 |
+| ArchitecturalDashboardMetrics | Exporters | Core | 14 | 2 | 0,88 | 14 |
 | DumpAnaliseExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
-| HtmlDashboardExporter | Exporters | Core | 7 | 0 | 1,00 | 7 |
-| HubDashboardExporter | Exporters | Core | 8 | 1 | 0,89 | 8 |
+| HtmlDashboardExporter | Exporters | Core | 8 | 0 | 1,00 | 8 |
 | MarkdownReportExporter | Exporters | Core | 8 | 1 | 0,89 | 8 |
-| StructuralInventoryExporter | Exporters | Core | 10 | 1 | 0,91 | 10 |
+| ParsingDashboardExporter | Exporters | Core | 5 | 1 | 0,83 | 5 |
+| QualityDashboardExporter | Exporters | Core | 6 | 1 | 0,86 | 6 |
+| StructuralInventoryExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
 | SolidAnalyzer | Analyzers | Core | 12 | 0 | 1,00 | 12 |
 | AnalysisOrchestrator | Core | Estimation | 7 | 0 | 1,00 | 7 |
 | ParserSelector | Core | Parsers | 9 | 0 | 1,00 | 9 |
-| RDICalculator | Estimation | Core | 5 | 1 | 0,83 | 5 |
+| RDICalculator | Estimation | Core | 9 | 1 | 0,90 | 9 |
 | DumpStrategyResolver | Execution | Core | 7 | 0 | 1,00 | 7 |
-| ArchitecturalDashboardExporterAdapter | Exporters | Core | 5 | 0 | 1,00 | 5 |
+| ArchitecturalDashboardExporterAdapter | Exporters | Core | 8 | 0 | 1,00 | 8 |
+| ParsingDashboardExporterAdapter | Exporters | Core | 8 | 0 | 1,00 | 8 |
+| QualityDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
+| StructuralDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | CSharpRegexParser | Parsers | Core | 11 | 1 | 0,92 | 11 |
 | HigienizadorLexico | Parsers | Core | 13 | 1 | 0,93 | 13 |
 | CSharpTextualParser | Parsers | Core | 13 | 2 | 0,87 | 13 |
@@ -185,8 +192,8 @@
 | PublicZeroUsageOmissionRule | Analyzers | Core | 4 | 1 | 0,80 | 4 |
 | LayerSegmentationResolver | Execution | Core | 5 | 1 | 0,83 | 5 |
 | TopFolderSegmentationResolver | Execution | Core | 4 | 1 | 0,80 | 4 |
-| GlobalDumpStrategy | Execution | Core | 4 | 1 | 0,80 | 4 |
-| SegmentedDumpStrategy | Execution | Core | 5 | 1 | 0,83 | 5 |
+| GlobalDumpStrategy | Execution | Core | 5 | 1 | 0,83 | 5 |
+| SegmentedDumpStrategy | Execution | Core | 6 | 1 | 0,86 | 6 |
 | HybridAdaptiveParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
 | HybridIncrementalParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
 | HybridSelectiveParser | Parsers | Core | 8 | 1 | 0,89 | 8 |
@@ -200,14 +207,14 @@ Manual inspection is recommended.
 
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
-| Analyzers | 0,11 | 0,73 | 0,17 |
+| Analyzers | 0,11 | 0,68 | 0,21 |
 | CLI | 0,00 | 0,00 | 1,00 |
 | Debug | 0,00 | 0,00 | 1,00 |
-| Estimation | 0,00 | 0,50 | 0,50 |
-| Exporters | 0,00 | 0,89 | 0,11 |
-| Infrastructure | 0,00 | 0,63 | 0,38 |
+| Estimation | 0,00 | 0,38 | 0,63 |
+| Exporters | 0,00 | 0,77 | 0,23 |
+| Infrastructure | 0,00 | 0,67 | 0,33 |
 | Core | 0,12 | 0,02 | 0,86 |
-| Execution | 0,25 | 0,55 | 0,20 |
+| Execution | 0,25 | 0,57 | 0,18 |
 | Parsers | 0,00 | 0,63 | 0,37 |
 | Statistics | 0,00 | 0,80 | 0,20 |
 

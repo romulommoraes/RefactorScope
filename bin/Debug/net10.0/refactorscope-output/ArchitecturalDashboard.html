@@ -1,252 +1,96 @@
 ﻿<!DOCTYPE html>
-<html><head><meta charset='UTF-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
 <title>Architectural Dashboard</title>
-<style>
-body {
-    background:
-        radial-gradient(circle at top left, rgba(47,136,255,.08), transparent 30%),
-        radial-gradient(circle at top right, rgba(255,59,107,.07), transparent 25%),
-        linear-gradient(180deg, #050816 0%, #080c1a 100%);
-    color: #e8f3ff;
-    font-family: Segoe UI, Arial, sans-serif;
-    margin: 30px;
-}
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+</head>
+<body>
+<div class='wrapper'>
 
-h1, h2, h3 {
-    letter-spacing: .05em;
-    text-transform: uppercase;
-}
-
-h1 {
-    color: #cfe8ff;
-    margin-bottom: 6px;
-}
-
-.subtle {
-    color: #8ea9c7;
-    margin-bottom: 24px;
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-top: 34px;
-    margin-bottom: 14px;
-}
-
-.section-title h2 {
-    margin: 0;
-    color: #cfe8ff;
-    font-size: 24px;
-}
-
-.section-title .line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(57,213,255,.45), rgba(255,59,107,.18), transparent);
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(180px, 1fr));
-    gap: 14px;
-}
-
-.card {
-    background: linear-gradient(180deg, rgba(11,18,37,.95), rgba(7,12,26,.92));
-    border: 1px solid rgba(57,213,255,.16);
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 0 0 1px rgba(57,213,255,.08), 0 0 24px rgba(47,136,255,.06);
-    min-height: 110px;
-}
-
-.card .label {
-    color: #8ea9c7;
-    font-size: 12px;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-}
-
-.card .value {
-    font-size: 30px;
-    font-weight: 800;
-    color: #cfe8ff;
-    line-height: 1;
-}
-
-.card .hint {
-    margin-top: 10px;
-    color: #8ea9c7;
-    font-size: 12px;
-}
-
-.panel-grid {
-    display: grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 16px;
-}
-
-.panel {
-    background: linear-gradient(180deg, rgba(11,18,37,.95), rgba(7,12,26,.92));
-    border: 1px solid rgba(57,213,255,.16);
-    border-radius: 16px;
-    padding: 18px;
-    box-shadow: 0 0 0 1px rgba(57,213,255,.08), 0 0 24px rgba(47,136,255,.06);
-}
-
-.panel h3 {
-    margin-top: 0;
-    color: #7cecff;
-    font-size: 16px;
-    letter-spacing: .12em;
-}
-
-ul.clean {
-    margin: 0;
-    padding-left: 18px;
-}
-
-ul.clean li {
-    color: #8ea9c7;
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin-top: 10px;
-    background: rgba(10, 16, 34, .55);
-}
-
-th, td {
-    border: 1px solid rgba(57,213,255,.10);
-    padding: 10px 12px;
-    text-align: left;
-}
-
-th {
-    background: rgba(22, 30, 52, .95);
-    color: #7cecff;
-    font-size: 12px;
-    letter-spacing: .10em;
-    text-transform: uppercase;
-}
-
-td {
-    color: #e8f3ff;
-}
-
-.metric-good { color: #49f2b8; font-weight: 700; }
-.metric-warn { color: #ffc857; font-weight: 700; }
-.metric-bad  { color: #ff6b8f; font-weight: 700; }
-
-pre.tree-view {
-    margin: 0;
-    padding: 16px;
-    background: rgba(4, 10, 24, .85);
-    border: 1px solid rgba(57,213,255,.12);
-    border-radius: 12px;
-    color: #cfe8ff;
-    font-family: Consolas, "Courier New", monospace;
-    font-size: 13px;
-    line-height: 1.45;
-    overflow-x: auto;
-    white-space: pre;
-}
-
-.note {
-    color: #8ea9c7;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.footer {
-    margin-top: 32px;
-    text-align: center;
-    color: #8ea9c7;
-    font-size: 12px;
-}
-
-@media (max-width: 1100px) {
-    .grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
-    .panel-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 640px) {
-    .grid { grid-template-columns: 1fr; }
-}
-</style>
-</head><body>
-<h1>🧭 Architectural Dashboard</h1>
-<div class='subtle'>Generated: 2026-03-08 22:53 UTC &nbsp;|&nbsp; Target Scope: C:\Users\romul\source\repos\Scriptome</div>
-<div class='grid'>
-<div class='card'>
+<div class='page-header' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
+<div class='brand'>
+<div class='brand-kicker'>RefactorScope // Architectural Layer</div>
+<h1>Architectural Dashboard</h1>
+<div class='subtitle'>Target Scope: <b>C:\Users\romul\source\repos\Scriptome</b></div>
+</div>
+<div class='run-meta'>
+<div><b>Generated:</b> 2026-03-09 05:03 UTC</div>
+<div><b>View:</b> Executive architectural summary</div>
+<div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
+</div>
+</div>
+<div class='grid-kpis'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Modules</div>
 <div class='value'>5</div>
 <div class='hint'>Detected architectural folders</div>
 </div>
-<div class='card'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Average Score</div>
-<div class='value'>70,5</div>
+<div class='value'>71,8</div>
 <div class='hint'>Composite health by module</div>
 </div>
-<div class='card'>
+<div class='kpi alert' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Unresolved</div>
-<div class='value'>17</div>
+<div class='value'>18</div>
 <div class='hint'>Final unresolved structural candidates</div>
 </div>
-<div class='card'>
+<div class='kpi good' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Fitness</div>
 <div class='value'>Ready</div>
 <div class='hint'>Overall architectural readiness</div>
 </div>
-<div class='card'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Abstractness (A)</div>
 <div class='value'>0,11</div>
 <div class='hint'>Average architectural abstraction</div>
 </div>
-<div class='card'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Instability (I)</div>
-<div class='value'>0,45</div>
+<div class='value'>0,46</div>
 <div class='hint'>Average outgoing dependency pressure</div>
 </div>
-<div class='card'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Distance (D)</div>
-<div class='value'>0,43</div>
+<div class='value'>0,42</div>
 <div class='hint'>Average distance from main sequence</div>
 </div>
-<div class='card'>
+<div class='kpi warning' augmented-ui='tr-clip bl-clip border'>
 <div class='label'>Implicit Coupling</div>
-<div class='value'>17</div>
+<div class='value'>14</div>
 <div class='hint'>Potential dependency hotspots</div>
 </div>
 </div>
-<div class="section-title">
-    <h2>Module Health</h2>
-    <div class="line"></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Module Health</h2>
+        <div class="line"></div>
+    </div>
 </div>
-<div class='panel'>
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
 <h3>Architectural Health by Module</h3>
+<div class='table-wrap'>
 <table>
 <tr><th>Module</th><th>Score</th><th>Unresolved</th><th>Coupling</th><th>Isolation</th><th>Core Density</th></tr>
 <tr>
 <td>Fingerprint</td>
-<td><span class='metric-warn'>66,0</span></td>
+<td><span class='metric-warn'>69,6</span></td>
 <td>3 (6%)</td>
-<td>1,12</td>
+<td>1,00</td>
 <td>0,02</td>
 <td>0,10</td>
 </tr>
 <tr>
 <td>Infrastructure</td>
-<td><span class='metric-warn'>48,1</span></td>
-<td>2 (7%)</td>
-<td>3,52</td>
+<td><span class='metric-warn'>47,8</span></td>
+<td>3 (11%)</td>
+<td>3,30</td>
 <td>0,00</td>
 <td>0,00</td>
 </tr>
@@ -260,9 +104,9 @@ pre.tree-view {
 </tr>
 <tr>
 <td>Nucleo</td>
-<td><span class='metric-good'>86,4</span></td>
+<td><span class='metric-good'>89,7</span></td>
 <td>5 (11%)</td>
-<td>0,74</td>
+<td>0,63</td>
 <td>0,15</td>
 <td>0,96</td>
 </tr>
@@ -276,21 +120,24 @@ pre.tree-view {
 </tr>
 </table>
 </div>
-<div class="section-title">
-    <h2>Architectural Signals</h2>
-    <div class="line"></div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Architectural Signals</h2>
+        <div class="line"></div>
+    </div>
 </div>
 <div class='panel-grid'>
-<div class='panel'>
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
 <h3>Interpretation</h3>
 <ul class='clean'>
-<li>Structural Candidates: 28</li>
+<li>Structural Candidates: 29</li>
 <li>Pattern Similarity: 11</li>
-<li>Unresolved: 17</li>
-<li>Implicit Coupling Suspicions: 17</li>
+<li>Unresolved: 18</li>
+<li>Implicit Coupling Suspicions: 14</li>
 <li>Average Abstractness: 0,11</li>
-<li>Average Instability: 0,45</li>
-<li>Average Distance: 0,43</li>
+<li>Average Instability: 0,46</li>
+<li>Average Distance: 0,42</li>
 </ul>
 <div class='note' style='margin-top:14px;'>
 This dashboard is an executive architectural view.
@@ -298,8 +145,9 @@ It complements the Markdown report rather than replacing it.
 The Markdown artifact remains useful for direct textual reading, project tree inspection and documentation-friendly export.
 </div>
 </div>
-<div class='panel'>
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
 <h3>Fitness Gates</h3>
+<div class='table-wrap'>
 <table>
 <tr><th>Gate</th><th>Status</th><th>Message</th></tr>
 <tr>
@@ -310,11 +158,14 @@ The Markdown artifact remains useful for direct textual reading, project tree in
 </table>
 </div>
 </div>
-<div class="section-title">
-    <h2>Project Structure</h2>
-    <div class="line"></div>
 </div>
-<div class='panel'>
+<div class="section">
+    <div class="section-title">
+        <h2>Project Structure</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
 <h3>Root Structure Snapshot</h3>
 <pre class='tree-view'>
 │   ├── AvaliaRoteiro
@@ -381,4 +232,7 @@ The Markdown artifact remains useful for direct textual reading, project tree in
 </pre>
 </div>
 <div class='footer'>Generated by RefactorScope Architectural Dashboard</div>
-</body></html>
+</div>
+</body>
+</html>
+

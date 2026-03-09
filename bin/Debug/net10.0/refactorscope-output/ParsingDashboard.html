@@ -1,37 +1,169 @@
-﻿<html><head><meta charset='UTF-8'>
-<style>
-body { background:#0f1117; color:#e6edf3; font-family:Segoe UI; margin:30px; }
-.card { display:inline-block; padding:20px; margin:10px; background:#161b22; border-radius:10px; min-width:180px; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:40px; }
-table { border-collapse: collapse; width:100%; margin-top:40px; }
-th, td { border:1px solid #30363d; padding:8px; }
-th { background:#21262d; }
-</style>
-</head><body>
-<h1>🧠 Parsing Dashboard</h1>
-<div>
-<div class='card'>Parser<br><b>HybridSelectiveParser</b></div>
-<div class='card'>Files<br><b>177</b></div>
-<div class='card'>Types<br><b>181</b></div>
-<div class='card'>References<br><b>691</b></div>
-<div class='card'>Execution<br><b>357 ms</b></div>
-<div class='card'>Classes/File<br><b>1,02</b></div>
-<div class='card'>Refs/Class<br><b>3,82</b></div>
-<div class='card'>Time/Class<br><b>1,97 ms</b></div>
-<div class='card'>Confidence<br><b>95%</b></div>
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Parsing Dashboard</title>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+</head>
+<body>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Parsing Module</div>
+        <h1>Parsing Dashboard</h1>
+        <div class="subtitle">Parser: <b>HybridSelectiveParser</b></div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-09 05:03 UTC</div>
+        <div><b>Target:</b> AvaliaRoteiro</div>
+        <div><b>Confidence:</b> 95%</div>
+        <div><b>Confidence Band:</b> High</div>
+    </div>
 </div>
-<div class='grid'>
-<div>
-<div class='chart-container'>
+<div class="section">
+    <div class="section-title">
+        <h2>Parsing Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis parsing-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Parser</div>
+        <div class="value" style="font-size:22px;">HybridSelectiveParser</div>
+        <div class="hint">Parsing strategy used to extract structural data from the codebase</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Files</div>
+        <div class="value">177</div>
+        <div class="hint">Source files parsed into the structural model</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Types</div>
+        <div class="value">161</div>
+        <div class="hint">Distinct types extracted into the parsing model</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">References</div>
+        <div class="value">532</div>
+        <div class="hint">Structural references extracted between parsed types</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Confidence</div>
+        <div class="value">95%</div>
+        <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Confidence Band</div>
+        <div class="value" style="font-size:24px;">High</div>
+        <div class="hint">High, Medium or Low confidence band derived from parser confidence</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Execution</div>
+        <div class="value">598 ms</div>
+        <div class="hint">Total parsing execution time for the analyzed scope</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Types / File</div>
+        <div class="value">0,91</div>
+        <div class="hint">Average number of extracted types per parsed file</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Refs / Type</div>
+        <div class="value">3,30</div>
+        <div class="hint">Average extracted reference density per parsed type</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">ms / File</div>
+        <div class="value">3,38</div>
+        <div class="hint">Average parsing cost per file</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">ms / Type</div>
+        <div class="value">3,72</div>
+        <div class="hint">Average parsing cost per extracted type</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Sparse Extraction</div>
+        <div class="value" style="font-size:24px;">No</div>
+        <div class="hint">Indicates extraction density lower than expected for a structurally healthy parse</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Extended Parsing Statistics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Telemetry Summary</h3>
+    <ul class="clean">
+        <li><b>Files:</b> 177</li>
+        <li><b>Types:</b> 161</li>
+        <li><b>References:</b> 532</li>
+        <li><b>Execution Time:</b> 598,33 ms</li>
+        <li><b>Types per File:</b> 0,91</li>
+        <li><b>References per Type:</b> 3,30</li>
+        <li><b>Milliseconds per File:</b> 3,38</li>
+        <li><b>Milliseconds per Type:</b> 3,72</li>
+        <li><b>Memory per File:</b> 0,00 KB</li>
+        <li><b>Memory per Type:</b> 0,00 KB</li>
+        <li><b>Extraction Index:</b> 85,17</li>
+        <li><b>Anomaly Detected:</b> No</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Reading</h3>
+    <ul class="clean">
+        <li>Parser confidence is high. The extracted structural model appears reliable for downstream analysis.</li>
+        <li>Structural density appears healthy. Parsed types and references show consistent extraction volume.</li>
+        <li>Parsing cost remains in an acceptable range for the extracted structural volume.</li>
+        <li>No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.</li>
+        <li>No anomaly flag was raised during parsing telemetry.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 95%</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Sparse Extraction: No</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Anomaly Detected: No</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Density Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Structure Density</h3>
+    <div class='chart-container'>
 <h3>Structure Density</h3>
 <svg width='320' height='320' style='background:#161b22;border-radius:12px'>
 <line x1='40' y1='280' x2='280' y2='280' stroke='#30363d'/>
-<rect x='110' y='218.52387843704776' width='30' height='61.47612156295225' fill='#4f8cff'/>
-<rect x='180' y='217.1345875542692' width='30' height='62.86541244573082' fill='#1dd1a1'/>
+<rect x='110' y='200.15037593984962' width='30' height='79.84962406015038' fill='#4f8cff'/>
+<rect x='180' y='207.36842105263156' width='30' height='72.63157894736842' fill='#1dd1a1'/>
 <rect x='250' y='40' width='30' height='240' fill='#ffd166'/>
-<text x='125' y='212.52387843704776' text-anchor='middle' fill='#e6edf3' font-size='11'>177</text>
-<text x='195' y='211.1345875542692' text-anchor='middle' fill='#e6edf3' font-size='11'>181</text>
-<text x='265' y='34' text-anchor='middle' fill='#e6edf3' font-size='11'>691</text>
+<text x='125' y='194.15037593984962' text-anchor='middle' fill='#e6edf3' font-size='11'>177</text>
+<text x='195' y='201.36842105263156' text-anchor='middle' fill='#e6edf3' font-size='11'>161</text>
+<text x='265' y='34' text-anchor='middle' fill='#e6edf3' font-size='11'>532</text>
 <text x='125' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Files</text>
 <text x='195' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Types</text>
 <text x='265' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Refs</text>
@@ -39,8 +171,9 @@ th { background:#21262d; }
 </div>
 
 </div>
-<div>
-<div class='chart-container'>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Parsing Radar</h3>
+    <div class='chart-container'>
 <h3>Parsing Quality Radar</h3>
 <svg width='320' height='320' style='background:#161b22;border-radius:12px'>
 <circle cx='160' cy='160' r='27.5' fill='none' stroke='#30363d' stroke-width='1' />
@@ -55,1105 +188,1103 @@ th { background:#21262d; }
 <text x='160' y='292' fill='#e6edf3' font-size='11' text-anchor='middle'>Confidence</text>
 <line x1='160' y1='160' x2='50' y2='160' stroke='#30363d' />
 <text x='28' y='160.00000000000003' fill='#e6edf3' font-size='11' text-anchor='middle'>Time/Class</text>
-<polygon points='160,103.75706214689265 201.99447513812154,160 160,264.5 155.66267812154695,160' fill='rgba(88,166,255,0.35)' stroke='#58a6ff' stroke-width='2'/>
+<polygon points='160,109.97175141242938 196.3478260869565,160 160,264.5 151.8240443478261,160' fill='rgba(88,166,255,0.35)' stroke='#58a6ff' stroke-width='2'/>
 </svg>
 </div>
 
 </div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Parsed Types</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="search"
+           type="text"
+           onkeyup="searchTable()"
+           placeholder="Search type, namespace, file..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
 </div>
-<h2 style='margin-top:50px;'>Parsed Types</h2>
-<table>
+<div class="table-shell">
+<table id="table" class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Type</th>
+            <th onclick="sortTable(1)">Namespace</th>
+            <th onclick="sortTable(2)">File</th>
+            <th onclick="sortTable(3)">References</th>
+        </tr>
+    </thead>
+    <tbody>
 <tr>
-<th>Type</th>
-<th>Namespace</th>
-<th>File</th>
-<th>References</th>
+    <td>Program</td>
+    <td>Scriptome</td>
+    <td>AvaliaRoteiro\Program.cs</td>
+    <td>17</td>
 </tr>
 <tr>
-<td>Program</td>
-<td>Scriptome</td>
-<td>AvaliaRoteiro\Program.cs</td>
-<td>17</td>
+    <td>EstatisticaForense</td>
+    <td>Scriptome.Fingerprint</td>
+    <td>AvaliaRoteiro\Fingerprint\EstatisticaForense.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>EstatisticaForense</td>
-<td>Scriptome.Fingerprint</td>
-<td>AvaliaRoteiro\Fingerprint\EstatisticaForense.cs</td>
-<td>0</td>
+    <td>MotorDeIdentidade</td>
+    <td>Scriptome.Fingerprint</td>
+    <td>AvaliaRoteiro\Fingerprint\MotorDeIdentidade.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>MotorDeIdentidade</td>
-<td>Scriptome.Fingerprint</td>
-<td>AvaliaRoteiro\Fingerprint\MotorDeIdentidade.cs</td>
-<td>8</td>
+    <td>MotorTaxonomia</td>
+    <td>Scriptome.Fingerprint</td>
+    <td>AvaliaRoteiro\Fingerprint\MotorTaxonomia.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>MotorTaxonomia</td>
-<td>Scriptome.Fingerprint</td>
-<td>AvaliaRoteiro\Fingerprint\MotorTaxonomia.cs</td>
-<td>4</td>
+    <td>Cluster</td>
+    <td>Scriptome.Fingerprint</td>
+    <td>AvaliaRoteiro\Fingerprint\MotorTaxonomia.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>Cluster</td>
-<td>Scriptome.Fingerprint</td>
-<td>AvaliaRoteiro\Fingerprint\MotorTaxonomia.cs</td>
-<td>2</td>
+    <td>ConfigService</td>
+    <td>Global</td>
+    <td>AvaliaRoteiro\Infrastructure\ConfigService.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ConfigService</td>
-<td>Global</td>
-<td>AvaliaRoteiro\Infrastructure\ConfigService.cs</td>
-<td>1</td>
+    <td>PathResolver</td>
+    <td>Global</td>
+    <td>AvaliaRoteiro\Infrastructure\ConfigService.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>PathResolver</td>
-<td>Global</td>
-<td>AvaliaRoteiro\Infrastructure\ConfigService.cs</td>
-<td>1</td>
+    <td>RaizComposicao</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>AvaliaRoteiro\Infrastructure\RaizComposicao.cs</td>
+    <td>63</td>
 </tr>
 <tr>
-<td>RaizComposicao</td>
-<td>Scriptome.Infrastructure</td>
-<td>AvaliaRoteiro\Infrastructure\RaizComposicao.cs</td>
-<td>65</td>
+    <td>ScriptomeJsonExporter</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>AvaliaRoteiro\Infrastructure\ScriptomeJsonExporter.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ScriptomeJsonExporter</td>
-<td>Scriptome.Infrastructure</td>
-<td>AvaliaRoteiro\Infrastructure\ScriptomeJsonExporter.cs</td>
-<td>1</td>
+    <td>ScriptomeVisualizer</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>AvaliaRoteiro\Infrastructure\ScriptomeVisualizer.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ScriptomeVisualizer</td>
-<td>Scriptome.Infrastructure</td>
-<td>AvaliaRoteiro\Infrastructure\ScriptomeVisualizer.cs</td>
-<td>1</td>
+    <td>ZumbiScanner</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>AvaliaRoteiro\Infrastructure\ZumbiScanner.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ZumbiScanner</td>
-<td>Scriptome.Infrastructure</td>
-<td>AvaliaRoteiro\Infrastructure\ZumbiScanner.cs</td>
-<td>4</td>
+    <td>ClasseInfo</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>AvaliaRoteiro\Infrastructure\ZumbiScanner.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ClasseInfo</td>
-<td>Scriptome.Infrastructure</td>
-<td>AvaliaRoteiro\Infrastructure\ZumbiScanner.cs</td>
-<td>3</td>
+    <td>OrquestradorNucleo</td>
+    <td>Scriptome.Nucleo</td>
+    <td>AvaliaRoteiro\Nucleo\OrquestradorNucleo.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>OrquestradorNucleo</td>
-<td>Scriptome.Nucleo</td>
-<td>AvaliaRoteiro\Nucleo\OrquestradorNucleo.cs</td>
-<td>11</td>
+    <td>InfoArquetipo</td>
+    <td>Scriptome.Fingerprint.Dados</td>
+    <td>AvaliaRoteiro\Fingerprint\Dados\BibliotecaArquetipos.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>InfoArquetipo</td>
-<td>Scriptome.Fingerprint.Dados</td>
-<td>AvaliaRoteiro\Fingerprint\Dados\BibliotecaArquetipos.cs</td>
-<td>1</td>
+    <td>BibliotecaArquetipos</td>
+    <td>Scriptome.Fingerprint.Dados</td>
+    <td>AvaliaRoteiro\Fingerprint\Dados\BibliotecaArquetipos.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>BibliotecaArquetipos</td>
-<td>Scriptome.Fingerprint.Dados</td>
-<td>AvaliaRoteiro\Fingerprint\Dados\BibliotecaArquetipos.cs</td>
-<td>2</td>
+    <td>DivergenceLogger</td>
+    <td>Scriptome.Fingerprint.Forense</td>
+    <td>AvaliaRoteiro\Fingerprint\Forense\DivergenceLogger.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>DivergenceLogger</td>
-<td>Scriptome.Fingerprint.Forense</td>
-<td>AvaliaRoteiro\Fingerprint\Forense\DivergenceLogger.cs</td>
-<td>2</td>
+    <td>DivergenceScore</td>
+    <td>Scriptome.Fingerprint.Forense</td>
+    <td>AvaliaRoteiro\Fingerprint\Forense\DivergenceScore.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>DivergenceScore</td>
-<td>Scriptome.Fingerprint.Forense</td>
-<td>AvaliaRoteiro\Fingerprint\Forense\DivergenceScore.cs</td>
-<td>2</td>
+    <td>IClassificadorBiometrico</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorBiometrico.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IClassificadorBiometrico</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorBiometrico.cs</td>
-<td>2</td>
+    <td>IClassificadorColetivo</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorColetivo.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IClassificadorColetivo</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorColetivo.cs</td>
-<td>3</td>
+    <td>IClassificadorEtogramaV2</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorEtogramaV2.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>IClassificadorEtogramaV2</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorEtogramaV2.cs</td>
-<td>2</td>
+    <td>IClassificadorIndividual</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorIndividual.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IClassificadorIndividual</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorIndividual.cs</td>
-<td>3</td>
+    <td>IClassificadorJungV2</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorJungV2.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IClassificadorJungV2</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorJungV2.cs</td>
-<td>3</td>
+    <td>IClassificadorLacanianoV2</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorLacanianoV2.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IClassificadorLacanianoV2</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorLacanianoV2.cs</td>
-<td>3</td>
+    <td>IClassificadorMBTIV2</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorMBTIV2.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IClassificadorMBTIV2</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorMBTIV2.cs</td>
-<td>3</td>
+    <td>IClassificadorNarrativaV2</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorNarrativaV2.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>IClassificadorNarrativaV2</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorNarrativaV2.cs</td>
-<td>4</td>
+    <td>IExtratorEtograma</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IExtratorEtograma.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IExtratorEtograma</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IExtratorEtograma.cs</td>
-<td>2</td>
+    <td>IMotorEtograma</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorEtograma.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IMotorEtograma</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorEtograma.cs</td>
-<td>2</td>
+    <td>IMotorEtogramaCartesiano</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorEtogramaCartesiano.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>IMotorEtogramaCartesiano</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorEtogramaCartesiano.cs</td>
-<td>2</td>
+    <td>IMotorIdentidadeRNA</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorIdentidadeRNA.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>IMotorIdentidadeRNA</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorIdentidadeRNA.cs</td>
-<td>4</td>
+    <td>IMotorIntencional</td>
+    <td>Scriptome.Fingerprint.Interfaces</td>
+    <td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorIntencional.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>IMotorIntencional</td>
-<td>Scriptome.Fingerprint.Interfaces</td>
-<td>AvaliaRoteiro\Fingerprint\Interfaces\IMotorIntencional.cs</td>
-<td>2</td>
+    <td>BibliotecaCentroidesEtograma</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>AvaliaRoteiro\Fingerprint\Modelos\BibliotecaCentroidesEtograma.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>BibliotecaCentroidesEtograma</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\BibliotecaCentroidesEtograma.cs</td>
-<td>1</td>
+    <td>EstadoIdentidade</td>
+    <td>Scriptome.Fingerprint.Modelos</td>
+    <td>AvaliaRoteiro\Fingerprint\Modelos\EstadoIdentidade.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>BlocoNarrativoFingerprint</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\BlocoNarrativoFingerprint.cs</td>
-<td>2</td>
+    <td>Etograma</td>
+    <td>Scriptome.Fingerprint.Modelos</td>
+    <td>AvaliaRoteiro\Fingerprint\Modelos\Etograma.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ContextoIdentidadeFingerprint</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ContextoIdentidadeFingerprint.cs</td>
-<td>1</td>
+    <td>ResultadoJung</td>
+    <td>Scriptome.Fingerprint.Modelos</td>
+    <td>AvaliaRoteiro\Fingerprint\Modelos\ResultadoJung.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ContextoNarrativo</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ContextoNarrativo.cs</td>
-<td>3</td>
+    <td>VetorEtograma3D</td>
+    <td>Scriptome.Fingerprint.Modelos</td>
+    <td>AvaliaRoteiro\Fingerprint\Modelos\VetorEtograma3D.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ContextoNarrativoFingerprint</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ContextoNarrativoFingerprint.cs</td>
-<td>2</td>
+    <td>ModuloEtogramaV2</td>
+    <td>Scriptome.Fingerprint.Modulos</td>
+    <td>AvaliaRoteiro\Fingerprint\Modulos\ModuloEtogramaV2.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>EstadoIdentidade</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\EstadoIdentidade.cs</td>
-<td>0</td>
+    <td>MotorIdentidadeRNA</td>
+    <td>Scriptome.Fingerprint.Motores</td>
+    <td>AvaliaRoteiro\Fingerprint\Motores\MotorDeIdentidadeRNA.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>Etograma</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\Etograma.cs</td>
-<td>0</td>
+    <td>ExtratorEtogramaDeriva6</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\ExtratorEtogramaDeriva6.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ExpressaoIdentidade</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ExpressaoIdentidade.cs</td>
-<td>0</td>
+    <td>MotorEtogramaCartesiano3D</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaCartesiano3D.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>ParcialEtograma</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ParcialEtograma.cs</td>
-<td>0</td>
+    <td>MotorEtogramaHeuristico</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaHeuristico.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>RegraArquetipo</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\RegraArquetipo.cs</td>
-<td>1</td>
+    <td>MotorEtogramaV2</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaV2.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>ResultadoEtograma</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ResultadoEtograma.cs</td>
-<td>0</td>
+    <td>MotorVetorialV2</td>
+    <td>Scriptome.Nucleo.Motores</td>
+    <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorVetorial_V2.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ResultadoIdentidadeConsolidada</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ResultadoIdentidadeConsolidada.cs</td>
-<td>4</td>
+    <td>MotorIntencionalV1</td>
+    <td>Global</td>
+    <td>AvaliaRoteiro\Fingerprint\MotoresInterpretativos\MotorIntencionalV1.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ResultadoJung</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ResultadoJung.cs</td>
-<td>0</td>
+    <td>ExportadorBaselineElencoLegacyJson</td>
+    <td>Scriptome.Infrastructure.Baseline</td>
+    <td>AvaliaRoteiro\Infrastructure\Baseline\ExportadorBaselineElencoLegacyJson.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ResultadoLacaniano</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ResultadoLacaniano.cs</td>
-<td>0</td>
+    <td>ExportadorBaselineEtograma</td>
+    <td>Scriptome.Infrastructure.Baseline</td>
+    <td>AvaliaRoteiro\Infrastructure\Baseline\ExportadorBaselineEtograma.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ResultadoMBTI</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\ResultadoMBTI.cs</td>
-<td>0</td>
+    <td>LeitorBaseline</td>
+    <td>Scriptome.Infrastructure.Baseline</td>
+    <td>AvaliaRoteiro\Infrastructure\Baseline\LeitorBaseline.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>TokenFingerprint</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\TokenFingerprint.cs</td>
-<td>0</td>
+    <td>ExportadorExcelModular</td>
+    <td>Scriptome.Exportacao</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\ExportadorExcelModular.cs</td>
+    <td>11</td>
 </tr>
 <tr>
-<td>TurnoDialogoFingerprint</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\TurnoDialogoFingerprint.cs</td>
-<td>2</td>
+    <td>VisualizadorEtograma</td>
+    <td>Scriptome.Infrastructure.Exportacao</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\VisualizadorEtograma.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>VetorEtograma3D</td>
-<td>Scriptome.Fingerprint.Modelos</td>
-<td>AvaliaRoteiro\Fingerprint\Modelos\VetorEtograma3D.cs</td>
-<td>0</td>
+    <td>IAbaExcel</td>
+    <td>Scriptome.Infrastructure.Interfaces</td>
+    <td>AvaliaRoteiro\Infrastructure\Interfaces\IAbaExcel.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ModuloEtogramaV2</td>
-<td>Scriptome.Fingerprint.Modulos</td>
-<td>AvaliaRoteiro\Fingerprint\Modulos\ModuloEtogramaV2.cs</td>
-<td>7</td>
+    <td>IExportadorScriptome</td>
+    <td>Scriptome.Infrastructure.Interfaces</td>
+    <td>AvaliaRoteiro\Infrastructure\Interfaces\IExportadorScriptome.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>MotorIdentidadeRNA</td>
-<td>Scriptome.Fingerprint.Motores</td>
-<td>AvaliaRoteiro\Fingerprint\Motores\MotorDeIdentidadeRNA.cs</td>
-<td>10</td>
+    <td>ComparacaoJung</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+    <td>AvaliaRoteiro\Infrastructure\Validador\ComparacaoJung.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ExtratorEtogramaDeriva6</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresEtograma\ExtratorEtogramaDeriva6.cs</td>
-<td>3</td>
+    <td>ComparadorJung</td>
+    <td>Global</td>
+    <td>AvaliaRoteiro\Infrastructure\Validador\ComparadorJung.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>MotorEtogramaCartesiano3D</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaCartesiano3D.cs</td>
-<td>7</td>
+    <td>ExecutorValidacaoJung</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+    <td>AvaliaRoteiro\Infrastructure\Validador\ExecutorValidacaoJung.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>MotorEtogramaHeuristico</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaHeuristico.cs</td>
-<td>6</td>
+    <td>ExportadorBaselineJung</td>
+    <td>Global</td>
+    <td>AvaliaRoteiro\Infrastructure\Validador\ExportadorBaselineJung.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>MotorEtogramaV2</td>
-<td>Scriptome.Fingerprint.MotoresEtograma</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaV2.cs</td>
-<td>9</td>
+    <td>MetricasDivergencia</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+    <td>AvaliaRoteiro\Infrastructure\Validador\MetricasDivergencia.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>MotorVetorialV2</td>
-<td>Scriptome.Nucleo.Motores</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorVetorial_V2.cs</td>
-<td>3</td>
+    <td>ValidadorJung</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+    <td>AvaliaRoteiro\Infrastructure\Validador\ValidadorJung.cs</td>
+    <td>9</td>
 </tr>
 <tr>
-<td>ExpressaoIntencional</td>
-<td>Scriptome.Fingerprint.MotoresInterpretativos</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresInterpretativos\ExpressaoIntencional.cs</td>
-<td>0</td>
+    <td>CalculadoraTensao</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>AvaliaRoteiro\Limbic\Algoritimos\CalculadoraTensao.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>MotorIntencionalV1</td>
-<td>Global</td>
-<td>AvaliaRoteiro\Fingerprint\MotoresInterpretativos\MotorIntencionalV1.cs</td>
-<td>4</td>
+    <td>CalculadoraModalidade</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>AvaliaRoteiro\Limbic\Algoritimos\CalculadorModalidade.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ExportadorBaselineElencoLegacyJson</td>
-<td>Scriptome.Infrastructure.Baseline</td>
-<td>AvaliaRoteiro\Infrastructure\Baseline\ExportadorBaselineElencoLegacyJson.cs</td>
-<td>3</td>
+    <td>HeuristicaContextual</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>AvaliaRoteiro\Limbic\Algoritimos\HeuristicaContextual.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ExportadorBaselineEtograma</td>
-<td>Scriptome.Infrastructure.Baseline</td>
-<td>AvaliaRoteiro\Infrastructure\Baseline\ExportadorBaselineEtograma.cs</td>
-<td>0</td>
+    <td>LematizadorCatalyst</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>AvaliaRoteiro\Limbic\Algoritimos\LematizadorCatalyst.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>LeitorBaseline</td>
-<td>Scriptome.Infrastructure.Baseline</td>
-<td>AvaliaRoteiro\Infrastructure\Baseline\LeitorBaseline.cs</td>
-<td>0</td>
+    <td>LematizadorVerbal</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>AvaliaRoteiro\Limbic\Algoritimos\LematizadorVerbal.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ExportadorExcelModular</td>
-<td>Scriptome.Exportacao</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\ExportadorExcelModular.cs</td>
-<td>20</td>
+    <td>MotorDeriva6</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>AvaliaRoteiro\Limbic\Algoritimos\MotorDeriva6.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>VisualizadorEtograma</td>
-<td>Scriptome.Infrastructure.Exportacao</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\VisualizadorEtograma.cs</td>
-<td>5</td>
+    <td>BancoDeDadosLexico</td>
+    <td>Scriptome.Limbic.Dados</td>
+    <td>AvaliaRoteiro\Limbic\Dados\BancoDeDadosLexico.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IAbaExcel</td>
-<td>Scriptome.Infrastructure.Interfaces</td>
-<td>AvaliaRoteiro\Infrastructure\Interfaces\IAbaExcel.cs</td>
-<td>1</td>
+    <td>CarregadorLimbic</td>
+    <td>Scriptome.Limbic.Dados</td>
+    <td>AvaliaRoteiro\Limbic\Dados\CarregadorLimbic.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>IExportadorScriptome</td>
-<td>Scriptome.Infrastructure.Interfaces</td>
-<td>AvaliaRoteiro\Infrastructure\Interfaces\IExportadorScriptome.cs</td>
-<td>1</td>
+    <td>ConfiguradorLimbic</td>
+    <td>Scriptome.Limbic.Dados</td>
+    <td>AvaliaRoteiro\Limbic\Dados\ConfiguradorLimbic.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ComparacaoJung</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>AvaliaRoteiro\Infrastructure\Validador\ComparacaoJung.cs</td>
-<td>0</td>
+    <td>ParametrosVader</td>
+    <td>Scriptome.Limbic.Dados</td>
+    <td>AvaliaRoteiro\Limbic\Dados\ParametrosVader.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ComparadorJung</td>
-<td>Global</td>
-<td>AvaliaRoteiro\Infrastructure\Validador\ComparadorJung.cs</td>
-<td>2</td>
+    <td>RepositorioLexicoUnificado</td>
+    <td>Scriptome.Limbic.Dados</td>
+    <td>AvaliaRoteiro\Limbic\Dados\RepositorioLexicoUnificado.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ExecutorValidacaoJung</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>AvaliaRoteiro\Infrastructure\Validador\ExecutorValidacaoJung.cs</td>
-<td>8</td>
+    <td>ILimbicAnalyzer</td>
+    <td>Scriptome.Limbic.Interfaces</td>
+    <td>AvaliaRoteiro\Limbic\Interfaces\AnalisadorLimbic.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ExportadorBaselineJung</td>
-<td>Global</td>
-<td>AvaliaRoteiro\Infrastructure\Validador\ExportadorBaselineJung.cs</td>
-<td>2</td>
+    <td>IMotorDeriva</td>
+    <td>Scriptome.Limbic.Interfaces</td>
+    <td>AvaliaRoteiro\Limbic\Interfaces\IMotorDeriva.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>MetricasDivergencia</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>AvaliaRoteiro\Infrastructure\Validador\MetricasDivergencia.cs</td>
-<td>2</td>
+    <td>IMotorLexico</td>
+    <td>Scriptome.Limbic.Interfaces</td>
+    <td>AvaliaRoteiro\Limbic\Interfaces\IMotorLexico.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ValidadorJung</td>
-<td>Scriptome.Infrastructure.Validador</td>
-<td>AvaliaRoteiro\Infrastructure\Validador\ValidadorJung.cs</td>
-<td>8</td>
+    <td>IMotorLimbic</td>
+    <td>Scriptome.Limbic.Interfaces</td>
+    <td>AvaliaRoteiro\Limbic\Interfaces\IMotorLimbic.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>CalculadoraTensao</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>AvaliaRoteiro\Limbic\Algoritimos\CalculadoraTensao.cs</td>
-<td>0</td>
+    <td>IServicoVocabulario</td>
+    <td>Scriptome.Limbic.Interfaces</td>
+    <td>AvaliaRoteiro\Limbic\Interfaces\IServicoVocabulario.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>CalculadoraModalidade</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>AvaliaRoteiro\Limbic\Algoritimos\CalculadorModalidade.cs</td>
-<td>0</td>
+    <td>Token</td>
+    <td>Scriptome.Linguistica</td>
+    <td>AvaliaRoteiro\Limbic\Linguistica\DefinicoesLingusticas.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>HeuristicaContextual</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>AvaliaRoteiro\Limbic\Algoritimos\HeuristicaContextual.cs</td>
-<td>3</td>
+    <td>IPipelineLinguistico</td>
+    <td>Scriptome.Linguistica</td>
+    <td>AvaliaRoteiro\Limbic\Linguistica\DefinicoesLingusticas.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>LematizadorCatalyst</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>AvaliaRoteiro\Limbic\Algoritimos\LematizadorCatalyst.cs</td>
-<td>0</td>
+    <td>LematizadorHibrido</td>
+    <td>Scriptome.Linguistica</td>
+    <td>AvaliaRoteiro\Limbic\Linguistica\LematizadorHibrido.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>LematizadorVerbal</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>AvaliaRoteiro\Limbic\Algoritimos\LematizadorVerbal.cs</td>
-<td>0</td>
+    <td>ProcessadorLinguistico</td>
+    <td>Scriptome.Linguistica</td>
+    <td>AvaliaRoteiro\Limbic\Linguistica\ProcessadorLinguistico.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>MotorDeriva6</td>
-<td>Scriptome.Limbic.Algoritmos</td>
-<td>AvaliaRoteiro\Limbic\Algoritimos\MotorDeriva6.cs</td>
-<td>10</td>
+    <td>EntradaLimbic</td>
+    <td>Scriptome.Limbic.Modelos</td>
+    <td>AvaliaRoteiro\Limbic\Modelos\EntradaLimbic.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>BancoDeDadosLexico</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>AvaliaRoteiro\Limbic\Dados\BancoDeDadosLexico.cs</td>
-<td>4</td>
+    <td>InfoPalavra</td>
+    <td>Scriptome.Limbic.Modelos</td>
+    <td>AvaliaRoteiro\Limbic\Modelos\InfoPalavra.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>CarregadorLimbic</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>AvaliaRoteiro\Limbic\Dados\CarregadorLimbic.cs</td>
-<td>0</td>
+    <td>ResultadoDeriva</td>
+    <td>Scriptome.Limbic.Modelos</td>
+    <td>AvaliaRoteiro\Limbic\Modelos\ResultadoDeriva.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ConfiguradorLimbic</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>AvaliaRoteiro\Limbic\Dados\ConfiguradorLimbic.cs</td>
-<td>3</td>
+    <td>ResultadoLimbic</td>
+    <td>Scriptome.Limbic.Modelos</td>
+    <td>AvaliaRoteiro\Limbic\Modelos\ResultadoLimbic.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ParametrosVader</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>AvaliaRoteiro\Limbic\Dados\ParametrosVader.cs</td>
-<td>0</td>
+    <td>TermoLexical</td>
+    <td>Scriptome.Limbic.Modelos</td>
+    <td>AvaliaRoteiro\Limbic\Modelos\TermoLexical.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>RepositorioLexicoUnificado</td>
-<td>Scriptome.Limbic.Dados</td>
-<td>AvaliaRoteiro\Limbic\Dados\RepositorioLexicoUnificado.cs</td>
-<td>2</td>
+    <td>TokenPontuado</td>
+    <td>Scriptome.Limbic.Modelos</td>
+    <td>AvaliaRoteiro\Limbic\Modelos\TokenPontuado.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ILimbicAnalyzer</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>AvaliaRoteiro\Limbic\Interfaces\AnalisadorLimbic.cs</td>
-<td>2</td>
+    <td>MotorLimbic</td>
+    <td>Scriptome.Limbic.Motor</td>
+    <td>AvaliaRoteiro\Limbic\Motor\MotorLimbic.cs</td>
+    <td>7</td>
 </tr>
 <tr>
-<td>IMotorDeriva</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>AvaliaRoteiro\Limbic\Interfaces\IMotorDeriva.cs</td>
-<td>3</td>
+    <td>AnalisadorContextual</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorContextual.cs</td>
+    <td>10</td>
 </tr>
 <tr>
-<td>IMotorLexico</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>AvaliaRoteiro\Limbic\Interfaces\IMotorLexico.cs</td>
-<td>2</td>
+    <td>AnalisadorLexico</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorLexico.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>IMotorLimbic</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>AvaliaRoteiro\Limbic\Interfaces\IMotorLimbic.cs</td>
-<td>2</td>
+    <td>ConstrutorDeCena</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\ConstrutorDeCena.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>IServicoVocabulario</td>
-<td>Scriptome.Limbic.Interfaces</td>
-<td>AvaliaRoteiro\Limbic\Interfaces\IServicoVocabulario.cs</td>
-<td>0</td>
+    <td>ImpactoVetorial</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>Token</td>
-<td>Scriptome.Linguistica</td>
-<td>AvaliaRoteiro\Limbic\Linguistica\DefinicoesLingusticas.cs</td>
-<td>1</td>
+    <td>AcumuladorForense</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>IPipelineLinguistico</td>
-<td>Scriptome.Linguistica</td>
-<td>AvaliaRoteiro\Limbic\Linguistica\DefinicoesLingusticas.cs</td>
-<td>2</td>
+    <td>ContextoLimbic</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>LematizadorHibrido</td>
-<td>Scriptome.Linguistica</td>
-<td>AvaliaRoteiro\Limbic\Linguistica\LematizadorHibrido.cs</td>
-<td>1</td>
+    <td>MotorDeFusao</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\MotorDeFusao.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ProcessadorLinguistico</td>
-<td>Scriptome.Linguistica</td>
-<td>AvaliaRoteiro\Limbic\Linguistica\ProcessadorLinguistico.cs</td>
-<td>5</td>
+    <td>PipelineLimbic</td>
+    <td>Scriptome.Limbic.Pipeline</td>
+    <td>AvaliaRoteiro\Limbic\Pipeline\PipelineLimbic.cs</td>
+    <td>14</td>
 </tr>
 <tr>
-<td>EntradaLimbic</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>AvaliaRoteiro\Limbic\Modelos\EntradaLimbic.cs</td>
-<td>1</td>
+    <td>VerificadorLimbic</td>
+    <td>Scriptome.Testes</td>
+    <td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbic.cs</td>
+    <td>23</td>
 </tr>
 <tr>
-<td>InfoPalavra</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>AvaliaRoteiro\Limbic\Modelos\InfoPalavra.cs</td>
-<td>0</td>
+    <td>VerificadorDerivaCompleto</td>
+    <td>Scriptome.Testes</td>
+    <td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbicCompleto.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ResultadoDeriva</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>AvaliaRoteiro\Limbic\Modelos\ResultadoDeriva.cs</td>
-<td>0</td>
+    <td>AdaptadorBasico</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorBasico.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>ResultadoLimbic</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>AvaliaRoteiro\Limbic\Modelos\ResultadoLimbic.cs</td>
-<td>1</td>
+    <td>AdaptadorBeats</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorBeats.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>TermoLexical</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>AvaliaRoteiro\Limbic\Modelos\TermoLexical.cs</td>
-<td>0</td>
+    <td>AdaptadorDiagnostico</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDiagnostico.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>TokenPontuado</td>
-<td>Scriptome.Limbic.Modelos</td>
-<td>AvaliaRoteiro\Limbic\Modelos\TokenPontuado.cs</td>
-<td>0</td>
+    <td>AdaptadorDinamica</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDinamica.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>MotorLimbic</td>
-<td>Scriptome.Limbic.Motor</td>
-<td>AvaliaRoteiro\Limbic\Motor\MotorLimbic.cs</td>
-<td>8</td>
+    <td>AdaptadorDuracao</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDuracao.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>AnalisadorContextual</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorContextual.cs</td>
-<td>10</td>
+    <td>AdaptadorInteracao</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorInteracao.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>AnalisadorLexico</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorLexico.cs</td>
-<td>8</td>
+    <td>AdaptadorLimbic</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorLimbic.cs</td>
+    <td>15</td>
 </tr>
 <tr>
-<td>ConstrutorDeCena</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\ConstrutorDeCena.cs</td>
-<td>5</td>
+    <td>ConversorFenotipo</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\ConversorFenotipo.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ImpactoVetorial</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
-<td>7</td>
+    <td>ExtratorEtogramaAdapter</td>
+    <td>Scriptome.Nucleo.Adaptadores</td>
+    <td>AvaliaRoteiro\Nucleo\Adaptadores\ExtratorEtogramaAdapter.cs</td>
+    <td>5</td>
 </tr>
 <tr>
-<td>AcumuladorForense</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
-<td>7</td>
+    <td>EspecialistaBeats</td>
+    <td>Scriptome.Nucleo.Especialistas</td>
+    <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaBeats.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ContextoLimbic</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
-<td>9</td>
+    <td>EspecialistaDinamica</td>
+    <td>Scriptome.Nucleo.Especialistas</td>
+    <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaDinamica.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>MotorDeFusao</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\MotorDeFusao.cs</td>
-<td>2</td>
+    <td>EspecialistaDuracao</td>
+    <td>Scriptome.Nucleo.Especialistas</td>
+    <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaDuracao.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>PipelineLimbic</td>
-<td>Scriptome.Limbic.Pipeline</td>
-<td>AvaliaRoteiro\Limbic\Pipeline\PipelineLimbic.cs</td>
-<td>13</td>
+    <td>EspecialistaInteracao</td>
+    <td>Scriptome.Nucleo.Especialistas</td>
+    <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaInteracao.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>VerificadorLimbic</td>
-<td>Scriptome.Testes</td>
-<td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbic.cs</td>
-<td>23</td>
+    <td>EspecialistaProducao</td>
+    <td>Scriptome.Nucleo.Especialistas</td>
+    <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaProducao.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>VerificadorDerivaCompleto</td>
-<td>Scriptome.Testes</td>
-<td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbicCompleto.cs</td>
-<td>4</td>
+    <td>EspecialistaVocabulario</td>
+    <td>Scriptome.Nucleo.Especialistas</td>
+    <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaVocabulario.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>AdaptadorBasico</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorBasico.cs</td>
-<td>9</td>
+    <td>IModuloAnalise</td>
+    <td>Scriptome.Nucleo.Interfaces</td>
+    <td>AvaliaRoteiro\Nucleo\Interfaces\IModuloAnalise.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>AdaptadorBeats</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorBeats.cs</td>
-<td>5</td>
+    <td>IMotorSplicing</td>
+    <td>Scriptome.Nucleo.Interfaces</td>
+    <td>AvaliaRoteiro\Nucleo\Interfaces\IMotorSplicing.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>AdaptadorDiagnostico</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDiagnostico.cs</td>
-<td>3</td>
+    <td>IMotorDeTranscricao</td>
+    <td>Scriptome.Nucleo.Interfaces</td>
+    <td>AvaliaRoteiro\Nucleo\Interfaces\MotorDeTranscricao.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>AdaptadorDinamica</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDinamica.cs</td>
-<td>3</td>
+    <td>LeitorFountain</td>
+    <td>Scriptome.Nucleo.Leitores</td>
+    <td>AvaliaRoteiro\Nucleo\Leitores\LeitorFountain.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>AdaptadorDuracao</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDuracao.cs</td>
-<td>5</td>
+    <td>ScriptomeDashboardPipeline</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\ScriptomeDashboardPipeline.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>AdaptadorInteracao</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorInteracao.cs</td>
-<td>5</td>
+    <td>MotorFenotipoV2</td>
+    <td>Scriptome.Nucleo.Fenotipo</td>
+    <td>AvaliaRoteiro\Nucleo\Motores\MotorFenotipoV2.cs</td>
+    <td>17</td>
 </tr>
 <tr>
-<td>AdaptadorLimbic</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorLimbic.cs</td>
-<td>27</td>
+    <td>MotorSplicing</td>
+    <td>Scriptome.Nucleo.Motores</td>
+    <td>AvaliaRoteiro\Nucleo\Motores\MotorSplicing.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ConversorFenotipo</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\ConversorFenotipo.cs</td>
-<td>5</td>
+    <td>ClassificadorJung</td>
+    <td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Arquetipos\ClassificadorJung.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ExtratorEtogramaAdapter</td>
-<td>Scriptome.Nucleo.Adaptadores</td>
-<td>AvaliaRoteiro\Nucleo\Adaptadores\ExtratorEtogramaAdapter.cs</td>
-<td>4</td>
+    <td>ClassificadorJungV2</td>
+    <td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Arquetipos\ClassificadorJungV2.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>EspecialistaBeats</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaBeats.cs</td>
-<td>3</td>
+    <td>ClassificadorEtogramaCartesiano</td>
+    <td>Scriptome.Fingerprint.Classificadores.Cartesianos</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Cartesianos\ClassificadorEtogramaCartesiano.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>EspecialistaDinamica</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaDinamica.cs</td>
-<td>8</td>
+    <td>ClassificadorEnergia_V2</td>
+    <td>Scriptome.Fingerprint.Classificadores.Energia</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorEnergia_V2.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>EspecialistaDuracao</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaDuracao.cs</td>
-<td>4</td>
+    <td>ClassificadorIntensidade</td>
+    <td>Scriptome.Fingerprint.Classificadores.Energia</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorIntensidade.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>EspecialistaInteracao</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaInteracao.cs</td>
-<td>5</td>
+    <td>ClassificadorTermico</td>
+    <td>Scriptome.Fingerprint.Classificadores.Energia</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorTermico.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>EspecialistaProducao</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaProducao.cs</td>
-<td>2</td>
+    <td>ClassificadorNarrativaV2</td>
+    <td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Narrativa\ClassificadorNarrativaUnificado.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>EspecialistaVocabulario</td>
-<td>Scriptome.Nucleo.Especialistas</td>
-<td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaVocabulario.cs</td>
-<td>3</td>
+    <td>ClassificadorScriptome</td>
+    <td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Narrativa\ClassificadorScriptome.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IModuloAnalise</td>
-<td>Scriptome.Nucleo.Interfaces</td>
-<td>AvaliaRoteiro\Nucleo\Interfaces\IModuloAnalise.cs</td>
-<td>3</td>
+    <td>ClassificadorHibrido</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorHibrido.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IMotorSplicing</td>
-<td>Scriptome.Nucleo.Interfaces</td>
-<td>AvaliaRoteiro\Nucleo\Interfaces\IMotorSplicing.cs</td>
-<td>2</td>
+    <td>ClassificadorLacaniano</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacaniano.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>IMotorDeTranscricao</td>
-<td>Scriptome.Nucleo.Interfaces</td>
-<td>AvaliaRoteiro\Nucleo\Interfaces\MotorDeTranscricao.cs</td>
-<td>2</td>
+    <td>ClassificadorLacanianoV2</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>LeitorFountain</td>
-<td>Scriptome.Nucleo.Leitores</td>
-<td>AvaliaRoteiro\Nucleo\Leitores\LeitorFountain.cs</td>
-<td>6</td>
+    <td>ClassificadorLacanianoV2Legado</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2Legado.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ScriptomeDashboardPipeline</td>
-<td>Scriptome.Infrastructure</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\ScriptomeDashboardPipeline.cs</td>
-<td>3</td>
+    <td>ClassificadorMBTI</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorMBTI.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>MotorFenotipoV2</td>
-<td>Scriptome.Nucleo.Fenotipo</td>
-<td>AvaliaRoteiro\Nucleo\Motores\MotorFenotipoV2.cs</td>
-<td>18</td>
+    <td>ClassificadorMBTIV2</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorMBTIV2.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>MotorSplicing</td>
-<td>Scriptome.Nucleo.Motores</td>
-<td>AvaliaRoteiro\Nucleo\Motores\MotorSplicing.cs</td>
-<td>4</td>
+    <td>ClassificadorPsicodinamico</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorPsicodinamico.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ClassificadorJung</td>
-<td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Arquetipos\ClassificadorJung.cs</td>
-<td>7</td>
+    <td>ClassificadorPsicodinamicoAvancado</td>
+    <td>Scriptome.Fingerprint.Classificadores.Psique</td>
+    <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorPsicodinamico.cs</td>
+    <td>4</td>
 </tr>
 <tr>
-<td>ClassificadorJungV2</td>
-<td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Arquetipos\ClassificadorJungV2.cs</td>
-<td>6</td>
+    <td>AppConfig</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\AppConfig.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ClassificadorEtogramaCartesiano</td>
-<td>Scriptome.Fingerprint.Classificadores.Cartesianos</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Cartesianos\ClassificadorEtogramaCartesiano.cs</td>
-<td>1</td>
+    <td>EstatisticasCena</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\EstatisticasCena.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ClassificadorEnergia_V2</td>
-<td>Scriptome.Fingerprint.Classificadores.Energia</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorEnergia_V2.cs</td>
-<td>3</td>
+    <td>EstatisticasRoteiro</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\EstatisticasRoteiro.cs</td>
+    <td>8</td>
 </tr>
 <tr>
-<td>ClassificadorIntensidade</td>
-<td>Scriptome.Fingerprint.Classificadores.Energia</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorIntensidade.cs</td>
-<td>3</td>
+    <td>PerfilPersonagem</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\PerfilPersonagem.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ClassificadorTermico</td>
-<td>Scriptome.Fingerprint.Classificadores.Energia</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorTermico.cs</td>
-<td>7</td>
+    <td>ResultadoAnalise</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ClassificadorNarrativaV2</td>
-<td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Narrativa\ClassificadorNarrativaUnificado.cs</td>
-<td>14</td>
+    <td>TermoInfluente</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ClassificadorScriptome</td>
-<td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Narrativa\ClassificadorScriptome.cs</td>
-<td>3</td>
+    <td>ResultadoDinamica</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoDinamica.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ContextoNarrativoRNA</td>
-<td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Narrativa\ContextoNarrativoRNA.cs</td>
-<td>2</td>
+    <td>ResultadoInteracao</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoInteracao.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ClassificadorHibrido</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorHibrido.cs</td>
-<td>3</td>
+    <td>PerfilPersonagemConsolidado</td>
+    <td>Global</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\PerfilPersonagemConsolidado.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ClassificadorLacaniano</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacaniano.cs</td>
-<td>3</td>
+    <td>BaseImutavel</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\BaseImutavel.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ClassificadorLacanianoV2</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2.cs</td>
-<td>6</td>
+    <td>GeneDiscursivo</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\GeneDiscursivo.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ClassificadorLacanianoV2Legado</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2Legado.cs</td>
-<td>4</td>
+    <td>MotorDeTranscricao</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\MotorDeTranscricao.cs</td>
+    <td>6</td>
 </tr>
 <tr>
-<td>ClassificadorMBTI</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorMBTI.cs</td>
-<td>3</td>
+    <td>ResultadoSplice</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\ResultadoSplice.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-<td>ClassificadorMBTIV2</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorMBTIV2.cs</td>
-<td>6</td>
+    <td>RnaBruto</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaBruto.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ClassificadorPsicodinamico</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorPsicodinamico.cs</td>
-<td>4</td>
+    <td>RnaCartesiano</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaCartesiano.cs</td>
+    <td>1</td>
 </tr>
 <tr>
-<td>ClassificadorPsicodinamicoAvancado</td>
-<td>Scriptome.Fingerprint.Classificadores.Psique</td>
-<td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorPsicodinamico.cs</td>
-<td>4</td>
+    <td>RnaLimbic</td>
+    <td>Scriptome.Nucleo.Modelos.Genoma</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaLimbic.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>AppConfig</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\AppConfig.cs</td>
-<td>0</td>
+    <td>ResultadoModuloLimbic</td>
+    <td>Scriptome.Nucleo.Modelos.Resultados</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Resultados\ResultadoModuloLimbic.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>EstatisticasCena</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\EstatisticasCena.cs</td>
-<td>0</td>
+    <td>Cena</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Script\Cena.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>EstatisticasRoteiro</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\EstatisticasRoteiro.cs</td>
-<td>8</td>
+    <td>ElementoCena</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>PerfilPersonagem</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\PerfilPersonagem.cs</td>
-<td>5</td>
+    <td>Dialogo</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ResultadoAnalise</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
-<td>2</td>
+    <td>Acao</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>TermoInfluente</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
-<td>1</td>
+    <td>Transicao</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
+    <td>3</td>
 </tr>
 <tr>
-<td>ResultadoDinamica</td>
-<td>Scriptome.Nucleo.Modelos.Analise</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoDinamica.cs</td>
-<td>0</td>
+    <td>Roteiro</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+    <td>AvaliaRoteiro\Nucleo\Modelos\Script\Roteiro.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ResultadoInteracao</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoInteracao.cs</td>
-<td>0</td>
+    <td>AbaAnaliseDeCenas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaAnaliseDeCenas.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ExpressaoEnergetica</td>
-<td>Scriptome.Nucleo.Modelos.Fenotipo</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\ExpressaoEnergetica.cs</td>
-<td>0</td>
+    <td>AbaBeatSheet</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaBeatSheet.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ExpressaoNarrativa</td>
-<td>Scriptome.Nucleo.Modelos.Fenotipo</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\ExpressaoNarrativa.cs</td>
-<td>0</td>
+    <td>AbaDashboard</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaDashboard.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ExpressaoPsicodinamica</td>
-<td>Scriptome.Nucleo.Modelos.Fenotipo</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\ExpressaoPsicodinamica.cs</td>
-<td>0</td>
+    <td>AbaElenco</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaElenco.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ExpressaoVetorial</td>
-<td>Scriptome.Nucleo.Modelos.Fenotipo</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\ExpressaoVetorial.cs</td>
-<td>0</td>
+    <td>AbaEstrutura</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaEstrutura.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>PerfilPersonagemConsolidado</td>
-<td>Global</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\PerfilPersonagemConsolidado.cs</td>
-<td>5</td>
+    <td>AbaMatrizSocial</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaMatrizSocial.cs</td>
+    <td>2</td>
 </tr>
 <tr>
-<td>ResultadoBaseLinguistico</td>
-<td>Scriptome.Nucleo.Modelos.Fenotipo</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Fenotipo\ResultadoBaseLinguistico.cs</td>
-<td>0</td>
+    <td>AbaTaxonomia</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaTaxonomia.cs</td>
+    <td>3</td>
 </tr>
-<tr>
-<td>BaseImutavel</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\BaseImutavel.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>GeneDiscursivo</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\GeneDiscursivo.cs</td>
-<td>0</td>
-</tr>
-<tr>
-<td>MotorDeTranscricao</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\MotorDeTranscricao.cs</td>
-<td>6</td>
-</tr>
-<tr>
-<td>ResultadoSplice</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\ResultadoSplice.cs</td>
-<td>0</td>
-</tr>
-<tr>
-<td>RnaBruto</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaBruto.cs</td>
-<td>1</td>
-</tr>
-<tr>
-<td>RnaCartesiano</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaCartesiano.cs</td>
-<td>1</td>
-</tr>
-<tr>
-<td>RnaLimbic</td>
-<td>Scriptome.Nucleo.Modelos.Genoma</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaLimbic.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>ResultadoModuloLimbic</td>
-<td>Scriptome.Nucleo.Modelos.Resultados</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Resultados\ResultadoModuloLimbic.cs</td>
-<td>3</td>
-</tr>
-<tr>
-<td>Cena</td>
-<td>Scriptome.Nucleo.Modelos</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Script\Cena.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>ElementoCena</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
-<td>3</td>
-</tr>
-<tr>
-<td>Dialogo</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
-<td>3</td>
-</tr>
-<tr>
-<td>Acao</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
-<td>3</td>
-</tr>
-<tr>
-<td>Transicao</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Script\Elementos.cs</td>
-<td>3</td>
-</tr>
-<tr>
-<td>Roteiro</td>
-<td>Scriptome.Nucleo.Modelos.Script</td>
-<td>AvaliaRoteiro\Nucleo\Modelos\Script\Roteiro.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaAnaliseDeCenas</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaAnaliseDeCenas.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaBeatSheet</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaBeatSheet.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaDashboard</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaDashboard.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaElenco</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaElenco.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaEstrutura</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaEstrutura.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaMatrizSocial</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaMatrizSocial.cs</td>
-<td>2</td>
-</tr>
-<tr>
-<td>AbaTaxonomia</td>
-<td>Scriptome.Exportacao.Excel.Abas</td>
-<td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaTaxonomia.cs</td>
-<td>4</td>
-</tr>
+    </tbody>
 </table>
-</body></html>
+</div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Interpretation</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard describes parser output quality and structural extraction density.</li>
+            <li>Low reference density may suggest sparse extraction, but does not prove parser failure.</li>
+            <li>Confidence is heuristic and should be interpreted as structural usability, not absolute correctness.</li>
+            <li>Anomaly flags indicate atypical parse characteristics that deserve review.</li>
+            <li>Performance ratios help compare parser strategies across projects and baselines.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.parsing-kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.parsing-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.parsing-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.parsing-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+</style>
+
+<script>
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('table');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      if (dir === 'asc' && x.innerText.toLowerCase() > y.innerText.toLowerCase()) shouldSwitch = true;
+      if (dir === 'desc' && x.innerText.toLowerCase() < y.innerText.toLowerCase()) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Parsing Dashboard // Shared Hub Layout</div>
+</div>
+</body>
+</html>
+

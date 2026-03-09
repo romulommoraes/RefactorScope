@@ -1,0 +1,7 @@
+"dashboard": {
+  "theme": "midnight-blue"
+}
+
+ember-ops → laranja tático
+
+neon-grid → verde HUD

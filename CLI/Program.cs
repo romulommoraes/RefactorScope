@@ -10,11 +10,11 @@ using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Parsing;
 using RefactorScope.Core.Parsing.Enum;
-using RefactorScope.Core.Reporting;
 using RefactorScope.Core.Results;
 using RefactorScope.Execution.Dump;
 using RefactorScope.Exporters;
 using RefactorScope.Exporters.Adapters;
+using RefactorScope.Exporters.Styling;
 using RefactorScope.Infrastructure;
 using Spectre.Console;
 
@@ -371,6 +371,19 @@ static bool RunExport(
         // -------------------------------------------------
         RunHtmlExporters(htmlExporters, context, report, config.OutputPath);
 
+        RunParsingDashboardExporter(context, parsingResult, config.OutputPath);
+
+        QualityDashboardExporterAdapter.ExportDirect(
+            context,
+            report,
+            parsingResult?.ParserName ?? "Unavailable",
+            parsingResult?.Confidence ?? 0,
+            parsingResult?.Stats?.ExecutionTime ?? TimeSpan.Zero,
+            parsingResult?.Model?.Arquivos.Count ?? 0,
+            parsingResult?.Model?.Tipos.Count ?? 0,
+            parsingResult?.Model?.Referencias.Count ?? 0,
+            config.OutputPath);
+
         // -------------------------------------------------
         // Bloco 3: Hub HTML final
         // Gerado explicitamente com parsingResult real
@@ -676,9 +689,63 @@ static List<IExporter> BuildHtmlExportersWithoutHub()
     return new List<IExporter>
     {
         new StructuralDashboardExporterAdapter(),
-        new ParsingDashboardExporterAdapter(),
         new ArchitecturalDashboardExporterAdapter()
     };
+}
+
+static void RunParsingDashboardExporter(
+    AnalysisContext context,
+    IParserResult? parsingResult,
+    string outputDirectory)
+{
+    try
+    {
+        if (parsingResult == null)
+            return;
+
+        Directory.CreateDirectory(outputDirectory);
+
+        var themeFileName = ResolveThemeFileName(context);
+        DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+        var htmlPath = Path.Combine(outputDirectory, "ParsingDashboard.html");
+
+        var exporter = new ParsingDashboardExporter();
+        exporter.Export(parsingResult, htmlPath, themeFileName);
+
+        TerminalRenderer.Success("parsing-dashboard gerado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO AO GERAR HTML - parsing-dashboard]: {ex.Message}");
+        CrashLogger.Log(ex, "HTML_EXPORT_PARSING-DASHBOARD");
+    }
+}
+
+static string ResolveThemeFileName(AnalysisContext context)
+{
+    try
+    {
+        var config = context?.Config;
+        var themeName = TryReadDashboardTheme(config);
+        return DashboardThemeSelector.ResolveFileName(themeName);
+    }
+    catch
+    {
+        return DashboardThemeSelector.DefaultThemeFile;
+    }
+}
+
+static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+{
+    if (config == null)
+        return null;
+
+    var prop = config.GetType().GetProperty("DashboardTheme");
+    if (prop == null)
+        return null;
+
+    return prop.GetValue(config) as string;
 }
 
 static void RunHtmlHubExporter(

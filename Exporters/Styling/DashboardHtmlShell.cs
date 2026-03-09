@@ -21,12 +21,23 @@ namespace RefactorScope.Exporters.Styling
     /// - troca de tema sem alterar exporters
     /// - menor duplicação de markup
     /// - evolução mais segura da suíte HTML
+    ///
+    /// Estratégia de tema
+    /// ------------------
+    /// O shell sempre referencia:
+    /// - dashboard-base.css
+    /// - dashboard-components.css
+    /// - dashboard-theme.css
+    ///
+    /// O arquivo dashboard-theme.css é gerado pelo pipeline de assets
+    /// a partir do tema lógico selecionado em configuração.
     /// </summary>
     public static class DashboardHtmlShell
     {
-        public static string RenderDocumentStart(
-            string title,
-            string themeFileName)
+        /// <summary>
+        /// Nova assinatura principal.
+        /// </summary>
+        public static string RenderDocumentStart(string title)
         {
             var sb = new StringBuilder();
 
@@ -44,7 +55,7 @@ namespace RefactorScope.Exporters.Styling
             // Shared dashboard CSS
             sb.AppendLine("<link rel='stylesheet' href='assets/css/dashboard-base.css' />");
             sb.AppendLine("<link rel='stylesheet' href='assets/css/dashboard-components.css' />");
-            sb.AppendLine($"<link rel='stylesheet' href='assets/css/{Html(themeFileName)}' />");
+            sb.AppendLine("<link rel='stylesheet' href='assets/css/dashboard-theme.css' />");
 
             sb.AppendLine("</head>");
             sb.AppendLine("<body>");
@@ -52,6 +63,15 @@ namespace RefactorScope.Exporters.Styling
 
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Sobrecarga mantida por compatibilidade com exporters antigos.
+        ///
+        /// O parâmetro themeFileName é ignorado, pois o shell agora
+        /// referencia sempre o arquivo fixo dashboard-theme.css.
+        /// </summary>
+        public static string RenderDocumentStart(string title, string? themeFileName)
+            => RenderDocumentStart(title);
 
         public static string RenderDocumentEnd(string? footerText = null)
         {

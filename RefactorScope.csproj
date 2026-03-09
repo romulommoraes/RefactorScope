@@ -21,7 +21,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Exporters\Assets\Css\" />
 	  <Folder Include="Exporters\Assets\Vendor\" />
 	  <Folder Include="Parsers\Results\" />
 	</ItemGroup>

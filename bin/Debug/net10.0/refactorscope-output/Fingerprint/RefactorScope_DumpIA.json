@@ -874,21 +874,6 @@
       "Kind": 2
     },
     {
-      "FromType": "MotorTaxonomia",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
-    },
-    {
-      "FromType": "MotorTaxonomia",
-      "ToType": "Cluster",
-      "Kind": 3
-    },
-    {
-      "FromType": "BibliotecaArquetipos",
-      "ToType": "InfoArquetipo",
-      "Kind": 1
-    },
-    {
       "FromType": "DivergenceLogger",
       "ToType": "Etograma",
       "Kind": 0
@@ -919,26 +904,6 @@
       "Kind": 3
     },
     {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "Etograma",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorEtogramaCartesiano3D",
-      "ToType": "Etograma",
-      "Kind": 2
-    },
-    {
-      "FromType": "MotorEtogramaHeuristico",
-      "ToType": "ClassificadorScriptome",
-      "Kind": 1
-    },
-    {
-      "FromType": "MotorEtogramaHeuristico",
-      "ToType": "Etograma",
-      "Kind": 1
-    },
-    {
       "FromType": "MotorEtogramaV2",
       "ToType": "IClassificadorEtogramaV2",
       "Kind": 3
@@ -947,61 +912,6 @@
       "FromType": "MotorEtogramaV2",
       "ToType": "BibliotecaArquetipos",
       "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorJung",
-      "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorJung",
-      "ToType": "EstatisticaForense",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorJung",
-      "ToType": "Etograma",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorJungV2",
-      "ToType": "ResultadoJung",
-      "Kind": 1
-    },
-    {
-      "FromType": "ClassificadorJungV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorTermico",
-      "ToType": "PerfilPersonagem",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorTermico",
-      "ToType": "EstatisticaForense",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorTermico",
-      "ToType": "Etograma",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorNarrativaV2",
-      "ToType": "BibliotecaArquetipos",
-      "Kind": 2
-    },
-    {
-      "FromType": "ClassificadorLacanianoV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
-    },
-    {
-      "FromType": "ClassificadorMBTIV2",
-      "ToType": "RnaBruto",
-      "Kind": 3
     }
   ]
 }

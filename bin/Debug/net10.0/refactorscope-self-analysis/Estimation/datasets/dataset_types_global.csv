@@ -1,7 +1,7 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
 EffortEstimator,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
-RefactorClassifier,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
-CouplingPressureModel,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
+RefactorClassifier,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+CouplingPressureModel,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 RDICalculator,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
-SizePressureModel,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
-StructuralRiskModel,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
+SizePressureModel,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+StructuralRiskModel,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0

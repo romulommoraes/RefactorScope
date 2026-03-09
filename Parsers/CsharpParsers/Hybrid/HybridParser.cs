@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using RefactorScope.Core.Abstractions;
-using RefactorScope.Core.Model;
+using RefactorScope.Parsers.CsharpParsers.Hybrid;
 using RefactorScope.Core.Parsing;
 
-namespace RefactorScope.Parsers.CsharpParsers.Hybrid;
+namespace RefactorScope.Parsers;
 
 /// <summary>
-/// Parser híbrido que orquestra dois parsers diferentes.
+/// Parser híbrido que orquestra dois parsers diferentes. //drift proposital 
 /// 
 /// Modos disponíveis:
 /// 

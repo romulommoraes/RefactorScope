@@ -76,6 +76,11 @@
     },
     {
       "FromType": "Program",
+      "ToType": "roteiro",
+      "Kind": 0
+    },
+    {
+      "FromType": "Program",
       "ToType": "ExportadorBaselineElencoLegacyJson",
       "Kind": 2
     },

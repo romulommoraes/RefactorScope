@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Quality / Gates Dashboard</title>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+</head>
+<body>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Quality Module</div>
+        <h1>Quality / Gates Dashboard</h1>
+        <div class="subtitle">Target Project: <b>RefactorScope</b></div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-09 05:00 UTC</div>
+        <div><b>Parser:</b> HybridSelectiveParser</div>
+        <div><b>Readiness:</b> Ready</div>
+        <div><b>Target Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
+    </div>
+</div>
+<div class="grid-kpis quality-kpis">
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Fitness Gates</div>
+        <div class="value" style="font-size:24px;">Ready</div>
+        <div class="hint">Execution readiness derived from fitness gate validation</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Parser Confidence</div>
+        <div class="value">95%</div>
+        <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Effort Confidence</div>
+        <div class="value">0,64</div>
+        <div class="hint">Confidence level attached to the current refactor effort estimate</div>
+    </div>
+
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Statistics Support</div>
+        <div class="value" style="font-size:24px;">Low</div>
+        <div class="hint">Availability and completeness of the statistical validation payload</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Unresolved</div>
+        <div class="value">2</div>
+        <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Overall Readiness</div>
+        <div class="value" style="font-size:24px;">Moderate</div>
+        <div class="hint">Executive quality band across gates, parser, effort and statistics</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Execution Quality Overview</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Interpretation</h3>
+    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, statistical support is low, and the overall quality snapshot is moderate.</p>
+
+    <ul class="clean" style="margin-top:16px;">
+        <li>Fitness gates summarize whether the execution appears ready for interpretation.</li>
+        <li>Parser confidence reflects extraction usability, not absolute correctness.</li>
+        <li>Effort confidence should be interpreted cautiously when statistical support is limited.</li>
+        <li>Quality bands are executive heuristics and not formal proofs of validity.</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Execution Snapshot</h3>
+
+    <div class="status-row" style="margin-bottom:14px;">
+        <div class="badge green"><span class="badge-dot"></span> Parser: High</div>
+        <div class="badge amber"><span class="badge-dot"></span> Effort: Moderate</div>
+        <div class="badge red"><span class="badge-dot"></span> Statistics: Low</div>
+        <div class="badge amber"><span class="badge-dot"></span> Overall: Moderate</div>
+    </div>
+
+    <ul class="clean">
+        <li><b>Execution Time:</b> 554 ms</li>
+        <li><b>Files:</b> 155</li>
+        <li><b>Types:</b> 146</li>
+        <li><b>References:</b> 518</li>
+        <li><b>Estimated Hours:</b> 14,0</li>
+        <li><b>RDI:</b> 35</li>
+    </ul>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Fitness Gates</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<table class="link-table">
+    <thead>
+        <tr>
+            <th>Gate</th>
+            <th>Status</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Overall Fitness</td>
+    <td><span class="badge green"><span class="badge-dot"></span> Passed</span></td>
+    <td>No failing fitness gate was detected.</td>
+</tr>
+<tr>
+    <td>FitnessGateStatus</td>
+    <td><span class="badge green"><span class="badge-dot"></span> Pass</span></td>
+    <td>Structural Unreferenced controlado: 0%</td>
+</tr>
+    </tbody>
+</table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Statistics & Effort</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Effort Estimation</h3>
+    <ul class="clean">
+        <li><b>Difficulty:</b> Low</li>
+        <li><b>Estimated Hours:</b> 14,0</li>
+        <li><b>Confidence:</b> 0,64</li>
+        <li><b>RDI:</b> 35</li>
+    </ul>
+
+    <div class="chart-wrap" style="margin-top:16px;">
+        <table class="charts-css">
+            <caption>Effort Confidence Snapshot</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Hours</th>
+                    <td style="--size: 0.175;">
+                        <span class="data">14,0h</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: 0.6374;">
+                        <span class="data">0,64</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Statistical Summary</h3>
+<p>No structured statistics payload was available for this execution.</p>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Notes</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard summarizes quality signals across parsing, gating, effort and statistical support.</li>
+            <li>Fitness gates express execution readiness, not scientific certainty.</li>
+            <li>Effort confidence is useful as a planning aid and should not be treated as an absolute forecast.</li>
+            <li>Statistics support reflects the availability and completeness of the current statistical payload.</li>
+            <li>Final interpretation should always include human review, especially when unresolved structural signals remain.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.quality-kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.quality-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.quality-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+</style>
+<div class='footer'>Generated by RefactorScope Quality / Gates Dashboard</div>
+</div>
+</body>
+</html>
+

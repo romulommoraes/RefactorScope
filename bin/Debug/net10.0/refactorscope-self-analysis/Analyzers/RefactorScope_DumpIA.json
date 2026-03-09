@@ -531,6 +531,16 @@
       "FromType": "PublicZeroUsageOmissionRule",
       "ToType": "IOmissionRule",
       "Kind": 0
+    },
+    {
+      "FromType": "SolidResult",
+      "ToType": "SolidSuspicion",
+      "Kind": 3
+    },
+    {
+      "FromType": "IOmissionRule",
+      "ToType": "SolidSuspicion",
+      "Kind": 3
     }
   ]
 }

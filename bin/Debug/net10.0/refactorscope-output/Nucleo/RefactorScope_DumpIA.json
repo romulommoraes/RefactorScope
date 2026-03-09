@@ -895,99 +895,19 @@
       "Kind": 0
     },
     {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "IModuloAnalise",
-      "Kind": 3
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "EstatisticasRoteiro",
-      "Kind": 1
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "PerfilPersonagemConsolidado",
-      "Kind": 3
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "ExtratorEtogramaDeriva6",
-      "Kind": 1
-    },
-    {
-      "FromType": "OrquestradorNucleo",
-      "ToType": "MotorFenotipoV2",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorBasico",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "AdaptadorBasico",
-      "ToType": "Acao",
-      "Kind": 3
-    },
-    {
-      "FromType": "AdaptadorBeats",
-      "ToType": "EspecialistaBeats",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorDuracao",
-      "ToType": "EspecialistaDuracao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorInteracao",
-      "ToType": "EspecialistaInteracao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeTranscricao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ProcessadorLinguistico",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "PipelineLimbic",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "EspecialistaVocabulario",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "MotorDeFusao",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "ContextoLimbic",
-      "Kind": 1
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "AdaptadorLimbic",
-      "ToType": "RnaBruto",
-      "Kind": 1
-    },
-    {
       "FromType": "ConversorFenotipo",
       "ToType": "RnaBruto",
       "Kind": 1
+    },
+    {
+      "FromType": "ExtratorEtogramaAdapter",
+      "ToType": "baseImutavel",
+      "Kind": 0
+    },
+    {
+      "FromType": "ExtratorEtogramaAdapter",
+      "ToType": "baseImutavel",
+      "Kind": 2
     },
     {
       "FromType": "EspecialistaDinamica",
@@ -996,6 +916,11 @@
     },
     {
       "FromType": "EspecialistaDinamica",
+      "ToType": "cena",
+      "Kind": 2
+    },
+    {
+      "FromType": "EspecialistaDinamica",
       "ToType": "Dialogo",
       "Kind": 3
     },
@@ -1003,26 +928,6 @@
       "FromType": "EspecialistaDinamica",
       "ToType": "Acao",
       "Kind": 3
-    },
-    {
-      "FromType": "EspecialistaInteracao",
-      "ToType": "ResultadoInteracao",
-      "Kind": 3
-    },
-    {
-      "FromType": "EspecialistaVocabulario",
-      "ToType": "Dialogo",
-      "Kind": 3
-    },
-    {
-      "FromType": "LeitorFountain",
-      "ToType": "Roteiro",
-      "Kind": 1
-    },
-    {
-      "FromType": "LeitorFountain",
-      "ToType": "Cena",
-      "Kind": 1
     },
     {
       "FromType": "ScriptomeDashboardPipeline",
@@ -1060,6 +965,11 @@
       "Kind": 2
     },
     {
+      "FromType": "MotorFenotipoV2",
+      "ToType": "baseImutavel",
+      "Kind": 0
+    },
+    {
       "FromType": "MotorSplicing",
       "ToType": "ResultadoSplice",
       "Kind": 1
@@ -1088,11 +998,6 @@
       "FromType": "PerfilPersonagem",
       "ToType": "Etograma",
       "Kind": 1
-    },
-    {
-      "FromType": "ResultadoAnalise",
-      "ToType": "TermoInfluente",
-      "Kind": 3
     },
     {
       "FromType": "BaseImutavel",

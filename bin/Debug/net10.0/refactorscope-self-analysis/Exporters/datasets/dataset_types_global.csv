@@ -1,6 +1,9 @@
 ﻿Type,Module,Layer,Usage,StructuralStatus,IsStructuralCandidate,IsUnresolved,IsIsolated,IsEntryPoint
 ArchitecturalDashboardExporter,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 ChartsRenderer,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
+DashboardMetricsCalculator,RefactorScope,Aplicação,4,DriftArquitetural,0,0,0,0
+HubDashboardMetrics,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
+ArchitecturalDashboardMetrics,RefactorScope,Aplicação,2,DriftArquitetural,0,0,0,0
 DatasetExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
 DumpAnaliseExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
 DumpIaExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
@@ -11,9 +14,12 @@ MarkdownReportExporter,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 ParsingChartsRenderer,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 ParsingDashboardExporter,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 ProjectStructureExporter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
+QualityDashboardExporter,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 StructuralInventoryExporter,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 ArchitecturalDashboardExporterAdapter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
 ParsingDashboardExporterAdapter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
+QualityDashboardExporterAdapter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
 StructuralDashboardExporterAdapter,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
-DashboardHtmlShell,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
-DashboardThemeSelector,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
+DashboardAssetCopier,RefactorScope,Aplicação,5,DriftArquitetural,0,0,0,0
+DashboardHtmlShell,RefactorScope,Aplicação,5,DriftArquitetural,0,0,0,0
+DashboardThemeSelector,RefactorScope,Aplicação,8,DriftArquitetural,0,0,0,0

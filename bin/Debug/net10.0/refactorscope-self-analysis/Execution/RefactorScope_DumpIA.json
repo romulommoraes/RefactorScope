@@ -205,6 +205,26 @@
       "FromType": "SegmentedDumpStrategy",
       "ToType": "IDumpStrategy",
       "Kind": 0
+    },
+    {
+      "FromType": "ISegmentationResolver",
+      "ToType": "SegmentScope",
+      "Kind": 3
+    },
+    {
+      "FromType": "GlobalDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 3
+    },
+    {
+      "FromType": "IDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 3
+    },
+    {
+      "FromType": "SegmentedDumpStrategy",
+      "ToType": "IExporter",
+      "Kind": 3
     }
   ]
 }

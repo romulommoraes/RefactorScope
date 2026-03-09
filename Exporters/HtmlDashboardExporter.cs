@@ -106,20 +106,13 @@ namespace RefactorScope.Exporters
             }
             catch
             {
-                return DashboardThemeSelector.DefaultTheme;
+                return DashboardThemeSelector.DefaultThemeFile;
             }
         }
 
         private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
         {
-            if (config == null)
-                return null;
-
-            var prop = config.GetType().GetProperty("DashboardTheme");
-            if (prop == null)
-                return null;
-
-            return prop.GetValue(config) as string;
+            return config?.Dashboard?.Theme;
         }
 
         //private static void EnsureCssAssets(string outputPath, string themeFileName)
@@ -156,6 +149,6 @@ namespace RefactorScope.Exporters
         //        File.WriteAllText(augmentedUiPath, PlaceholderAugmentedUiCss(), Encoding.UTF8);
         //}
 
-  
+
     }
 }

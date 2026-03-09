@@ -19,8 +19,8 @@ namespace RefactorScope.Infrastructure
             AnsiConsole.WriteLine();
             AnsiConsole.Write(
                 new Rule($"[bold]{title}[/]")
-                .RuleStyle("grey")
-                .Centered());
+                    .RuleStyle("grey")
+                    .Centered());
         }
 
         // -------------------------------------------------
@@ -43,17 +43,22 @@ namespace RefactorScope.Infrastructure
 
         public static void Stage(string name)
         {
-            AnsiConsole.MarkupLine($"[bold cyan]▶ {name}[/]");
+            AnsiConsole.MarkupLine($"[bold cyan]> {name}[/]");
         }
 
         public static void StageSuccess(string message)
         {
-            AnsiConsole.MarkupLine($"[green]✔[/] {message}");
+            AnsiConsole.MarkupLine($"[green]✓[/] {message}");
         }
 
         public static void StageWarning(string message)
         {
-            AnsiConsole.MarkupLine($"[yellow]⚠[/] {message}");
+            AnsiConsole.MarkupLine($"[yellow]![/] {message}");
+        }
+
+        public static void Info(string message)
+        {
+            AnsiConsole.MarkupLine($"[grey]i[/] {message}");
         }
 
         // -------------------------------------------------
@@ -62,20 +67,22 @@ namespace RefactorScope.Infrastructure
 
         public static void ParsingStrategy(string parserName)
         {
+            var friendly = ResolveParserDisplayName(parserName);
+
             AnsiConsole.MarkupLine(
-                $"[grey]Parser Strategy[/]: [bold cyan]{parserName}[/]");
+                $"[grey]Parser[/]: [bold cyan]{friendly}[/]");
         }
 
         public static void ParsingFallback(string fromParser, string toParser)
         {
             AnsiConsole.MarkupLine(
-                $"[yellow]Fallback[/]: {fromParser} → {toParser}");
+                $"[yellow]Fallback[/]: {ResolveParserDisplayName(fromParser)} → {ResolveParserDisplayName(toParser)}");
         }
 
         public static void ParsingMerge()
         {
             AnsiConsole.MarkupLine(
-                $"[magenta]Hybrid Merge[/]: combinando estrutura + dependências");
+                $"[magenta]Merge[/]: consolidating structural model + dependency signals");
         }
 
         public static void ParsingSummary(
@@ -95,6 +102,36 @@ namespace RefactorScope.Infrastructure
             table.AddRow("Execution", $"{execution.TotalMilliseconds:0} ms");
 
             AnsiConsole.Write(table);
+        }
+
+        // -------------------------------------------------
+        // Structural Validation
+        // -------------------------------------------------
+
+        public static void StructuralValidationSummary(
+            int structuralCandidates,
+            int confirmedUnresolved,
+            int filteredByValidation,
+            double reductionRate,
+            double threshold)
+        {
+            var unresolvedColor = confirmedUnresolved == 0 ? "green" : "red";
+            var reductionColor = reductionRate >= 0.75
+                ? "green"
+                : reductionRate >= 0.40
+                    ? "yellow"
+                    : "red";
+
+            var panel = new Panel(
+                $"[bold]Structural Candidates[/]: {structuralCandidates}\n" +
+                $"[bold]Confirmed Unresolved (≥ {threshold:0.00})[/]: [{unresolvedColor}]{confirmedUnresolved}[/]\n" +
+                $"[bold]Filtered by Validation[/]: {filteredByValidation}\n" +
+                $"[bold]Reduction[/]: [{reductionColor}]{reductionRate * 100:0.0}%[/]"
+            )
+            .Header("[bold yellow]Structural Validation[/]")
+            .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(panel);
         }
 
         // -------------------------------------------------
@@ -138,10 +175,8 @@ namespace RefactorScope.Infrastructure
 
         public static void CouplingHeuristicNotice()
         {
-            AnsiConsole.MarkupLine(
-            "[red]Note: Unresolved refers to the remaining Dead Code Candidates that could not be excluded by the probabilistic validation steps of the methodology. These require manual inspection. [/]");
-            AnsiConsole.MarkupLine(
-            "[grey]Note: Coupling penalties are heuristically reduced for tooling modules (CLI, Execution, Exporters, Statistics). Interpret with caution.[/]");
+            Info("Unresolved items remained after probabilistic validation and require manual review.");
+            Info("Coupling for tooling modules is heuristically softened and should be interpreted with caution.");
         }
 
         // -------------------------------------------------
@@ -153,12 +188,12 @@ namespace RefactorScope.Infrastructure
             var smellColor = ResolveSmellColor(hygiene.SmellIndex);
 
             var panel = new Panel(
-                $"[bold]CodeSmellIndex[/]: [{smellColor}]{hygiene.SmellIndex:0.0}[/]\n" +
-                $"[bold]Hygiene[/]: {hygiene.HygieneLevel}\n\n" +
-                $"Dead Code Candidates: {hygiene.UnreferencedCount}\n" +
-                $"Namespace Drift: {hygiene.NamespaceDriftCount}\n" +
-                $"Global Namespace: {hygiene.GlobalNamespaceCount}\n" +
-                $"Isolated Core: {hygiene.IsolatedCoreCount}"
+                $"[bold]Code Smell Index[/]: [{smellColor}]{hygiene.SmellIndex:0.0}[/]\n" +
+                $"[bold]Status[/]: {ResolveHygieneStatus(hygiene.HygieneLevel)}\n\n" +
+                $"[bold]Dead Code Candidates[/]: {hygiene.UnreferencedCount}\n" +
+                $"[bold]Namespace Drift[/]: {hygiene.NamespaceDriftCount}\n" +
+                $"[bold]Global Namespace Types[/]: {hygiene.GlobalNamespaceCount}\n" +
+                $"[bold]Core Isolation Flags[/]: {hygiene.IsolatedCoreCount}"
             )
             .Header("[bold yellow]Code Hygiene[/]")
             .Border(BoxBorder.Rounded);
@@ -179,6 +214,31 @@ namespace RefactorScope.Infrastructure
                 $"[bold]Difficulty[/]: {estimate.Difficulty}\n" +
                 $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
                 $"[bold]Confidence[/]: {estimate.Confidence:0.00}")
+            .Header("[bold yellow]Refactor Effort Estimation[/]")
+            .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(panel);
+        }
+
+        public static void RenderEffortEstimate(EffortEstimate estimate)
+        {
+            var difficultyColor = estimate.Difficulty switch
+            {
+                "Low" => "green",
+                "Medium" => "yellow",
+                "High" => "orange1",
+                _ => "red"
+            };
+
+            var effortBar = BuildEffortBar(estimate.EstimatedHours);
+
+            var panel = new Panel(
+                $"[bold]RDI[/]: {estimate.RDI}\n" +
+                $"[bold]Difficulty[/]: [{difficultyColor}]{estimate.Difficulty}[/]\n" +
+                $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
+                $"[bold]Confidence[/]: {estimate.Confidence:0.00}\n\n" +
+                $"[bold]Effort[/]: {effortBar}"
+            )
             .Header("[bold yellow]Refactor Effort Estimation[/]")
             .Border(BoxBorder.Rounded);
 
@@ -213,7 +273,7 @@ namespace RefactorScope.Infrastructure
         }
 
         // -------------------------------------------------
-        // Color Resolver
+        // Helpers
         // -------------------------------------------------
 
         private static string ResolveModuleColor(string module)
@@ -242,8 +302,8 @@ namespace RefactorScope.Infrastructure
         {
             return score switch
             {
-                >= 70 => "green",
-                >= 40 => "yellow",
+                >= 80 => "green",
+                >= 60 => "yellow",
                 _ => "red"
             };
         }
@@ -260,29 +320,32 @@ namespace RefactorScope.Infrastructure
             };
         }
 
-        public static void RenderEffortEstimate(EffortEstimate estimate)
+        private static string ResolveParserDisplayName(string parserName)
         {
-            var difficultyColor = estimate.Difficulty switch
+            return parserName switch
             {
-                "Low" => "green",
-                "Medium" => "yellow",
-                "High" => "orange1",
-                _ => "red"
+                "CSharpRegex" => "Regex Fast Scan",
+                "HybridSelectiveParser" => "Hybrid Selective (Accurate Scan)",
+                "HybridParser (Adaptive)" => "Hybrid Adaptive (Experimental)",
+                "HybridParser (Incremental)" => "Hybrid Incremental (Experimental)",
+                "HybridParser (Incremental → Regex)" => "Hybrid Incremental → Regex",
+                _ => parserName
             };
+        }
 
-            var effortBar = BuildEffortBar(estimate.EstimatedHours);
+        private static string ResolveHygieneStatus(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "[grey]Unknown[/]";
 
-            var panel = new Panel(
-                $"[bold]RDI[/]: {estimate.RDI}\n" +
-                $"[bold]Difficulty[/]: [{difficultyColor}]{estimate.Difficulty}[/]\n" +
-                $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
-                $"[bold]Confidence[/]: {estimate.Confidence:0.00}\n\n" +
-                $"[bold]Effort[/]: {effortBar}"
-            )
-            .Header("[bold yellow]Refactor Effort Estimation[/]")
-            .Border(BoxBorder.Rounded);
-
-            AnsiConsole.Write(panel);
+            return value.ToLower() switch
+            {
+                "healthy" => "[green]Healthy[/]",
+                "stable" => "[yellow]Stable[/]",
+                "warning" => "[orange1]Warning[/]",
+                "critical" => "[red]Critical[/]",
+                _ => value
+            };
         }
 
         private static string BuildEffortBar(double hours)

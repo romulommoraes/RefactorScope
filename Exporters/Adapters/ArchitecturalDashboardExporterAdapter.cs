@@ -69,7 +69,7 @@ namespace RefactorScope.Exporters.Adapters
             }
             catch
             {
-                return DashboardThemeSelector.DefaultTheme;
+                return DashboardThemeSelector.DefaultThemeFile;
             }
         }
 

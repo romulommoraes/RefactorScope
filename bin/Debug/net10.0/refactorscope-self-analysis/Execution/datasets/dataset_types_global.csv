@@ -2,7 +2,7 @@
 DumpStrategyResolver,RefactorScope,Aplicação,0,DriftArquitetural,1,0,0,0
 ISegmentationResolver,RefactorScope,Aplicação,4,DriftArquitetural,0,0,0,0
 LayerSegmentationResolver,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
-SegmentScope,RefactorScope,Aplicação,3,DriftArquitetural,0,0,0,0
+SegmentScope,RefactorScope,Aplicação,4,DriftArquitetural,0,0,0,0
 TopFolderSegmentationResolver,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 GlobalDumpStrategy,RefactorScope,Aplicação,1,DriftArquitetural,0,0,0,0
 IDumpStrategy,RefactorScope,Aplicação,3,DriftArquitetural,0,0,0,0

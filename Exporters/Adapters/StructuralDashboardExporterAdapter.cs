@@ -1,39 +1,30 @@
 ﻿using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Exporters.Styling;
 
 namespace RefactorScope.Exporters.Adapters
 {
     /// <summary>
-    /// Adapter temporário para integrar o StructuralInventoryExporter
-    /// ao pipeline padronizado de IExporter.
+    /// Adapter da família estrutural.
     ///
-    /// Motivação
-    /// ---------
-    /// O projeto possui exporters HTML mais recentes que ainda não
-    /// implementam IExporter diretamente, pois nasceram fora do fluxo
-    /// principal de exportação.
-    ///
-    /// Este adapter permite encaixar o dashboard estrutural no novo
-    /// bloco de exportadores HTML sem alterar imediatamente a classe
-    /// original, reduzindo risco de regressão.
+    /// Objetivo
+    /// --------
+    /// Integrar o dashboard estrutural ao pipeline padronizado de IExporter,
+    /// usando o mesmo shell visual compartilhado do Hub HTML.
     ///
     /// Estratégia atual
     /// ----------------
-    /// - manter StructuralInventoryExporter como está
-    /// - encapsular sua chamada via IExporter
-    /// - permitir execução ordenada junto ao Hub HTML
-    ///
-    /// Caminho de refatoração futura
-    /// ----------------------------
-    /// 1. Extrair uma interface/contrato comum para exporters HTML
-    /// 2. Tornar StructuralInventoryExporter um IExporter nativo
-    /// 3. Remover este adapter após estabilização da suíte HTML
+    /// Este adapter:
+    /// - resolve o tema visual a partir do contexto/configuração
+    /// - garante os assets compartilhados da suíte HTML
+    /// - delega a geração do dashboard ao exporter estrutural
     ///
     /// Observação
     /// ----------
-    /// Esta classe é deliberadamente fina e sem regra de negócio.
-    /// Toda a lógica real continua no exporter original.
+    /// A lógica analítica continua no StructuralInventoryExporter.
+    /// Este adapter apenas faz a orquestração do pipeline visual.
     /// </summary>
     public sealed class StructuralDashboardExporterAdapter : IExporter
     {
@@ -44,8 +35,41 @@ namespace RefactorScope.Exporters.Adapters
             ConsolidatedReport report,
             string outputPath)
         {
+            Directory.CreateDirectory(outputPath);
+
+            var htmlPath = Path.Combine(outputPath, "StructuralDashboard.html");
+            var themeFileName = ResolveThemeFileName(context);
+
+            DashboardAssetCopier.CopyAll(outputPath, themeFileName);
+
             var exporter = new StructuralInventoryExporter();
-            exporter.Export(report, outputPath);
+            exporter.Export(report, htmlPath, themeFileName);
+        }
+
+        private static string ResolveThemeFileName(AnalysisContext context)
+        {
+            try
+            {
+                var config = context?.Config;
+                var themeName = TryReadDashboardTheme(config);
+                return DashboardThemeSelector.ResolveFileName(themeName);
+            }
+            catch
+            {
+                return DashboardThemeSelector.DefaultThemeFile;
+            }
+        }
+
+        private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+        {
+            if (config == null)
+                return null;
+
+            var prop = config.GetType().GetProperty("DashboardTheme");
+            if (prop == null)
+                return null;
+
+            return prop.GetValue(config) as string;
         }
     }
 }

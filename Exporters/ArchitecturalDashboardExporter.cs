@@ -31,7 +31,7 @@ namespace RefactorScope.Exporters
     {
         public void Export(ConsolidatedReport report, string outputPath)
         {
-            Export(report, outputPath, DashboardThemeSelector.DefaultTheme);
+            Export(report, outputPath, DashboardThemeSelector.DefaultThemeFile);
         }
 
         public void Export(

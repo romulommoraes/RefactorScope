@@ -93,6 +93,26 @@
       "FromType": "SizePressureModel",
       "ToType": "AnalysisContext",
       "Kind": 0
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "StructuralRiskModel",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "CouplingPressureModel",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "SizePressureModel",
+      "Kind": 2
+    },
+    {
+      "FromType": "RDICalculator",
+      "ToType": "RefactorClassifier",
+      "Kind": 2
     }
   ]
 }

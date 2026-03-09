@@ -44,6 +44,12 @@
       "Code": "namespace RefactorScope.Core.Abstractions\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Contrato para pr\u00E9-processadores de c\u00F3digo fonte.\r\n    ///\r\n    /// Um PreParser \u00E9 respons\u00E1vel por sanitizar o texto antes\r\n    /// da etapa de parsing estrutural, removendo constru\u00E7\u00F5es\r\n    /// que podem gerar falsos positivos (coment\u00E1rios, strings,\r\n    /// c\u00F3digo gerado, etc.).\r\n    ///\r\n    /// Essa etapa funciona como um \u0022lexer simplificado\u0022\r\n    /// no pipeline de parsing textual.\r\n    /// \u003C/summary\u003E\r\n    public interface IPreParser\r\n    {\r\n        string Sanitize(string source);\r\n    }\r\n}"
     },
     {
+      "Name": "DashboardOptions",
+      "Namespace": "RefactorScope.Core.Configuration",
+      "File": "RefactorScope\\Core\\Configuration\\DashboardOptions.cs",
+      "Code": "namespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Configura\u00E7\u00E3o visual dos dashboards HTML.\r\n    /// \u003C/summary\u003E\r\n    public sealed class DashboardOptions\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Nome l\u00F3gico do tema visual.\r\n        ///\r\n        /// Valores suportados:\r\n        /// - midnight-blue\r\n        /// - ember-ops\r\n        /// - neon-grid\r\n        /// \u003C/summary\u003E\r\n        public string Theme { get; set; } = \u0022midnight-blue\u0022;\r\n    }\r\n}"
+    },
+    {
       "Name": "DumpStrategyConfig",
       "Namespace": "RefactorScope.Core.Configuration",
       "File": "RefactorScope\\Core\\Configuration\\DumpStrategyConfig.cs",
@@ -89,7 +95,7 @@
       "Name": "RefactorScopeConfig",
       "Namespace": "RefactorScope.Core.Configuration",
       "File": "RefactorScope\\Core\\Configuration\\RefactorScopeConfig.cs",
-      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Statistics.Models;\r\nusing RefactorScope.Statistics.Engines;\r\n\r\n\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a configura\u00E7\u00E3o de execu\u00E7\u00E3o do RefactorScope.\r\n    /// Define escopo de an\u00E1lise, analisadores ativos e exporta\u00E7\u00F5es.\r\n    /// \u003C/summary\u003E\r\n    public class RefactorScopeConfig\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho raiz do escopo de an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public string RootPath { get; set; } = string.Empty;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a incluir na an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Include { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a excluir da an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exclude { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Define quais analisadores est\u00E3o habilitados.\r\n        /// A chave deve corresponder ao Name do analisador.\r\n        /// \u003C/summary\u003E\r\n        public Dictionary\u003Cstring, bool\u003E Analyzers { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser a ser utilizado.\r\n        /// \u003C/summary\u003E\r\n        public string Parser { get; set; } = \u0022CSharpRegex\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Exportadores ativos.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exporters { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Camadas / Modulos do sistema e suas regras de depend\u00EAncia.\r\n        /// \u003C/summary\u003E\r\n\r\n        public Dictionary\u003Cstring, LayerRuleConfig\u003E? LayerRules { get; set; }\r\n\r\n        public string OutputPath { get; set; } = \u0022refactorscope-output\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Config do strategy para exporta\u00E7\u00E3o do dump otimizado para IA.\r\n        /// \u003C/summary\u003E\r\n\r\n        public DumpStrategyConfig DumpStrategy { get; set; } = new();\r\n\r\n        public FitnessGateConfig FitnessGates { get; set; } = new();\r\n\r\n        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();\r\n\r\n        public StatisticsConfig Statistics { get; set; } = new();\r\n\r\n        public EstimatorConfig? Estimator { get; set; }\r\n    }\r\n}"
+      "Code": "using RefactorScope.Core.Context;\r\nusing RefactorScope.Statistics.Models;\r\nusing RefactorScope.Statistics.Engines;\r\n\r\nnamespace RefactorScope.Core.Configuration\r\n{\r\n    /// \u003Csummary\u003E\r\n    /// Representa a configura\u00E7\u00E3o de execu\u00E7\u00E3o do RefactorScope.\r\n    /// Define escopo de an\u00E1lise, analisadores ativos, estrat\u00E9gias e exporta\u00E7\u00F5es.\r\n    /// \u003C/summary\u003E\r\n    public class RefactorScopeConfig\r\n    {\r\n        /// \u003Csummary\u003E\r\n        /// Caminho raiz do escopo de an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public string RootPath { get; set; } = string.Empty;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a incluir na an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Include { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Pastas ou arquivos a excluir da an\u00E1lise.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exclude { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Define quais analisadores est\u00E3o habilitados.\r\n        /// A chave deve corresponder ao Name do analisador.\r\n        /// \u003C/summary\u003E\r\n        public Dictionary\u003Cstring, bool\u003E Analyzers { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Nome do parser a ser utilizado.\r\n        /// \u003C/summary\u003E\r\n        public string Parser { get; set; } = \u0022CSharpRegex\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Exportadores ativos.\r\n        /// \u003C/summary\u003E\r\n        public List\u003Cstring\u003E Exporters { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Camadas / m\u00F3dulos do sistema e suas regras de depend\u00EAncia.\r\n        /// \u003C/summary\u003E\r\n        public Dictionary\u003Cstring, LayerRuleConfig\u003E? LayerRules { get; set; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Diret\u00F3rio de sa\u00EDda dos relat\u00F3rios e dashboards.\r\n        /// \u003C/summary\u003E\r\n        public string OutputPath { get; set; } = \u0022refactorscope-output\u0022;\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Config do strategy para exporta\u00E7\u00E3o do dump otimizado para IA.\r\n        /// \u003C/summary\u003E\r\n        public DumpStrategyConfig DumpStrategy { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Configura\u00E7\u00E3o dos fitness gates.\r\n        /// \u003C/summary\u003E\r\n        public FitnessGateConfig FitnessGates { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Configura\u00E7\u00E3o da detec\u00E7\u00E3o de candidatos estruturais.\r\n        /// \u003C/summary\u003E\r\n        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Configura\u00E7\u00E3o da camada estat\u00EDstica.\r\n        /// \u003C/summary\u003E\r\n        public StatisticsConfig Statistics { get; set; } = new();\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Configura\u00E7\u00E3o do estimador de esfor\u00E7o.\r\n        /// \u003C/summary\u003E\r\n        public EstimatorConfig? Estimator { get; set; }\r\n\r\n        /// \u003Csummary\u003E\r\n        /// Configura\u00E7\u00E3o visual dos dashboards HTML.\r\n        /// \u003C/summary\u003E\r\n        public DashboardOptions Dashboard { get; set; } = new();\r\n    }\r\n}"
     },
     {
       "Name": "StatisticsConfig",
@@ -512,6 +518,11 @@
     {
       "FromType": "FitnessGateConfigResolver",
       "ToType": "CoreIsolationGateConfig",
+      "Kind": 0
+    },
+    {
+      "FromType": "RefactorScopeConfig",
+      "ToType": "DashboardOptions",
       "Kind": 0
     },
     {
@@ -1113,6 +1124,76 @@
       "FromType": "ScopeFilteredFileDiscovery",
       "ToType": "ScopeRuleSet",
       "Kind": 0
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "FitnessGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "DeadCodeGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "CouplingGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "FitnessGateConfigResolver",
+      "ToType": "CoreIsolationGateConfig",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalysisContext",
+      "ToType": "IAnalysisResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "FitnessGateEvaluator",
+      "ToType": "FitnessGateResult",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArquivoInfo",
+      "ToType": "TipoInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "ArquivoInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "TipoInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ModeloEstrutural",
+      "ToType": "ReferenciaInfo",
+      "Kind": 3
+    },
+    {
+      "FromType": "ArchitecturalClassificationResult",
+      "ToType": "ArchitecturalClassificationItem",
+      "Kind": 3
+    },
+    {
+      "FromType": "ConsolidatedReportExtensions",
+      "ToType": "StructuralCandidateAnalysisBreakdown",
+      "Kind": 1
+    },
+    {
+      "FromType": "ImplicitCouplingResult",
+      "ToType": "CouplingSuspicion",
+      "Kind": 3
+    },
+    {
+      "FromType": "StructuralBreakdownExtensions",
+      "ToType": "StructuralCandidateAnalysisBreakdown",
+      "Kind": 1
     }
   ]
 }

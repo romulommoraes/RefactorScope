@@ -188,19 +188,21 @@
     box-shadow: var(--badge-dot-shadow);
 }
 
-.badge.red .badge-dot {
-    background: var(--danger);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--danger) 72%, transparent);
-}
 
+/* dot fixo por severidade */
 .badge.green .badge-dot {
-    background: var(--good);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--good) 72%, transparent);
+    background: #34d399;
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.55);
 }
 
 .badge.amber .badge-dot {
-    background: var(--warning);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--warning) 72%, transparent);
+    background: #fbbf24;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.55);
+}
+
+.badge.red .badge-dot {
+    background: #fb7185;
+    box-shadow: 0 0 8px rgba(251, 113, 133, 0.55);
 }
 
 .tooltip {
