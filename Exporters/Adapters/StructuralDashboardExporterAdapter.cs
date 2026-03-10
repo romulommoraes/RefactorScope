@@ -3,6 +3,7 @@ using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
 using RefactorScope.Exporters.Styling;
+using RefactorScope.Exporters.Dashboards;
 
 namespace RefactorScope.Exporters.Adapters
 {

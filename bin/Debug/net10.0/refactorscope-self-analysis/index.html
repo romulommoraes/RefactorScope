@@ -21,7 +21,7 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-09 05:00 UTC</div>
+        <div><b>Generated:</b> 2026-03-10 02:09 UTC</div>
         <div><b>Parser:</b> HybridSelectiveParser</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
         <div><b>Readiness:</b> Ready</div>
@@ -56,33 +56,28 @@
 <div class="grid-kpis hub-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Total Classes</div>
-        <div class="value">146</div>
+        <div class="value">158</div>
         <div class="hint">Structurally classified types in the analyzed scope</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Dead Code Candidates</div>
-        <div class="value">45</div>
+        <div class="value">47</div>
         <div class="hint">Types still compatible with the dead code hypothesis</div>
     </div>
 
     <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">2</div>
+        <div class="value">1</div>
         <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
     </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Code Smell Index</div>
-        <div class="value">13,9</div>
+        <div class="value">13,3</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Implicit Coupling</div>
-        <div class="value">41</div>
-        <div class="hint">Detected structural concentration toward specific modules</div>
-    </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistical Support</div>
@@ -154,7 +149,7 @@
 
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge green"><span class="badge-dot"></span> Parser: HybridSelectiveParser</div>
-        <div class="badge green"><span class="badge-dot"></span> Confidence: 95%</div>
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 98%</div>
         <div class="badge green"><span class="badge-dot"></span> Gates: Ready</div>
     </div>
 
@@ -164,26 +159,26 @@
             <tbody>
                 <tr>
                     <th scope="row">Files</th>
-                    <td style="--size: 0.2992;">
-                        <span class="data">155</span>
+                    <td style="--size: 0.2842;">
+                        <span class="data">162</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Types</th>
-                    <td style="--size: 0.2819;">
-                        <span class="data">146</span>
+                    <td style="--size: 0.2772;">
+                        <span class="data">158</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Refs</th>
                     <td style="--size: 1;">
-                        <span class="data">518</span>
+                        <span class="data">570</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.95;">
-                        <span class="data">95%</span>
+                    <td style="--size: 0.9753;">
+                        <span class="data">98%</span>
                     </td>
                 </tr>
             </tbody>
@@ -191,29 +186,29 @@
     </div>
 
     <ul class="clean" style="margin-top:14px;">
-        <li><b>Execution:</b> 554 ms</li>
-        <li><b>Files:</b> 155 / <b>Types:</b> 146 / <b>References:</b> 518</li>
+        <li><b>Execution:</b> 612 ms</li>
+        <li><b>Files:</b> 162 / <b>Types:</b> 158 / <b>References:</b> 570</li>
         <li><b>Average Abstractness:</b> 0,05</li>
-        <li><b>Average Instability:</b> 0,45</li>
-        <li><b>Average Distance:</b> 0,50</li>
+        <li><b>Average Instability:</b> 0,42</li>
+        <li><b>Average Distance:</b> 0,53</li>
     </ul>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Analysis</h3>
     <ul class="clean">
         <li>Core isolation signals are present and architectural boundaries appear reasonably preserved.</li>
-        <li>Namespace drift was detected. Folder structure and namespace alignment deserve review.</li>
+        <li>Namespace hierarchy appears aligned with the physical project structure.</li>
         <li>Some dead code candidates remain unresolved after refinement and still deserve manual review.</li>
         <li>Code smell index remains in a healthy range.</li>
         <li>No SOLID alerts were detected.</li>
-        <li>Implicit coupling hotspots were detected: 41.</li>
+        <li>Implicit coupling hotspots were detected: 42.</li>
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge red"><span class="badge-dot"></span> Unresolved: 2</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 1</div>
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 1</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 0</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 0</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 41</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 42</div>
     </div>
 </div>
 </div></div>
@@ -277,21 +272,21 @@
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Code Hygiene Summary</h3>
     <ul class="clean">
-        <li><b>Code Smell Index:</b> 13,9</li>
+        <li><b>Code Smell Index:</b> 13,3</li>
         <li><b>Hygiene Level:</b> 🟢 Healthy</li>
-        <li><b>Dead Code Candidates:</b> 45</li>
-        <li><b>Unresolved:</b> 2</li>
-        <li><b>Namespace Drift:</b> 1</li>
-        <li><b>Isolated Core:</b> 27</li>
+        <li><b>Dead Code Candidates:</b> 47</li>
+        <li><b>Unresolved:</b> 1</li>
+        <li><b>Namespace Drift:</b> 0</li>
+        <li><b>Isolated Core:</b> 28</li>
     </ul>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Refactor Effort Estimation</h3>
     <ul class="clean">
-        <li><b>RDI:</b> 35</li>
+        <li><b>RDI:</b> 37</li>
         <li><b>Difficulty:</b> Low</li>
-        <li><b>Estimated Hours:</b> 14,0</li>
-        <li><b>Confidence:</b> 0,64</li>
+        <li><b>Estimated Hours:</b> 14,8</li>
+        <li><b>Confidence:</b> 0,65</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -300,14 +295,14 @@
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.175;">
-                        <span class="data">14,0h</span>
+                    <td style="--size: 0.185;">
+                        <span class="data">14,8h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.6374;">
-                        <span class="data">0,64</span>
+                    <td style="--size: 0.6534;">
+                        <span class="data">0,65</span>
                     </td>
                 </tr>
             </tbody>

@@ -2,6 +2,8 @@
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+
+using RefactorScope.Exporters.Dashboards;
 using RefactorScope.Exporters.Styling;
 
 namespace RefactorScope.Exporters.Adapters
@@ -80,14 +82,7 @@ namespace RefactorScope.Exporters.Adapters
 
         private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
         {
-            if (config == null)
-                return null;
-
-            var prop = config.GetType().GetProperty("DashboardTheme");
-            if (prop == null)
-                return null;
-
-            return prop.GetValue(config) as string;
+            return config?.Dashboard?.Theme;
         }
     }
 }

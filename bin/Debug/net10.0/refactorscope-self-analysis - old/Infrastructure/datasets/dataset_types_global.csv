@@ -1,5 +1,0 @@
-﻿Type,Module,Layer,Usage,StructuralStatus,IsZombie,IsIsolated,IsEntryPoint
-ConfigLoader,RefactorScope,Infra,0,Coerente,1,0,0
-ConfigValidator,RefactorScope,Infra,0,Coerente,1,0,0
-LayerRuleEvaluator,RefactorScope,Infra,3,Coerente,0,0,0
-TerminalRenderer,RefactorScope,Infra,0,Coerente,1,0,0

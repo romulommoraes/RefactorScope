@@ -29,7 +29,8 @@ namespace RefactorScope.Execution.Dump.Strategies
                     segment.Name
                 );
 
-                Directory.CreateDirectory(path);
+                //Directory.CreateDirectory(path);
+                //ESSE FLUXO SERÁ ATUALIZADO! PARA CORRIGIR ESSA GAMBIARRA, O FLUXO DE EXPORTAÇÃO VAI SER REVISADO PARA RECEBER O PATH DE EXPORTAÇÃO, ASSIM CADA EXPORTADOR VAI DECIDIR SE QUER CRIAR PASTA OU NÃO, E QUAL NOME DAR PARA O ARQUIVO DE EXPORTAÇÃO
 
                 foreach (var exporter in exporters)
                 {

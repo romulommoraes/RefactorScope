@@ -21,7 +21,7 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-09 05:00 UTC</div>
+        <div><b>Generated:</b> 2026-03-10 02:09 UTC</div>
         <div><b>Parser:</b> HybridSelectiveParser</div>
         <div><b>Readiness:</b> Ready</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
@@ -36,31 +36,31 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Parser Confidence</div>
-        <div class="value">95%</div>
+        <div class="value">98%</div>
         <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Effort Confidence</div>
-        <div class="value">0,64</div>
+        <div class="value">0,65</div>
         <div class="hint">Confidence level attached to the current refactor effort estimate</div>
     </div>
 
-    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistics Support</div>
-        <div class="value" style="font-size:24px;">Low</div>
+        <div class="value" style="font-size:24px;">High</div>
         <div class="hint">Availability and completeness of the statistical validation payload</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">2</div>
+        <div class="value">1</div>
         <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
     </div>
 
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Overall Readiness</div>
-        <div class="value" style="font-size:24px;">Moderate</div>
+        <div class="value" style="font-size:24px;">High</div>
         <div class="hint">Executive quality band across gates, parser, effort and statistics</div>
     </div>
 </div>
@@ -72,7 +72,7 @@
     <div class="dual">
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Interpretation</h3>
-    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, statistical support is low, and the overall quality snapshot is moderate.</p>
+    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, statistics coverage is high, and the overall quality snapshot is high.</p>
 
     <ul class="clean" style="margin-top:16px;">
         <li>Fitness gates summarize whether the execution appears ready for interpretation.</li>
@@ -87,23 +87,242 @@
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge green"><span class="badge-dot"></span> Parser: High</div>
         <div class="badge amber"><span class="badge-dot"></span> Effort: Moderate</div>
-        <div class="badge red"><span class="badge-dot"></span> Statistics: Low</div>
-        <div class="badge amber"><span class="badge-dot"></span> Overall: Moderate</div>
+        <div class="badge green"><span class="badge-dot"></span> Statistics: High</div>
+        <div class="badge green"><span class="badge-dot"></span> Overall: High</div>
     </div>
 
     <ul class="clean">
-        <li><b>Execution Time:</b> 554 ms</li>
-        <li><b>Files:</b> 155</li>
-        <li><b>Types:</b> 146</li>
-        <li><b>References:</b> 518</li>
-        <li><b>Estimated Hours:</b> 14,0</li>
-        <li><b>RDI:</b> 35</li>
+        <li><b>Execution Time:</b> 612 ms</li>
+        <li><b>Files:</b> 162</li>
+        <li><b>Types:</b> 158</li>
+        <li><b>References:</b> 570</li>
+        <li><b>Estimated Hours:</b> 14,8</li>
+        <li><b>RDI:</b> 37</li>
+        <li><b>Statistics Support Score:</b> 1,00</li>
     </ul>
 </div>
 </div></div>
 <div class="section">
     <div class="section-title">
-        <h2>Fitness Gates</h2>
+        <h2>Control Room // Trust Flow</h2>
+        <div class="line"></div>
+    </div>
+    <div class="quality-half-grid">
+<div class="panel half-panel chart-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:450px;box-sizing:border-box;'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Quality Signal Radar</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Quality posture across the main execution trust dimensions.</div>
+<div style='display:flex;flex-direction:row;align-items:center;justify-content:center;gap:36px;width:100%;flex:1;flex-wrap:wrap;'>
+<svg width="360" height="400" viewBox="0 0 360 400" style="display:block;max-width:100%;height:auto;flex-shrink:0;border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="qualityRadarBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="qualityRadarGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="360" height="400" rx="16" fill="url(#qualityRadarBg)" />
+<polygon points='180,84 263.138,132 263.138,228 180,276 96.862,228 96.862,132' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,103.2 246.511,141.6 246.511,218.4 180,256.8 113.489,218.4 113.489,141.6' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,122.4 229.883,151.2 229.883,208.8 180,237.6 130.117,208.8 130.117,151.2' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,141.6 213.255,160.8 213.255,199.2 180,218.4 146.745,199.2 146.745,160.8' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,160.8 196.628,170.4 196.628,189.6 180,199.2 163.372,189.6 163.372,170.4' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<line x1='180' y1='180' x2='180' y2='84' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='263.138' y2='132' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='263.138' y2='228' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='180' y2='276' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='96.862' y2='228' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='96.862' y2='132' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<text x='186' y='171.8' fill='rgba(235,214,194,0.42)' font-size='9'>20%</text>
+<text x='186' y='152.6' fill='rgba(235,214,194,0.42)' font-size='9'>40%</text>
+<text x='186' y='133.4' fill='rgba(235,214,194,0.42)' font-size='9'>60%</text>
+<text x='186' y='114.2' fill='rgba(235,214,194,0.42)' font-size='9'>80%</text>
+<text x='186' y='95' fill='rgba(235,214,194,0.42)' font-size='9'>100%</text>
+<text x='180' y='66' fill='#f2e1d2' font-size='11' text-anchor='middle'>Parser</text>
+<text x='278.727' y='123' fill='#f2e1d2' font-size='11' text-anchor='start'>Effort</text>
+<text x='278.727' y='237' fill='#f2e1d2' font-size='11' text-anchor='start'>Statistics</text>
+<text x='180' y='294' fill='#f2e1d2' font-size='11' text-anchor='middle'>Gates</text>
+<text x='81.273' y='237' fill='#f2e1d2' font-size='11' text-anchor='end'>Unresolved Ctrl</text>
+<text x='81.273' y='123' fill='#f2e1d2' font-size='11' text-anchor='end'>Overall</text>
+<polygon points='180,86.37 234.319,148.639 263.138,228 180,180 98.966,226.785 105.838,137.183' fill='rgba(255,140,60,0.18)' stroke='#ff9a3c' stroke-width='2.4' filter='url(#qualityRadarGlow)'/>
+<circle cx="180" cy="86.37" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
+    <title>Parser — 97,5%</title>
+</circle>
+<circle cx="234.319" cy="148.639" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
+    <title>Effort — 65,3%</title>
+</circle>
+<circle cx="263.138" cy="228" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
+    <title>Statistics — 100,0%</title>
+</circle>
+<circle cx="180" cy="180" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
+    <title>Gates — 0,0%</title>
+</circle>
+<circle cx="98.966" cy="226.785" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
+    <title>Unresolved Ctrl — 97,5%</title>
+</circle>
+<circle cx="105.838" cy="137.183" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
+    <title>Overall — 89,2%</title>
+</circle>
+<circle cx='180' cy='180' r='2.5' fill='rgba(255,240,214,0.92)'/>
+<g transform="translate(20,378)">
+    <rect x="0" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="#ff9a3c" stroke-width="1.2"/>
+    <text x="18" y="-2" fill="#d9c8b8" font-size="10">Normalized quality signal distribution</text>
+</g>
+</svg>
+<div class="chart-interpretation" style="flex:1;max-width:320px;min-width:240px;">
+    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:16px;">
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Parser:</b><br/>Confidence that structural extraction is usable for downstream analysis.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Effort:</b><br/>Confidence attached to current refactor effort estimation.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Statistics:</b><br/>Support level of the current statistical payload.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Gates:</b><br/>Aggregate readiness inferred from fitness gate states.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Unresolved Ctrl:</b><br/>Inverse pressure of unresolved structural candidates.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Overall:</b><br/>Executive readiness across all quality layers.</li>
+    </ul>
+</div>
+</div>
+</div>
+
+</div>
+<div class="panel half-panel chart-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:450px;box-sizing:border-box;'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Trust Flow Sankey</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>How the major support layers contribute to the final execution readiness signal.</div>
+<div style='display:flex;align-items:center;justify-content:center;width:100%;flex:1;'>
+<svg width="100%" height="100%" viewBox="0 0 800 400" style="display:block;width:90%;max-width:800px;height:auto;border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="trustSankeyBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="trustGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.2" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="800" height="400" rx="16" fill="url(#trustSankeyBg)" />
+<path d="M 140 76 C 220 76, 280 150, 340 150"
+      fill="none"
+      stroke="#6ea8ff"
+      stroke-opacity="0.88"
+      stroke-width="25.64"
+      stroke-linecap="round"
+      filter="url(#trustGlow)" />
+<path d="M 140 150 C 220 150, 280 150, 340 150"
+      fill="none"
+      stroke="#ffc15d"
+      stroke-opacity="0.88"
+      stroke-width="19.7"
+      stroke-linecap="round"
+      filter="url(#trustGlow)" />
+<path d="M 140 224 C 220 224, 280 150, 340 150"
+      fill="none"
+      stroke="#ffc15d"
+      stroke-opacity="0.88"
+      stroke-width="26"
+      stroke-linecap="round"
+      filter="url(#trustGlow)" />
+<path d="M 460 150 C 540 150, 600 150, 660 150"
+      fill="none"
+      stroke="#7fd36b"
+      stroke-opacity="0.88"
+      stroke-width="8"
+      stroke-linecap="round"
+      filter="url(#trustGlow)" />
+<path d="M 140 150 C 348 150, 504 150, 660 150"
+      fill="none"
+      stroke="#ffb14d"
+      stroke-opacity="0.88"
+      stroke-width="13.76"
+      stroke-linecap="round"
+      filter="url(#trustGlow)" />
+<path d="M 140 224 C 348 224, 504 150, 660 150"
+      fill="none"
+      stroke="#ff9a3c"
+      stroke-opacity="0.88"
+      stroke-width="17"
+      stroke-linecap="round"
+      filter="url(#trustGlow)" />
+<g>
+    <rect x="20" y="52" width="120" height="48" rx="10"
+          fill="rgba(6,12,24,0.92)" stroke="#6ea8ff" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #6ea8ff55);" />
+    <text x="30" y="70" fill="#f2e1d2" font-size="10.5" font-weight="700">Parser</text>
+    <text x="30" y="86" fill="#d9c8b8" font-size="10.5">98%</text>
+</g>
+<g>
+    <rect x="20" y="126" width="120" height="48" rx="10"
+          fill="rgba(6,12,24,0.92)" stroke="#ffc15d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ffc15d55);" />
+    <text x="30" y="144" fill="#f2e1d2" font-size="10.5" font-weight="700">Effort</text>
+    <text x="30" y="160" fill="#d9c8b8" font-size="10.5">65%</text>
+</g>
+<g>
+    <rect x="20" y="200" width="120" height="48" rx="10"
+          fill="rgba(6,12,24,0.92)" stroke="#ffc15d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ffc15d55);" />
+    <text x="30" y="218" fill="#f2e1d2" font-size="10.5" font-weight="700">Statistics</text>
+    <text x="30" y="234" fill="#d9c8b8" font-size="10.5">100%</text>
+</g>
+<g>
+    <rect x="340" y="126" width="120" height="48" rx="10"
+          fill="rgba(6,12,24,0.92)" stroke="#7fd36b" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #7fd36b55);" />
+    <text x="350" y="144" fill="#f2e1d2" font-size="10.5" font-weight="700">Fitness Gates</text>
+    <text x="350" y="160" fill="#d9c8b8" font-size="10.5">0%</text>
+</g>
+<g>
+    <rect x="660" y="126" width="120" height="48" rx="10"
+          fill="rgba(6,12,24,0.92)" stroke="#ff8a3d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ff8a3d55);" />
+    <text x="670" y="144" fill="#f2e1d2" font-size="10.5" font-weight="700">Overall Readiness</text>
+    <text x="670" y="160" fill="#d9c8b8" font-size="10.5">89%</text>
+</g>
+</svg>
+</div>
+</div>
+
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Fitness Gate Strip</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class='chart-container' style='display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Fitness Gate Strip</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Linear gate board for rapid operational reading.</div>
+<div style='display:grid;gap:10px;'>
+<div style="display:grid;grid-template-columns:180px 110px 1fr;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(110,168,255,0.14),rgba(8,12,22,0.92));border:1px solid #6ea8ff;box-shadow:0 0 24px rgba(0,0,0,0.16);">
+    <div style="color:#f2e1d2;font-weight:700;font-size:12px;">Overall Fitness</div>
+    <div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:#6ea8ff;color:#08111f;font-weight:800;font-size:11px;">
+        Info
+    </div>
+    <div style="color:#d9c8b8;font-size:12px;">No failing fitness gate was detected.</div>
+</div>
+<div style="display:grid;grid-template-columns:180px 110px 1fr;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(110,168,255,0.14),rgba(8,12,22,0.92));border:1px solid #6ea8ff;box-shadow:0 0 24px rgba(0,0,0,0.16);">
+    <div style="color:#f2e1d2;font-weight:700;font-size:12px;">UnreferencedTypes</div>
+    <div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:#6ea8ff;color:#08111f;font-weight:800;font-size:11px;">
+        Info
+    </div>
+    <div style="color:#d9c8b8;font-size:12px;">Structural Unreferenced controlado: 0%</div>
+</div>
+</div></div>
+
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Fitness Gates // Detailed Table</h2>
         <div class="line"></div>
     </div>
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -122,14 +341,13 @@
     <td>No failing fitness gate was detected.</td>
 </tr>
 <tr>
-    <td>FitnessGateStatus</td>
-    <td><span class="badge green"><span class="badge-dot"></span> Pass</span></td>
+    <td>UnreferencedTypes</td>
+    <td><span class="badge green"><span class="badge-dot"></span> Passed</span></td>
     <td>Structural Unreferenced controlado: 0%</td>
 </tr>
     </tbody>
 </table>
-    </div>
-</div>
+</div></div>
 <div class="section">
     <div class="section-title">
         <h2>Statistics & Effort</h2>
@@ -140,9 +358,9 @@
     <h3>Effort Estimation</h3>
     <ul class="clean">
         <li><b>Difficulty:</b> Low</li>
-        <li><b>Estimated Hours:</b> 14,0</li>
-        <li><b>Confidence:</b> 0,64</li>
-        <li><b>RDI:</b> 35</li>
+        <li><b>Estimated Hours:</b> 14,8</li>
+        <li><b>Confidence:</b> 0,65</li>
+        <li><b>RDI:</b> 37</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -151,14 +369,14 @@
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.175;">
-                        <span class="data">14,0h</span>
+                    <td style="--size: 0.185;">
+                        <span class="data">14,8h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.6374;">
-                        <span class="data">0,64</span>
+                    <td style="--size: 0.6534;">
+                        <span class="data">0,65</span>
                     </td>
                 </tr>
             </tbody>
@@ -167,9 +385,37 @@
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Statistical Summary</h3>
-<p>No structured statistics payload was available for this execution.</p>
-</div>
-</div></div>
+<table class="link-table compact-table">
+    <thead>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Classes Per File</td>
+    <td>0.975</td>
+</tr>
+<tr>
+    <td>References Per Class</td>
+    <td>3.608</td>
+</tr>
+<tr>
+    <td>Mean Coupling</td>
+    <td>3.608</td>
+</tr>
+<tr>
+    <td>Unresolved Candidate Ratio</td>
+    <td>0.006</td>
+</tr>
+<tr>
+    <td>Namespace Drift Ratio</td>
+    <td>0</td>
+</tr>
+    </tbody>
+</table>
+</div></div></div>
 <div class="section">
     <div class="section-title">
         <h2>Methodology & Notes</h2>
@@ -192,9 +438,69 @@
     gap: 16px;
 }
 
+.quality-half-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+}
+
+.half-panel {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.chart-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 460px;
+}
+
+.chart-panel .chart-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
+.dashboard-radar-svg,
+.dashboard-sankey-svg,
+.dashboard-donut-svg,
+.dashboard-constellation-svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+.chart-container {
+    min-width: 0;
+}
+
+.chart-interpretation {
+    color: #d7e4f1;
+    font-size: 12px;
+}
+
+.chart-interpretation ul li {
+    margin-bottom: 8px;
+}
+
 @media (max-width: 1400px) {
     .grid-kpis.quality-kpis {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1080px) {
+    .quality-half-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-panel {
+        min-height: unset;
     }
 }
 

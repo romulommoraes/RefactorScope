@@ -1,4 +1,5 @@
-﻿using RefactorScope.Core.Abstractions;
+﻿using System.Text.RegularExpressions;
+using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Results;
@@ -14,6 +15,7 @@ namespace RefactorScope.Analyzers
     /// - It belongs to infrastructure layers (CLI, Infrastructure, Configuration)
     /// - It is detected through Dependency Injection patterns
     /// - It is detected through interface-based abstractions
+    /// - It is detected through lightweight top-level/bootstrap recovery
     ///
     /// The refinement stage attempts to recognize legitimate architectural patterns
     /// and reclassify those candidates as Pattern Similarity instead of Unresolved.
@@ -22,6 +24,22 @@ namespace RefactorScope.Analyzers
     /// This analyzer does NOT modify the Structural Candidate detection stage.
     /// It only evaluates candidates probabilistically and determines whether they
     /// should remain Unresolved or be explained by recognized structural patterns.
+    ///
+    /// Transitional note
+    /// -----------------
+    /// The top-level/bootstrap recovery implemented here is intentionally lightweight.
+    /// At this stage, it exists as a pragmatic refinement heuristic inside this analyzer.
+    ///
+    /// Future versions should extract this concern into a dedicated recovery component
+    /// (for example: TopLevelRecoveryAnalyzer / BootstrapReferenceRecovery), with:
+    /// - clearer provenance
+    /// - dedicated result object
+    /// - stronger parsing strategy
+    /// - reduced false positives
+    ///
+    /// For the current iteration, this heuristic is acceptable because it solves an
+    /// important practical gap: essential types referenced only from Program.cs or
+    /// other bootstrap files were being incorrectly preserved as unresolved candidates.
     /// </summary>
     public class StructuralCandidateRefinementAnalyzer : IAnalyzer
     {
@@ -76,6 +94,7 @@ namespace RefactorScope.Analyzers
 
                 bool diDetected = false;
                 bool interfaceDetected = false;
+                bool topLevelDetected = false;
                 bool structuralProtected = false;
 
                 string confidence = "Alta (estrutural)";
@@ -100,34 +119,70 @@ namespace RefactorScope.Analyzers
                 if (!structuralProtected)
                 {
                     // Camada 1 – Dependency Injection
-
                     if (globalStructuralCandidateRate > config.GlobalRateThreshold_DI)
                     {
                         if (IsRegisteredInDI(typeName, context))
                         {
-                            probability = config.DIProbability;
+                            probability = Math.Min(probability, config.DIProbability);
                             diDetected = true;
                             confidence = "Provável uso via DI";
                         }
                     }
 
                     // Camada 2 – Interface naming heuristic
-
                     if (globalStructuralCandidateRate > config.GlobalRateThreshold_Interface)
                     {
                         if (MatchesInterfacePattern(typeName, context))
                         {
-                            probability = config.InterfaceProbability;
+                            probability = Math.Min(probability, config.InterfaceProbability);
                             interfaceDetected = true;
                             confidence = "Provável uso polimórfico";
                         }
+                    }
+
+                    // Camada 3 – Top-level / bootstrap lightweight recovery
+                    //
+                    // Intenção:
+                    // ----------
+                    // Capturar tipos essenciais que aparecem apenas em Program.cs,
+                    // Startup.cs ou arquivos equivalentes de bootstrap e que,
+                    // por limitação do parsing estrutural atual, poderiam permanecer
+                    // falsamente em Unresolved.
+                    //
+                    // Estratégia atual:
+                    // -----------------
+                    // Busca textual com padrões leves, porém mais seguros que um
+                    // simples Contains(typeName), tentando reconhecer usos como:
+                    //
+                    // - new Tipo(...)
+                    // - typeof(Tipo)
+                    // - AddScoped<Tipo>
+                    // - AddTransient<Tipo>
+                    // - AddSingleton<Tipo>
+                    // - GetService<Tipo>
+                    // - GetRequiredService<Tipo>
+                    // - referência nominal isolada com boundary
+                    //
+                    // Observação:
+                    // -----------
+                    // Esta é uma heurística transitória. No futuro, deve ser
+                    // extraída para um recovery dedicado.
+                    if (IsReferencedInTopLevelBootstrap(typeName, context))
+                    {
+                        probability = 0.0;
+                        topLevelDetected = true;
+                        confidence = "Protegido por referência em Program/Top-Level";
                     }
                 }
 
                 results.Add(new StructuralCandidateProbabilityItem(
                     typeName,
                     probability,
-                    confidence,
+                    BuildConfidenceLabel(
+                        confidence,
+                        diDetected,
+                        interfaceDetected,
+                        topLevelDetected),
                     diDetected,
                     interfaceDetected
                 ));
@@ -183,7 +238,7 @@ namespace RefactorScope.Analyzers
         {
             foreach (var arquivo in context.Model.Arquivos)
             {
-                var texto = arquivo.SourceCode;
+                var texto = arquivo.SourceCode ?? string.Empty;
 
                 var patterns = new[]
                 {
@@ -199,15 +254,16 @@ namespace RefactorScope.Analyzers
                 {
                     if (texto.Contains(pattern))
                     {
-                        var index = texto.IndexOf(pattern);
+                        var index = texto.IndexOf(pattern, StringComparison.Ordinal);
+
+                        if (index < 0)
+                            continue;
 
                         var beforeText = texto.Substring(0, index);
                         var quoteCount = beforeText.Count(c => c == '"');
 
                         if (quoteCount % 2 != 0)
-                        {
                             continue;
-                        }
 
                         return true;
                     }
@@ -237,6 +293,182 @@ namespace RefactorScope.Analyzers
                 .Any(t => t.References.Any(r => r.ToType == interfaceName));
 
             return interfaceReferenced;
+        }
+
+        // ====================================================
+        // 🔎 Top-level / bootstrap lightweight recovery
+        // ====================================================
+
+        private static bool IsReferencedInTopLevelBootstrap(string typeName, AnalysisContext context)
+        {
+            if (string.IsNullOrWhiteSpace(typeName))
+                return false;
+
+            var bootstrapFiles = context.Model.Arquivos
+                .Where(IsBootstrapFile)
+                .ToList();
+
+            if (bootstrapFiles.Count == 0)
+                return false;
+
+            foreach (var arquivo in bootstrapFiles)
+            {
+                var source = arquivo.SourceCode ?? string.Empty;
+
+                if (string.IsNullOrWhiteSpace(source))
+                    continue;
+
+                var sanitized = SanitizeBootstrapSource(source);
+
+                if (HasSafeTopLevelReference(sanitized, typeName))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static string SanitizeBootstrapSource(string source)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+                return string.Empty;
+
+            var text = source;
+
+            // ----------------------------------------------------
+            // 1. Remove comentários de bloco: /* ... */
+            // ----------------------------------------------------
+            text = Regex.Replace(
+                text,
+                @"/\*.*?\*/",
+                " ",
+                RegexOptions.Singleline);
+
+            // ----------------------------------------------------
+            // 2. Remove comentários de linha: // ...
+            // ----------------------------------------------------
+            text = Regex.Replace(
+                text,
+                @"//.*?$",
+                " ",
+                RegexOptions.Multiline);
+
+            // ----------------------------------------------------
+            // 3. Remove strings verbatim/interpoladas verbatim:
+            //    @"..."
+            //    $@"..."
+            //    @$"..."
+            // ----------------------------------------------------
+            text = Regex.Replace(
+                text,
+                @"(?<!\w)(\$@|@\$|@)""(?:""""|[^""])*""",
+                "\"\"",
+                RegexOptions.Singleline);
+
+            // ----------------------------------------------------
+            // 4. Remove strings normais/interpoladas:
+            //    "..."
+            //    $"..."
+            // ----------------------------------------------------
+            text = Regex.Replace(
+                text,
+                @"(?<!\w)\$?""(?:\\.|[^""\\])*""",
+                "\"\"",
+                RegexOptions.Singleline);
+
+            // ----------------------------------------------------
+            // 5. Compacta whitespace para facilitar regex posterior
+            // ----------------------------------------------------
+            text = Regex.Replace(text, @"\s+", " ");
+
+            return text;
+        }
+
+        private static bool IsBootstrapFile(ArquivoInfo arquivo)
+        {
+            var path = TryGetArquivoPath(arquivo);
+
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            var normalized = path.Replace('\\', '/');
+
+            return normalized.EndsWith("/Program.cs", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith("/Startup.cs", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith("/CompositionRoot.cs", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith("/Bootstrapper.cs", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool HasSafeTopLevelReference(string source, string typeName)
+        {
+            if (string.IsNullOrWhiteSpace(source) || string.IsNullOrWhiteSpace(typeName))
+                return false;
+
+            var escaped = Regex.Escape(typeName);
+
+            var patterns = new[]
+            {
+                $@"\b{escaped}\b",
+                $@"typeof\s*\(\s*{escaped}\s*\)",
+                $@"new\s+{escaped}\s*\(",
+                $@"AddScoped\s*<\s*{escaped}\s*>",
+                $@"AddTransient\s*<\s*{escaped}\s*>",
+                $@"AddSingleton\s*<\s*{escaped}\s*>",
+                $@"GetRequiredService\s*<\s*{escaped}\s*>",
+                $@"GetService\s*<\s*{escaped}\s*>"
+            };
+
+            foreach (var pattern in patterns)
+            {
+                if (Regex.IsMatch(source, pattern))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static string? TryGetArquivoPath(ArquivoInfo arquivo)
+        {
+            try
+            {
+                var type = arquivo.GetType();
+
+                var prop =
+                    type.GetProperty("Path")
+                    ?? type.GetProperty("FilePath")
+                    ?? type.GetProperty("FullPath")
+                    ?? type.GetProperty("RelativePath")
+                    ?? type.GetProperty("Nome")
+                    ?? type.GetProperty("Name");
+
+                return prop?.GetValue(arquivo)?.ToString();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string BuildConfidenceLabel(
+            string baseLabel,
+            bool diDetected,
+            bool interfaceDetected,
+            bool topLevelDetected)
+        {
+            var tags = new List<string>();
+
+            if (diDetected)
+                tags.Add("DI");
+
+            if (interfaceDetected)
+                tags.Add("Interface");
+
+            if (topLevelDetected)
+                tags.Add("Top-Level");
+
+            if (tags.Count == 0)
+                return baseLabel;
+
+            return $"{baseLabel} [{string.Join(" / ", tags)}]";
         }
 
         // ====================================================

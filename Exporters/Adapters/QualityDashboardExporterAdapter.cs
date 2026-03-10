@@ -2,8 +2,8 @@
 using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
+using RefactorScope.Exporters.Dashboards;
 using RefactorScope.Exporters.Styling;
-
 namespace RefactorScope.Exporters.Adapters
 {
     /// <summary>

@@ -12,10 +12,15 @@ using RefactorScope.Core.Parsing;
 using RefactorScope.Core.Parsing.Enum;
 using RefactorScope.Core.Results;
 using RefactorScope.Execution.Dump;
-using RefactorScope.Exporters;
 using RefactorScope.Exporters.Adapters;
+using RefactorScope.Exporters.Dashboards;
+using RefactorScope.Exporters.Datasets;
+using RefactorScope.Exporters.Dumps;
+using RefactorScope.Exporters.Infrastructure;
+using RefactorScope.Exporters.Reports;
 using RefactorScope.Exporters.Styling;
 using RefactorScope.Infrastructure;
+using RefactorScope.Statistics.Engines;
 using Spectre.Console;
 
 Console.WriteLine();
@@ -47,8 +52,6 @@ RunVisualization(report);
 
 ApplyCiExitCode(report);
 
-
-
 /* =====================================================
    CONFIGURAÇÃO
    ===================================================== */
@@ -59,7 +62,7 @@ static bool RunConfiguration(out RefactorScopeConfig config)
 
     try
     {
-        bool enableSelfSelector = true;
+        const bool enableSelfSelector = true;
 
         var configPath =
             RefactorScope.CLI.SelfAnalysisSelector.ResolveConfigPath(
@@ -94,8 +97,6 @@ static bool RunConfiguration(out RefactorScopeConfig config)
     }
 }
 
-
-
 /* =====================================================
    PARSING
    ===================================================== */
@@ -113,17 +114,15 @@ static bool RunParsing(
         if (!Enum.TryParse<ParserStrategy>(
                 config.Parser,
                 true,
-                out var strategy))
+                out _))
         {
             Console.WriteLine(
                 $"[WARN] Estratégia de parser '{config.Parser}' inválida. Usando Selective.");
-
-            strategy = ParserStrategy.Selective;
         }
 
-        bool enableParserSelector = true;
+        const bool enableParserSelector = true;
 
-        IParserCodigo parser =
+        var parser =
             ParserSelector.ResolveParser(
                 config.Parser,
                 enableParserSelector);
@@ -161,8 +160,7 @@ static bool RunParsing(
             result.Model.Arquivos.Count,
             result.Model.Tipos.Count,
             result.Model.Referencias.Count,
-            result.Stats?.ExecutionTime ?? TimeSpan.Zero
-        );
+            result.Stats?.ExecutionTime ?? TimeSpan.Zero);
 
         TerminalRenderer.Success(
             $"Parsing concluído em {result.Stats?.ExecutionTime.TotalMilliseconds:F0}ms usando {result.ParserName}");
@@ -181,52 +179,45 @@ static bool RunParsing(
     }
 }
 
-
-
 static void WarnDuplicateTipos(IEnumerable<TipoInfo> tipos)
 {
-    var duplicates =
-        tipos
+    var duplicates = tipos
         .GroupBy(t => $"{t.Namespace}.{t.Name}")
         .Where(g => g.Count() > 1);
 
-    foreach (var dup in duplicates)
+    foreach (var duplicate in duplicates)
     {
         TerminalRenderer.Warn(
-            $"Tipo duplicado detectado: {dup.Key} (ocorrências: {dup.Count()})");
+            $"Tipo duplicado detectado: {duplicate.Key} (ocorrências: {duplicate.Count()})");
     }
 }
 
-
-
 /* =====================================================
-   RECOVERY - A SER IMPLEMENTADO FUTURAMENTE
+   RECOVERY
    ===================================================== */
 
 static void RunTopLevelRecovery(AnalysisContext context)
 {
     try
     {
-        //TopLevelReferenceRecovery.Run(context);
+        // TopLevelReferenceRecovery.Run(context);
+
         /*
-//            FUTURE IMPLEMENTATION
+         FUTURE IMPLEMENTATION
 
-//            Strategy:
-
-//            1. Detect unreferenced types
-//            2. Scan bootstrap files (Program.cs)
-//            3. Sanitize comments and strings
-//            4. Detect textual references
-//            5. Rebuild structural snapshot with recovered references
-//            */
+         Strategy:
+         1. Detect unreferenced types
+         2. Scan bootstrap files (Program.cs)
+         3. Sanitize comments and strings
+         4. Detect textual references
+         5. Rebuild structural snapshot with recovered references
+        */
     }
     catch (Exception ex)
     {
         CrashLogger.Log(ex, "TOPLEVEL_RECOVERY");
     }
 }
-
-
 
 /* =====================================================
    ANÁLISE
@@ -241,6 +232,7 @@ static bool RunAnalysis(
     try
     {
         var analyzers = BuildAnalyzers(context);
+
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
@@ -260,8 +252,6 @@ static bool RunAnalysis(
         return false;
     }
 }
-
-
 
 static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
 {
@@ -294,6 +284,9 @@ static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
         analyzers.Add(new ImplicitCouplingAnalyzer());
     }
 
+    if (IsEnabled(context, "statistics"))
+        analyzers.Add(new StatisticsValidationAnalyzer());
+
     if (IsEnabled(context, "solid"))
         analyzers.Add(new SolidAnalyzer());
 
@@ -302,8 +295,6 @@ static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
     return analyzers;
 }
 
-
-
 /* =====================================================
    HIGIENE
    ===================================================== */
@@ -311,15 +302,11 @@ static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
 static void RunArchitecturalHygiene(ConsolidatedReport report)
 {
     var hygieneAnalyzer = new ArchitecturalHygieneAnalyzer();
-
     var hygiene = hygieneAnalyzer.Analyze(report);
 
     TerminalRenderer.Section("Code Hygiene");
-
     TerminalRenderer.HygieneSummary(hygiene);
 }
-
-
 
 /* =====================================================
    DEBUG
@@ -354,8 +341,15 @@ static bool RunExport(
     {
         TerminalRenderer.Step("Gerando dumps, datasets e dashboards...");
 
-        var datasetBuilders = BuildDatasetBuilders();
+        var pathResolver = PrepareExportInfrastructure(
+            config,
+            context,
+            report,
+            parsingResult);
 
+        var rootOutputPath = pathResolver.RootOutputPath;
+
+        var datasetBuilders = BuildDatasetBuilders();
         var coreExporters = BuildCoreExporters(datasetBuilders);
         var htmlExporters = BuildHtmlExportersWithoutHub();
 
@@ -369,9 +363,9 @@ static bool RunExport(
         // -------------------------------------------------
         // Bloco 2: dashboards HTML especializados
         // -------------------------------------------------
-        RunHtmlExporters(htmlExporters, context, report, config.OutputPath);
+        RunHtmlExporters(htmlExporters, context, report, rootOutputPath);
 
-        RunParsingDashboardExporter(context, parsingResult, config.OutputPath);
+        RunParsingDashboardExporter(context, parsingResult, rootOutputPath);
 
         QualityDashboardExporterAdapter.ExportDirect(
             context,
@@ -382,13 +376,12 @@ static bool RunExport(
             parsingResult?.Model?.Arquivos.Count ?? 0,
             parsingResult?.Model?.Tipos.Count ?? 0,
             parsingResult?.Model?.Referencias.Count ?? 0,
-            config.OutputPath);
+            rootOutputPath);
 
         // -------------------------------------------------
-        // Bloco 3: Hub HTML final
-        // Gerado explicitamente com parsingResult real
+        // Bloco 3: hub final
         // -------------------------------------------------
-        RunHtmlHubExporter(context, report, parsingResult, config.OutputPath);
+        RunHtmlHubExporter(context, report, parsingResult, rootOutputPath);
 
         TerminalRenderer.Success(
             "Dumps, datasets e dashboards gerados com sucesso");
@@ -403,97 +396,6 @@ static bool RunExport(
     }
 }
 
-static List<IAnalyticalDatasetBuilder> BuildDatasetBuilders()
-{
-    return new List<IAnalyticalDatasetBuilder>
-    {
-        new GlobalTypesDatasetBuilder(),
-        new StructuralOverviewDatasetBuilder(),
-        new ArchitecturalHealthDatasetBuilder(),
-        new ModuleContributionDatasetBuilder(),
-        new TypeContributionDatasetBuilder(),
-        new GlobalMetricsDatasetBuilder(),
-        new StructuralScoreDatasetBuilder(),
-        new StructuralTrendDatasetBuilder()
-    };
-}
-
-static List<IExporter> BuildCoreExporters(
-    List<IAnalyticalDatasetBuilder> datasetBuilders)
-{
-    return new List<IExporter>
-    {
-        new DumpAnaliseExporter(),
-        new DumpIaExporter(),
-        new DatasetExporter(datasetBuilders),
-        new ProjectStructureExporter(),
-        new FitnessGateCsvExporter()
-    };
-}
-
-static List<IExporter> BuildHtmlExporters()
-{
-    return new List<IExporter>
-    {
-        new StructuralDashboardExporterAdapter(),
-        new ParsingDashboardExporterAdapter(),
-        new ArchitecturalDashboardExporterAdapter(),
-        new HtmlDashboardExporter()
-    };
-}
-/* =====================================================
-   RELATÓRIOS legado
-   ===================================================== */
-
-//static void GenerateMarkdownReport(
-//    ConsolidatedReport report,
-//    string outputDirectory)
-//{
-//    try
-//    {
-//        Directory.CreateDirectory(outputDirectory);
-
-//        var outputPath =
-//            Path.Combine(outputDirectory, "Relatorio_Arquitetural.md");
-
-//        var exporter = new MarkdownReportExporter();
-
-//        exporter.Export(report, outputPath);
-
-//        TerminalRenderer.Success("Relatório Markdown gerado");
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"[ERRO AO GERAR MD]: {ex.Message}");
-//        CrashLogger.Log(ex, "MARKDOWN_EXPORT");
-//    }
-//}
-
-
-
-//static void GenerateStructuralDashboard(
-//    ConsolidatedReport report,
-//    string outputDirectory)
-//{
-//    try
-//    {
-//        Directory.CreateDirectory(outputDirectory);
-
-//        var exporter = new StructuralInventoryExporter();
-
-//        exporter.Export(report, outputDirectory);
-
-//        TerminalRenderer.Success("Structural Dashboard gerado");
-//    }
-//    catch (Exception ex)
-//    {
-//        Console.WriteLine($"[ERRO AO GERAR DASHBOARD]: {ex.Message}");
-//        CrashLogger.Log(ex, "DASHBOARD_EXPORT");
-//    }
-//}
-
-
-
 /* =====================================================
    VISUALIZAÇÃO
    ===================================================== */
@@ -503,40 +405,34 @@ static void RunVisualization(ConsolidatedReport report)
     TerminalRenderer.Section("Architectural Health");
 
     var architecture = report.GetResult<ArchitecturalClassificationResult>();
-
     if (architecture == null)
         return;
 
     var modules = architecture.Items.GroupBy(i => i.Folder);
-
     var isolated = report.GetResult<CoreIsolationResult>();
     var coupling = report.GetResult<CouplingResult>();
-
     var effectiveUnresolved = report.GetEffectiveUnresolvedCandidates();
 
-    var rows =
-        new List<(string Module, double Score, string Unresolved, double Coupling, double Isolation)>();
+    var rows = new List<(string Module, double Score, string Unresolved, double Coupling, double Isolation)>();
 
     foreach (var module in modules)
     {
         var total = module.Count();
-        if (total == 0) continue;
+        if (total == 0)
+            continue;
 
         var zombieCount =
             effectiveUnresolved.Count(z => module.Any(m => m.TypeName == z));
 
         var isolatedCount =
-            isolated?.IsolatedCoreTypes
-            .Count(i => module.Any(m => m.TypeName == i)) ?? 0;
+            isolated?.IsolatedCoreTypes.Count(i => module.Any(m => m.TypeName == i)) ?? 0;
 
         var fanOut =
-            coupling?.ModuleFanOut
-            .GetValueOrDefault(module.Key) ?? 0;
+            coupling?.ModuleFanOut.GetValueOrDefault(module.Key) ?? 0;
 
         var zombieRate = zombieCount / (double)total;
         var isolationRate = isolatedCount / (double)total;
         var couplingRate = fanOut / (double)total;
-
         var coreTypes = module.Count(t => t.Layer == "Core");
 
         var zombieDisplay = $"{zombieCount} ({zombieRate:0%})";
@@ -554,8 +450,7 @@ static void RunVisualization(ConsolidatedReport report)
             score,
             zombieDisplay,
             couplingRate,
-            isolationRate
-        ));
+            isolationRate));
     }
 
     TerminalRenderer.RenderArchitecturalHealthTable(rows);
@@ -564,16 +459,13 @@ static void RunVisualization(ConsolidatedReport report)
     RenderFitnessGates(report);
 }
 
-
-
 /* =====================================================
    FITNESS GATES
    ===================================================== */
 
 static void RenderFitnessGates(ConsolidatedReport report)
 {
-    var gates =
-        report.Results
+    var gates = report.Results
         .OfType<FitnessGateResult>()
         .FirstOrDefault();
 
@@ -606,16 +498,13 @@ static void RenderFitnessGates(ConsolidatedReport report)
         AnsiConsole.MarkupLine("[bold green]Arquitetura pronta para CI/CD[/]");
 }
 
-
-
 /* =====================================================
    CI EXIT CODE
    ===================================================== */
 
 static void ApplyCiExitCode(ConsolidatedReport report)
 {
-    var gates =
-        report.Results
+    var gates = report.Results
         .OfType<FitnessGateResult>()
         .FirstOrDefault();
 
@@ -625,40 +514,127 @@ static void ApplyCiExitCode(ConsolidatedReport report)
     Environment.ExitCode = gates.HasFailure ? 1 : 0;
 }
 
-
-
 /* =====================================================
    HELPERS
    ===================================================== */
+
+static ExportOptions BuildExportOptions(RefactorScopeConfig config)
+{
+    return new ExportOptions
+    {
+        Enabled = true,
+        OutputDirectory = config.OutputPath,
+
+        Reports = new ReportExportOptions
+        {
+            GenerateHubHtml = true,
+            GenerateDashboardsHtml = true,
+            GenerateExecutiveReport = true,
+            GenerateArchitecturalReport = true
+        },
+
+        Datasets = new DatasetExportOptions
+        {
+            GenerateAnalysisJson = true,
+            GenerateSnapshotJson = true,
+            GenerateCsvs = true
+        },
+
+        Dumps = new DumpExportOptions
+        {
+            Enabled = true,
+            GenerateFullDump = true,
+            IncludeTimestampInFileName = true,
+            NormalizeWhitespace = true
+        },
+
+        Trends = new TrendExportOptions
+        {
+            Enabled = true,
+            GenerateStructuralHistory = true
+        }
+    };
+}
+
+static ExportPackage BuildExportPackage(
+    RefactorScopeConfig config,
+    AnalysisContext context,
+    ConsolidatedReport report,
+    IParserResult? parsingResult)
+{
+    return new ExportPackage
+    {
+        RootOutputPath = config.OutputPath,
+        AnalysisContext = context,
+        Report = report,
+        ParsingResult = parsingResult,
+        GeneratedAtUtc = DateTime.UtcNow
+    };
+}
+
+static ExportPathResolver PrepareExportInfrastructure(
+    RefactorScopeConfig config,
+    AnalysisContext context,
+    ConsolidatedReport report,
+    IParserResult? parsingResult)
+{
+    var exportOptions = BuildExportOptions(config);
+
+    var exportPackage = BuildExportPackage(
+        config,
+        context,
+        report,
+        parsingResult);
+
+    var pathResolver = new ExportPathResolver(exportPackage.RootOutputPath);
+
+    var orchestrator = new ExportOrchestrator(exportOptions, pathResolver);
+    orchestrator.Prepare();
+
+    return pathResolver;
+}
+
+static List<IAnalyticalDatasetBuilder> BuildDatasetBuilders()
+{
+    return new List<IAnalyticalDatasetBuilder>
+    {
+        new GlobalTypesDatasetBuilder(),
+        new StructuralOverviewDatasetBuilder(),
+        new ArchitecturalHealthDatasetBuilder(),
+        new ModuleContributionDatasetBuilder(),
+        new TypeContributionDatasetBuilder(),
+        new GlobalMetricsDatasetBuilder(),
+        new StructuralScoreDatasetBuilder(),
+        new StructuralTrendDatasetBuilder()
+    };
+}
+
+static List<IExporter> BuildCoreExporters(
+    List<IAnalyticalDatasetBuilder> datasetBuilders)
+{
+    return new List<IExporter>
+    {
+        new DumpAnaliseExporter(),
+        new DumpIaExporter(),
+        new DatasetExporter(datasetBuilders),
+        new ProjectStructureExporter(),
+        new FitnessGateCsvExporter()
+    };
+}
+
+static List<IExporter> BuildHtmlExportersWithoutHub()
+{
+    return new List<IExporter>
+    {
+        new StructuralDashboardExporterAdapter(),
+        new ArchitecturalDashboardExporterAdapter()
+    };
+}
 
 static bool IsEnabled(AnalysisContext context, string analyzerName)
 {
     return context.Config.Analyzers.TryGetValue(analyzerName, out var enabled)
            && enabled;
-}
-
-static void TrySetParserResult(
-    AnalysisContext context,
-    IParserResult? parsingResult)
-{
-    if (parsingResult == null)
-        return;
-
-    try
-    {
-        var prop = context.GetType().GetProperty("ParserResult");
-
-        if (prop != null && prop.CanWrite)
-        {
-            prop.SetValue(context, parsingResult);
-        }
-    }
-    catch
-    {
-        // Compatibilidade temporária:
-        // se AnalysisContext ainda não expõe ParserResult,
-        // os adapters/hub seguirão operando em fallback.
-    }
 }
 
 static void RunHtmlExporters(
@@ -682,15 +658,6 @@ static void RunHtmlExporters(
             CrashLogger.Log(ex, $"HTML_EXPORT_{exporter.Name.ToUpperInvariant()}");
         }
     }
-}
-
-static List<IExporter> BuildHtmlExportersWithoutHub()
-{
-    return new List<IExporter>
-    {
-        new StructuralDashboardExporterAdapter(),
-        new ArchitecturalDashboardExporterAdapter()
-    };
 }
 
 static void RunParsingDashboardExporter(
@@ -722,32 +689,6 @@ static void RunParsingDashboardExporter(
     }
 }
 
-static string ResolveThemeFileName(AnalysisContext context)
-{
-    try
-    {
-        var config = context?.Config;
-        var themeName = TryReadDashboardTheme(config);
-        return DashboardThemeSelector.ResolveFileName(themeName);
-    }
-    catch
-    {
-        return DashboardThemeSelector.DefaultThemeFile;
-    }
-}
-
-static string? TryReadDashboardTheme(RefactorScopeConfig? config)
-{
-    if (config == null)
-        return null;
-
-    var prop = config.GetType().GetProperty("DashboardTheme");
-    if (prop == null)
-        return null;
-
-    return prop.GetValue(config) as string;
-}
-
 static void RunHtmlHubExporter(
     AnalysisContext context,
     ConsolidatedReport report,
@@ -773,4 +714,30 @@ static void RunHtmlHubExporter(
         Console.WriteLine($"[ERRO AO GERAR HUB HTML]: {ex.Message}");
         CrashLogger.Log(ex, "HTML_EXPORT_HUB");
     }
+}
+
+static string ResolveThemeFileName(AnalysisContext context)
+{
+    try
+    {
+        var config = context?.Config;
+        var themeName = TryReadDashboardTheme(config);
+        return DashboardThemeSelector.ResolveFileName(themeName);
+    }
+    catch
+    {
+        return DashboardThemeSelector.DefaultThemeFile;
+    }
+}
+
+static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+{
+    if (config == null)
+        return null;
+
+    var prop = config.GetType().GetProperty("DashboardTheme");
+    if (prop == null)
+        return null;
+
+    return prop.GetValue(config) as string;
 }

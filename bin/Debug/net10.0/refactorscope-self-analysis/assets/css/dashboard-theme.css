@@ -227,3 +227,16 @@ pre.tree-view {
     box-shadow: var(--shadow-soft);
     border-radius: 14px;
 }
+.chart-container .dashboard-svg-theme {
+    background: radial-gradient(circle at center, #14181c 0%, #0c0f12 100%) !important;
+    border: 1px solid rgba(255, 106, 0, 0.18);
+    box-shadow: var(--shadow-soft);
+    border-radius: 14px;
+}
+
+.chart-container .dashboard-radar-svg text,
+.chart-container .dashboard-sankey-svg text,
+.chart-container .dashboard-donut-svg text,
+.chart-container .dashboard-constellation-svg text {
+    fill: var(--text-soft);
+}

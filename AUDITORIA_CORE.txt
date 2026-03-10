@@ -1,0 +1,3901 @@
+==========================================
+ARQUIVO: IAnalysisResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IAnalysisResult.cs
+==========================================
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Representa o resultado de uma análise estrutural.
+    /// Interface de marcação para permitir agregação polimórfica.
+    /// </summary>
+    public interface IAnalysisResult
+    {
+    }
+}
+
+
+==========================================
+ARQUIVO: IAnalyzer.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IAnalyzer.cs
+==========================================
+using RefactorScope.Core.Context;
+
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Define o contrato de execução para analisadores estruturais.
+    /// Cada analisador deve operar de forma isolada e determinística.
+    /// </summary>
+    public interface IAnalyzer
+    {
+        /// <summary>
+        /// Nome único do analisador (usado na configuração).
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Executa a análise com base no contexto fornecido.
+        /// </summary>
+        /// <param name="context">Contexto de análise contendo modelo estrutural e configuração.</param>
+        /// <returns>Resultado da análise.</returns>
+        IAnalysisResult Analyze(AnalysisContext context);
+    }
+}
+
+
+==========================================
+ARQUIVO: IExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IExporter.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Define o contrato para exportação de resultados de análise.
+    /// 
+    /// Exportadores não decidem o destino.
+    /// O CLI define o outputPath.
+    /// </summary>
+    public interface IExporter
+    {
+        /// <summary>
+        /// Nome do exportador (ex: JSON, CSV, DumpIA).
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Exporta os resultados da análise.
+        /// </summary>
+        /// <param name="context">Contexto da análise</param>
+        /// <param name="report">Relatório consolidado</param>
+        /// <param name="outputPath">Pasta de saída definida pelo CLI</param>
+        void Export(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath
+        );
+    }
+}
+
+
+==========================================
+ARQUIVO: IParserCodigo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IParserCodigo.cs
+==========================================
+using System.Collections.Generic;
+
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Contrato base para todos os parsers de código do sistema.
+/// </summary>
+public interface IParserCodigo
+{
+    /// <summary>Nome identificador do parser.</summary>
+    string Name { get; }
+
+    /// <summary>
+    /// Executa a análise do código e retorna um envelope observável contendo o modelo e as métricas.
+    /// </summary>
+    /// <param name="rootPath">Caminho raiz do projeto a ser analisado.</param>
+    /// <param name="include">Filtros de inclusão de arquivos (opcional).</param>
+    /// <param name="exclude">Filtros de exclusão de arquivos (opcional).</param>
+    /// <returns>Um IParserResult contendo o estado, métricas e o modelo gerado.</returns>
+    IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null);
+}
+
+
+==========================================
+ARQUIVO: IParserResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IParserResult.cs
+==========================================
+using RefactorScope.Core.Model;
+using RefactorScope.Core.Parsing;
+using System;
+
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Contrato global para o envelope de retorno de qualquer parser do sistema.
+/// 
+/// O objetivo deste contrato é fornecer observabilidade completa do processo
+/// de parsing, incluindo métricas de execução, confiança do resultado e
+/// tratamento seguro de falhas.
+/// </summary>
+public interface IParserResult
+{
+    /// <summary>
+    /// Nome identificador do parser que gerou este resultado.
+    /// Exemplo: "CSharpRegex", "CSharpTextual", "HybridParser".
+    /// </summary>
+    string ParserName { get; }
+
+    /// <summary>
+    /// Status final da operação de parsing.
+    /// </summary>
+    ParseStatus Status { get; }
+
+    /// <summary>
+    /// Índice de confiança da extração estrutural (0.0 a 1.0).
+    /// </summary>
+    double Confidence { get; }
+
+    /// <summary>
+    /// Indica se o modelo gerado passou na avaliação heurística de plausibilidade.
+    /// </summary>
+    bool IsPlausible { get; }
+
+    /// <summary>
+    /// Modelo estrutural extraído do código.
+    /// Pode ser null em caso de falha total do parser.
+    /// </summary>
+    ModeloEstrutural? Model { get; }
+
+    /// <summary>
+    /// Estatísticas de execução do parser.
+    /// Contém métricas como tempo de execução e memória estimada.
+    /// </summary>
+    ParserExecutionStats? Stats { get; }
+
+    /// <summary>
+    /// Exceção capturada caso o parser tenha falhado com erro crítico.
+    /// </summary>
+    Exception? Error { get; }
+
+    bool UsedFallback { get; }
+}
+
+
+==========================================
+ARQUIVO: IPipelineStep.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IPipelineStep.cs
+==========================================
+using RefactorScope.Core.Context;
+
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Representa um módulo executável no pipeline de análise.
+    /// 
+    /// Exemplos:
+    /// - AnalyzerStep
+    /// - StatisticsStep
+    /// - EstimationStep
+    /// - ExportStep (futuro)
+    /// </summary>
+    public interface IPipelineStep
+    {
+        string Name { get; }
+
+        void Execute(AnalysisContext context);
+    }
+}
+
+
+==========================================
+ARQUIVO: IPreParser.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\IPreParser.cs
+==========================================
+namespace RefactorScope.Core.Abstractions
+{
+    /// <summary>
+    /// Contrato para pré-processadores de código fonte.
+    ///
+    /// Um PreParser é responsável por sanitizar o texto antes
+    /// da etapa de parsing estrutural, removendo construções
+    /// que podem gerar falsos positivos (comentários, strings,
+    /// código gerado, etc.).
+    ///
+    /// Essa etapa funciona como um "lexer simplificado"
+    /// no pipeline de parsing textual.
+    /// </summary>
+    public interface IPreParser
+    {
+        string Sanitize(string source);
+    }
+}
+
+
+==========================================
+ARQUIVO: ParseStatus.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Abstractions\ParseStatus.cs
+==========================================
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Representa o estado final da execução de um parser.
+/// Usado para indicar sucesso, avisos estruturais ou falhas.
+/// </summary>
+public enum ParseStatus
+{
+    /// <summary>
+    /// O parsing foi concluído com sucesso e o modelo gerado é considerado confiável.
+    /// </summary>
+    Success,
+
+    /// <summary>
+    /// O parsing foi concluído, porém o avaliador de plausibilidade detectou anomalias estruturais.
+    /// O modelo pode estar incompleto ou parcialmente incorreto.
+    /// </summary>
+    PlausibilityWarning,
+
+    /// <summary>
+    /// O parser primário falhou ou retornou resultado implausível e um parser de fallback assumiu.
+    /// </summary>
+    FallbackTriggered,
+
+    /// <summary>
+    /// O parsing falhou completamente devido a erro crítico ou exceção.
+    /// </summary>
+    Failed
+}
+
+
+==========================================
+ARQUIVO: DashboardOptions.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\DashboardOptions.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Configuração visual dos dashboards HTML.
+    /// </summary>
+    public sealed class DashboardOptions
+    {
+        /// <summary>
+        /// Nome lógico do tema visual.
+        ///
+        /// Valores suportados:
+        /// - midnight-blue
+        /// - ember-ops
+        /// - neon-grid
+        /// </summary>
+        public string Theme { get; set; } = "midnight-blue";
+    }
+}
+
+
+==========================================
+ARQUIVO: DumpStrategyConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\DumpStrategyConfig.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    public class DumpStrategyConfig
+    {
+        public string Mode { get; set; } = "global";
+        public string SplitBy { get; set; } = "layer";
+    }
+}
+
+
+==========================================
+ARQUIVO: EstimatorConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\EstimatorConfig.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Configuração do módulo de estimativa de esforço de refatoração.
+    /// </summary>
+    public class EstimatorConfig
+    {
+        /// <summary>
+        /// Ativa ou desativa o EffortEstimator.
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\FitnessGateConfig.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    public class FitnessGateConfig
+    {
+        public DeadCodeGateConfig DeadCode { get; set; } = new();
+        public CouplingGateConfig Coupling { get; set; } = new();
+        public CoreIsolationGateConfig CoreIsolation { get; set; } = new();
+    }
+
+    public class DeadCodeGateConfig
+    {
+        public double WarnAbove { get; set; } = 0.10;
+        public double FailAbove { get; set; } = 0.20;
+    }
+
+    public class CouplingGateConfig
+    {
+        public double WarnAbove { get; set; } = 3;
+        public double FailAbove { get; set; } = 5;
+    }
+
+    public class CoreIsolationGateConfig
+    {
+        public bool FailIfAny { get; set; } = true;
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateConfigResolver.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\FitnessGateConfigResolver.cs
+==========================================
+namespace RefactorScope.Core.Configuration
+{
+    public static class FitnessGateConfigResolver
+    {
+        public static FitnessGateConfig Resolve(
+            FitnessGateConfig? config,
+            Action<string>? warn = null)
+        {
+            if (config == null)
+            {
+                warn?.Invoke("FitnessGates config ausente. Usando valores default.");
+                return new FitnessGateConfig();
+            }
+
+            var resolved = new FitnessGateConfig
+            {
+                DeadCode = ResolveDeadCode(config.DeadCode, warn),
+                Coupling = ResolveCoupling(config.Coupling, warn),
+                CoreIsolation = ResolveCoreIsolation(config.CoreIsolation, warn)
+            };
+
+            return resolved;
+        }
+
+        private static DeadCodeGateConfig ResolveDeadCode(
+            DeadCodeGateConfig? cfg,
+            Action<string>? warn)
+        {
+            if (cfg == null)
+            {
+                warn?.Invoke("DeadCode gate ausente. Usando default.");
+                return new DeadCodeGateConfig();
+            }
+
+            if (cfg.WarnAbove >= cfg.FailAbove)
+            {
+                warn?.Invoke("DeadCode thresholds inválidos (warn >= fail). Usando default.");
+                return new DeadCodeGateConfig();
+            }
+
+            return cfg;
+        }
+
+        private static CouplingGateConfig ResolveCoupling(
+            CouplingGateConfig? cfg,
+            Action<string>? warn)
+        {
+            if (cfg == null)
+            {
+                warn?.Invoke("Coupling gate ausente. Usando default.");
+                return new CouplingGateConfig();
+            }
+
+            if (cfg.WarnAbove >= cfg.FailAbove)
+            {
+                warn?.Invoke("Coupling thresholds inválidos (warn >= fail). Usando default.");
+                return new CouplingGateConfig();
+            }
+
+            return cfg;
+        }
+
+        private static CoreIsolationGateConfig ResolveCoreIsolation(
+            CoreIsolationGateConfig? cfg,
+            Action<string>? warn)
+        {
+            if (cfg == null)
+            {
+                warn?.Invoke("CoreIsolation gate ausente. Usando default.");
+                return new CoreIsolationGateConfig();
+            }
+
+            return cfg;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: RefactorScopeConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\RefactorScopeConfig.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Statistics.Engines;
+
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Representa a configuração de execução do RefactorScope.
+    /// Define escopo de análise, analisadores ativos, estratégias e exportações.
+    /// </summary>
+    public class RefactorScopeConfig
+    {
+        /// <summary>
+        /// Caminho raiz do escopo de análise.
+        /// </summary>
+        public string RootPath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Pastas ou arquivos a incluir na análise.
+        /// </summary>
+        public List<string> Include { get; set; } = new();
+
+        /// <summary>
+        /// Pastas ou arquivos a excluir da análise.
+        /// </summary>
+        public List<string> Exclude { get; set; } = new();
+
+        /// <summary>
+        /// Define quais analisadores estão habilitados.
+        /// A chave deve corresponder ao Name do analisador.
+        /// </summary>
+        public Dictionary<string, bool> Analyzers { get; set; } = new();
+
+        /// <summary>
+        /// Nome do parser a ser utilizado.
+        /// </summary>
+        public string Parser { get; set; } = "CSharpRegex";
+
+        /// <summary>
+        /// Exportadores ativos.
+        /// </summary>
+        public List<string> Exporters { get; set; } = new();
+
+        /// <summary>
+        /// Camadas / módulos do sistema e suas regras de dependência.
+        /// </summary>
+        public Dictionary<string, LayerRuleConfig>? LayerRules { get; set; }
+
+        /// <summary>
+        /// Diretório de saída dos relatórios e dashboards.
+        /// </summary>
+        public string OutputPath { get; set; } = "refactorscope-output";
+
+        /// <summary>
+        /// Config do strategy para exportação do dump otimizado para IA.
+        /// </summary>
+        public DumpStrategyConfig DumpStrategy { get; set; } = new();
+
+        /// <summary>
+        /// Configuração dos fitness gates.
+        /// </summary>
+        public FitnessGateConfig FitnessGates { get; set; } = new();
+
+        /// <summary>
+        /// Configuração da detecção de candidatos estruturais.
+        /// </summary>
+        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();
+
+        /// <summary>
+        /// Configuração da camada estatística.
+        /// </summary>
+        public StatisticsConfig Statistics { get; set; } = new();
+
+        /// <summary>
+        /// Configuração do estimador de esforço.
+        /// </summary>
+        public EstimatorConfig? Estimator { get; set; }
+
+        /// <summary>
+        /// Configuração visual dos dashboards HTML.
+        /// </summary>
+        public DashboardOptions Dashboard { get; set; } = new();
+    }
+}
+
+
+==========================================
+ARQUIVO: StatisticsConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\StatisticsConfig.cs
+==========================================
+// ==========================================
+// ARQUIVO: StatisticsConfig.cs
+// CAMINHO: RefactorScope\Core\Configuration\StatisticsConfig.cs
+// ==========================================
+namespace RefactorScope.Core.Configuration
+{
+    /// <summary>
+    /// Configuração para o módulo de validação estatística (Self-Validation Layer).
+    /// </summary>
+    public class StatisticsConfig
+    {
+        /// <summary>
+        /// Define se a camada estatística observacional deve ser executada.
+        /// Padrão: true.
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralCandidateDetectionOptions.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Configuration\StructuralCandidateDetectionOptions.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Core.Configuration
+{
+    public class StructuralCandidateDetectionOptions
+    {
+        public bool EnableRefinement { get; set; } = true;
+
+        public double GlobalRateThreshold_DI { get; set; } = 0.20;
+        public double GlobalRateThreshold_Interface { get; set; } = 0.15;
+
+        public double DIProbability { get; set; } = 0.15;
+        public double InterfaceProbability { get; set; } = 0.25;
+
+        /// <summary>
+        /// Acima desse valor o tipo permanece classificado como Unresolved Candidate.
+        /// </summary>
+        public double MinUnresolvedProbabilityThreshold { get; set; } = 0.60;
+    }
+}
+
+
+
+==========================================
+ARQUIVO: AnalysisContext.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Context\AnalysisContext.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Configuration;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Context
+{
+    /// <summary>
+    /// Representa o contexto de execução compartilhado entre os analisadores.
+    /// Contém o modelo estrutural e a configuração ativa.
+    /// </summary>
+    public class AnalysisContext
+    {
+        /// <summary>
+        /// Configuração da execução.
+        /// </summary>
+        public RefactorScopeConfig Config { get; }
+
+        /// <summary>
+        /// Modelo estrutural gerado pelo parser.
+        /// </summary>
+        public ModeloEstrutural Model { get; }
+
+        /// <summary>
+        /// Timestamp da execução.
+        /// </summary>
+        public DateTime ExecutionTime { get; }
+
+        public AnalysisContext(
+            RefactorScopeConfig config,
+            ModeloEstrutural model)
+        {
+            Config = config ?? throw new ArgumentNullException(nameof(config));
+            Model = model ?? throw new ArgumentNullException(nameof(model));
+            ExecutionTime = DateTime.UtcNow;
+        }
+
+        public IReadOnlyList<IAnalysisResult> Results { get; set; } = new List<IAnalysisResult>();
+    }
+}
+
+
+==========================================
+ARQUIVO: AnalysisContextExtensions.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Context\AnalysisContextExtensions.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Context
+{
+    public static class AnalysisContextExtensions
+    {
+        public static T? GetResult<T>(this AnalysisContext context)
+            where T : class, IAnalysisResult
+        {
+            return context.Results
+                .OfType<T>()
+                .FirstOrDefault();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: LayerRuleConfig.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Context\LayerRuleConfig.cs
+==========================================
+namespace RefactorScope.Core.Context
+{
+    public class LayerRuleConfig
+    {
+        public List<string>? NameStartsWith { get; set; }
+        public List<string>? NamespaceContains { get; set; }
+        public List<string>? NameEquals { get; set; }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalHealthDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\ArchitecturalHealthDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Dataset de saúde arquitetural por módulo físico.
+    ///
+    /// Ideal para dashboards KPI:
+    /// - Gauge
+    /// - Ranking
+    /// - Donut charts
+    ///
+    /// Métricas são normalizadas dentro do escopo analisado.
+    /// Funciona corretamente mesmo em análise parcial.
+    /// </summary>
+    public class ArchitecturalHealthDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_arch_health";
+
+        public string[] Headers => new[]
+        {
+            "Module",
+            "ZombieRate",
+            "IsolationRate",
+            "CoreDensity",
+            "EntryDensity"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var zombies = report.Results.OfType<StructuralCandidateResult>().FirstOrDefault();
+            var entries = report.Results.OfType<EntryPointHeuristicResult>().FirstOrDefault();
+            var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
+            var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
+
+            var tipos = context.Model.Tipos;
+
+            var modules = tipos.GroupBy(t => ExtractTopFolder(t.DeclaredInFile));
+
+            foreach (var module in modules)
+            {
+                var tiposDoModulo = module.ToList();
+                var total = tiposDoModulo.Count;
+
+                if (total == 0)
+                    continue;
+
+                var zombieCount = zombies?.StructuralCandidateTypes.Count(z => tiposDoModulo.Any(t => t.Name == z)) ?? 0;
+                var isolatedCount = isolated?.IsolatedCoreTypes.Count(i => tiposDoModulo.Any(t => t.Name == i)) ?? 0;
+                var entryCount = entries?.EntryPoints.Count(e => tiposDoModulo.Any(t => t.Name == e)) ?? 0;
+                var coreCount = tiposDoModulo.Count(t => arch?.Items.Any(a => a.TypeName == t.Name && a.Layer == "Core") == true);
+
+                yield return new[]
+                {
+                    module.Key,
+                    (zombieCount / (double)total).ToString("0.00"),
+                    (isolatedCount / (double)total).ToString("0.00"),
+                    (coreCount / (double)total).ToString("0.00"),
+                    (entryCount / (double)total).ToString("0.00")
+                };
+            }
+        }
+
+        /// <summary>
+        /// Extrai o módulo físico a partir do caminho relativo do arquivo.
+        /// Usa a primeira pasta abaixo da raiz como identificador do módulo.
+        /// </summary>
+        private static string ExtractTopFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return "Root";
+
+            var parts = path
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            return parts.Length > 1
+                ? parts[0]
+                : "Root";
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: GlobalMetricsDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\GlobalMetricsDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Global structural metrics dataset.
+    ///
+    /// Designed for KPI dashboards and gauges representing
+    /// overall architectural health of the analyzed scope.
+    ///
+    /// ? Source of Truth:
+    /// Unresolved candidates are obtained through
+    /// ConsolidatedReport.GetEffectiveUnresolvedCandidates().
+    ///
+    /// Legacy compatibility:
+    /// The metric name "ZombieRate" is preserved for compatibility
+    /// with historical datasets and dashboards.
+    /// Conceptually it now represents the rate of Unresolved Candidates.
+    /// </summary>
+    public class GlobalMetricsDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_global_metrics";
+
+        public string[] Headers => new[]
+        {
+            "Metric",
+            "Value"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var coupling = report.GetResult<CouplingResult>();
+            var entries = report.GetResult<EntryPointHeuristicResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var arch = report.GetResult<ArchitecturalClassificationResult>();
+
+            var structuralCandidates = report.GetStructuralCandidates();
+            var unresolvedCandidates = report.GetEffectiveUnresolvedCandidates();
+
+            var tipos = context.Model.Tipos;
+            var total = tipos.Count;
+
+            if (total == 0)
+                yield break;
+
+            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;
+
+            var normalizedCoupling = Normalize(totalFanOut, total);
+
+            // Legacy ZombieRate now represents unresolved candidate density
+            var unresolvedRate = unresolvedCandidates.Count / (double)total;
+
+            var isolationRate =
+                isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;
+
+            var entryDensity =
+                entries?.EntryPoints.Count / (double)total ?? 0;
+
+            var coreDensity =
+                arch?.Items.Count(i => i.Layer == "Core") / (double)total ?? 0;
+
+            yield return new[] { "Coupling", normalizedCoupling.ToString("0.00") };
+
+            // Legacy name preserved for compatibility
+            yield return new[] { "ZombieRate", unresolvedRate.ToString("0.00") };
+
+            yield return new[] { "IsolationRate", isolationRate.ToString("0.00") };
+
+            yield return new[] { "EntryPointDensity", entryDensity.ToString("0.00") };
+
+            yield return new[] { "CoreDensity", coreDensity.ToString("0.00") };
+        }
+
+        /// <summary>
+        /// Normalizes FanOut by total number of types.
+        /// </summary>
+        private static double Normalize(int fanOut, int totalTipos)
+        {
+            if (totalTipos == 0)
+                return 0;
+
+            return fanOut / (double)totalTipos;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: GlobalTypesDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\GlobalTypesDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Global per-type dataset.
+    ///
+    /// Each row represents a system type.
+    ///
+    /// Ideal for:
+    /// - Heatmaps
+    /// - Scatter plots
+    /// - Rankings
+    /// - BI drill-down
+    ///
+    /// Fully compatible with partial analyses.
+    /// </summary>
+    public class GlobalTypesDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_types_global";
+
+        public string[] Headers => new[]
+        {
+            "Type",
+            "Module",
+            "Layer",
+            "Usage",
+            "StructuralStatus",
+            "IsStructuralCandidate",
+            "IsUnresolved",
+            "IsIsolated",
+            "IsEntryPoint"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var structuralCandidates = report.GetStructuralCandidates();
+            var unresolvedCandidates = report.GetEffectiveUnresolvedCandidates();
+
+            var entries = report.GetResult<EntryPointHeuristicResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var arch = report.GetResult<ArchitecturalClassificationResult>();
+
+            var tipos = context.Model.Tipos;
+
+            foreach (var tipo in tipos)
+            {
+                var archItem = arch?.Items.FirstOrDefault(a => a.TypeName == tipo.Name);
+
+                var isStructuralCandidate =
+                    structuralCandidates.Contains(tipo.Name);
+
+                var isUnresolved =
+                    unresolvedCandidates.Contains(tipo.Name);
+
+                var isIsolated =
+                    isolated?.IsolatedCoreTypes.Contains(tipo.Name) == true;
+
+                var isEntryPoint =
+                    entries?.EntryPoints.Contains(tipo.Name) == true;
+
+                yield return new[]
+                {
+                    tipo.Name,
+                    ExtractTopFolder(tipo.DeclaredInFile),
+                    archItem?.Layer ?? "Unknown",
+                    archItem?.UsageCount.ToString() ?? "0",
+                    archItem?.StructuralStatus ?? "Unknown",
+                    isStructuralCandidate ? "1" : "0",
+                    isUnresolved ? "1" : "0",
+                    isIsolated ? "1" : "0",
+                    isEntryPoint ? "1" : "0"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Extracts the top-level module folder from the file path.
+        /// </summary>
+        private static string ExtractTopFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return "Root";
+
+            var parts = path
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            return parts.Length > 1
+                ? parts[0]
+                : "Root";
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: IAnalyticalDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\IAnalyticalDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Define o contrato para builders de datasets analíticos.
+    /// 
+    /// Responsável por transformar o relatório consolidado
+    /// em linhas de dados prontas para exportação.
+    /// </summary>
+    public interface IAnalyticalDatasetBuilder
+    {
+        /// <summary>
+        /// Nome do dataset gerado.
+        /// </summary>
+        string DatasetName { get; }
+
+        /// <summary>
+        /// Gera linhas do dataset a partir do relatório.
+        /// </summary>
+        IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report);
+
+        /// <summary>
+        /// Cabeçalhos do dataset.
+        /// </summary>
+        string[] Headers { get; }
+    }
+}
+
+
+==========================================
+ARQUIVO: ModuleContributionDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\ModuleContributionDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Dataset de contribuição por módulo.
+    ///
+    /// Mostra quanto cada módulo contribui para uma métrica
+    /// dentro do escopo analisado.
+    ///
+    /// Preparado para Coupling.
+    /// </summary>
+    public class ModuleContributionDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_module_contribution";
+
+        public string[] Headers => new[]
+        {
+            "Metric",
+            "Module",
+            "AbsoluteValue",
+            "ContributionWithinScope"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var coupling = report.Results
+                .OfType<CouplingResult>()
+                .FirstOrDefault();
+
+            if (coupling == null)
+                yield break;
+
+            var total = coupling.ModuleFanOut.Values.Sum();
+
+            if (total == 0)
+                yield break;
+
+            foreach (var kvp in coupling.ModuleFanOut)
+            {
+                yield return new[]
+                {
+                    "Coupling",
+                    kvp.Key,
+                    kvp.Value.ToString(),
+                    (kvp.Value / (double)total).ToString("0.00")
+                };
+            }
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralOverviewDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\StructuralOverviewDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Dataset estrutural por módulo físico.
+    /// 
+    /// Este dataset é ideal para visualizações de radar chart,
+    /// mostrando a maturidade arquitetural por módulo dentro
+    /// do escopo analisado.
+    ///
+    /// Importante:
+    /// - Não depende da classificação heurística de pastas
+    /// - Utiliza apenas o universo real analisado (context.Model)
+    /// - Funciona corretamente em análises parciais
+    /// </summary>
+    public class StructuralOverviewDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_structural_overview";
+
+        public string[] Headers => new[]
+        {
+            "Module",
+            "TotalTypes",
+            "CoreTypes",
+            "ZombieTypes",
+            "EntryPoints",
+            "IsolatedTypes"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var zombies = report.Results.OfType<StructuralCandidateResult>().FirstOrDefault();
+            var entries = report.Results.OfType<EntryPointHeuristicResult>().FirstOrDefault();
+            var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
+            var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
+
+            // Universo real analisado
+            var tipos = context.Model.Tipos;
+
+            // Agrupamento físico por módulo
+            var modules = tipos.GroupBy(t => ExtractTopFolder(t.DeclaredInFile));
+
+            foreach (var module in modules)
+            {
+                var tiposDoModulo = module.ToList();
+
+                yield return new[]
+                {
+                    module.Key,
+                    tiposDoModulo.Count.ToString(),
+                    tiposDoModulo.Count(t => arch?.Items.Any(a => a.TypeName == t.Name && a.Layer == "Core") == true).ToString(),
+                    zombies?.StructuralCandidateTypes.Count(z => tiposDoModulo.Any(t => t.Name == z)).ToString() ?? "0",
+                    entries?.EntryPoints.Count(e => tiposDoModulo.Any(t => t.Name == e)).ToString() ?? "0",
+                    isolated?.IsolatedCoreTypes.Count(i => tiposDoModulo.Any(t => t.Name == i)).ToString() ?? "0"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Extrai o módulo físico a partir do caminho relativo do arquivo.
+        /// Usa a primeira pasta abaixo da raiz como identificador do módulo.
+        /// </summary>
+        private static string ExtractTopFolder(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return "Root";
+
+            var parts = path
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            return parts.Length > 1
+                ? parts[0]
+                : "Root";
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralScoreDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\StructuralScoreDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Calcula o Structural Score (0-100).
+    /// 
+    /// Representa a maturidade arquitetural do escopo analisado.
+    /// Ideal para KPI executivo.
+    /// </summary>
+    public class StructuralScoreDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_structural_score";
+
+        public string[] Headers => new[]
+        {
+            "Metric",
+            "Value"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var coupling = report.Results.OfType<CouplingResult>().FirstOrDefault();
+            var zombies = report.Results.OfType<StructuralCandidateResult>().FirstOrDefault();
+            var entries = report.Results.OfType<EntryPointHeuristicResult>().FirstOrDefault();
+            var isolated = report.Results.OfType<CoreIsolationResult>().FirstOrDefault();
+            var arch = report.Results.OfType<ArchitecturalClassificationResult>().FirstOrDefault();
+
+            var tipos = context.Model.Tipos;
+            var total = tipos.Count;
+
+            if (total == 0)
+                yield break;
+
+            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;
+            var zombieRate = zombies?.StructuralCandidateTypes.Count / (double)total ?? 0;
+            var isolationRate = isolated?.IsolatedCoreTypes.Count / (double)total ?? 0;
+            var entryDensity = entries?.EntryPoints.Count / (double)total ?? 0;
+            var coreDensity = arch?.Items.Count(i => i.Layer == "Core") / (double)total ?? 0;
+
+            var normalizedCoupling = Normalize(totalFanOut, total);
+
+            var score =
+                100
+                - (normalizedCoupling * 30)
+                - (zombieRate * 25)
+                - (isolationRate * 20)
+                - (entryDensity * 10)
+                + (coreDensity * 15);
+
+            score = Clamp(score, 0, 100);
+
+            yield return new[]
+            {
+                "StructuralScore",
+                score.ToString("0.00")
+            };
+        }
+
+        private static double Normalize(int fanOut, int totalTipos)
+        {
+            if (totalTipos == 0) return 0;
+            return fanOut / (double)totalTipos;
+        }
+
+        private static double Clamp(double value, double min, double max)
+        {
+            return Math.Max(min, Math.Min(max, value));
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralTrendDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\StructuralTrendDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Historical dataset representing structural health trends over time.
+    ///
+    /// ?? Source of Truth for candidate resolution:
+    /// Always uses ConsolidatedReport.GetEffectiveUnresolvedCandidates(),
+    /// ensuring probabilistic refinement is respected when available.
+    ///
+    /// Legacy compatibility:
+    /// The column "ZombieRate" is preserved for compatibility with
+    /// previously generated datasets and dashboards.
+    ///
+    /// Conceptually this value now represents:
+    ///     Unresolved Candidate Rate
+    ///
+    /// Planned migration (future version):
+    ///     ZombieRate ? UnresolvedRate
+    /// </summary>
+    public class StructuralTrendDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_structural_trend";
+
+        public string[] Headers => new[]
+        {
+            "Timestamp",
+            "Scope",
+            "StructuralScore",
+            "Coupling",
+            "ZombieRate",     // legacy column (UnresolvedRate)
+            "IsolationRate",
+            "CoreDensity"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var coupling = report.GetResult<CouplingResult>();
+            var isolated = report.GetResult<CoreIsolationResult>();
+            var architecture = report.GetResult<ArchitecturalClassificationResult>();
+
+            var totalTypes = context.Model.Tipos.Count;
+
+            if (totalTypes == 0)
+                yield break;
+
+            // ===============================
+            // Official source of unresolved candidates
+            // ===============================
+
+            var unresolvedCandidates =
+                report.GetEffectiveUnresolvedCandidates();
+
+            // ===============================
+            // Metrics
+            // ===============================
+
+            var totalFanOut = coupling?.ModuleFanOut.Values.Sum() ?? 0;
+            var normalizedCoupling = totalFanOut / (double)totalTypes;
+
+            var unresolvedRate =
+                unresolvedCandidates.Count / (double)totalTypes;
+
+            var isolationRate =
+                isolated?.IsolatedCoreTypes.Count / (double)totalTypes ?? 0;
+
+            var coreDensity =
+                architecture?.Items.Count(i => i.Layer == "Core")
+                / (double)totalTypes ?? 0;
+
+            yield return new[]
+            {
+                DateTime.UtcNow.ToString("o"),
+                context.Config.RootPath,
+                ComputeScore(
+                    normalizedCoupling,
+                    unresolvedRate,
+                    isolationRate,
+                    coreDensity
+                ).ToString("0.00"),
+                normalizedCoupling.ToString("0.00"),
+                unresolvedRate.ToString("0.00"),
+                isolationRate.ToString("0.00"),
+                coreDensity.ToString("0.00")
+            };
+        }
+
+        private static double ComputeScore(
+            double coupling,
+            double unresolved,
+            double isolation,
+            double core)
+        {
+            var score =
+                100
+                - (coupling * 30)
+                - (unresolved * 25)
+                - (isolation * 20)
+                + (core * 15);
+
+            return Math.Max(0, Math.Min(100, score));
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: TypeContributionDatasetBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Datasets\TypeContributionDatasetBuilder.cs
+==========================================
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Datasets
+{
+    /// <summary>
+    /// Dataset de contribuição por tipo dentro do módulo.
+    /// Ideal para drill-down de coupling.
+    /// </summary>
+    public class TypeContributionDatasetBuilder : IAnalyticalDatasetBuilder
+    {
+        public string DatasetName => "dataset_type_contribution";
+
+        public string[] Headers => new[]
+        {
+            "Metric",
+            "Module",
+            "Type",
+            "AbsoluteValue",
+            "ContributionWithinModule"
+        };
+
+        public IEnumerable<string[]> Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var coupling = report.Results
+                .OfType<CouplingResult>()
+                .FirstOrDefault();
+
+            if (coupling == null)
+                yield break;
+
+            foreach (var module in coupling.TypeFanOutByModule)
+            {
+                var total = module.Value.Values.Sum();
+
+                if (total == 0)
+                    continue;
+
+                foreach (var tipo in module.Value)
+                {
+                    yield return new[]
+                    {
+                        "Coupling",
+                        module.Key,
+                        tipo.Key,
+                        tipo.Value.ToString(),
+                        (tipo.Value / (double)total).ToString("0.00")
+                    };
+                }
+            }
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateEvaluator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Governance\FitnessGateEvaluator.cs
+==========================================
+namespace RefactorScope.Core.Governance
+{
+    using RefactorScope.Core.Results;
+
+    public static class FitnessGateEvaluator
+    {
+        public static bool HasFailure(ConsolidatedReport report)
+        {
+            var gates = report.Results
+                .OfType<FitnessGateResult>()
+                .FirstOrDefault();
+
+            if (gates == null)
+                return false;
+
+            return gates.HasFailure;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalMetrics.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalMetrics.cs
+==========================================
+namespace RefactorScope.Core.Metrics;
+
+public record ArchitecturalMetrics(
+    double MeanCoupling,
+    double UnresolvedCandidateRatio,
+    double NamespaceDriftRatio
+);
+
+
+==========================================
+ARQUIVO: ArchitecturalMetricsBuilder.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalMetricsBuilder.cs
+==========================================
+using System;
+using System.Linq;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Metrics
+{
+    /// <summary>
+    /// Constrói métricas arquiteturais agregadas a partir do
+    /// modelo estrutural e dos resultados dos analyzers.
+    ///
+    /// Essas métricas representam sinais estruturais consolidados
+    /// utilizados por módulos de interpretação arquitetural
+    /// como Estimation (RDI).
+    ///
+    /// Importante:
+    /// • Não depende do módulo Statistics.
+    /// • Opera apenas sobre Core + Results.
+    ///
+    /// Métricas calculadas:
+    ///
+    /// • MeanCoupling
+    ///     Média de fan-out estrutural entre tipos, ajustada
+    ///     semanticamente para ignorar módulos absolvidos
+    ///     (tooling, composition root, infraestrutura).
+    ///
+    /// • UnresolvedCandidateRatio
+    ///     Proporção de tipos classificados como unresolved
+    ///     após refinamento estrutural.
+    ///
+    /// • NamespaceDriftRatio
+    ///     Proporção de tipos classificados como drift lógico
+    ///     pela análise arquitetural.
+    /// </summary>
+    public static class ArchitecturalMetricsBuilder
+    {
+        public static ArchitecturalMetrics Build(
+            AnalysisContext context,
+            ConsolidatedReport report)
+        {
+            var model = context.Model;
+
+            int totalTypes = Math.Max(model.Tipos.Count, 1);
+
+            double meanCoupling = ComputeEffectiveCoupling(report);
+
+            var unresolved = report.GetEffectiveUnresolvedCandidates();
+
+            double unresolvedRatio =
+                (double)unresolved.Count / totalTypes;
+
+            var arch =
+                report.GetResult<ArchitecturalClassificationResult>();
+
+            int driftCount =
+                arch?.Items.Count(i => i.StructuralStatus == "DriftLogico") ?? 0;
+
+            double driftRatio =
+                (double)driftCount / totalTypes;
+
+            return new ArchitecturalMetrics(
+                meanCoupling,
+                unresolvedRatio,
+                driftRatio
+            );
+        }
+
+        /// <summary>
+        /// Calcula o coupling efetivo ignorando módulos cuja
+        /// natureza estrutural legitima alto fan-out.
+        /// </summary>
+        private static double ComputeEffectiveCoupling(
+            ConsolidatedReport report)
+        {
+            var coupling =
+                report.GetResult<CouplingResult>();
+
+            if (coupling == null)
+                return 0;
+
+            var architectural =
+                report.GetResult<ArchitecturalClassificationResult>();
+
+            if (architectural == null)
+            {
+                return coupling.FanOutTotalByType
+                    .Values
+                    .DefaultIfEmpty(0)
+                    .Average();
+            }
+
+            var filtered =
+                coupling.FanOutTotalByType
+                    .Where(kv =>
+                    {
+                        var module =
+                            architectural.Items
+                                .FirstOrDefault(i => i.TypeName == kv.Key)
+                                ?.Folder;
+
+                        if (string.IsNullOrWhiteSpace(module))
+                            return true;
+
+                        if (ArchitecturalScoreCalculator.IsToolingModule(module))
+                            return false;
+
+                        if (ArchitecturalScoreCalculator.IsInfrastructure(module))
+                            return false;
+
+                        if (ArchitecturalScoreCalculator.IsCompositionRoot(module))
+                            return false;
+
+                        return true;
+                    })
+                    .Select(kv => kv.Value)
+                    .DefaultIfEmpty(0);
+
+            return filtered.Average();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalScoreCalculator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Metrics\ArchitecturalScoreCalculator.cs
+==========================================
+namespace RefactorScope.Core.Metrics;
+
+/// <summary>
+/// Calcula o score arquitetural de um módulo.
+///
+/// O score é um indicador heurístico (0–100) baseado em:
+///
+/// - Coupling (fan-out inter-módulo)
+/// - Zombie candidates (classes potencialmente mortas)
+/// - Isolation (core não referenciado)
+/// - Core density (bônus estrutural)
+///
+/// Importante:
+/// - Todos os módulos são penalizados por zombies.
+/// - Apenas módulos arquiteturalmente relevantes recebem penalização
+///   completa de coupling.
+///
+/// Alguns módulos possuem características estruturais específicas:
+///
+/// Composition Root
+///     Normalmente possui alto fan-out (registro de dependências).
+///     Penalidade de coupling é fortemente reduzida.
+///
+/// Infrastructure / Tooling
+///     Dependem naturalmente de múltiplos módulos.
+///     Penalidade de coupling é reduzida ou ignorada.
+///
+/// Observação:
+/// A identificação desses módulos é heurística (baseada no nome do
+/// módulo/folder). Portanto, a análise de coupling nesses casos
+/// deve ser interpretada com cautela.
+/// </summary>
+public static class ArchitecturalScoreCalculator
+{
+    private const double MAX_COUPLING_PENALTY = 50;
+
+    public static double Calculate(
+        string module,
+        int totalTypes,
+        int unresolvedCount,
+        int isolatedCount,
+        int fanOut,
+        int coreTypes)
+    {
+        if (totalTypes == 0)
+            return 100;
+
+        double normalizedTypes = Math.Max(totalTypes, 3);
+
+        double zombieRate = unresolvedCount / normalizedTypes;
+        double isolationRate = isolatedCount / normalizedTypes;
+        double couplingRate = fanOut / normalizedTypes;
+        double coreDensity = coreTypes / normalizedTypes;
+
+        if (IsCompositionRoot(module))
+        {
+            couplingRate *= 0.10;
+            zombieRate *= 0.50;
+        }
+        else if (IsInfrastructure(module))
+        {
+            couplingRate *= 0.50;
+        }
+        else if (IsToolingModule(module))
+        {
+            couplingRate = 0;
+        }
+
+        double rawCouplingPenalty = couplingRate * 30;
+
+        // ?? Correção principal
+        double couplingPenalty = Math.Min(rawCouplingPenalty, MAX_COUPLING_PENALTY);
+
+        double zombiePenalty = zombieRate * 25;
+        double isolationPenalty = isolationRate * 20;
+
+        double coreBonus = coreDensity * 15;
+
+        var score =
+            100
+            - couplingPenalty
+            - zombiePenalty
+            - isolationPenalty
+            + coreBonus;
+
+        return Math.Clamp(score, 0, 100);
+    }
+
+    internal static bool IsCompositionRoot(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        return module.Contains("Program", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Bootstrap", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Startup", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Composition", StringComparison.OrdinalIgnoreCase)
+            || module.Contains("Raiz", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool IsInfrastructure(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        return module.Equals("Infrastructure", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Infra", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Infraestrutura", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool IsToolingModule(string module)
+    {
+        if (string.IsNullOrWhiteSpace(module))
+            return false;
+
+        return module.Equals("CLI", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Execution", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Exporters", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Exporter", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Statistics", StringComparison.OrdinalIgnoreCase)
+            || module.Equals("Debug", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalClassificationItem.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ArchitecturalClassificationItem.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    public class ArchitecturalClassificationItem
+    {
+        public string TypeName { get; init; } = string.Empty;
+        public string Namespace { get; init; } = string.Empty;
+
+        public string Folder { get; init; } = string.Empty;
+
+        /// <summary>
+        /// Caminho completo da hierarquia de pastas relativo ao projeto.
+        /// Ex: Core/Abstractions ou Analyzers/Solid/Rules
+        /// Usado para análises estruturais profundas.
+        /// </summary>
+        public string FolderHierarchy { get; init; } = string.Empty;
+
+        public string Layer { get; init; } = string.Empty;
+        public string NamespaceAlignment { get; init; } = string.Empty;
+        public string StructuralStatus { get; init; } = string.Empty;
+        public string Status { get; init; } = string.Empty;
+        public string RemovalCandidate { get; init; } = string.Empty;
+
+        public int UsageCount { get; init; }
+
+        public string DeclaredInFile { get; init; } = string.Empty;
+    }
+}
+
+
+==========================================
+ARQUIVO: ArquivoInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ArquivoInfo.cs
+==========================================
+using System.Reflection;
+
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa um arquivo dentro do escopo analisado.
+    /// </summary>
+    public class ArquivoInfo
+    {
+        /// <summary>
+        /// Caminho relativo ao root analisado.
+        /// </summary>
+        public string RelativePath { get; }
+
+        /// <summary>
+        /// Namespace detectado no arquivo.
+        /// </summary>
+        public string Namespace { get; }
+
+        /// <summary>
+        /// Conteúdo do código fonte.
+        /// </summary>
+        public string SourceCode { get; }
+
+        /// <summary>
+        /// Tipos declarados neste arquivo.
+        /// </summary>
+        public IReadOnlyList<TipoInfo> Tipos { get; }
+
+        public ArquivoInfo(
+            string relativePath,
+            string @namespace,
+            string sourceCode,
+            IReadOnlyList<TipoInfo> tipos)
+        {
+            RelativePath = relativePath;
+            Namespace = @namespace;
+            SourceCode = sourceCode;
+            Tipos = tipos;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: CouplingSuspicion.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\CouplingSuspicion.cs
+==========================================
+using System;
+
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa uma suspeita de acoplamento arquitetural implícito.
+    /// 
+    /// Detectada por heurísticas como:
+    /// - fan-out elevado
+    /// - fan-in baixo
+    /// - dominância de dependência
+    /// </summary>
+    public sealed class CouplingSuspicion
+    {
+        public string TypeName { get; }
+
+        public string Module { get; }
+
+        public string TargetModule { get; }
+
+        public int FanOut { get; }
+
+        public int FanIn { get; }
+
+        public double Dominance { get; }
+
+        public int Volume { get; }
+
+        public CouplingSuspicion(
+            string typeName,
+            string module,
+            string targetModule,
+            int fanOut,
+            int fanIn,
+            double dominance,
+            int volume)
+        {
+            TypeName = typeName;
+            Module = module;
+            TargetModule = targetModule;
+            FanOut = fanOut;
+            FanIn = fanIn;
+            Dominance = dominance;
+            Volume = volume;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: HygieneReport.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\HygieneReport.cs
+==========================================
+/// <summary>
+/// Aggregated architectural hygiene report for a project.
+///
+/// The SmellIndex (0–100) is a composite indicator representing the
+/// overall structural health of the codebase.
+///
+/// Current calculation uses only metrics intrinsic to HygieneReport,
+/// ensuring the model remains self-contained and independent from
+/// external analyzers.
+///
+/// Current components:
+/// 
+/// • Dead Code Ratio (Unreferenced classes)
+/// • Namespace Drift Ratio (namespace vs folder misalignment)
+/// • Global Namespace Ratio (legacy structural usage)
+/// • Core Isolation Ratio (core architectural boundary integrity)
+/// • Structural Entropy (distribution disorder across modules)
+///
+/// These signals represent fundamental structural hygiene indicators.
+/// The index is intentionally lightweight to provide a stable baseline
+/// metric for the RefactorScope MVP.
+///
+/// Future extensions may incorporate additional architectural signals
+/// without breaking the current implementation. Examples include:
+///
+/// • Coupling metrics (fan-out / instability)
+/// • SOLID design alerts
+/// • Pattern similarity clusters
+/// • Unresolved structural candidates
+/// • Architectural tension (distance from Main Sequence)
+///
+/// These can be integrated as additional weighted components,
+/// preserving backward compatibility with the existing index.
+///
+/// Example future formula:
+///
+/// SmellIndex =
+///     BaseHygieneScore
+///     + CouplingScore
+///     + DesignQualityScore
+///
+/// Where BaseHygieneScore corresponds to the current calculation.
+/// </summary>
+
+
+namespace RefactorScope.Core.Model
+{
+    public sealed class HygieneReport
+    {
+        public int TotalClasses { get; }
+
+        public int UnreferencedCount { get; }
+
+        public int GlobalNamespaceCount { get; }
+
+        public int NamespaceDriftCount { get; }
+
+        public int IsolatedCoreCount { get; }
+
+        /// <summary>
+        /// Shannon entropy normalizada (0–1)
+        /// </summary>
+        public double StructuralEntropy { get; }
+
+        /// <summary>
+        /// Índice composto (0–100)
+        /// </summary>
+        public double SmellIndex { get; }
+
+        public string HygieneLevel =>
+            SmellIndex switch
+            {
+                <= 20 => "?? Healthy",
+                <= 40 => "?? Stable",
+                <= 60 => "?? Degrading",
+                <= 80 => "?? Critical",
+                _ => "?? Structural Risk"
+            };
+
+        public HygieneReport(
+            int totalClasses,
+            int unreferencedCount,
+            int globalNamespaceCount,
+            int namespaceDriftCount,
+            int isolatedCoreCount,
+            double structuralEntropy)
+        {
+            TotalClasses = totalClasses;
+            UnreferencedCount = unreferencedCount;
+            GlobalNamespaceCount = globalNamespaceCount;
+            NamespaceDriftCount = namespaceDriftCount;
+            IsolatedCoreCount = isolatedCoreCount;
+
+            StructuralEntropy = Math.Clamp(structuralEntropy, 0, 1);
+
+            double deadRatio =
+                totalClasses == 0 ? 0 :
+                unreferencedCount / (double)totalClasses;
+
+            double driftRatio =
+                totalClasses == 0 ? 0 :
+                namespaceDriftCount / (double)totalClasses;
+
+            double globalRatio =
+                totalClasses == 0 ? 0 :
+                globalNamespaceCount / (double)totalClasses;
+
+            double isolationRatio =
+                totalClasses == 0 ? 0 :
+                isolatedCoreCount / (double)totalClasses;
+
+            SmellIndex = Math.Clamp(
+
+                (deadRatio * 35) +
+                (driftRatio * 20) +
+                (globalRatio * 10) +
+                (isolationRatio * 15) +
+                (StructuralEntropy * 20),
+
+                0,
+                100
+            );
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ModeloEstrutural.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ModeloEstrutural.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa o modelo estrutural agnóstico do código analisado.
+    /// </summary>
+    public class ModeloEstrutural
+    {
+        /// <summary>
+        /// Caminho raiz analisado.
+        /// </summary>
+        public string RootPath { get; }
+
+        /// <summary>
+        /// Arquivos encontrados no escopo.
+        /// </summary>
+        public IReadOnlyList<ArquivoInfo> Arquivos { get; }
+
+        /// <summary>
+        /// Todos os tipos detectados.
+        /// </summary>
+        public IReadOnlyList<TipoInfo> Tipos { get; }
+
+        /// <summary>
+        /// Todas as referências detectadas.
+        /// </summary>
+        public IReadOnlyList<ReferenciaInfo> Referencias { get; }
+
+        public ModeloEstrutural(
+            string rootPath,
+            IReadOnlyList<ArquivoInfo> arquivos,
+            IReadOnlyList<TipoInfo> tipos,
+            IReadOnlyList<ReferenciaInfo> referencias)
+        {
+            RootPath = rootPath;
+            Arquivos = arquivos;
+            Tipos = tipos;
+            Referencias = referencias;
+        }
+
+
+    }
+}
+
+
+==========================================
+ARQUIVO: ReferenciaInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\ReferenciaInfo.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Define o tipo de evidência que originou uma referência entre tipos.
+    /// 
+    /// A qualificação da evidência permite análises mais sofisticadas
+    /// sobre o grafo de dependência, como detecção de código morto
+    /// ou classificação da intensidade do acoplamento.
+    /// </summary>
+    public enum TipoReferencia
+    {
+        /// <summary>
+        /// Menção simples do tipo no código.
+        /// Exemplo:
+        /// UserService service;
+        /// </summary>
+        Mention,
+
+        /// <summary>
+        /// Instanciação direta do tipo.
+        /// Exemplo:
+        /// new UserService();
+        /// </summary>
+        Instantiation,
+
+        /// <summary>
+        /// Chamada estática de método.
+        /// Exemplo:
+        /// UserService.DoSomething();
+        /// </summary>
+        StaticCall,
+
+        /// <summary>
+        /// Uso dentro de generics.
+        /// Exemplo:
+        /// List&lt;UserService&gt;
+        /// </summary>
+        Generic,
+
+        /// <summary>
+        /// Uso em typeof().
+        /// Exemplo:
+        /// typeof(UserService)
+        /// </summary>
+        Typeof,
+
+        /// <summary>
+        /// Uso em nameof().
+        /// Exemplo:
+        /// nameof(UserService)
+        /// </summary>
+        Nameof,
+
+        /// <summary>
+        /// Declaração de variável tipada.
+        /// Exemplo:
+        /// UserService service;
+        /// </summary>
+        Declaration
+    }
+
+    /// <summary>
+    /// Representa uma referência estrutural entre dois tipos
+    /// dentro do grafo de dependência do projeto.
+    /// </summary>
+    public class ReferenciaInfo
+    {
+        /// <summary>
+        /// Tipo que origina a referência.
+        /// </summary>
+        public string FromType { get; }
+
+        /// <summary>
+        /// Tipo referenciado.
+        /// </summary>
+        public string ToType { get; }
+
+        /// <summary>
+        /// Tipo de evidência que originou a referência.
+        /// </summary>
+        public TipoReferencia Kind { get; }
+
+        public ReferenciaInfo(
+            string fromType,
+            string toType,
+            TipoReferencia kind = TipoReferencia.Mention)
+        {
+            FromType = fromType;
+            ToType = toType;
+            Kind = kind;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: TipoInfo.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Model\TipoInfo.cs
+==========================================
+namespace RefactorScope.Core.Model
+{
+    /// <summary>
+    /// Representa um tipo estrutural do código.
+    /// </summary>
+    public class TipoInfo
+    {
+        /// <summary>
+        /// Nome do tipo.
+        /// </summary>
+        public string Name { get; }
+
+        /// <summary>
+        /// Namespace do tipo.
+        /// </summary>
+        public string Namespace { get; }
+
+        /// <summary>
+        /// Tipo de declaração (class, interface, record, struct).
+        /// </summary>
+        public string Kind { get; }
+
+        /// <summary>
+        /// Caminho do arquivo onde foi declarado.
+        /// </summary>
+        public string DeclaredInFile { get; }
+
+        /// <summary>
+        /// Referências feitas por este tipo.
+        /// </summary>
+        public IReadOnlyList<ReferenciaInfo> References { get; }
+
+        /// <summary>
+        /// Caminho completo do arquivo onde o tipo está definido.
+        /// Necessário para geração do Dump IA.
+        /// </summary>
+        /// 
+          // -------------------------------------------------
+        // Propriedades derivadas
+        // -------------------------------------------------
+
+        /// <summary>
+        /// Indica se o tipo é uma interface.
+        /// </summary>
+        public bool IsInterface =>
+            Kind.Equals("interface", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Indica se o tipo é abstrato.
+        /// </summary>
+        /// Observação:
+        /// O parser atual não diferencia "abstract class",
+        /// portanto apenas interfaces são tratadas como abstratas.
+        /// </summary>
+        public bool IsAbstract =>
+            Kind.Equals("interface", StringComparison.OrdinalIgnoreCase);
+
+
+        public string FilePath { get; set; } = string.Empty;
+
+        public TipoInfo(
+            string name,
+            string @namespace,
+            string kind,
+            string declaredInFile,
+            IReadOnlyList<ReferenciaInfo> references)
+        {
+            Name = name;
+            Namespace = @namespace;
+            Kind = kind;
+            DeclaredInFile = declaredInFile;
+            References = references;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: AnalysisOrchestrator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Context;
+using RefactorScope.Core.Results;
+using RefactorScope.Estimation;
+using RefactorScope.Estimation.Models;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Statistics.Engines;
+
+namespace RefactorScope.Core.Orchestration
+{
+    /// <summary>
+    /// Orquestra a execução das etapas de análise do RefactorScope.
+    ///
+    /// Este fluxo substitui a antiga PipelineStep architecture
+    /// mantendo as mesmas fases conceituais:
+    ///
+    /// 1) AnalyzerStep
+    /// 2) StatisticsStep
+    /// 3) EstimationStep
+    ///
+    /// Cada etapa está isolada em um método.
+    /// Caso uma pipeline formal seja necessária no futuro,
+    /// basta extrair cada método como um Step.
+    /// </summary>
+    public class AnalysisOrchestrator
+    {
+        private readonly IEnumerable<IAnalyzer> _analyzers;
+
+        public AnalysisOrchestrator(IEnumerable<IAnalyzer> analyzers)
+        {
+            _analyzers = analyzers;
+        }
+
+        public ConsolidatedReport Execute(AnalysisContext context)
+        {
+            var results = new List<IAnalysisResult>();
+
+            //------------------------------------------
+            // STEP 1 — AnalyzerStep
+            //------------------------------------------
+
+            RunAnalyzers(context, results);
+
+            //------------------------------------------
+            // STEP 2 — Build consolidated report
+            //------------------------------------------
+
+            var report = BuildReport(context, results);
+
+            //------------------------------------------
+            // STEP 3 — StatisticsStep
+            //------------------------------------------
+
+            RunStatistics(context, ref report, results);
+
+            //------------------------------------------
+            // STEP 4 — EstimationStep
+            //------------------------------------------
+
+            RunEffortEstimation(context, report, results);
+
+            return report;
+        }
+
+        // =====================================================
+        // AnalyzerStep
+        // =====================================================
+
+        private void RunAnalyzers(
+            AnalysisContext context,
+            List<IAnalysisResult> results)
+        {
+            foreach (var analyzer in _analyzers)
+            {
+                if (!IsAnalyzerEnabled(context, analyzer))
+                    continue;
+
+                try
+                {
+                    var result = analyzer.Analyze(context);
+
+                    results.Add(result);
+
+                    // Atualiza contexto incremental
+                    context.Results = results;
+                }
+                catch (Exception ex)
+                {
+                    Infrastructure.CrashLogger.Log(
+                        ex,
+                        $"ANALYZER_{analyzer.Name}");
+                }
+            }
+        }
+
+        // =====================================================
+        // Build Report
+        // =====================================================
+
+        private ConsolidatedReport BuildReport(
+            AnalysisContext context,
+            List<IAnalysisResult> results)
+        {
+            var zombieThreshold =
+                context.Config.StructuralCandidateDetection
+                    .MinUnresolvedProbabilityThreshold;
+
+            return new ConsolidatedReport(
+                results,
+                context.ExecutionTime,
+                context.Config.RootPath,
+                zombieThreshold
+            );
+        }
+
+        // =====================================================
+        // StatisticsStep
+        // =====================================================
+
+        private void RunStatistics(
+            AnalysisContext context,
+            ref ConsolidatedReport report,
+            List<IAnalysisResult> results)
+        {
+            if (context.Config.Statistics?.Enabled != true)
+                return;
+
+            try
+            {
+                var statsReport = ValidationEngine.RunSafely(
+                    context,
+                    report,
+                    (ex, phase) => Infrastructure.CrashLogger.Log(ex, phase)
+                );
+
+                if (statsReport == null)
+                    return;
+
+                results.Add(statsReport);
+
+                context.Results = results;
+
+                report = new ConsolidatedReport(
+                    results,
+                    report.ExecutionTime,
+                    report.TargetScope,
+                    report.UnresolvedProbabilityThreshold
+                );
+            }
+            catch (Exception ex)
+            {
+                Infrastructure.CrashLogger.Log(ex, "STATISTICS_STEP");
+            }
+        }
+
+        // =====================================================
+        // EstimationStep
+        // =====================================================
+
+        private void RunEffortEstimation(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            List<IAnalysisResult> results)
+        {
+            if (context.Config.Estimator?.Enabled != true)
+                return;
+
+            try
+            {
+                var estimate = EffortEstimator.Estimate(context, report);
+
+                var estimateResult = new EffortEstimateResult(estimate);
+
+                results.Add(estimateResult);
+
+                context.Results = results;
+            }
+            catch (Exception ex)
+            {
+                Infrastructure.CrashLogger.Log(ex, "ESTIMATION_STEP");
+            }
+        }
+
+        // =====================================================
+        // Helper
+        // =====================================================
+
+        private bool IsAnalyzerEnabled(
+            AnalysisContext context,
+            IAnalyzer analyzer)
+        {
+            if (context.Config.Analyzers == null)
+                return true;
+
+            if (!context.Config.Analyzers
+                .TryGetValue(analyzer.Name, out var enabled))
+                return true;
+
+            return enabled;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ParserExecutionStats.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\ParserExecutionStats.cs
+==========================================
+using System;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Contém métricas de execução de um parser.
+/// 
+/// Estas métricas são utilizadas para:
+/// - Observabilidade do pipeline de parsing
+/// - Benchmark entre diferentes parsers
+/// - Diagnóstico de performance
+/// - Futuro auto-tuning de parsers
+/// </summary>
+public record ParserExecutionStats(
+    /// <summary>
+    /// Tempo total de execução do parser.
+    /// </summary>
+    TimeSpan ExecutionTime,
+
+    /// <summary>
+    /// Estimativa de memória utilizada durante o parsing (em bytes).
+    /// </summary>
+    long EstimatedMemoryBytes,
+
+    /// <summary>
+    /// Indica se foi detectada alguma anomalia estrutural durante o parsing.
+    /// </summary>
+    bool AnomalyDetected
+);
+
+
+==========================================
+ARQUIVO: ParserResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\ParserResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using System;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Implementação padrão imutável do envelope de resultado de parsing.
+/// 
+/// Este objeto encapsula todas as informações produzidas por um parser:
+/// - estado da execução
+/// - nível de confiança
+/// - plausibilidade estrutural
+/// - métricas de execução
+/// - exceções capturadas
+/// </summary>
+public record ParserResult(
+    /// <summary>
+    /// Status final da operação de parsing.
+    /// </summary>
+    ParseStatus Status,
+
+    /// <summary>
+    /// Indica se o modelo gerado passou na verificação de plausibilidade.
+    /// </summary>
+    bool IsPlausible,
+
+    /// <summary>
+    /// Índice de confiança da extração (0.0 a 1.0).
+    /// </summary>
+    double Confidence,
+
+    /// <summary>
+    /// Nome identificador do parser que gerou este resultado.
+    /// </summary>
+    string ParserName,
+
+    /// <summary>
+    /// Modelo estrutural extraído do código.
+    /// Pode ser null em caso de falha total.
+    /// </summary>
+    ModeloEstrutural? Model,
+
+    bool UsedFallback = false,
+
+    /// <summary>
+    /// Estatísticas de execução do parser.
+    /// </summary>
+    ParserExecutionStats? Stats = null,
+
+    /// <summary>
+    /// Exceção capturada durante a execução do parser, se houver.
+    /// </summary>
+    Exception? Error = null
+) : IParserResult;
+
+
+==========================================
+ARQUIVO: ParserSelector.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\ParserSelector.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing.Enum;
+using RefactorScope.Parsers.Common;
+using RefactorScope.Parsers.CsharpParsers;
+using RefactorScope.Parsers.CsharpParsers.Hybrid;
+
+namespace RefactorScope.Core.Parsing
+{
+
+    /// <summary>
+    /// Responsável por resolver qual parser será utilizado.
+    /// 
+    /// Pode operar em dois modos:
+    /// - Configuração direta
+    /// - Seleção interativa via CLI
+    /// </summary>
+    public static class ParserSelector
+    {
+        public static IParserCodigo ResolveParser(
+            string? configParserName,
+            bool interactive)
+        {
+            ParserStrategy strategy;
+
+            if (interactive)
+            {
+                strategy = PromptStrategy();
+            }
+            else if (!System.Enum.TryParse<ParserStrategy>(
+                        configParserName,
+                        true,
+                        out strategy))
+            {
+                Console.WriteLine(
+                    $"[WARN] Estratégia de parser '{configParserName}' inválida. Usando Selective.");
+
+                strategy = ParserStrategy.Selective;
+            }
+
+            return Build(strategy);
+        }
+
+        private static ParserStrategy PromptStrategy()
+        {
+            Console.WriteLine();
+            Console.WriteLine("?? Parser Selection");
+            Console.WriteLine("------------------------------------------------");
+            Console.WriteLine("1) Fast Scan (Regex)");
+            Console.WriteLine("2) Accurate Scan (Selective)");
+            Console.WriteLine("3) Adaptive (Experimental)");
+            Console.WriteLine("4) Incremental (Experimental)");
+            Console.WriteLine();
+
+            Console.Write("Select parser [1-4] (default 2): ");
+
+            var input = Console.ReadLine()?.Trim();
+
+            return input switch
+            {
+                "1" => ParserStrategy.RegexFast,
+                "3" => ParserStrategy.AdaptiveExperimental,
+                "4" => ParserStrategy.IncrementalExperimental,
+                _ => ParserStrategy.Selective
+            };
+        }
+
+        private static IParserCodigo Build(ParserStrategy strategy)
+        {
+            return strategy switch
+            {
+                ParserStrategy.RegexFast => BuildRegex(),
+                ParserStrategy.Selective => BuildSelective(),
+                ParserStrategy.AdaptiveExperimental => BuildAdaptive(),
+                ParserStrategy.IncrementalExperimental => BuildIncremental(),
+                _ => BuildSelective()
+            };
+        }
+
+        private static IParserCodigo BuildRegex()
+        {
+            var provider = BuildSourceProvider();
+            return new CSharpRegexParser(provider);
+        }
+
+        private static IParserCodigo BuildTextual()
+        {
+            var provider = BuildSourceProvider();
+
+            return new CSharpTextualParser(
+                provider,
+                msg => Console.WriteLine($"[WARN][Textual] {msg}")
+            );
+        }
+
+        private static IParserCodigo BuildSelective()
+        {
+            return new HybridSelectiveParser(
+                BuildRegex(),
+                BuildTextual(),
+                msg => Console.WriteLine($"[Selective] {msg}")
+            );
+        }
+
+        private static IParserCodigo BuildAdaptive()
+        {
+            return new HybridAdaptiveParser(
+                BuildRegex(),
+                BuildTextual(),
+                msg => Console.WriteLine($"[Adaptive] {msg}")
+            );
+        }
+
+        private static IParserCodigo BuildIncremental()
+        {
+            return new HybridIncrementalParser(
+                BuildRegex(),
+                BuildTextual(),
+                msg => Console.WriteLine($"[Incremental] {msg}")
+            );
+        }
+
+        private static SanitizedSourceProvider BuildSourceProvider()
+        {
+            IPreParser preParser = new CSharpPreParser();
+            return new SanitizedSourceProvider(preParser);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: PlausibilityEvaluator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\PlausibilityEvaluator.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+using System.Linq;
+
+namespace RefactorScope.Core.Parsing;
+
+/// <summary>
+/// Avaliador heurístico projetado para detectar falhas silenciosas em parsers 
+/// (ex: retornar um modelo válido, porém vazio ou estatisticamente improvável).
+/// </summary>
+public static class PlausibilityEvaluator
+{
+    /// <summary>
+    /// Avalia se o modelo estrutural gerado faz sentido considerando o volume de código processado.
+    /// </summary>
+    /// <param name="model">O modelo estrutural a ser avaliado.</param>
+    /// <returns>True se o modelo é plausível; False se parece ser lixo silencioso.</returns>
+    public static bool Evaluate(ModeloEstrutural model)
+    {
+        if (model == null || model.Arquivos == null || !model.Arquivos.Any())
+            return false;
+
+        int totalLines = 0;
+        int totalTipos = model.Tipos?.Count ?? 0;
+
+        foreach (var arquivo in model.Arquivos)
+        {
+            if (!string.IsNullOrEmpty(arquivo.SourceCode))
+            {
+                // Otimização: Evita alocações massivas na LOH (Large Object Heap) que ocorreriam com .Split('\n')
+                totalLines += arquivo.SourceCode.Count(c => c == '\n') + 1;
+            }
+        }
+
+        // Heurística de exemplo: Se tem mais de 500 linhas de código e 0 tipos extraídos, 
+        // o parser (provavelmente regex) engoliu o código sem quebrar, mas falhou na extração.
+        if (totalLines > 500 && totalTipos == 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+
+==========================================
+ARQUIVO: SanitizedSourceProvider.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\SanitizedSourceProvider.cs
+==========================================
+using System.IO;
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Parsing
+{
+    /// <summary>
+    /// Provedor de código fonte sanitizado.
+    ///
+    /// Centraliza a leitura de arquivos e a aplicação
+    /// de um PreParser antes do parsing estrutural.
+    /// </summary>
+    public sealed class SanitizedSourceProvider
+    {
+        private readonly IPreParser preParser;
+
+        public SanitizedSourceProvider(IPreParser preParser)
+        {
+            this.preParser = preParser;
+        }
+
+        public string Read(string path)
+        {
+            var source = File.ReadAllText(path);
+            return preParser.Sanitize(source);
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ParserStrategy.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Enum\ParserStrategy.cs
+==========================================
+namespace RefactorScope.Core.Parsing.Enum;
+
+/// <summary>
+/// Define as estratégias disponíveis para parsing do código.
+///
+/// A estratégia controla qual motor principal será utilizado
+/// para construir o modelo estrutural do projeto.
+///
+/// O design é modular para permitir experimentação e evolução
+/// futura (ex.: SharpParse).
+/// </summary>
+public enum ParserStrategy
+{
+    /// <summary>
+    /// Parser baseado exclusivamente em Regex.
+    /// 
+    /// Mais rápido, porém menos resiliente para sintaxes modernas
+    /// ou construções complexas de C#.
+    /// </summary>
+    RegexFast,
+
+    /// <summary>
+    /// Parser híbrido seletivo.
+    ///
+    /// O sistema classifica previamente as classes e decide
+    /// qual engine utilizar:
+    ///
+    /// - Textual ? classes seguras
+    /// - Regex ? classes complexas
+    /// - PatternSimilarity ? fallback
+    ///
+    /// Estratégia padrão recomendada.
+    /// </summary>
+    Selective,
+
+    /// <summary>
+    /// Parser adaptativo experimental.
+    ///
+    /// O sistema tenta ajustar heurísticas dinamicamente
+    /// baseado nos resultados de parsing.
+    /// </summary>
+    AdaptiveExperimental,
+
+    /// <summary>
+    /// Parser incremental experimental.
+    ///
+    /// Utilizado para parsing parcial de projetos grandes
+    /// onde apenas arquivos alterados são reprocessados.
+    /// </summary>
+    IncrementalExperimental
+}
+
+
+==========================================
+ARQUIVO: PatternSignatureLibrary.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Patterns\PatternSignatureLibrary.cs
+==========================================
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Patterns
+{
+    /// <summary>
+    /// Biblioteca central de reconhecimento de padrões estruturais
+    /// baseada em assinaturas nominais e heurísticas leves.
+    ///
+    /// Objetivo:
+    /// reduzir falsos positivos de "Unresolved"
+    /// identificando padrões arquiteturais comuns.
+    /// </summary>
+    public static class DesignPatternSignatureLibrary
+    {
+        private static readonly IReadOnlyList<PatternRule> _rules =
+            new List<PatternRule>
+            {
+                // ==============================
+                // DESIGN PATTERNS
+                // ==============================
+
+                new("Strategy", t => t.Name.EndsWith("Strategy")),
+                new("Factory", t => t.Name.EndsWith("Factory")),
+                new("Builder", t => t.Name.EndsWith("Builder")),
+                new("Adapter", t => t.Name.EndsWith("Adapter")),
+
+                // ==============================
+                // ARQUITETURA / INFRA
+                // ==============================
+
+                new("Repository", t => t.Name.EndsWith("Repository")),
+                new("Service", t => t.Name.EndsWith("Service")),
+                new("Provider", t => t.Name.EndsWith("Provider")),
+                new("Manager", t => t.Name.EndsWith("Manager")),
+                new("Dispatcher", t => t.Name.EndsWith("Dispatcher")),
+                new("Handler", t => t.Name.EndsWith("Handler")),
+                new("Mapper", t => t.Name.EndsWith("Mapper")),
+                new("Resolver", t => t.Name.EndsWith("Resolver")),
+                new("Registry", t => t.Name.EndsWith("Registry")),
+                new("ServiceLocator", t => t.Name.EndsWith("ServiceLocator")),
+
+                // ==============================
+                // FRAMEWORK / TOOLING
+                // ==============================
+
+                new("Analyzer", t => t.Name.EndsWith("Analyzer")),
+                new("Exporter", t => t.Name.EndsWith("Exporter")),
+                new("Controller", t => t.Name.EndsWith("Controller")),
+                new("Middleware", t => t.Name.EndsWith("Middleware")),
+                new("Rule", t => t.Name.EndsWith("Rule")),
+
+                // ==============================
+                // INFRASTRUCTURE UTILITIES
+                // ==============================
+
+                new("Validator", t => t.Name.EndsWith("Validator")),
+                new("Selector", t => t.Name.EndsWith("Selector")),
+                new("Loader", t => t.Name.EndsWith("Loader")),
+                new("Consolidator", t => t.Name.EndsWith("Consolidator")),
+                new("Renderer", t => t.Name.EndsWith("Renderer")),
+
+                // ==============================
+                // DATA STRUCTURES
+                // ==============================
+
+                new("DTO", t => t.Name.EndsWith("Dto")),
+                new("Converter", t => t.Name.EndsWith("Converter")),
+                new("Options", t => t.Name.EndsWith("Options")),
+                new("Configuration", t => t.Name.EndsWith("Configuration")),
+
+                // ==============================
+                // MESSAGING / CQRS
+                // ==============================
+
+                new("Event", t => t.Name.EndsWith("Event")),
+                new("Command", t => t.Name.EndsWith("Command")),
+                new("Query", t => t.Name.EndsWith("Query")),
+                new("Request", t => t.Name.EndsWith("Request")),
+                new("Response", t => t.Name.EndsWith("Response")),
+
+                // ==============================
+                // ERROR TYPES
+                // ==============================
+
+                new("Exception", t => t.Name.EndsWith("Exception"))
+            };
+
+
+        public static PatternSignatureResult Evaluate(TipoInfo tipo)
+        {
+            // 1?? Nome
+            foreach (var rule in _rules)
+            {
+                if (rule.Match(tipo))
+                    return PatternSignatureResult.Match(rule.PatternName);
+            }
+
+            // 2?? Heurísticas estruturais
+            var heuristic = StructuralHeuristicLibrary.Evaluate(tipo);
+            if (heuristic.IsMatch)
+                return heuristic;
+
+            return PatternSignatureResult.None();
+        }
+    }
+
+    internal sealed record PatternRule(
+        string PatternName,
+        Func<TipoInfo, bool> Match
+    );
+
+    public sealed record PatternSignatureResult(
+        bool IsMatch,
+        string? PatternName)
+    {
+        public static PatternSignatureResult Match(string name)
+            => new(true, name);
+
+        public static PatternSignatureResult None()
+            => new(false, null);
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralHeuristicLibrary.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Patterns\StructuralHeuristicLibrary.cs
+==========================================
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Patterns
+{
+    /// <summary>
+    /// Heurísticas estruturais leves baseadas apenas
+    /// no modelo estrutural disponível (TipoInfo).
+    ///
+    /// Não depende de AST nem reflexão.
+    /// Usa:
+    /// - nome da classe
+    /// - namespace
+    /// - tipo (class/interface/etc)
+    /// - referências detectadas
+    /// </summary>
+    public static class StructuralHeuristicLibrary
+    {
+        public static PatternSignatureResult Evaluate(TipoInfo tipo)
+        {
+            // ==============================
+            // CLI / Infrastructure helpers
+            // ==============================
+
+            if (tipo.Namespace.Contains(".CLI"))
+                return PatternSignatureResult.Match("CliInfrastructure");
+
+            if (tipo.Namespace.Contains(".Infrastructure"))
+                return PatternSignatureResult.Match("InfrastructureUtility");
+
+            if (tipo.Namespace.Contains(".Configuration"))
+                return PatternSignatureResult.Match("ConfigurationComponent");
+
+
+            // ==============================
+            // Orchestrators
+            // ==============================
+
+            if (tipo.Name.Contains("Orchestrator"))
+                return PatternSignatureResult.Match("Orchestrator");
+
+
+            // ==============================
+            // Validators
+            // ==============================
+
+            if (tipo.Name.Contains("Validator"))
+                return PatternSignatureResult.Match("Validator");
+
+
+            // ==============================
+            // Loaders
+            // ==============================
+
+            if (tipo.Name.Contains("Loader"))
+                return PatternSignatureResult.Match("Loader");
+
+
+            // ==============================
+            // Renderers
+            // ==============================
+
+            if (tipo.Name.Contains("Renderer"))
+                return PatternSignatureResult.Match("Renderer");
+
+
+            // ==============================
+            // Consolidators
+            // ==============================
+
+            if (tipo.Name.Contains("Consolidator"))
+                return PatternSignatureResult.Match("Aggregator");
+
+
+            // ==============================
+            // Discovery / scanning utilities
+            // ==============================
+
+            if (tipo.Name.Contains("Discovery"))
+                return PatternSignatureResult.Match("DiscoveryService");
+
+
+            // ==============================
+            // Logging utilities
+            // ==============================
+
+            if (tipo.Name.Contains("Logger"))
+                return PatternSignatureResult.Match("LoggingUtility");
+
+
+            // ==============================
+            // Extension classes
+            // ==============================
+
+            if (tipo.Name.EndsWith("Extensions"))
+                return PatternSignatureResult.Match("Extension");
+
+
+            // ==============================
+            // Configuration objects
+            // ==============================
+
+            if (tipo.Name.EndsWith("Options")
+                || tipo.Name.EndsWith("Configuration"))
+            {
+                return PatternSignatureResult.Match("ConfigurationObject");
+            }
+
+
+            // ==============================
+            // CQRS / Messaging
+            // ==============================
+
+            if (tipo.Name.EndsWith("Command")
+                || tipo.Name.EndsWith("Query")
+                || tipo.Name.EndsWith("Event")
+                || tipo.Name.EndsWith("Request")
+                || tipo.Name.EndsWith("Response"))
+            {
+                return PatternSignatureResult.Match("MessagingType");
+            }
+
+
+            // ==============================
+            // DTO / mapping
+            // ==============================
+
+            if (tipo.Name.EndsWith("Dto")
+                || tipo.Name.EndsWith("Mapper")
+                || tipo.Name.EndsWith("Converter"))
+            {
+                return PatternSignatureResult.Match("MappingType");
+            }
+
+
+            return PatternSignatureResult.None();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: AnalyzerSeverity.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Reporting\AnalyzerSeverity.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Core.Reporting
+{
+    public enum AnalyzerSeverity
+    {
+        Info,
+        Warning,
+        Critical
+    }
+}
+
+
+
+==========================================
+ARQUIVO: ReportConsolidator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Reporting\ReportConsolidator.cs
+==========================================
+using RefactorScope.Core.Results;
+
+namespace RefactorScope.Core.Reporting
+{
+    public sealed class ReportConsolidator
+    {
+        public ConsolidatedReport Consolidate(ConsolidatedReport report)
+        {
+            return report;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalClassificationResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ArchitecturalClassificationResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da classificação arquitetural.
+    /// </summary>
+    public class ArchitecturalClassificationResult : IAnalysisResult
+    {
+        public IReadOnlyList<ArchitecturalClassificationItem> Items { get; }
+
+        public ArchitecturalClassificationResult(IReadOnlyList<ArchitecturalClassificationItem> items)
+        {
+            Items = items;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ConsolidatedReport.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ConsolidatedReport.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Representa o relatório consolidado da execução.
+    ///
+    /// ?? Fonte Única de Verdade para classificação de Unresolveds.
+    ///
+    /// Separação formal:
+    /// - Structural Candidates (ausência estrutural)
+    /// - Confirmed Unresolveds (após threshold probabilístico)
+    /// - Suspicious (candidatos abaixo do threshold)
+    /// - PatternSimilarity (candidatos estruturais não confirmados)
+    /// </summary>
+    public class ConsolidatedReport
+    {
+        public IReadOnlyCollection<IAnalysisResult> Results { get; }
+        public DateTime ExecutionTime { get; }
+        public string TargetScope { get; }
+
+        /// <summary>
+        /// Threshold aplicado para confirmação probabilística.
+        /// </summary>
+        public double UnresolvedProbabilityThreshold { get; }
+
+        public ConsolidatedReport(
+            IReadOnlyCollection<IAnalysisResult> results,
+            DateTime executionTime,
+            string targetScope,
+            double unresolvedProbabilityThreshold)
+        {
+            Results = results;
+            ExecutionTime = executionTime;
+            TargetScope = targetScope;
+            UnresolvedProbabilityThreshold = unresolvedProbabilityThreshold;
+        }
+
+        // ==========================================================
+        // ?? Acesso Genérico
+        // ==========================================================
+
+        public T? GetResult<T>() where T : class, IAnalysisResult
+            => Results.OfType<T>().FirstOrDefault();
+
+        // ==========================================================
+        // ?? Camada 1 — Structural Candidates
+        // ==========================================================
+
+        public IReadOnlyList<string> GetStructuralCandidates()
+        {
+            var structural = GetResult<StructuralCandidateResult>();
+            return structural?.StructuralCandidateTypes ?? new List<string>();
+        }
+
+        // ==========================================================
+        // ?? Camada 2 — Unresolved
+        // ==========================================================
+
+        public IReadOnlyList<string> GetUnresolvedCandidates()
+        {
+            var probabilistic = GetResult<StructuralCandidateProbabilityResult>();
+
+            if (probabilistic == null)
+                return new List<string>();
+
+            return probabilistic
+                .Unresolved(UnresolvedProbabilityThreshold)
+                .Select(x => x.TypeName)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Compatibilidade retroativa.
+        /// </summary>
+        public IReadOnlyList<string> GetEffectiveUnresolvedCandidates()
+            => GetUnresolvedCandidates();
+
+        // ==========================================================
+        // ?? Camada 3 — Suspicious
+        // ==========================================================
+
+        public IReadOnlyList<string> GetPatternSimilarityCandidates()
+        {
+            var probabilistic = GetResult<StructuralCandidateProbabilityResult>();
+
+            if (probabilistic == null)
+                return new List<string>();
+
+            return probabilistic.Items
+                .Where(i => i.Probability < UnresolvedProbabilityThreshold)
+                .Select(i => i.TypeName)
+                .ToList();
+        }
+
+        // ==========================================================
+        // ?? Camada 4 — PatternSimilarity
+        // ==========================================================
+
+        public IReadOnlyList<string> GetPatternSimilarity()
+        {
+            var structural = GetStructuralCandidates();
+            var confirmed = GetUnresolvedCandidates();
+
+            return structural
+                .Where(s => !confirmed.Contains(s))
+                .ToList();
+        }
+
+        // ==========================================================
+        // ?? Breakdown Oficial
+        // ==========================================================
+
+        public StructuralCandidateAnalysisBreakdown GetStructuralCandidateBreakdown()
+        {
+            var structural = GetStructuralCandidates();
+            var confirmed = GetUnresolvedCandidates();
+            var suspicious = GetPatternSimilarityCandidates();
+            var patternSimilarity = GetPatternSimilarity();
+
+            var reduction = structural.Count == 0
+                ? 0
+                : (structural.Count - confirmed.Count) / (double)structural.Count;
+
+            return new StructuralCandidateAnalysisBreakdown(
+                structural.Count,
+                confirmed.Count,
+                suspicious.Count,
+                patternSimilarity.Count,
+                reduction
+            );
+        }
+
+        public double GetUnresolvedCandidatesRate(int totalTypes)
+        {
+            if (totalTypes == 0) return 0;
+            return GetUnresolvedCandidates().Count / (double)totalTypes;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ConsolidatedReportExtensions.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ConsolidatedReportExtensions.cs
+==========================================
+using System.Linq;
+
+namespace RefactorScope.Core.Results
+{
+    public static class ConsolidatedReportExtensions
+    {
+        /// <summary>
+        /// Produz o resumo canônico da análise estrutural.
+        /// </summary>
+        public static StructuralCandidateAnalysisBreakdown
+            GetStructuralCandidateBreakdown(this ConsolidatedReport report)
+        {
+            var candidates = report.GetStructuralCandidates();
+            var patternSimilarity = report.GetPatternSimilarityCandidates();
+            var unresolved = report.GetEffectiveUnresolvedCandidates();
+
+            int structuralCandidates = candidates.Count;
+            int confirmed = unresolved.Count;
+            int similarity = patternSimilarity.Count;
+
+            int suspicious = structuralCandidates - confirmed - similarity;
+
+            double reduction =
+                structuralCandidates == 0
+                    ? 0
+                    : similarity / (double)structuralCandidates;
+
+            return new StructuralCandidateAnalysisBreakdown(
+                structuralCandidates,
+                confirmed,
+                suspicious,
+                similarity,
+                reduction
+            );
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: CoreIsolationResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\CoreIsolationResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Representa tipos da camada Core isolados estruturalmente.
+    /// </summary>
+    public class CoreIsolationResult : IAnalysisResult
+    {
+        public IReadOnlyList<string> IsolatedCoreTypes { get; }
+
+        public CoreIsolationResult(IReadOnlyList<string> isolatedCoreTypes)
+        {
+            IsolatedCoreTypes = isolatedCoreTypes;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: CouplingResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\CouplingResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado do cálculo de acoplamento estrutural.
+    ///
+    /// Contém métricas em dois níveis:
+    ///
+    /// Classe:
+    /// - FanOutTotal
+    /// - FanIn
+    /// - Instability
+    ///
+    /// Arquitetura:
+    /// - FanOutInterModule
+    /// - Abstractness
+    /// - Instability (module)
+    /// - Distance from Main Sequence
+    /// </summary>
+    public class CouplingResult : IAnalysisResult
+    {
+        // -------------------------------------------------
+        // Arquitetura
+        // -------------------------------------------------
+
+        public IReadOnlyDictionary<string, int> ModuleFanOut { get; }
+
+        public IReadOnlyDictionary<string, Dictionary<string, int>> TypeFanOutByModule { get; }
+
+        // -------------------------------------------------
+        // Classe
+        // -------------------------------------------------
+
+        public IReadOnlyDictionary<string, int> FanOutTotalByType { get; }
+
+        public IReadOnlyDictionary<string, int> FanInByType { get; }
+
+        public IReadOnlyDictionary<string, double> InstabilityByType { get; }
+
+        // -------------------------------------------------
+        // Arquitetura avançada
+        // -------------------------------------------------
+
+        public IReadOnlyDictionary<string, double> AbstractnessByModule { get; }
+
+        public IReadOnlyDictionary<string, double> InstabilityByModule { get; }
+
+        public IReadOnlyDictionary<string, double> DistanceByModule { get; }
+
+        public CouplingResult(
+            Dictionary<string, int> moduleFanOut,
+            Dictionary<string, Dictionary<string, int>> typeFanOutByModule,
+            Dictionary<string, int> fanOutTotalByType,
+            Dictionary<string, int> fanInByType,
+            Dictionary<string, double> instabilityByType,
+            Dictionary<string, double> abstractnessByModule,
+            Dictionary<string, double> instabilityByModule,
+            Dictionary<string, double> distanceByModule)
+        {
+            ModuleFanOut = moduleFanOut;
+
+            TypeFanOutByModule = typeFanOutByModule;
+
+            FanOutTotalByType = fanOutTotalByType;
+
+            FanInByType = fanInByType;
+
+            InstabilityByType = instabilityByType;
+
+            AbstractnessByModule = abstractnessByModule;
+
+            InstabilityByModule = instabilityByModule;
+
+            DistanceByModule = distanceByModule;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: EffortEstimateResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\EffortEstimateResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Estimation.Models;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da estimativa de esforço de refatoração.
+    /// </summary>
+    public class EffortEstimateResult : IAnalysisResult
+    {
+        public string Name => "RefactorEffort";
+
+        public EffortEstimate Estimate { get; }
+
+        public EffortEstimateResult(EffortEstimate estimate)
+        {
+            Estimate = estimate;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: EntryPointHeuristicResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\EntryPointHeuristicResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    public class EntryPointHeuristicResult : IAnalysisResult
+    {
+        public IReadOnlyList<string> EntryPoints { get; }
+
+        public EntryPointHeuristicResult(IReadOnlyList<string> entryPoints)
+        {
+            EntryPoints = entryPoints;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\FitnessGateResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Representa o resultado da avaliação de Fitness Gates.
+    /// Define o estado de prontidão arquitetural do sistema.
+    /// </summary>
+    public class FitnessGateResult : IAnalysisResult
+    {
+        public IReadOnlyList<FitnessGateStatus> Gates { get; }
+
+        public bool HasFailure => Gates.Any(g => g.Status == GateStatus.Fail);
+
+        public FitnessGateResult(IReadOnlyList<FitnessGateStatus> gates)
+        {
+            Gates = gates;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: FitnessGateStatus.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\FitnessGateStatus.cs
+==========================================
+namespace RefactorScope.Core.Results
+{
+    public class FitnessGateStatus
+    {
+        public string GateName { get; init; } = string.Empty;
+        public GateStatus Status { get; init; }
+        public string Message { get; init; } = string.Empty;
+    }
+
+    public enum GateStatus
+    {
+        Pass,
+        Warn,
+        Fail
+    }
+}
+
+
+==========================================
+ARQUIVO: ImplicitCouplingResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ImplicitCouplingResult.cs
+==========================================
+using System.Collections.Generic;
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da análise de acoplamento implícito.
+    ///
+    /// Detecta possíveis hubs arquiteturais ou dependências
+    /// concentradas que podem indicar:
+    ///
+    /// - God Classes
+    /// - Orchestrators ocultos
+    /// - Acoplamento estrutural forte
+    ///
+    /// Baseado em heurísticas:
+    /// - Fan-in
+    /// - Fan-out
+    /// - Dominance
+    /// - Volume de dependências
+    /// </summary>
+    public sealed class ImplicitCouplingResult : IAnalysisResult
+    {
+        public IReadOnlyList<CouplingSuspicion> Suspicions { get; }
+
+        public ImplicitCouplingResult(List<CouplingSuspicion> suspicions)
+        {
+            Suspicions = suspicions;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ProjectStructureResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\ProjectStructureResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    public class ProjectStructureResult : IAnalysisResult
+    {
+        public IReadOnlyList<string> Lines { get; }
+
+        public ProjectStructureResult(IEnumerable<string> lines)
+        {
+            Lines = lines.ToList();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StatisticsResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StatisticsResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Statistics.Models;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado do módulo de estatísticas.
+    /// </summary>
+    public class StatisticsResult : IAnalysisResult
+    {
+        public string Name => "Statistics";
+
+        public StatisticsReport Report { get; }
+
+        public StatisticsResult(StatisticsReport report)
+        {
+            Report = report;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralBreakdownExtensions.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StructuralBreakdownExtensions.cs
+==========================================
+using System.Linq;
+
+namespace RefactorScope.Core.Results
+{
+    public static class StructuralBreakdownExtensions
+    {
+        public static StructuralCandidateAnalysisBreakdown
+            GetStructuralCandidateBreakdown(this ConsolidatedReport report)
+        {
+            var candidates = report.GetStructuralCandidates();
+            var patternSimilarity = report.GetPatternSimilarityCandidates();
+            var unresolved = report.GetEffectiveUnresolvedCandidates();
+
+            int structuralCandidates = candidates.Count;
+            int confirmed = unresolved.Count;
+            int similarity = patternSimilarity.Count;
+
+            int suspicious = structuralCandidates - confirmed - similarity;
+
+            double reduction =
+                structuralCandidates == 0
+                    ? 0
+                    : similarity / (double)structuralCandidates;
+
+            return new StructuralCandidateAnalysisBreakdown(
+                structuralCandidates,
+                confirmed,
+                suspicious,
+                similarity,
+                reduction
+            );
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralCandidateAnalysisBreakdown.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StructuralCandidateAnalysisBreakdown.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Core.Results
+{
+    public class StructuralCandidateAnalysisBreakdown
+    {
+        public int StructuralCandidates { get; }
+        public int ProbabilisticConfirmed { get; }
+        public int Suspicious { get; }
+        public int PatternSimilarity { get; }
+        public double ReductionRate { get; }
+
+        public StructuralCandidateAnalysisBreakdown(
+            int structuralCandidates,
+            int probabilisticConfirmed,
+            int suspicious,
+            int patternSimilarity,
+            double reductionRate)
+        {
+            StructuralCandidates = structuralCandidates;
+            ProbabilisticConfirmed = probabilisticConfirmed;
+            Suspicious = suspicious;
+            PatternSimilarity = patternSimilarity;
+            ReductionRate = reductionRate;
+        }
+    }
+}
+
+
+
+==========================================
+ARQUIVO: StructuralCandidateProbabilityItem.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StructuralCandidateProbabilityItem.cs
+==========================================
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace RefactorScope.Core.Results
+{
+    public class StructuralCandidateProbabilityItem
+    {
+        public string TypeName { get; }
+
+        public double Probability { get; }
+
+        public string ConfidenceLevel { get; }
+
+        public bool DiDetected { get; }
+
+        public bool InterfaceDetected { get; }
+
+        public StructuralCandidateProbabilityItem(
+            string typeName,
+            double probability,
+            string confidenceLevel,
+            bool diDetected,
+            bool interfaceDetected)
+        {
+            TypeName = typeName;
+            Probability = probability;
+            ConfidenceLevel = confidenceLevel;
+            DiDetected = diDetected;
+            InterfaceDetected = interfaceDetected;
+        }
+    }
+}
+
+
+
+==========================================
+ARQUIVO: StructuralCandidateProbabilityResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StructuralCandidateProbabilityResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    public class StructuralCandidateProbabilityResult : IAnalysisResult
+    {
+        public IReadOnlyList<StructuralCandidateProbabilityItem> Items { get; }
+
+        public StructuralCandidateProbabilityResult(IReadOnlyList<StructuralCandidateProbabilityItem> items)
+        {
+            Items = items;
+        }
+
+        public IReadOnlyList<StructuralCandidateProbabilityItem> Unresolved(double threshold)
+            => Items.Where(i => i.Probability >= threshold).ToList();
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralCandidateResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Results\StructuralCandidateResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Results
+{
+    /// <summary>
+    /// Resultado da análise de tipos potencialmente não utilizados.
+    /// </summary>
+    public class StructuralCandidateResult : IAnalysisResult
+    {
+        /// <summary>
+        /// Tipos que não possuem referências externas.
+        /// </summary>
+        public IReadOnlyList<string> StructuralCandidateTypes { get; }
+
+        public StructuralCandidateResult(IReadOnlyList<string> zombieTypes)
+        {
+            StructuralCandidateTypes = zombieTypes;
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ScopeFilteredFileDiscovery.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Scope\ScopeFilteredFileDiscovery.cs
+==========================================
+namespace RefactorScope.Core.Scope
+{
+    /// <summary>
+    /// Responsável por descobrir arquivos dentro do escopo de análise.
+    /// Separa descoberta de arquivos da lógica de parsing.
+    /// </summary>
+    public class ScopeFilteredFileDiscovery
+    {
+        private readonly ScopeRuleSet _rules;
+
+        public ScopeFilteredFileDiscovery(ScopeRuleSet rules)
+        {
+            _rules = rules;
+        }
+
+        public List<string> Discover(string rootPath)
+        {
+            return Directory
+                .GetFiles(rootPath, "*.cs", SearchOption.AllDirectories)
+                .Where(f => _rules.IsInScope(rootPath, f))
+                .ToList();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ScopeRuleSet.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Scope\ScopeRuleSet.cs
+==========================================
+namespace RefactorScope.Core.Scope
+{
+    /// <summary>
+    /// Representa o conjunto de regras de escopo determinístico.
+    /// Responsável por decidir se um arquivo pertence ao domínio de análise.
+    ///
+    /// Regras:
+    /// - Comparação case-insensitive
+    /// - Separadores normalizados
+    /// - Suporte a pasta e arquivo
+    /// - Precedência: Exclude > Include
+    /// </summary>
+    public class ScopeRuleSet
+    {
+        private readonly List<string> _includes;
+        private readonly List<string> _excludes;
+
+        public ScopeRuleSet(
+            IEnumerable<string>? includes,
+            IEnumerable<string>? excludes)
+        {
+            _includes = Normalize(includes);
+            _excludes = Normalize(excludes);
+        }
+
+        /// <summary>
+        /// Determina se um caminho pertence ao escopo.
+        /// </summary>
+        public bool IsInScope(string rootPath, string fullPath)
+        {
+            var relative = NormalizePath(
+                Path.GetRelativePath(rootPath, fullPath));
+
+            if (MatchesAny(relative, _excludes))
+                return false;
+
+            if (_includes.Count == 0)
+                return true;
+
+            return MatchesAny(relative, _includes);
+        }
+
+        // =============================
+        // Helpers
+        // =============================
+
+        private static List<string> Normalize(IEnumerable<string>? rules)
+        {
+            if (rules == null)
+                return new List<string>();
+
+            return rules
+                .Select(NormalizePath)
+                .ToList();
+        }
+
+        private static string NormalizePath(string path)
+        {
+            return path
+                .Replace("\\", "/")
+                .Trim()
+                .TrimStart('/')
+                .ToLowerInvariant();
+        }
+
+        private static bool MatchesAny(string relative, List<string> rules)
+        {
+            foreach (var rule in rules)
+            {
+                if (IsFolderRule(rule))
+                {
+                    if (relative.StartsWith(rule))
+                        return true;
+                }
+                else
+                {
+                    if (relative.Equals(rule))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsFolderRule(string rule)
+        {
+            return !rule.Contains(".");
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: StructuralAlignmentEvaluator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Structure\StructuralAlignmentEvaluator.cs
+==========================================
+using RefactorScope.Core.Model;
+
+namespace RefactorScope.Core.Structure
+{
+    public static class StructuralAlignmentEvaluator
+    {
+        public static string ExtractFolder(string declaredInFile)
+        {
+            if (string.IsNullOrWhiteSpace(declaredInFile))
+                return "Root";
+
+            var parts = declaredInFile
+                .Replace("\\", "/")
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            // Ignorar pasta raiz do projeto analisador (ex: AvaliaRoteiro)
+            // e capturar a primeira pasta do domínio real (ex: Scriptome)
+
+            if (parts.Length >= 2)
+                return parts[1];
+
+            return parts[0];
+        }
+
+        public static string EvaluateNamespaceAlignment(string folder, string ns)
+        {
+            if (string.IsNullOrWhiteSpace(ns))
+                return "SemNamespace";
+
+            return ns.Contains(folder, StringComparison.OrdinalIgnoreCase)
+                ? "Alinhado"
+                : "Desalinhado";
+        }
+
+        public static string EvaluateStructuralStatus(
+            string folder,
+            string ns,
+            string layer)
+        {
+            var namespaceAligned = EvaluateNamespaceAlignment(folder, ns);
+
+            if (namespaceAligned == "Desalinhado")
+                return "DriftLogico";
+
+            if (!ns.Contains(layer, StringComparison.OrdinalIgnoreCase))
+                return "DriftArquitetural";
+
+            return "Coerente";
+        }
+    }
+}
+
+

@@ -21,7 +21,7 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-09 05:03 UTC</div>
+        <div><b>Generated:</b> 2026-03-10 01:46 UTC</div>
         <div><b>Target:</b> AvaliaRoteiro</div>
         <div><b>Confidence:</b> 95%</div>
         <div><b>Confidence Band:</b> High</div>
@@ -72,12 +72,12 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Execution</div>
-        <div class="value">598 ms</div>
+        <div class="value">4442 ms</div>
         <div class="hint">Total parsing execution time for the analyzed scope</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Types / File</div>
+        <div class="label">Type Density</div>
         <div class="value">0,91</div>
         <div class="hint">Average number of extracted types per parsed file</div>
     </div>
@@ -90,13 +90,13 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / File</div>
-        <div class="value">3,38</div>
+        <div class="value">25,10</div>
         <div class="hint">Average parsing cost per file</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / Type</div>
-        <div class="value">3,72</div>
+        <div class="value">27,59</div>
         <div class="hint">Average parsing cost per extracted type</div>
     </div>
 
@@ -118,14 +118,14 @@
         <li><b>Files:</b> 177</li>
         <li><b>Types:</b> 161</li>
         <li><b>References:</b> 532</li>
-        <li><b>Execution Time:</b> 598,33 ms</li>
-        <li><b>Types per File:</b> 0,91</li>
+        <li><b>Execution Time:</b> 4442,31 ms</li>
+        <li><b>Type Density:</b> 0,91</li>
         <li><b>References per Type:</b> 3,30</li>
-        <li><b>Milliseconds per File:</b> 3,38</li>
-        <li><b>Milliseconds per Type:</b> 3,72</li>
+        <li><b>Milliseconds per File:</b> 25,10</li>
+        <li><b>Milliseconds per Type:</b> 27,59</li>
         <li><b>Memory per File:</b> 0,00 KB</li>
         <li><b>Memory per Type:</b> 0,00 KB</li>
-        <li><b>Extraction Index:</b> 85,17</li>
+        <li><b>Extraction Index:</b> 80,39</li>
         <li><b>Anomaly Detected:</b> No</li>
     </ul>
 </div>
@@ -134,7 +134,7 @@
     <ul class="clean">
         <li>Parser confidence is high. The extracted structural model appears reliable for downstream analysis.</li>
         <li>Structural density appears healthy. Parsed types and references show consistent extraction volume.</li>
-        <li>Parsing cost remains in an acceptable range for the extracted structural volume.</li>
+        <li>Parsing cost is elevated for this scope. Compare against other parser strategies if performance becomes relevant.</li>
         <li>No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.</li>
         <li>No anomaly flag was raised during parsing telemetry.</li>
     </ul>
@@ -148,51 +148,420 @@
 </div></div>
 <div class="section">
     <div class="section-title">
-        <h2>Charts & Density Diagnostics</h2>
+        <h2>Charts & Diagnostics</h2>
         <div class="line"></div>
     </div>
-    <div class="dual">
-<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    <h3>Structure Density</h3>
-    <div class='chart-container'>
-<h3>Structure Density</h3>
-<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
-<line x1='40' y1='280' x2='280' y2='280' stroke='#30363d'/>
-<rect x='110' y='200.15037593984962' width='30' height='79.84962406015038' fill='#4f8cff'/>
-<rect x='180' y='207.36842105263156' width='30' height='72.63157894736842' fill='#1dd1a1'/>
-<rect x='250' y='40' width='30' height='240' fill='#ffd166'/>
-<text x='125' y='194.15037593984962' text-anchor='middle' fill='#e6edf3' font-size='11'>177</text>
-<text x='195' y='201.36842105263156' text-anchor='middle' fill='#e6edf3' font-size='11'>161</text>
-<text x='265' y='34' text-anchor='middle' fill='#e6edf3' font-size='11'>532</text>
-<text x='125' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Files</text>
-<text x='195' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Types</text>
-<text x='265' y='310' text-anchor='middle' fill='#e6edf3' font-size='11'>Refs</text>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>
+<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Parsing Control Radar</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;max-width:80%;'>Higher area suggests stronger extraction quality and operational stability.</div>
+<div style='display:flex;justify-content:center;align-items:center;width:100%;'>
+<svg width="360" height="400" viewBox="0 0 360 400" style="display:block;border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="parsingRadarBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="parsingRadarGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="360" height="400" rx="16" fill="url(#parsingRadarBg)" />
+<polygon points='180,76 284,180 180,284 76,180' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,96.8 263.2,180 180,263.2 96.8,180' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,117.6 242.4,180 180,242.4 117.6,180' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,138.4 221.6,180 180,221.6 138.4,180' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<polygon points='180,159.2 200.8,180 180,200.8 159.2,180' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
+<line x1='180' y1='180' x2='180' y2='76' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='284' y2='180' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='180' y2='284' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<line x1='180' y1='180' x2='76' y2='180' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
+<text x='186' y='170.2' fill='rgba(235,214,194,0.42)' font-size='9'>20%</text>
+<text x='186' y='149.4' fill='rgba(235,214,194,0.42)' font-size='9'>40%</text>
+<text x='186' y='128.6' fill='rgba(235,214,194,0.42)' font-size='9'>60%</text>
+<text x='186' y='107.8' fill='rgba(235,214,194,0.42)' font-size='9'>80%</text>
+<text x='186' y='87' fill='rgba(235,214,194,0.42)' font-size='9'>100%</text>
+<text x='180' y='60' fill='#f2e1d2' font-size='11' text-anchor='middle'>Type Density</text>
+<text x='300' y='180' fill='#f2e1d2' font-size='11' text-anchor='start'>Graph Rich</text>
+<text x='180' y='300' fill='#f2e1d2' font-size='11' text-anchor='middle'>Confidence</text>
+<text x='60' y='180' fill='#f2e1d2' font-size='11' text-anchor='end'>Efficiency</text>
+<polygon points='180,156.35 284,180 180,278.8 133.391,180' fill='rgba(255,140,60,0.18)' stroke='#ff9a3c' stroke-width='2.4' filter='url(#parsingRadarGlow)'/>
+<circle cx="180" cy="156.35" r="4.6" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.3">
+    <title>Type Density — 22,7%</title>
+</circle>
+<circle cx="284" cy="180" r="4.6" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.3">
+    <title>Graph Rich — 100,0%</title>
+</circle>
+<circle cx="180" cy="278.8" r="4.6" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.3">
+    <title>Confidence — 95,0%</title>
+</circle>
+<circle cx="133.391" cy="180" r="4.6" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.3">
+    <title>Efficiency — 44,8%</title>
+</circle>
+<circle cx='180' cy='180' r='2.5' fill='rgba(255,240,214,0.92)'/>
+<g transform="translate(180, 378)">
+    <rect x="-95" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="#ff9a3c" stroke-width="1.2"/>
+    <text x="-75" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">Normalized parsing signal distribution</text>
+</g>
+</svg>
+</div>
+</div>
+
+<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Route Distribution</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;max-width:80%;'>How the parsing workload was distributed across execution routes.</div>
+<div style='display:flex;justify-content:center;align-items:center;width:100%;'>
+<svg width="360" height="400" viewBox="0 0 360 400" style="display:block;border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="donutBg" cx="50%" cy="42%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="donutGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="360" height="400" rx="16" fill="url(#donutBg)" />
+    <circle cx="180" cy="160" r="85"
+            fill="none"
+            stroke="rgba(255,255,255,0.07)"
+            stroke-width="24" />
+    <circle cx="180" cy="160" r="85"
+            fill="none"
+            stroke="#7fd36b"
+            stroke-width="24"
+            stroke-linecap="round"
+            stroke-dasharray="310.787 223.284"
+            stroke-dashoffset="-0"
+            transform="rotate(-90 180 160)"
+            filter="url(#donutGlow)">
+        <title>Safe: 103</title>
+    </circle>
+    <circle cx="180" cy="160" r="85"
+            fill="none"
+            stroke="#6ea8ff"
+            stroke-width="24"
+            stroke-linecap="round"
+            stroke-dasharray="105.607 428.464"
+            stroke-dashoffset="-310.787"
+            transform="rotate(-90 180 160)"
+            filter="url(#donutGlow)">
+        <title>Complex: 35</title>
+    </circle>
+    <circle cx="180" cy="160" r="85"
+            fill="none"
+            stroke="#ffc15d"
+            stroke-width="24"
+            stroke-linecap="round"
+            stroke-dasharray="63.364 470.706"
+            stroke-dashoffset="-416.394"
+            transform="rotate(-90 180 160)"
+            filter="url(#donutGlow)">
+        <title>AST / Pattern: 21</title>
+    </circle>
+    <circle cx="180" cy="160" r="85"
+            fill="none"
+            stroke="#ff9a52"
+            stroke-width="24"
+            stroke-linecap="round"
+            stroke-dasharray="54.312 479.758"
+            stroke-dashoffset="-479.758"
+            transform="rotate(-90 180 160)"
+            filter="url(#donutGlow)">
+        <title>Recovery: 18</title>
+    </circle>
+    <circle cx="180" cy="160" r="65"
+            fill="rgba(20,14,10,0.88)"
+            stroke="rgba(255,177,77,0.10)"
+            stroke-width="1" />
+
+    <text x="180" y="158" text-anchor="middle" fill="#f4e6d8" font-size="28" font-weight="700">177</text>
+    <text x="180" y="178" text-anchor="middle" fill="#d9c8b8" font-size="12">Total Routed</text>
+    <g transform="translate(85,340)">
+        <rect x="-8" y="-11" width="10" height="10" rx="2"
+              fill="#7fd36b"
+              stroke="rgba(255,240,214,0.65)"
+              stroke-width="0.8" />
+        <text x="8" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">Safe</text>
+    </g>
+    <g transform="translate(180,340)">
+        <rect x="-8" y="-11" width="10" height="10" rx="2"
+              fill="#6ea8ff"
+              stroke="rgba(255,240,214,0.65)"
+              stroke-width="0.8" />
+        <text x="8" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">Complex</text>
+    </g>
+    <g transform="translate(275,340)">
+        <rect x="-8" y="-11" width="10" height="10" rx="2"
+              fill="#ffc15d"
+              stroke="rgba(255,240,214,0.65)"
+              stroke-width="0.8" />
+        <text x="8" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">AST / Pattern</text>
+    </g>
+    <g transform="translate(132.5,364)">
+        <rect x="-8" y="-11" width="10" height="10" rx="2"
+              fill="#ff9a52"
+              stroke="rgba(255,240,214,0.65)"
+              stroke-width="0.8" />
+        <text x="8" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">Recovery</text>
+    </g>
+    <g transform="translate(227.5,364)">
+        <rect x="-8" y="-11" width="10" height="10" rx="2"
+              fill="#ff6a3d"
+              stroke="rgba(255,240,214,0.65)"
+              stroke-width="0.8" />
+        <text x="8" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">Risk</text>
+    </g>
+</svg>
+</div>
+</div>
+
+<div style='flex:1; min-width:280px;'>
+<ul class='clean'>
+<li><b>Safe:</b> Files likely handled in the most stable parsing route.</li>
+<li><b>Complex:</b> Files requiring more structural interpretation effort.</li>
+<li><b>AST / Pattern:</b> Files more dependent on structural pattern handling.</li>
+<li><b>Recovery:</b> Files likely requiring fallback or recovery behavior.</li>
+<li><b>Risk:</b> Files concentrated in the highest reliability-pressure bucket.</li>
+<li><b>Risk:</b> Files concentrated in the highest reliability-pressure bucket.</li>
+<li><b>Graph Rich:</b> Reference density per extracted type.</li>
+<li><b>Confidence:</b> Heuristic structural usability of the parsed model.</li>
+<li><b>Efficiency:</b> Lower per-type parsing cost produces stronger score.</li>
+<li>Route distribution is mixed. The execution appears usable, but some files required more complex handling paths.</li>
+</ul>
+</div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Control Room // Parsing Flow</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Parsing Flow Sankey</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Flow of structural extraction from input scope to output graph and risk buckets.</div>
+<svg width="1180" height="430" viewBox="0 0 1180 430" style="width:100%;height:auto;border-radius:16px;overflow:visible;max-width:1180px;">
+    <defs>
+        <radialGradient id="parsingSankeyBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="sankeyGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.2" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="1180" height="430" rx="16" fill="url(#parsingSankeyBg)" />
+<path d="M 210 202 C 256.2 202, 284.8 112, 320 112"
+      fill="none"
+      stroke="#7fd36b"
+      stroke-opacity="0.86"
+      stroke-width="14.195"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 210 202 C 256.2 202, 284.8 202, 320 202"
+      fill="none"
+      stroke="#6ea8ff"
+      stroke-opacity="0.86"
+      stroke-width="10.105"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 210 202 C 256.2 202, 284.8 292, 320 292"
+      fill="none"
+      stroke="#ffc15d"
+      stroke-opacity="0.86"
+      stroke-width="9.263"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 210 202 C 256.2 202, 284.8 382, 320 382"
+      fill="none"
+      stroke="#ff9a52"
+      stroke-opacity="0.86"
+      stroke-width="9.083"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 460 112 C 560.8 112, 623.2 162, 700 162"
+      fill="none"
+      stroke="#7fd36b"
+      stroke-opacity="0.86"
+      stroke-width="15.459"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 460 202 C 560.8 202, 623.2 312, 700 312"
+      fill="none"
+      stroke="#6ea8ff"
+      stroke-opacity="0.86"
+      stroke-width="11.188"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 460 292 C 560.8 292, 623.2 162, 700 162"
+      fill="none"
+      stroke="#ffc15d"
+      stroke-opacity="0.86"
+      stroke-width="9.263"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 460 382 C 699.4 382, 847.6 237, 1030 237"
+      fill="none"
+      stroke="#ff9a52"
+      stroke-opacity="0.86"
+      stroke-width="8.06"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 840 162 C 919.8 162, 969.2 237, 1030 237"
+      fill="none"
+      stroke="#ff8a3d"
+      stroke-opacity="0.86"
+      stroke-width="8.06"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<path d="M 840 312 C 919.8 312, 969.2 237, 1030 237"
+      fill="none"
+      stroke="#ff6a3d"
+      stroke-opacity="0.86"
+      stroke-width="8.06"
+      stroke-linecap="round"
+      filter="url(#sankeyGlow)" />
+<g>
+    <rect x="70" y="180" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#ff9a3c" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ff9a3c55);" />
+    <text x="82" y="198" fill="#f4e6d8" font-size="11" font-weight="700">Input Files</text>
+    <text x="82" y="213" fill="#d9c8b8" font-size="11">177</text>
+</g>
+<g>
+    <rect x="320" y="90" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#7fd36b" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #7fd36b55);" />
+    <text x="332" y="108" fill="#f4e6d8" font-size="11" font-weight="700">Safe Route</text>
+    <text x="332" y="123" fill="#d9c8b8" font-size="11">103</text>
+</g>
+<g>
+    <rect x="320" y="180" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#6ea8ff" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #6ea8ff55);" />
+    <text x="332" y="198" fill="#f4e6d8" font-size="11" font-weight="700">Complex Route</text>
+    <text x="332" y="213" fill="#d9c8b8" font-size="11">35</text>
+</g>
+<g>
+    <rect x="320" y="270" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#ffc15d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ffc15d55);" />
+    <text x="332" y="288" fill="#f4e6d8" font-size="11" font-weight="700">AST / Pattern</text>
+    <text x="332" y="303" fill="#d9c8b8" font-size="11">21</text>
+</g>
+<g>
+    <rect x="320" y="360" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#ff9a52" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ff9a5255);" />
+    <text x="332" y="378" fill="#f4e6d8" font-size="11" font-weight="700">Recovery</text>
+    <text x="332" y="393" fill="#d9c8b8" font-size="11">18</text>
+</g>
+<g>
+    <rect x="700" y="140" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#7fd36b" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #7fd36b55);" />
+    <text x="712" y="158" fill="#f4e6d8" font-size="11" font-weight="700">Extracted Types</text>
+    <text x="712" y="173" fill="#d9c8b8" font-size="11">161</text>
+</g>
+<g>
+    <rect x="700" y="290" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#6ea8ff" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #6ea8ff55);" />
+    <text x="712" y="308" fill="#f4e6d8" font-size="11" font-weight="700">Extracted Refs</text>
+    <text x="712" y="323" fill="#d9c8b8" font-size="11">532</text>
+</g>
+<g>
+    <rect x="1030" y="215" rx="10" ry="10" width="140" height="44"
+          fill="rgba(6,12,24,0.92)" stroke="#ff6a3d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ff6a3d55);" />
+    <text x="1042" y="233" fill="#f4e6d8" font-size="11" font-weight="700">Risk Bucket</text>
+    <text x="1042" y="248" fill="#d9c8b8" font-size="11">0</text>
+</g>
 </svg>
 </div>
 
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Control Room // Risk Heat</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class='chart-container' style='display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>
+<h3 style='margin:0 0 6px 0;text-align:center;'>Parsing Risk Heat Strip</h3>
+<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Operational buckets showing where reliability pressure is concentrated.</div>
+<div style="padding:22px;border-radius:16px;background:linear-gradient(180deg,rgba(18,21,25,0.96),rgba(10,12,14,0.96));border:1px solid rgba(210,120,45,0.20);">
+<div style="display:flex;height:34px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);">
+<div title="Safe: 103" style="width:75%;background:#7fd36b;display:flex;align-items:center;justify-content:center;font-size:11px;color:#08111f;font-weight:700;box-shadow:0 0 18px #7fd36b;">
+    103
 </div>
-<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    <h3>Parsing Radar</h3>
-    <div class='chart-container'>
-<h3>Parsing Quality Radar</h3>
-<svg width='320' height='320' style='background:#161b22;border-radius:12px'>
-<circle cx='160' cy='160' r='27.5' fill='none' stroke='#30363d' stroke-width='1' />
-<circle cx='160' cy='160' r='55' fill='none' stroke='#30363d' stroke-width='1' />
-<circle cx='160' cy='160' r='82.5' fill='none' stroke='#30363d' stroke-width='1' />
-<circle cx='160' cy='160' r='110' fill='none' stroke='#30363d' stroke-width='1' />
-<line x1='160' y1='160' x2='160' y2='50' stroke='#30363d' />
-<text x='160' y='28' fill='#e6edf3' font-size='11' text-anchor='middle'>Classes/File</text>
-<line x1='160' y1='160' x2='270' y2='160' stroke='#30363d' />
-<text x='292' y='160' fill='#e6edf3' font-size='11' text-anchor='middle'>Refs/Class</text>
-<line x1='160' y1='160' x2='160' y2='270' stroke='#30363d' />
-<text x='160' y='292' fill='#e6edf3' font-size='11' text-anchor='middle'>Confidence</text>
-<line x1='160' y1='160' x2='50' y2='160' stroke='#30363d' />
-<text x='28' y='160.00000000000003' fill='#e6edf3' font-size='11' text-anchor='middle'>Time/Class</text>
-<polygon points='160,109.97175141242938 196.3478260869565,160 160,264.5 151.8240443478261,160' fill='rgba(88,166,255,0.35)' stroke='#58a6ff' stroke-width='2'/>
-</svg>
+<div title="Moderate: 17" style="width:12%;background:#6ea8ff;display:flex;align-items:center;justify-content:center;font-size:11px;color:#08111f;font-weight:700;box-shadow:0 0 18px #6ea8ff;">
+    17
 </div>
+<div title="Sparse: 8" style="width:6%;background:#ffc15d;display:flex;align-items:center;justify-content:center;font-size:11px;color:#08111f;font-weight:700;box-shadow:0 0 18px #ffc15d;">
+    8
+</div>
+<div title="Anomaly: 0" style="width:4%;background:#ff9a52;display:flex;align-items:center;justify-content:center;font-size:11px;color:#08111f;font-weight:700;box-shadow:0 0 18px #ff9a52;">
+    
+</div>
+<div title="Recovery Dep.: 9" style="width:7%;background:#ff6a3d;display:flex;align-items:center;justify-content:center;font-size:11px;color:#08111f;font-weight:700;box-shadow:0 0 18px #ff6a3d;">
+    9
+</div>
+</div>
+<div style='height:20px;'></div>
+<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:12px;'>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:#7fd36b;box-shadow:0 0 12px #7fd36b;"></div>
+        <div style="color:#d9c8b8;font-size:12px;">Safe</div>
+    </div>
+    <div style="color:#f4e6d8;font-weight:700;">103</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:#6ea8ff;box-shadow:0 0 12px #6ea8ff;"></div>
+        <div style="color:#d9c8b8;font-size:12px;">Moderate</div>
+    </div>
+    <div style="color:#f4e6d8;font-weight:700;">17</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:#ffc15d;box-shadow:0 0 12px #ffc15d;"></div>
+        <div style="color:#d9c8b8;font-size:12px;">Sparse</div>
+    </div>
+    <div style="color:#f4e6d8;font-weight:700;">8</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:#ff9a52;box-shadow:0 0 12px #ff9a52;"></div>
+        <div style="color:#d9c8b8;font-size:12px;">Anomaly</div>
+    </div>
+    <div style="color:#f4e6d8;font-weight:700;">0</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:#ff6a3d;box-shadow:0 0 12px #ff6a3d;"></div>
+        <div style="color:#d9c8b8;font-size:12px;">Recovery Dep.</div>
+    </div>
+    <div style="color:#f4e6d8;font-weight:700;">9</div>
+</div>
+</div></div></div>
 
-</div>
 </div></div>
 <div class="section">
     <div class="section-title">
@@ -1195,11 +1564,13 @@
     </div>
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
         <ul class="clean">
-            <li>This dashboard describes parser output quality and structural extraction density.</li>
-            <li>Low reference density may suggest sparse extraction, but does not prove parser failure.</li>
+            <li>This dashboard describes parser output quality, extraction density and route-distribution heuristics.</li>
             <li>Confidence is heuristic and should be interpreted as structural usability, not absolute correctness.</li>
+            <li>Sankey, donut and route heat visuals are currently fed by experimental route estimation until per-route parsing telemetry becomes explicit.</li>
+            <li>Low reference density may suggest sparse extraction, but does not prove parser failure.</li>
             <li>Anomaly flags indicate atypical parse characteristics that deserve review.</li>
             <li>Performance ratios help compare parser strategies across projects and baselines.</li>
+            <li>Type Density means average extracted types per parsed file. Lower values may reflect lean structure or conservative extraction.</li>
         </ul>
     </div>
 </div>
@@ -1210,9 +1581,49 @@
     gap: 16px;
 }
 
+.compact-panel,
+.wide-panel {
+    overflow: hidden;
+    min-width: 0;
+}
+
+.chart-container {
+    min-width: 0;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 1080px) {
+    .chart-container {
+        width: 100%;
+    }
+}
+
+.wide-panel {
+    width: 100%;
+}
+
+.chart-container {
+    min-width: 0;
+}
+
+.chart-interpretation {
+    color: #d7e4f1;
+    font-size: 12px;
+}
+
+.chart-interpretation ul li {
+    margin-bottom: 8px;
+}
+
 @media (max-width: 1400px) {
     .grid-kpis.parsing-kpis {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1080px) {
+    .parsing-half-grid {
+        grid-template-columns: 1fr;
     }
 }
 
