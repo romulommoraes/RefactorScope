@@ -24,6 +24,7 @@ using RefactorScope.Exporters.Infrastructure;
 using RefactorScope.Exporters.Reports;
 using RefactorScope.Exporters.Styling;
 using RefactorScope.Infrastructure;
+using RefactorScope.Statistics.Engines;
 using Spectre.Console;
 
 Console.WriteLine();
@@ -235,6 +236,8 @@ static bool RunAnalysis(
     try
     {
         var analyzers = BuildAnalyzers(context);
+
+
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
         report =
@@ -284,6 +287,9 @@ static List<IAnalyzer> BuildAnalyzers(AnalysisContext context)
         analyzers.Add(new CouplingAnalyzer());
         analyzers.Add(new ImplicitCouplingAnalyzer());
     }
+
+    if (IsEnabled(context, "statistics"))
+        analyzers.Add(new StatisticsValidationAnalyzer());
 
     if (IsEnabled(context, "solid"))
         analyzers.Add(new SolidAnalyzer());

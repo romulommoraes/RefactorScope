@@ -186,14 +186,7 @@ namespace RefactorScope.Exporters.Adapters
 
         private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
         {
-            if (config == null)
-                return null;
-
-            var prop = config.GetType().GetProperty("DashboardTheme");
-            if (prop == null)
-                return null;
-
-            return prop.GetValue(config) as string;
+            return config?.Dashboard?.Theme;
         }
     }
 }
@@ -488,7 +481,8 @@ namespace RefactorScope.Exporters.Dashboards
                 ? "Unknown"
                 : fitness.HasFailure ? "Attention Required" : "Ready";
 
-            sb.AppendLine("<div class='grid-kpis'>");
+            // Modificado: CSS inline injetado para forçar grid 4x2 com espaçamento consistente
+            sb.AppendLine("<div class='grid-kpis' style='display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:32px;'>");
             AppendKpi(sb, "Modules", modules.Count.ToString(), "Detected architectural folders");
             AppendKpi(sb, "Average Score", $"{avgScore:0.0}", "Composite health by module");
             AppendKpi(sb, "Unresolved", unresolved.Count.ToString(), "Final unresolved structural candidates", unresolved.Count > 0 ? "alert" : "good");
@@ -653,7 +647,8 @@ The Markdown artifact remains useful for direct textual reading, project tree in
                 ? "kpi"
                 : $"kpi {stateClass}";
 
-            sb.AppendLine($"<div class='{cssClass}' augmented-ui='tr-clip bl-clip border'>");
+            // Modificado: 'height: 100%' para garantir que estiquem uniformemente
+            sb.AppendLine($"<div class='{cssClass}' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>");
             sb.AppendLine($"<div class='label'>{Html(label)}</div>");
             sb.AppendLine($"<div class='value'>{Html(value)}</div>");
             sb.AppendLine($"<div class='hint'>{Html(hint)}</div>");
@@ -1538,8 +1533,21 @@ namespace RefactorScope.Exporters.Dashboards
         /// - gates de fitness
         /// - confiança do parsing
         /// - confiança do effort estimator
-        /// - presença e completude do payload estatístico
+        /// - cobertura do payload estatístico
         /// - banda executiva geral de readiness
+        ///
+        /// Observação semântica importante
+        /// -------------------------------
+        /// O dashboard não consome hoje um score estatístico nativo calculado
+        /// pelo módulo Statistics.
+        ///
+        /// O módulo Statistics entrega apenas:
+        /// - ParsingConfidence
+        /// - MetricsStatisticsSummary
+        ///
+        /// Portanto, o indicador usado aqui é "Statistics Coverage",
+        /// isto é, uma métrica executiva derivada da presença e completude
+        /// do payload estatístico disponível na execução.
         /// </summary>
         public static QualityDashboardMetrics BuildQualityMetrics(
             ConsolidatedReport report,
@@ -1564,6 +1572,9 @@ namespace RefactorScope.Exporters.Dashboards
             var effort = effortResult?.Estimate;
             var statistics = report.GetResult<StatisticsResult>();
 
+            Console.WriteLine($"[QUALITY] Statistics result present: {statistics != null}");
+            Console.WriteLine($"[QUALITY] Statistics report present: {statistics?.Report != null}");
+
             var gateRows = ExtractFitnessGateRows(fitness);
             var statisticsRows = ExtractStatisticsRows(statistics);
 
@@ -1578,15 +1589,15 @@ namespace RefactorScope.Exporters.Dashboards
             var effortBand = GetSupportBandFromScore(effortConfidence);
             var effortBandCss = GetBandCssClass(effortConfidence);
 
-            var statisticsSupportScore = CalculateStatisticsSupportCoverage(statistics);
-            var statisticsBand = GetSupportBandFromScore(statisticsSupportScore);
-            var statisticsBandCss = GetBandCssClass(statisticsSupportScore);
+            var statisticsCoverageScore = CalculateStatisticsCoverageScore(statistics);
+            var statisticsCoverageBand = GetSupportBandFromScore(statisticsCoverageScore);
+            var statisticsCoverageBandCss = GetBandCssClass(statisticsCoverageScore);
 
             var overallReadinessScore = CalculateOverallReadinessScore(
                 parserConfidence,
                 effortConfidence,
                 fitness == null ? 0.50 : (fitness.HasFailure ? 0.30 : 0.90),
-                statisticsSupportScore);
+                statisticsCoverageScore);
 
             var overallReadinessBand = GetSupportBandFromScore(overallReadinessScore);
             var overallReadinessCss = GetBandCssClass(overallReadinessScore);
@@ -1595,7 +1606,7 @@ namespace RefactorScope.Exporters.Dashboards
                 fitStatus,
                 parserBand,
                 effortBand,
-                statisticsBand,
+                statisticsCoverageBand,
                 overallReadinessBand);
 
             return new QualityDashboardMetrics
@@ -1621,9 +1632,9 @@ namespace RefactorScope.Exporters.Dashboards
                 EffortBand = effortBand,
                 EffortBandCss = effortBandCss,
 
-                StatisticsSupportCoverage = statisticsSupportScore,
-                StatisticsBand = statisticsBand,
-                StatisticsBandCss = statisticsBandCss,
+                StatisticsCoverageScore = statisticsCoverageScore,
+                StatisticsCoverageBand = statisticsCoverageBand,
+                StatisticsCoverageBandCss = statisticsCoverageBandCss,
 
                 OverallReadinessScore = overallReadinessScore,
                 OverallReadinessBand = overallReadinessBand,
@@ -1782,43 +1793,126 @@ namespace RefactorScope.Exporters.Dashboards
         }
 
         /// <summary>
-        /// Mede suporte estatístico executivo com base na presença e completude
-        /// do payload do módulo estatístico.
+        /// Statistics Coverage
+        /// ===================
         ///
-        /// Importante:
+        /// Definição
+        /// ---------
+        /// Statistics Coverage é uma métrica executiva derivada da camada de
+        /// exportação, usada para indicar o grau de presença e completude do
+        /// payload estatístico disponível na execução atual.
+        ///
+        /// Importante
         /// ----------
-        /// Este score não mede rigor inferencial profundo.
-        /// Ele mede apenas disponibilidade e densidade útil do suporte
-        /// estatístico entregue na execução atual.
+        /// Esta métrica NÃO é calculada pelo módulo Statistics como uma
+        /// inferência estatística formal.
+        ///
+        /// Ela é produzida pelo DashboardMetricsCalculator com base em:
+        /// - existência de StatisticsResult
+        /// - existência de StatisticsReport
+        /// - presença dos blocos Confidence e Summary
+        /// - preenchimento dos principais campos esperados
+        ///
+        /// Objetivo
+        /// --------
+        /// Responder à pergunta:
+        ///
+        /// "Quanto do payload estatístico esperado chegou utilizável para
+        /// leitura executiva no dashboard?"
+        ///
+        /// O que ela mede hoje
+        /// -------------------
+        /// - disponibilidade do report estatístico
+        /// - presença dos blocos estruturais principais
+        /// - preenchimento básico dos campos relevantes
+        ///
+        /// O que ela NÃO mede
+        /// ------------------
+        /// - rigor estatístico
+        /// - significância inferencial
+        /// - estabilidade entre execuções
+        /// - tamanho amostral
+        /// - confiança formal do modelo estatístico
+        /// - consistência metodológica avançada
+        ///
+        /// Evolução futura
+        /// ---------------
+        /// Em versões futuras, esta métrica pode evoluir de três formas:
+        ///
+        /// 1. Coverage enriquecido
+        ///    - ponderar campos presentes/ausentes com maior granularidade
+        ///    - validar ranges plausíveis
+        ///    - detectar payload parcial ou inconsistente
+        ///
+        /// 2. Evidence Score nativo
+        ///    - o módulo Statistics poderá produzir um score próprio de evidência
+        ///    - ex.: StatisticalEvidenceScore ou CoverageScore no StatisticsReport
+        ///
+        /// 3. Support / Confidence formal
+        ///    - inclusão de critérios metodológicos mais fortes, como:
+        ///      - consistência interexecução
+        ///      - estabilidade de razão unresolved
+        ///      - robustez do acoplamento médio
+        ///      - tamanho efetivo do escopo analisado
+        ///      - intervalos ou bandas de confiabilidade
+        ///
+        /// Decisão atual
+        /// -------------
+        /// Enquanto o módulo Statistics não expõe um score nativo de evidência,
+        /// o dashboard deve tratar esse indicador como "coverage" e não como
+        /// "confidence estatística formal".
         /// </summary>
-        private static double CalculateStatisticsSupportCoverage(StatisticsResult? statistics)
+        private static double CalculateStatisticsCoverageScore(StatisticsResult? statistics)
         {
             if (statistics?.Report == null)
                 return 0.20;
 
             var report = statistics.Report;
+            var confidence = report.Confidence;
+            var summary = report.Summary;
 
-            var hasConfidenceBlock = report.Confidence != null;
-            var hasSummaryBlock = report.Summary != null;
+            var hasConfidenceBlock = confidence != null;
+            var hasSummaryBlock = summary != null;
 
-            var score = 0.35;
+            double score = 0.40;
 
+            // ------------------------------
+            // Blocos estruturais principais
+            // ------------------------------
             if (hasConfidenceBlock)
-                score += 0.25;
+                score += 0.20;
 
             if (hasSummaryBlock)
-                score += 0.25;
+                score += 0.20;
 
-            if (hasConfidenceBlock)
+            // ------------------------------
+            // Cobertura interna do bloco Confidence
+            // ------------------------------
+            if (confidence != null)
             {
-                if (report.Confidence.ClassesPerFile > 0)
+                if (confidence.ClassesPerFile > 0)
                     score += 0.10;
 
-                if (report.Confidence.ReferencesPerClass > 0)
+                if (confidence.ReferencesPerClass > 0)
                     score += 0.10;
             }
 
-            return Math.Max(0, Math.Min(1, score));
+            // ------------------------------
+            // Cobertura interna do bloco Summary
+            // ------------------------------
+            if (summary != null)
+            {
+                if (summary.MeanCoupling >= 0)
+                    score += 0.05;
+
+                if (summary.UnresolvedCandidateRatio >= 0)
+                    score += 0.025;
+
+                if (summary.NamespaceDriftRatio >= 0)
+                    score += 0.025;
+            }
+
+            return Clamp01(score);
         }
 
         /// <summary>
@@ -1828,7 +1922,7 @@ namespace RefactorScope.Exporters.Dashboards
         /// - parser confidence
         /// - effort confidence
         /// - fitness gates
-        /// - statistics support
+        /// - statistics coverage
         ///
         /// É uma banda executiva de leitura, não uma prova formal de qualidade.
         /// </summary>
@@ -1836,13 +1930,13 @@ namespace RefactorScope.Exporters.Dashboards
             double parserConfidence,
             double effortConfidence,
             double gateScore,
-            double statisticsSupport)
+            double statisticsCoverage)
         {
             return Clamp01(
                 (Clamp01(parserConfidence) * 0.35) +
                 (Clamp01(effortConfidence) * 0.20) +
                 (Clamp01(gateScore) * 0.30) +
-                (Clamp01(statisticsSupport) * 0.15));
+                (Clamp01(statisticsCoverage) * 0.15));
         }
 
         private static double Average(params double[] values)
@@ -1877,13 +1971,13 @@ namespace RefactorScope.Exporters.Dashboards
             string fitStatus,
             string parserBand,
             string effortBand,
-            string statisticsBand,
+            string statisticsCoverageBand,
             string overallBand)
         {
             return
                 $"The current execution is marked as {fitStatus.ToLowerInvariant()} overall. " +
                 $"Parsing confidence is {parserBand.ToLowerInvariant()}, effort support is {effortBand.ToLowerInvariant()}, " +
-                $"statistical support is {statisticsBand.ToLowerInvariant()}, and the overall quality snapshot is {overallBand.ToLowerInvariant()}.";
+                $"statistics coverage is {statisticsCoverageBand.ToLowerInvariant()}, and the overall quality snapshot is {overallBand.ToLowerInvariant()}.";
         }
 
         private static double CalculateAverageArchitecturalScore(
@@ -2126,10 +2220,32 @@ namespace RefactorScope.Exporters.Dashboards
     ///
     /// Esse snapshot concentra:
     /// - leitura de gates
-    /// - support bands executivas
-    /// - linhas estatísticas
+    /// - bandas executivas do parsing
     /// - resumo de effort
+    /// - cobertura do payload estatístico
     /// - banda executiva geral de readiness
+    ///
+    /// Statistics Coverage
+    /// -------------------
+    /// O indicador de cobertura estatística não é hoje um output nativo
+    /// do módulo Statistics.
+    ///
+    /// Ele é derivado pelo DashboardMetricsCalculator a partir da presença
+    /// e completude dos blocos disponíveis no StatisticsReport.
+    ///
+    /// Portanto:
+    /// - StatisticsCoverageScore mede completude/disponibilidade do payload
+    /// - NÃO mede confiança estatística formal
+    /// - NÃO representa significância inferencial
+    /// - NÃO substitui um score metodológico nativo futuro
+    ///
+    /// Evolução futura
+    /// ---------------
+    /// Em versões futuras, este snapshot poderá consumir diretamente do
+    /// módulo Statistics:
+    /// - CoverageScore nativo
+    /// - EvidenceScore nativo
+    /// - bandas formais de suporte estatístico
     /// </summary>
     internal sealed class QualityDashboardMetrics
     {
@@ -2154,9 +2270,25 @@ namespace RefactorScope.Exporters.Dashboards
         public string EffortBand { get; init; } = "Unknown";
         public string EffortBandCss { get; init; } = "warning";
 
-        public double StatisticsSupportCoverage { get; init; }
-        public string StatisticsBand { get; init; } = "Unknown";
-        public string StatisticsBandCss { get; init; } = "warning";
+        /// <summary>
+        /// Cobertura do payload estatístico disponível para leitura executiva.
+        ///
+        /// Importante:
+        /// ----------
+        /// Esta métrica mede completude/disponibilidade do payload,
+        /// não confiança estatística formal.
+        /// </summary>
+        public double StatisticsCoverageScore { get; init; }
+
+        /// <summary>
+        /// Banda executiva derivada da cobertura do payload estatístico.
+        /// </summary>
+        public string StatisticsCoverageBand { get; init; } = "Unknown";
+
+        /// <summary>
+        /// Classe visual associada à cobertura estatística.
+        /// </summary>
+        public string StatisticsCoverageBandCss { get; init; } = "warning";
 
         public double OverallReadinessScore { get; init; }
         public string OverallReadinessBand { get; init; } = "Unknown";
@@ -2539,11 +2671,6 @@ namespace RefactorScope.Exporters.Dashboards
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
-    <div class="kpi {(metrics.CouplingSuspects > 0 ? "warning" : "good")}" augmented-ui="tr-clip bl-clip border">
-        <div class="label">Implicit Coupling</div>
-        <div class="value">{metrics.CouplingSuspects}</div>
-        <div class="hint">Detected structural concentration toward specific modules</div>
-    </div>
 
     <div class="kpi {DashboardMetricsCalculator.GetBandCssClass(metrics.OverallSupportScore)}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistical Support</div>
@@ -3141,23 +3268,27 @@ namespace RefactorScope.Exporters.Dashboards;
 public sealed class ParsingControlChartsRenderer
 {
     // =====================================================
-    // PALETA TEMÁTICA BASE
+    // PALETA VISUAL HÍBRIDA
     // =====================================================
-    //
-    // Mantemos valores vivos/neon, mas sem "pastel".
-    // O shell final ainda será influenciado pelo CSS do tema.
-    //
-    private const string NeonCyan = "#00f0ff";
-    private const string NeonBlue = "#2d7dff";
-    private const string NeonGreen = "#00ff8c";
-    private const string NeonAmber = "#ffb000";
-    private const string NeonFire = "#ff6a00";
-    private const string NeonRed = "#ff315c";
 
-    private const string GridStroke = "rgba(255,106,0,0.22)";
-    private const string AxisStroke = "rgba(255,106,0,0.18)";
-    private const string SoftText = "#bfcfe0";
-    private const string StrongText = "#eef7ff";
+    private const string AccentPrimary = "#ff9a3c";
+    private const string AccentSoft = "#ffb14d";
+    private const string AccentWarm = "#ffc15d";
+    private const string AccentHot = "#ff8a3d";
+    private const string AccentRisk = "#ff6a3d";
+
+    // semântica contaminada pela paleta do tema
+    private const string SemanticSafe = "#7fd36b";
+    private const string SemanticComplex = "#6ea8ff";
+    private const string SemanticPattern = "#ffc15d";
+    private const string SemanticRecovery = "#ff9a52";
+    private const string SemanticRisk = "#ff6a3d";
+
+    private const string GridStroke = "rgba(210,120,45,0.34)";
+    private const string AxisStroke = "rgba(210,125,48,0.26)";
+    private const string SoftText = "#d9c8b8";
+    private const string StrongText = "#f2e1d2";
+    private const string LabelMuted = "rgba(235,214,194,0.42)";
 
     // =====================================================
     // RADAR
@@ -3175,7 +3306,7 @@ public sealed class ParsingControlChartsRenderer
         var labels = new[]
         {
             "Type Density",
-            "Graph Richness",
+            "Graph Rich",
             "Confidence",
             "Efficiency"
         };
@@ -3188,49 +3319,59 @@ public sealed class ParsingControlChartsRenderer
             Clamp01(1.0 - Math.Min(1.0, msPerType / 50.0))
         };
 
-        const int size = 320;
+        const int size = 360;
         const int center = size / 2;
-        const int radius = 92;
+        const int radius = 104;
         const int levels = 5;
+        const int footerHeight = 40;
 
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Parsing Control Radar</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 10px 0;font-size:12px;color:#9fb3c8;'>Higher area suggests stronger extraction quality and operational stability.</div>");
+        // Ajuste simétrico: Centralização total e estilo de "card"
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;'>");
+        sb.AppendLine("<h3 style='margin:0 0 6px 0;text-align:center;'>Parsing Control Radar</h3>");
+        sb.AppendLine("<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;max-width:80%;'>Higher area suggests stronger extraction quality and operational stability.</div>");
+        sb.AppendLine("<div style='display:flex;justify-content:center;align-items:center;width:100%;'>");
 
         sb.AppendLine($"""
-<svg class="dashboard-radar-svg dashboard-svg-theme" width="{size}" height="{size}" viewBox="0 0 {size} {size}">
+<svg width="{size}" height="{size + footerHeight}" viewBox="0 0 {size} {size + footerHeight}" style="display:block;border-radius:16px;overflow:visible">
     <defs>
+        <radialGradient id="parsingRadarBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
         <filter id="parsingRadarGlow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="2.8" result="blur"/>
+            <feGaussianBlur stdDeviation="4" result="blur"/>
             <feMerge>
                 <feMergeNode in="blur"/>
                 <feMergeNode in="SourceGraphic"/>
             </feMerge>
         </filter>
     </defs>
+
+    <rect x="0" y="0" width="{size}" height="{size + footerHeight}" rx="16" fill="url(#parsingRadarBg)" />
 """);
 
         for (var level = levels; level >= 1; level--)
         {
-            var levelRadius = radius * (level / (double)levels);
+            var rr = radius * (level / (double)levels);
             var points = new List<string>();
 
             for (var i = 0; i < values.Length; i++)
             {
                 var angle = (Math.PI * 2 / values.Length) * i - Math.PI / 2;
-                var x = center + levelRadius * Math.Cos(angle);
-                var y = center + levelRadius * Math.Sin(angle);
+                var x = center + rr * Math.Cos(angle);
+                var y = center + rr * Math.Sin(angle);
                 points.Add($"{F(x)},{F(y)}");
             }
 
             var fill = level % 2 == 0
-                ? "rgba(255,106,0,0.022)"
-                : "rgba(255,176,0,0.010)";
+                ? "rgba(255,140,40,0.030)"
+                : "rgba(255,180,90,0.014)";
 
-            sb.AppendLine(
-                $"<polygon points='{string.Join(" ", points)}' fill='{fill}' stroke='{GridStroke}' stroke-width='1' />");
+            sb.AppendLine($"<polygon points='{string.Join(" ", points)}' fill='{fill}' stroke='{GridStroke}' stroke-width='1' />");
         }
 
         for (var i = 0; i < values.Length; i++)
@@ -3239,31 +3380,28 @@ public sealed class ParsingControlChartsRenderer
             var x = center + radius * Math.Cos(angle);
             var y = center + radius * Math.Sin(angle);
 
-            sb.AppendLine(
-                $"<line x1='{center}' y1='{center}' x2='{F(x)}' y2='{F(y)}' stroke='{AxisStroke}' stroke-width='1' />");
+            sb.AppendLine($"<line x1='{center}' y1='{center}' x2='{F(x)}' y2='{F(y)}' stroke='{AxisStroke}' stroke-width='1' />");
         }
 
         for (var level = 1; level <= levels; level++)
         {
-            var levelRadius = radius * (level / (double)levels);
-            var y = center - levelRadius + 11;
+            var rr = radius * (level / (double)levels);
+            var y = center - rr + 11;
 
-            sb.AppendLine(
-                $"<text x='{center + 5}' y='{F(y)}' fill='rgba(214,232,255,0.34)' font-size='8'>{level * 20}%</text>");
+            sb.AppendLine($"<text x='{center + 6}' y='{F(y)}' fill='{LabelMuted}' font-size='9'>{level * 20}%</text>");
         }
 
         for (var i = 0; i < labels.Length; i++)
         {
             var angle = (Math.PI * 2 / labels.Length) * i - Math.PI / 2;
-            var lx = center + (radius + 18) * Math.Cos(angle);
-            var ly = center + (radius + 18) * Math.Sin(angle);
+            var lx = center + (radius + 16) * Math.Cos(angle);
+            var ly = center + (radius + 16) * Math.Sin(angle);
 
             var anchor = "middle";
             if (Math.Cos(angle) > 0.35) anchor = "start";
             else if (Math.Cos(angle) < -0.35) anchor = "end";
 
-            sb.AppendLine(
-                $"<text x='{F(lx)}' y='{F(ly)}' fill='{StrongText}' font-size='10.5' text-anchor='{anchor}'>{labels[i]}</text>");
+            sb.AppendLine($"<text x='{F(lx)}' y='{F(ly)}' fill='{StrongText}' font-size='11' text-anchor='{anchor}'>{labels[i]}</text>");
         }
 
         var polygon = new List<string>();
@@ -3278,8 +3416,7 @@ public sealed class ParsingControlChartsRenderer
             polygon.Add($"{F(x)},{F(y)}");
         }
 
-        sb.AppendLine(
-            $"<polygon points='{string.Join(" ", polygon)}' fill='rgba(0,240,255,0.16)' stroke='{NeonCyan}' stroke-width='2.2' filter='url(#parsingRadarGlow)'/>");
+        sb.AppendLine($"<polygon points='{string.Join(" ", polygon)}' fill='rgba(255,140,60,0.18)' stroke='{AccentPrimary}' stroke-width='2.4' filter='url(#parsingRadarGlow)'/>");
 
         for (var i = 0; i < values.Length; i++)
         {
@@ -3289,24 +3426,24 @@ public sealed class ParsingControlChartsRenderer
             var y = center + pr * Math.Sin(angle);
 
             sb.AppendLine($"""
-<circle cx="{F(x)}" cy="{F(y)}" r="4.4" fill="{NeonCyan}" stroke="#f2fdff" stroke-width="1.2" style="filter:drop-shadow(0 0 8px {NeonCyan});">
+<circle cx="{F(x)}" cy="{F(y)}" r="4.6" fill="{AccentSoft}" stroke="#fff0d6" stroke-width="1.3">
     <title>{labels[i]} — {(values[i] * 100):0.0}%</title>
 </circle>
 """);
         }
 
-        sb.AppendLine("</svg>");
+        sb.AppendLine($"<circle cx='{center}' cy='{center}' r='2.5' fill='rgba(255,240,214,0.92)'/>");
 
-        sb.AppendLine("""
-<div class="chart-interpretation" style="margin-top:12px;">
-    <ul class="clean" style="margin:0;">
-        <li><b>Type Density:</b> Average number of extracted types per parsed file. Lower values may indicate lean file structure or conservative extraction.</li>
-        <li><b>Graph Richness:</b> Reference density per type. Higher values usually suggest a richer structural graph and better dependency capture.</li>
-        <li><b>Confidence:</b> Heuristic structural usability score of the parsed model. It supports interpretation but does not prove correctness.</li>
-        <li><b>Efficiency:</b> Operational efficiency derived from milliseconds per extracted type. Higher values here mean lower per-type parsing cost.</li>
-    </ul>
-</div>
+        // Legenda centralizada perfeitamente no eixo X
+        sb.AppendLine($"""
+<g transform="translate({center}, {size + 18})">
+    <rect x="-95" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="{AccentPrimary}" stroke-width="1.2"/>
+    <text x="-75" y="-2" fill="{SoftText}" font-size="10" text-anchor="start">Normalized parsing signal distribution</text>
+</g>
 """);
+
+        sb.AppendLine("</svg>");
+        sb.AppendLine("</div>");
 
         sb.AppendLine("</div>");
 
@@ -3326,11 +3463,11 @@ public sealed class ParsingControlChartsRenderer
     {
         var segments = new[]
         {
-            new Segment("Safe", safeFiles, NeonGreen),
-            new Segment("Complex", complexFiles, NeonBlue),
-            new Segment("AST / Pattern", astPatternFiles, NeonAmber),
-            new Segment("Recovery", recoveryFiles, NeonFire),
-            new Segment("Risk", riskFiles, NeonRed)
+            new Segment("Safe", safeFiles, SemanticSafe),
+            new Segment("Complex", complexFiles, SemanticComplex),
+            new Segment("AST / Pattern", astPatternFiles, SemanticPattern),
+            new Segment("Recovery", recoveryFiles, SemanticRecovery),
+            new Segment("Risk", riskFiles, SemanticRisk)
         };
 
         return RenderDonutChart(
@@ -3344,33 +3481,57 @@ public sealed class ParsingControlChartsRenderer
         string subtitle,
         IReadOnlyList<Segment> segments)
     {
-        string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+        static string F(double value)
+            => value.ToString("0.###", CultureInfo.InvariantCulture);
 
         var total = Math.Max(1, segments.Sum(s => s.Value));
-        var cx = 160.0;
-        var cy = 160.0;
-        var radius = 84.0;
+
+        // Ajustado para manter simetria total com o Radar (360x400)
+        var width = 360;
+        var cx = width / 2.0;
+        var cy = 160.0; // Centralizado verticalmente melhor
+        var radius = 85.0; // Levemente maior para preencher melhor o espaço
         var strokeWidth = 24.0;
         var circumference = 2 * Math.PI * radius;
+
+        var chartHeight = 360;
+        var footerHeight = 40;
 
         double offset = 0;
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine($"<h3>{title}</h3>");
-        sb.AppendLine($"<div class='chart-note' style='margin:4px 0 10px 0;font-size:12px;color:#9fb3c8;'>{subtitle}</div>");
+        // Container simétrico ao do Radar
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;'>");
+        sb.AppendLine($"<h3 style='margin:0 0 6px 0;text-align:center;'>{title}</h3>");
+        sb.AppendLine($"<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;max-width:80%;'>{subtitle}</div>");
+        sb.AppendLine("<div style='display:flex;justify-content:center;align-items:center;width:100%;'>");
 
-        sb.AppendLine("""
-<div class="donut-wrap" style="display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:16px;align-items:center;">
+        sb.AppendLine($"""
+<svg width="{width}" height="{chartHeight + footerHeight}" viewBox="0 0 {width} {chartHeight + footerHeight}" style="display:block;border-radius:16px;overflow:visible">
+    <defs>
+        <radialGradient id="donutBg" cx="50%" cy="42%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
+        <filter id="donutGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <rect x="0" y="0" width="{width}" height="{chartHeight + footerHeight}" rx="16" fill="url(#donutBg)" />
 """);
 
         sb.AppendLine($"""
-<svg class="dashboard-donut-svg dashboard-svg-theme" width="320" height="320" viewBox="0 0 320 320">
-    <g transform="rotate(-90 160 160)">
-        <circle cx="{F(cx)}" cy="{F(cy)}" r="{F(radius)}"
-                fill="none"
-                stroke="rgba(255,255,255,0.07)"
-                stroke-width="{F(strokeWidth)}" />
+    <circle cx="{F(cx)}" cy="{F(cy)}" r="{F(radius)}"
+            fill="none"
+            stroke="rgba(255,255,255,0.07)"
+            stroke-width="{F(strokeWidth)}" />
 """);
 
         foreach (var segment in segments)
@@ -3383,43 +3544,65 @@ public sealed class ParsingControlChartsRenderer
             var gap = circumference - dash;
 
             sb.AppendLine($"""
-        <circle cx="{F(cx)}" cy="{F(cy)}" r="{F(radius)}"
-                fill="none"
-                stroke="{segment.Color}"
-                stroke-width="{F(strokeWidth)}"
-                stroke-linecap="round"
-                stroke-dasharray="{F(dash)} {F(gap)}"
-                stroke-dashoffset="-{F(offset)}"
-                style="filter:drop-shadow(0 0 10px {segment.Color});">
-            <title>{segment.Name}: {segment.Value}</title>
-        </circle>
+    <circle cx="{F(cx)}" cy="{F(cy)}" r="{F(radius)}"
+            fill="none"
+            stroke="{segment.Color}"
+            stroke-width="{F(strokeWidth)}"
+            stroke-linecap="round"
+            stroke-dasharray="{F(dash)} {F(gap)}"
+            stroke-dashoffset="-{F(offset)}"
+            transform="rotate(-90 {F(cx)} {F(cy)})"
+            filter="url(#donutGlow)">
+        <title>{segment.Name}: {segment.Value}</title>
+    </circle>
 """);
 
             offset += dash;
         }
 
         sb.AppendLine($"""
-    </g>
+    <circle cx="{F(cx)}" cy="{F(cy)}" r="{F(radius - (strokeWidth / 2) - 8)}"
+            fill="rgba(20,14,10,0.88)"
+            stroke="rgba(255,177,77,0.10)"
+            stroke-width="1" />
 
-    <text x="{F(cx)}" y="154" text-anchor="middle" fill="#f4fbff" font-size="28" font-weight="700">{total}</text>
-    <text x="{F(cx)}" y="178" text-anchor="middle" fill="#bfd4ea" font-size="12">Total Routed</text>
-</svg>
+    <text x="{F(cx)}" y="{F(cy - 2)}" text-anchor="middle" fill="#f4e6d8" font-size="28" font-weight="700">{total}</text>
+    <text x="{F(cx)}" y="{F(cy + 18)}" text-anchor="middle" fill="#d9c8b8" font-size="12">Total Routed</text>
 """);
 
-        sb.AppendLine("<div style='display:grid;gap:10px;'>");
+        // Legenda distribuída em 2 linhas para perfeita simetria visual
+        var legendY = chartHeight - 20;
+        var itemSpacing = 95;
 
-        foreach (var segment in segments)
+        int itemsPerRow = 3;
+        for (var i = 0; i < segments.Count; i++)
         {
+            int row = i / itemsPerRow;
+            int col = i % itemsPerRow;
+            int itemsInThisRow = Math.Min(itemsPerRow, segments.Count - (row * itemsPerRow));
+
+            double totalLegendWidth = (itemsInThisRow - 1) * itemSpacing;
+            double startX = cx - (totalLegendWidth / 2.0);
+
+            var x = startX + (col * itemSpacing);
+            var y = legendY + (row * 24);
+            var segment = segments[i];
+
             sb.AppendLine($"""
-<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-    <div style="width:12px;height:12px;border-radius:50%;background:{segment.Color};box-shadow:0 0 14px {segment.Color};"></div>
-    <div style="flex:1;color:#dbe8f8;font-size:12px;">{segment.Name}</div>
-    <div style="color:#f8fcff;font-weight:700;">{segment.Value}</div>
-</div>
+    <g transform="translate({F(x)},{F(y)})">
+        <rect x="-8" y="-11" width="10" height="10" rx="2"
+              fill="{segment.Color}"
+              stroke="rgba(255,240,214,0.65)"
+              stroke-width="0.8" />
+        <text x="8" y="-2" fill="#d9c8b8" font-size="10" text-anchor="start">{segment.Name}</text>
+    </g>
 """);
         }
 
-        sb.AppendLine("</div></div></div>");
+        sb.AppendLine("</svg>");
+        sb.AppendLine("</div>");
+
+        sb.AppendLine("</div>");
 
         return sb.ToString();
     }
@@ -3437,22 +3620,23 @@ public sealed class ParsingControlChartsRenderer
     {
         var buckets = new[]
         {
-            new StripBucket("Safe", safeFiles, NeonGreen),
-            new StripBucket("Moderate", moderateRiskFiles, NeonBlue),
-            new StripBucket("Sparse", sparseFiles, NeonAmber),
-            new StripBucket("Anomaly", anomalyFiles, NeonFire),
-            new StripBucket("Recovery Dep.", recoveryDependentFiles, NeonRed)
+            new StripBucket("Safe", safeFiles, SemanticSafe),
+            new StripBucket("Moderate", moderateRiskFiles, SemanticComplex),
+            new StripBucket("Sparse", sparseFiles, SemanticPattern),
+            new StripBucket("Anomaly", anomalyFiles, SemanticRecovery),
+            new StripBucket("Recovery Dep.", recoveryDependentFiles, SemanticRisk)
         };
 
         var total = Math.Max(1, buckets.Sum(b => b.Value));
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Parsing Risk Heat Strip</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Operational buckets showing where reliability pressure is concentrated.</div>");
+        // Container ajustado ao padrão
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>");
+        sb.AppendLine("<h3 style='margin:0 0 6px 0;text-align:center;'>Parsing Risk Heat Strip</h3>");
+        sb.AppendLine("<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Operational buckets showing where reliability pressure is concentrated.</div>");
 
         sb.AppendLine("""
-<div style="padding:18px;border-radius:16px;background:linear-gradient(180deg,rgba(18,21,25,0.96),rgba(10,12,14,0.96));border:1px solid rgba(255,106,0,0.16);">
+<div style="padding:22px;border-radius:16px;background:linear-gradient(180deg,rgba(18,21,25,0.96),rgba(10,12,14,0.96));border:1px solid rgba(210,120,45,0.20);">
 """);
 
         sb.AppendLine("""
@@ -3462,6 +3646,7 @@ public sealed class ParsingControlChartsRenderer
         foreach (var bucket in buckets)
         {
             var size = Math.Max(4, (int)Math.Round((bucket.Value / (double)total) * 100));
+
             sb.AppendLine($"""
 <div title="{bucket.Name}: {bucket.Value}" style="width:{size}%;background:{bucket.Color};display:flex;align-items:center;justify-content:center;font-size:11px;color:#08111f;font-weight:700;box-shadow:0 0 18px {bucket.Color};">
     {(bucket.Value > 0 ? bucket.Value.ToString() : string.Empty)}
@@ -3470,16 +3655,20 @@ public sealed class ParsingControlChartsRenderer
         }
 
         sb.AppendLine("</div>");
-        sb.AppendLine("<div style='height:14px;'></div>");
-        sb.AppendLine("<div style='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;'>");
+        sb.AppendLine("<div style='height:20px;'></div>");
+
+        // Área de diagnóstico usando flex-wrap para centralizar elementos de forma simétrica
+        sb.AppendLine("<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:12px;'>");
 
         foreach (var bucket in buckets)
         {
             sb.AppendLine($"""
-<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-    <div style="width:12px;height:12px;border-radius:3px;background:{bucket.Color};box-shadow:0 0 12px {bucket.Color};"></div>
-    <div style="flex:1;color:#dbe8f8;font-size:12px;">{bucket.Name}</div>
-    <div style="color:#f5fbff;font-weight:700;">{bucket.Value}</div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:{bucket.Color};box-shadow:0 0 12px {bucket.Color};"></div>
+        <div style="color:{SoftText};font-size:12px;">{bucket.Name}</div>
+    </div>
+    <div style="color:#f4e6d8;font-weight:700;">{bucket.Value}</div>
 </div>
 """);
         }
@@ -3503,7 +3692,7 @@ public sealed class ParsingControlChartsRenderer
         int extractedReferences,
         int riskFiles)
     {
-        string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+        //static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
         var width = 1180;
         var height = 430;
@@ -3519,13 +3708,20 @@ public sealed class ParsingControlChartsRenderer
 
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Parsing Flow Sankey</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Flow of structural extraction from input scope to output graph and risk buckets.</div>");
+        // Container ajustado
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>");
+        sb.AppendLine("<h3 style='margin:0 0 6px 0;text-align:center;'>Parsing Flow Sankey</h3>");
+        sb.AppendLine("<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Flow of structural extraction from input scope to output graph and risk buckets.</div>");
 
         sb.AppendLine($"""
-<svg class="dashboard-sankey-svg dashboard-svg-theme" width="{width}" height="{height}" viewBox="0 0 {width} {height}" style="width:100%;height:auto;">
+<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" style="width:100%;height:auto;border-radius:16px;overflow:visible;max-width:1180px;">
     <defs>
+        <radialGradient id="parsingSankeyBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
         <filter id="sankeyGlow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="2.2" result="blur"/>
             <feMerge>
@@ -3534,21 +3730,23 @@ public sealed class ParsingControlChartsRenderer
             </feMerge>
         </filter>
     </defs>
+
+    <rect x="0" y="0" width="{width}" height="{height}" rx="16" fill="url(#parsingSankeyBg)" />
 """);
 
         var nodes = new[]
         {
-            new SankeyNode("Input Files", 70, 180, inputFiles, NeonCyan),
+            new SankeyNode("Input Files", 70, 180, inputFiles, AccentPrimary),
 
-            new SankeyNode("Safe Route", 320, 90, safeFiles, NeonGreen),
-            new SankeyNode("Complex Route", 320, 180, complexFiles, NeonBlue),
-            new SankeyNode("AST / Pattern", 320, 270, astPatternFiles, NeonAmber),
-            new SankeyNode("Recovery", 320, 360, recoveryFiles, NeonFire),
+            new SankeyNode("Safe Route", 320, 90, safeFiles, SemanticSafe),
+            new SankeyNode("Complex Route", 320, 180, complexFiles, SemanticComplex),
+            new SankeyNode("AST / Pattern", 320, 270, astPatternFiles, SemanticPattern),
+            new SankeyNode("Recovery", 320, 360, recoveryFiles, SemanticRecovery),
 
-            new SankeyNode("Extracted Types", 700, 140, extractedTypes, NeonGreen),
-            new SankeyNode("Extracted Refs", 700, 290, extractedReferences, NeonBlue),
+            new SankeyNode("Extracted Types", 700, 140, extractedTypes, SemanticSafe),
+            new SankeyNode("Extracted Refs", 700, 290, extractedReferences, SemanticComplex),
 
-            new SankeyNode("Risk Bucket", 1030, 215, riskFiles, NeonRed)
+            new SankeyNode("Risk Bucket", 1030, 215, riskFiles, SemanticRisk)
         };
 
         var input = nodes[0];
@@ -3560,17 +3758,17 @@ public sealed class ParsingControlChartsRenderer
         var refs = nodes[6];
         var risk = nodes[7];
 
-        sb.AppendLine(RenderFlow(input, safe, Thickness(safeFiles), NeonGreen));
-        sb.AppendLine(RenderFlow(input, complex, Thickness(complexFiles), NeonBlue));
-        sb.AppendLine(RenderFlow(input, ast, Thickness(astPatternFiles), NeonAmber));
-        sb.AppendLine(RenderFlow(input, recovery, Thickness(recoveryFiles), NeonFire));
+        sb.AppendLine(RenderFlow(input, safe, Thickness(safeFiles), SemanticSafe));
+        sb.AppendLine(RenderFlow(input, complex, Thickness(complexFiles), SemanticComplex));
+        sb.AppendLine(RenderFlow(input, ast, Thickness(astPatternFiles), SemanticPattern));
+        sb.AppendLine(RenderFlow(input, recovery, Thickness(recoveryFiles), SemanticRecovery));
 
-        sb.AppendLine(RenderFlow(safe, types, Thickness(Math.Min(safeFiles + astPatternFiles, extractedTypes)), NeonGreen));
-        sb.AppendLine(RenderFlow(complex, refs, Thickness(Math.Min(complexFiles + recoveryFiles, extractedReferences)), NeonBlue));
-        sb.AppendLine(RenderFlow(ast, types, Thickness(Math.Min(astPatternFiles, extractedTypes)), NeonAmber));
-        sb.AppendLine(RenderFlow(recovery, risk, Thickness(Math.Max(1, riskFiles)), NeonFire));
-        sb.AppendLine(RenderFlow(types, risk, Thickness(Math.Max(1, Math.Min(riskFiles, extractedTypes / 5))), NeonFire));
-        sb.AppendLine(RenderFlow(refs, risk, Thickness(Math.Max(1, Math.Min(riskFiles, extractedReferences / 10))), NeonRed));
+        sb.AppendLine(RenderFlow(safe, types, Thickness(Math.Min(safeFiles + astPatternFiles, extractedTypes)), SemanticSafe));
+        sb.AppendLine(RenderFlow(complex, refs, Thickness(Math.Min(complexFiles + recoveryFiles, extractedReferences)), SemanticComplex));
+        sb.AppendLine(RenderFlow(ast, types, Thickness(Math.Min(astPatternFiles, extractedTypes)), SemanticPattern));
+        sb.AppendLine(RenderFlow(recovery, risk, Thickness(Math.Max(1, riskFiles)), SemanticRecovery));
+        sb.AppendLine(RenderFlow(types, risk, Thickness(Math.Max(1, Math.Min(riskFiles, extractedTypes / 5))), AccentHot));
+        sb.AppendLine(RenderFlow(refs, risk, Thickness(Math.Max(1, Math.Min(riskFiles, extractedReferences / 10))), SemanticRisk));
 
         foreach (var node in nodes)
         {
@@ -3589,8 +3787,8 @@ public sealed class ParsingControlChartsRenderer
 <g>
     <rect x="{node.X}" y="{node.Y}" rx="10" ry="10" width="140" height="44"
           fill="rgba(6,12,24,0.92)" stroke="{node.Color}" stroke-width="1.2" style="filter:drop-shadow(0 0 12px {node.Color}55);" />
-    <text x="{node.X + 12}" y="{node.Y + 18}" fill="#eef6ff" font-size="11" font-weight="700">{node.Name}</text>
-    <text x="{node.X + 12}" y="{node.Y + 33}" fill="#bdd2e8" font-size="11">{node.Value}</text>
+    <text x="{node.X + 12}" y="{node.Y + 18}" fill="#f4e6d8" font-size="11" font-weight="700">{node.Name}</text>
+    <text x="{node.X + 12}" y="{node.Y + 33}" fill="{SoftText}" font-size="11">{node.Value}</text>
 </g>
 """;
     }
@@ -3601,7 +3799,7 @@ public sealed class ParsingControlChartsRenderer
         double thickness,
         string color)
     {
-        string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+        static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
         var x1 = from.X + 140;
         var y1 = from.Y + 22;
@@ -3620,76 +3818,6 @@ public sealed class ParsingControlChartsRenderer
       stroke-linecap="round"
       filter="url(#sankeyGlow)" />
 """;
-    }
-
-    // =====================================================
-    // CONSTELLATION
-    // =====================================================
-
-    public string RenderDensityConstellation(
-        int files,
-        int types,
-        int refs)
-    {
-        var sb = new StringBuilder();
-        var width = 420;
-        var height = 320;
-
-        var fileNodes = Math.Min(14, Math.Max(3, files / 5));
-        var typeNodes = Math.Min(18, Math.Max(4, types / 10));
-        var refNodes = Math.Min(22, Math.Max(5, refs / 20));
-
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Density Constellation</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Abstract visual density of files, types and references across the parsed scope.</div>");
-
-        sb.AppendLine($"""
-<svg class="dashboard-constellation-svg dashboard-svg-theme" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
-""");
-
-        sb.AppendLine($"<circle cx='112' cy='164' r='62' fill='rgba(0,255,140,0.08)' stroke='rgba(0,255,140,0.40)' />");
-        sb.AppendLine($"<circle cx='214' cy='124' r='74' fill='rgba(45,125,255,0.08)' stroke='rgba(45,125,255,0.40)' />");
-        sb.AppendLine($"<circle cx='302' cy='188' r='86' fill='rgba(255,176,0,0.08)' stroke='rgba(255,176,0,0.40)' />");
-
-        RenderOrbitGroup(sb, 112, 164, 48, fileNodes, NeonGreen);
-        RenderOrbitGroup(sb, 214, 124, 58, typeNodes, NeonBlue);
-        RenderOrbitGroup(sb, 302, 188, 66, refNodes, NeonAmber);
-
-        sb.AppendLine("<text x='112' y='170' text-anchor='middle' fill='#f2fff8' font-size='12' font-weight='700'>Files</text>");
-        sb.AppendLine($"<text x='112' y='188' text-anchor='middle' fill='#bfe9d9' font-size='11'>{files}</text>");
-
-        sb.AppendLine("<text x='214' y='130' text-anchor='middle' fill='#f1f8ff' font-size='12' font-weight='700'>Types</text>");
-        sb.AppendLine($"<text x='214' y='148' text-anchor='middle' fill='#cae4ff' font-size='11'>{types}</text>");
-
-        sb.AppendLine("<text x='302' y='194' text-anchor='middle' fill='#fff9ec' font-size='12' font-weight='700'>Refs</text>");
-        sb.AppendLine($"<text x='302' y='212' text-anchor='middle' fill='#ffe3a8' font-size='11'>{refs}</text>");
-
-        sb.AppendLine("</svg>");
-        sb.AppendLine("</div>");
-
-        return sb.ToString();
-    }
-
-    private static void RenderOrbitGroup(
-        StringBuilder sb,
-        double cx,
-        double cy,
-        double radius,
-        int count,
-        string color)
-    {
-        string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
-
-        for (var i = 0; i < count; i++)
-        {
-            var angle = (Math.PI * 2 / count) * i;
-            var x = cx + radius * Math.Cos(angle);
-            var y = cy + radius * Math.Sin(angle);
-            var r = i % 3 == 0 ? 4.2 : 2.8;
-
-            sb.AppendLine(
-                $"<circle cx='{F(x)}' cy='{F(y)}' r='{F(r)}' fill='{color}' fill-opacity='0.88' style='filter:drop-shadow(0 0 6px {color});' />");
-        }
     }
 
     private static double Clamp01(double value)
@@ -3973,42 +4101,50 @@ public sealed class ParsingDashboardExporter
 
         sb.AppendLine("</div></div>");
 
-        // =====================================================
-        // 8. RADAR + DONUT (50/50)
-        // =====================================================
+ // =====================================================
+// 8. CHARTS & DIAGNOSTICS
+// =====================================================
 
-        sb.AppendLine("""
+sb.AppendLine("""
 <div class="section">
     <div class="section-title">
-        <h2>Control Room // Profile & Routes</h2>
+        <h2>Charts & Diagnostics</h2>
         <div class="line"></div>
     </div>
-    <div class="parsing-half-grid">
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
 """);
 
-        sb.AppendLine($"""
-<div class="panel half-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    {controlCharts.RenderParsingRadarEnhanced(
-        typesPerFile,
-        refsPerType,
-        result.Confidence,
-        msPerType)}
-</div>
-""");
+sb.AppendLine("<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>");
 
-        sb.AppendLine($"""
-<div class="panel half-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    {controlCharts.RenderParsingRouteDonut(
-        routeMetrics.SafeFiles,
-        routeMetrics.ComplexFiles,
-        routeMetrics.AstPatternFiles,
-        routeMetrics.RecoveryFiles,
-        routeMetrics.RiskFiles)}
-</div>
-""");
+sb.AppendLine(controlCharts.RenderParsingRadarEnhanced(
+    typesPerFile,
+    refsPerType,
+    result.Confidence,
+    msPerType));
 
-        sb.AppendLine("</div></div>");
-
+sb.AppendLine(controlCharts.RenderParsingRouteDonut(
+    routeMetrics.SafeFiles,
+    routeMetrics.ComplexFiles,
+    routeMetrics.AstPatternFiles,
+    routeMetrics.RecoveryFiles,
+    routeMetrics.RiskFiles));
+// aqui
+sb.AppendLine("<div style='flex:1; min-width:280px;'>");
+sb.AppendLine("<ul class='clean'>");
+sb.AppendLine($"<li><b>Safe:</b> Files likely handled in the most stable parsing route.</li>");
+sb.AppendLine($"<li><b>Complex:</b> Files requiring more structural interpretation effort.</li>");
+sb.AppendLine($"<li><b>AST / Pattern:</b> Files more dependent on structural pattern handling.</li>");
+sb.AppendLine($"<li><b>Recovery:</b> Files likely requiring fallback or recovery behavior.</li>");
+sb.AppendLine($"<li><b>Risk:</b> Files concentrated in the highest reliability-pressure bucket.</li>");
+sb.AppendLine($"<li><b>Risk:</b> Files concentrated in the highest reliability-pressure bucket.</li>");
+sb.AppendLine($"<li><b>Graph Rich:</b> Reference density per extracted type.</li>");
+sb.AppendLine($"<li><b>Confidence:</b> Heuristic structural usability of the parsed model.</li>");
+sb.AppendLine($"<li><b>Efficiency:</b> Lower per-type parsing cost produces stronger score.</li>");
+sb.AppendLine($"<li>{Html(GetRouteDiagnosis(routeMetrics))}</li>");
+sb.AppendLine("</ul>");
+sb.AppendLine("</div>");
+        sb.AppendLine("</div>");
+sb.AppendLine("</div></div>");
         // =====================================================
         // 9. SANKEY FULL WIDTH
         // =====================================================
@@ -4060,18 +4196,7 @@ public sealed class ParsingDashboardExporter
         // 11. CONSTELLATION
         // =====================================================
 
-        sb.AppendLine("""
-<div class="section">
-    <div class="section-title">
-        <h2>Control Room // Density Constellation</h2>
-        <div class="line"></div>
-    </div>
-    <div class="panel compact-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-""");
-
-        sb.AppendLine(controlCharts.RenderDensityConstellation(files, types, refs));
-
-        sb.AppendLine("</div></div>");
+//legado
 
         // =====================================================
         // 12. PARSED TYPES TABLE
@@ -4167,18 +4292,21 @@ public sealed class ParsingDashboardExporter
     gap: 16px;
 }
 
-.parsing-half-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    align-items: start;
-}
-
-.half-panel,
 .compact-panel,
 .wide-panel {
     overflow: hidden;
     min-width: 0;
+}
+
+.chart-container {
+    min-width: 0;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 1080px) {
+    .chart-container {
+        width: 100%;
+    }
 }
 
 .wide-panel {
@@ -4409,7 +4537,28 @@ function sortTable(n) {
             return false;
         }
     }
+    private static string GetRouteDiagnosis(RouteMetrics routeMetrics)
+    {
+        var total = routeMetrics.SafeFiles
+            + routeMetrics.ComplexFiles
+            + routeMetrics.AstPatternFiles
+            + routeMetrics.RecoveryFiles;
 
+        if (total <= 0)
+            return "No route distribution data was produced for this execution.";
+
+        var safeRatio = routeMetrics.SafeFiles / (double)total;
+        var recoveryRatio = routeMetrics.RecoveryFiles / (double)total;
+        var riskRatio = routeMetrics.RiskFiles / (double)Math.Max(1, total);
+
+        if (safeRatio >= 0.60 && riskRatio <= 0.10)
+            return "Route distribution looks operationally healthy. Most files remained in stable parsing paths.";
+
+        if (recoveryRatio >= 0.20 || riskRatio >= 0.15)
+            return "Route distribution suggests elevated fallback or recovery pressure. Inspect parser behavior in more detail.";
+
+        return "Route distribution is mixed. The execution appears usable, but some files required more complex handling paths.";
+    }
     private static long TryGetMemoryBytes(IParserResult result)
     {
         try
@@ -4572,17 +4721,28 @@ namespace RefactorScope.Exporters.Dashboards;
 
 public sealed class QualityControlChartsRenderer
 {
-    private const string NeonCyan = "#00f0ff";
-    private const string NeonBlue = "#2d7dff";
-    private const string NeonGreen = "#00ff8c";
-    private const string NeonAmber = "#ffb000";
-    private const string NeonFire = "#ff6a00";
-    private const string NeonRed = "#ff315c";
-    private const string NeonPurple = "#c96cff";
+    // =====================================================
+    // PALETA VISUAL HÍBRIDA
+    // =====================================================
 
-    private const string GridStroke = "rgba(255,106,0,0.22)";
-    private const string AxisStroke = "rgba(255,106,0,0.18)";
-    private const string StrongText = "#eef7ff";
+    private const string AccentPrimary = "#ff9a3c";
+    private const string AccentSoft = "#ffb14d";
+    private const string AccentWarm = "#ffc15d";
+    private const string AccentHot = "#ff8a3d";
+    private const string AccentRisk = "#ff6a3d";
+
+    // semântica contaminada pela paleta do tema
+    private const string SemanticSafe = "#7fd36b";
+    private const string SemanticComplex = "#6ea8ff";
+    private const string SemanticPattern = "#ffc15d";
+    private const string SemanticRecovery = "#ff9a52";
+    private const string SemanticRisk = "#ff6a3d";
+
+    private const string GridStroke = "rgba(210,120,45,0.34)";
+    private const string AxisStroke = "rgba(210,125,48,0.26)";
+    private const string SoftText = "#d9c8b8";
+    private const string StrongText = "#f2e1d2";
+    private const string LabelMuted = "rgba(235,214,194,0.42)";
 
     // =====================================================
     // RADAR
@@ -4605,7 +4765,7 @@ public sealed class QualityControlChartsRenderer
             "Effort",
             "Statistics",
             "Gates",
-            "Unresolved Control",
+            "Unresolved Ctrl",
             "Overall"
         };
 
@@ -4619,28 +4779,41 @@ public sealed class QualityControlChartsRenderer
             Clamp01(overallReadiness)
         };
 
-        const int size = 320;
+        const int size = 360;
         const int center = size / 2;
         const int radius = 96;
         const int levels = 5;
+        const int footerHeight = 40;
 
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Quality Signal Radar</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 10px 0;font-size:12px;color:#9fb3c8;'>Quality posture across the main execution trust dimensions.</div>");
+        // Container simétrico de proporção exata para alinhar com o Sankey
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:450px;box-sizing:border-box;'>");
+        sb.AppendLine("<h3 style='margin:0 0 6px 0;text-align:center;'>Quality Signal Radar</h3>");
+        sb.AppendLine("<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Quality posture across the main execution trust dimensions.</div>");
+
+        // Estrutura Lado-a-Lado [Radar + Legenda]
+        sb.AppendLine("<div style='display:flex;flex-direction:row;align-items:center;justify-content:center;gap:36px;width:100%;flex:1;flex-wrap:wrap;'>");
 
         sb.AppendLine($"""
-<svg class="dashboard-radar-svg dashboard-svg-theme" width="{size}" height="{size}" viewBox="0 0 {size} {size}">
+<svg width="{size}" height="{size + footerHeight}" viewBox="0 0 {size} {size + footerHeight}" style="display:block;max-width:100%;height:auto;flex-shrink:0;border-radius:16px;overflow:visible">
     <defs>
+        <radialGradient id="qualityRadarBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
         <filter id="qualityRadarGlow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="2.8" result="blur"/>
+            <feGaussianBlur stdDeviation="4" result="blur"/>
             <feMerge>
                 <feMergeNode in="blur"/>
                 <feMergeNode in="SourceGraphic"/>
             </feMerge>
         </filter>
     </defs>
+
+    <rect x="0" y="0" width="{size}" height="{size + footerHeight}" rx="16" fill="url(#qualityRadarBg)" />
 """);
 
         for (var level = levels; level >= 1; level--)
@@ -4657,8 +4830,8 @@ public sealed class QualityControlChartsRenderer
             }
 
             var fill = level % 2 == 0
-                ? "rgba(255,106,0,0.022)"
-                : "rgba(201,108,255,0.010)";
+                ? "rgba(255,140,40,0.030)"
+                : "rgba(255,180,90,0.014)";
 
             sb.AppendLine(
                 $"<polygon points='{string.Join(" ", points)}' fill='{fill}' stroke='{GridStroke}' stroke-width='1' />");
@@ -4674,6 +4847,15 @@ public sealed class QualityControlChartsRenderer
                 $"<line x1='{center}' y1='{center}' x2='{F(x)}' y2='{F(y)}' stroke='{AxisStroke}' stroke-width='1' />");
         }
 
+        for (var level = 1; level <= levels; level++)
+        {
+            var rr = radius * (level / (double)levels);
+            var y = center - rr + 11;
+
+            sb.AppendLine(
+                $"<text x='{center + 6}' y='{F(y)}' fill='{LabelMuted}' font-size='9'>{level * 20}%</text>");
+        }
+
         for (var i = 0; i < labels.Length; i++)
         {
             var angle = (Math.PI * 2 / labels.Length) * i - Math.PI / 2;
@@ -4685,7 +4867,7 @@ public sealed class QualityControlChartsRenderer
             else if (Math.Cos(angle) < -0.35) anchor = "end";
 
             sb.AppendLine(
-                $"<text x='{F(lx)}' y='{F(ly)}' fill='{StrongText}' font-size='10' text-anchor='{anchor}'>{labels[i]}</text>");
+                $"<text x='{F(lx)}' y='{F(ly)}' fill='{StrongText}' font-size='11' text-anchor='{anchor}'>{labels[i]}</text>");
         }
 
         var polygon = new List<string>();
@@ -4700,7 +4882,7 @@ public sealed class QualityControlChartsRenderer
         }
 
         sb.AppendLine(
-            $"<polygon points='{string.Join(" ", polygon)}' fill='rgba(201,108,255,0.16)' stroke='{NeonPurple}' stroke-width='2.2' filter='url(#qualityRadarGlow)'/>");
+            $"<polygon points='{string.Join(" ", polygon)}' fill='rgba(255,140,60,0.18)' stroke='{AccentPrimary}' stroke-width='2.4' filter='url(#qualityRadarGlow)'/>");
 
         for (var i = 0; i < values.Length; i++)
         {
@@ -4710,28 +4892,40 @@ public sealed class QualityControlChartsRenderer
             var y = center + pr * Math.Sin(angle);
 
             sb.AppendLine($"""
-<circle cx="{F(x)}" cy="{F(y)}" r="4.3" fill="{NeonPurple}" stroke="#fff2ff" stroke-width="1.1" style="filter:drop-shadow(0 0 8px {NeonPurple});">
+<circle cx="{F(x)}" cy="{F(y)}" r="4.5" fill="{AccentSoft}" stroke="#fff0d6" stroke-width="1.2">
     <title>{labels[i]} — {(values[i] * 100):0.0}%</title>
 </circle>
 """);
         }
 
+        sb.AppendLine($"<circle cx='{center}' cy='{center}' r='2.5' fill='rgba(255,240,214,0.92)'/>");
+
+        sb.AppendLine($"""
+<g transform="translate(20,{size + 18})">
+    <rect x="0" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="{AccentPrimary}" stroke-width="1.2"/>
+    <text x="18" y="-2" fill="{SoftText}" font-size="10">Normalized quality signal distribution</text>
+</g>
+""");
+
         sb.AppendLine("</svg>");
 
-        sb.AppendLine("""
-<div class="chart-interpretation" style="margin-top:12px;">
-    <ul class="clean" style="margin:0;">
-        <li><b>Parser:</b> Confidence that structural extraction is usable for downstream analysis.</li>
-        <li><b>Effort:</b> Confidence attached to current refactor effort estimation.</li>
-        <li><b>Statistics:</b> Support level of the current statistical payload.</li>
-        <li><b>Gates:</b> Aggregate readiness inferred from fitness gate states.</li>
-        <li><b>Unresolved Control:</b> Inverse pressure of unresolved structural candidates.</li>
-        <li><b>Overall:</b> Executive readiness across all quality layers.</li>
+        // Legenda lateralizada com a paleta híbrida
+        sb.AppendLine($"""
+<div class="chart-interpretation" style="flex:1;max-width:320px;min-width:240px;">
+    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:16px;">
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:{AccentPrimary};margin-right:8px;font-size:10px;">¦</span><b style="color:{StrongText};">Parser:</b><br/>Confidence that structural extraction is usable for downstream analysis.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:{AccentPrimary};margin-right:8px;font-size:10px;">¦</span><b style="color:{StrongText};">Effort:</b><br/>Confidence attached to current refactor effort estimation.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:{AccentPrimary};margin-right:8px;font-size:10px;">¦</span><b style="color:{StrongText};">Statistics:</b><br/>Support level of the current statistical payload.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:{AccentPrimary};margin-right:8px;font-size:10px;">¦</span><b style="color:{StrongText};">Gates:</b><br/>Aggregate readiness inferred from fitness gate states.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:{AccentPrimary};margin-right:8px;font-size:10px;">¦</span><b style="color:{StrongText};">Unresolved Ctrl:</b><br/>Inverse pressure of unresolved structural candidates.</li>
+        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:{AccentPrimary};margin-right:8px;font-size:10px;">¦</span><b style="color:{StrongText};">Overall:</b><br/>Executive readiness across all quality layers.</li>
     </ul>
 </div>
 """);
 
-        sb.AppendLine("</div>");
+        sb.AppendLine("</div>"); // Fecha o flex row
+        sb.AppendLine("</div>"); // Fecha o card
+
         return sb.ToString();
     }
 
@@ -4743,36 +4937,37 @@ public sealed class QualityControlChartsRenderer
     {
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Fitness Gate Strip</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Linear gate board for rapid operational reading.</div>");
+        // Container ajustado
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>");
+        sb.AppendLine("<h3 style='margin:0 0 6px 0;text-align:center;'>Fitness Gate Strip</h3>");
+        sb.AppendLine("<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Linear gate board for rapid operational reading.</div>");
         sb.AppendLine("<div style='display:grid;gap:10px;'>");
 
         foreach (var gate in gates)
         {
             var color = gate.Status switch
             {
-                QualityGateStatus.Pass => NeonGreen,
-                QualityGateStatus.Warn => NeonAmber,
-                QualityGateStatus.Fail => NeonRed,
-                _ => NeonBlue
+                QualityGateStatus.Pass => SemanticSafe,
+                QualityGateStatus.Warn => SemanticPattern,
+                QualityGateStatus.Fail => SemanticRisk,
+                _ => SemanticComplex
             };
 
             var glow = gate.Status switch
             {
-                QualityGateStatus.Pass => "rgba(0,255,140,0.16)",
-                QualityGateStatus.Warn => "rgba(255,176,0,0.16)",
-                QualityGateStatus.Fail => "rgba(255,49,92,0.16)",
-                _ => "rgba(45,125,255,0.16)"
+                QualityGateStatus.Pass => "rgba(127,211,107,0.14)",
+                QualityGateStatus.Warn => "rgba(255,193,93,0.14)",
+                QualityGateStatus.Fail => "rgba(255,106,61,0.14)",
+                _ => "rgba(110,168,255,0.14)"
             };
 
             sb.AppendLine($"""
 <div style="display:grid;grid-template-columns:180px 110px 1fr;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,{glow},rgba(8,12,22,0.92));border:1px solid {color};box-shadow:0 0 24px rgba(0,0,0,0.16);">
-    <div style="color:#f4fbff;font-weight:700;font-size:12px;">{Html(gate.Name)}</div>
+    <div style="color:{StrongText};font-weight:700;font-size:12px;">{Html(gate.Name)}</div>
     <div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:{color};color:#08111f;font-weight:800;font-size:11px;">
         {gate.Status}
     </div>
-    <div style="color:#c8d6e6;font-size:12px;">{Html(gate.Details)}</div>
+    <div style="color:{SoftText};font-size:12px;">{Html(gate.Details)}</div>
 </div>
 """);
         }
@@ -4792,7 +4987,7 @@ public sealed class QualityControlChartsRenderer
         double gateReadiness,
         double overallReadiness)
     {
-        string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+        //static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
         var parserScore = ToWeight(parserConfidence);
         var effortScore = ToWeight(effortConfidence);
@@ -4800,17 +4995,28 @@ public sealed class QualityControlChartsRenderer
         var gatesScore = ToWeight(gateReadiness);
         var overallScore = ToWeight(overallReadiness);
 
-        var width = 860;
-        var height = 320;
+        // O canvas interno do SVG foi expandido de 420 para 800 para dar espaço ao "esticamento" orgânico.
+        const int width = 800;
+        const int height = 400;
+
         var sb = new StringBuilder();
 
-        sb.AppendLine("<div class='chart-container'>");
-        sb.AppendLine("<h3>Trust Flow Sankey</h3>");
-        sb.AppendLine("<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>How the major support layers contribute to the final execution readiness signal.</div>");
+        sb.AppendLine("<div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:450px;box-sizing:border-box;'>");
+        sb.AppendLine("<h3 style='margin:0 0 6px 0;text-align:center;'>Trust Flow Sankey</h3>");
+        sb.AppendLine("<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>How the major support layers contribute to the final execution readiness signal.</div>");
 
+        sb.AppendLine("<div style='display:flex;align-items:center;justify-content:center;width:100%;flex:1;'>");
+
+        // SVG ocupa 90% do card, mas o viewBox desenha a arte usando 800px internamente.
         sb.AppendLine($"""
-<svg class="dashboard-sankey-svg dashboard-svg-theme" width="{width}" height="{height}" viewBox="0 0 {width} {height}" style="width:100%;height:auto;">
+<svg width="100%" height="100%" viewBox="0 0 {width} {height}" style="display:block;width:90%;max-width:{width}px;height:auto;border-radius:16px;overflow:visible">
     <defs>
+        <radialGradient id="trustSankeyBg" cx="50%" cy="45%" r="75%">
+            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
+            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
+            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
+        </radialGradient>
+
         <filter id="trustGlow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="2.2" result="blur"/>
             <feMerge>
@@ -4819,38 +5025,46 @@ public sealed class QualityControlChartsRenderer
             </feMerge>
         </filter>
     </defs>
+
+    <rect x="0" y="0" width="{width}" height="{height}" rx="16" fill="url(#trustSankeyBg)" />
 """);
 
+        // Nós redistribuídos perfeitamente dentro da malha de 800px.
+        // Coluna 1: X = 20, Coluna 2: X = 340, Coluna 3: X = 660. 
+        // Cada retângulo tem 120 de largura, gerando um gap exato de 200px entre as colunas.
         var nodes = new[]
         {
-            new FlowNode("Parser", 54, 48, parserScore, NeonBlue),
-            new FlowNode("Effort", 54, 122, effortScore, NeonAmber),
-            new FlowNode("Statistics", 54, 196, statsScore, NeonPurple),
-            new FlowNode("Fitness Gates", 316, 122, gatesScore, NeonGreen),
-            new FlowNode("Overall Readiness", 628, 122, overallScore, NeonFire)
+            new FlowNode("Parser", 20, 52, parserScore, SemanticComplex),
+            new FlowNode("Effort", 20, 126, effortScore, SemanticPattern),
+            new FlowNode("Statistics", 20, 200, statsScore, AccentWarm),
+
+            new FlowNode("Fitness Gates", 340, 126, gatesScore, SemanticSafe),
+
+            new FlowNode("Overall Readiness", 660, 126, overallScore, AccentHot)
         };
 
-        sb.AppendLine(RenderTrustFlow(nodes[0], nodes[3], parserScore, NeonBlue));
-        sb.AppendLine(RenderTrustFlow(nodes[1], nodes[3], effortScore, NeonAmber));
-        sb.AppendLine(RenderTrustFlow(nodes[2], nodes[3], statsScore, NeonPurple));
-        sb.AppendLine(RenderTrustFlow(nodes[3], nodes[4], gatesScore, NeonGreen));
-        sb.AppendLine(RenderTrustFlow(nodes[1], nodes[4], Math.Max(8, effortScore / 2), NeonAmber));
-        sb.AppendLine(RenderTrustFlow(nodes[2], nodes[4], Math.Max(8, statsScore / 2), NeonPurple));
+        sb.AppendLine(RenderTrustFlow(nodes[0], nodes[3], parserScore, SemanticComplex));
+        sb.AppendLine(RenderTrustFlow(nodes[1], nodes[3], effortScore, SemanticPattern));
+        sb.AppendLine(RenderTrustFlow(nodes[2], nodes[3], statsScore, AccentWarm));
+        sb.AppendLine(RenderTrustFlow(nodes[3], nodes[4], gatesScore, SemanticSafe));
+        sb.AppendLine(RenderTrustFlow(nodes[1], nodes[4], Math.Max(8, effortScore / 2), AccentSoft));
+        sb.AppendLine(RenderTrustFlow(nodes[2], nodes[4], Math.Max(8, statsScore / 2), AccentPrimary));
 
         foreach (var node in nodes)
         {
             sb.AppendLine($"""
 <g>
-    <rect x="{node.X}" y="{node.Y}" width="150" height="48" rx="10"
+    <rect x="{node.X}" y="{node.Y}" width="120" height="48" rx="10"
           fill="rgba(6,12,24,0.92)" stroke="{node.Color}" stroke-width="1.2" style="filter:drop-shadow(0 0 12px {node.Color}55);" />
-    <text x="{node.X + 12}" y="{node.Y + 19}" fill="#f4fbff" font-size="11" font-weight="700">{node.Name}</text>
-    <text x="{node.X + 12}" y="{node.Y + 35}" fill="#c8d6e6" font-size="11">{node.Value}%</text>
+    <text x="{node.X + 10}" y="{node.Y + 18}" fill="{StrongText}" font-size="10.5" font-weight="700">{node.Name}</text>
+    <text x="{node.X + 10}" y="{node.Y + 34}" fill="{SoftText}" font-size="10.5">{node.Value}%</text>
 </g>
 """);
         }
 
         sb.AppendLine("</svg>");
-        sb.AppendLine("</div>");
+        sb.AppendLine("</div>"); // Fecha o flex row
+        sb.AppendLine("</div>"); // Fecha o card
 
         return sb.ToString();
     }
@@ -4861,17 +5075,18 @@ public sealed class QualityControlChartsRenderer
         int weight,
         string color)
     {
-        string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+        static string F(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 
-        var thickness = 8 + (weight / 100.0) * 24.0;
+        var thickness = 8 + (weight / 100.0) * 18.0;
 
-        var x1 = from.X + 150;
+        var x1 = from.X + 120; // Largura exata do rect
         var y1 = from.Y + 24;
         var x2 = to.X;
         var y2 = to.Y + 24;
 
-        var c1x = x1 + ((x2 - x1) * 0.42);
-        var c2x = x1 + ((x2 - x1) * 0.68);
+        // Curvatura bezier recalculada para o novo distanciamento longo
+        var c1x = x1 + ((x2 - x1) * 0.40);
+        var c2x = x1 + ((x2 - x1) * 0.70);
 
         return $"""
 <path d="M {F(x1)} {F(y1)} C {F(c1x)} {F(y1)}, {F(c2x)} {F(y2)}, {F(x2)} {F(y2)}"
@@ -4930,7 +5145,7 @@ using RefactorScope.Exporters.Styling;
 using System.Globalization;
 using System.Text;
 
-namespace RefactorScope.Exporters
+namespace RefactorScope.Exporters.Dashboards
 {
     public sealed class QualityDashboardExporter
     {
@@ -4981,6 +5196,10 @@ namespace RefactorScope.Exporters
 
             var gateReadiness = ComputeGateReadiness(metrics);
             var unresolvedPressure = ComputeUnresolvedPressure(metrics);
+
+            var statisticsBand = DashboardMetricsCalculator.GetSupportBandFromScore(metrics.StatisticsCoverageScore);
+            var statisticsBandCss = DashboardMetricsCalculator.GetBandCssClass(metrics.StatisticsCoverageScore);
+            var statisticsBadgeCss = DashboardMetricsCalculator.GetBadgeCssForBand(metrics.StatisticsCoverageScore);
 
             var gateVisuals =
                 metrics.GateRows
@@ -5039,9 +5258,9 @@ namespace RefactorScope.Exporters
         <div class="hint">Confidence level attached to the current refactor effort estimate</div>
     </div>
 
-    <div class="kpi {metrics.StatisticsBandCss}" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi {statisticsBandCss}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistics Support</div>
-        <div class="value" style="font-size:24px;">{Html(metrics.StatisticsBand)}</div>
+        <div class="value" style="font-size:24px;">{Html(statisticsBand)}</div>
         <div class="hint">Availability and completeness of the statistical validation payload</div>
     </div>
 
@@ -5089,7 +5308,7 @@ namespace RefactorScope.Exporters
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.ParserConfidence)}"><span class="badge-dot"></span> Parser: {Html(metrics.ParserBand)}</div>
         <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.EffortConfidence)}"><span class="badge-dot"></span> Effort: {Html(metrics.EffortBand)}</div>
-        <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.StatisticsSupportCoverage)}"><span class="badge-dot"></span> Statistics: {Html(metrics.StatisticsBand)}</div>
+        <div class="badge {statisticsBadgeCss}"><span class="badge-dot"></span> Statistics: {Html(statisticsBand)}</div>
         <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.OverallReadinessScore)}"><span class="badge-dot"></span> Overall: {Html(metrics.OverallReadinessBand)}</div>
     </div>
 
@@ -5100,13 +5319,13 @@ namespace RefactorScope.Exporters
         <li><b>References:</b> {metrics.ParsingReferences}</li>
         <li><b>Estimated Hours:</b> {metrics.EffortHours:0.0}</li>
         <li><b>RDI:</b> {metrics.EffortRdi:0.##}</li>
+        <li><b>Statistics Support Score:</b> {metrics.StatisticsCoverageScore:0.00}</li>
     </ul>
 </div>
 """);
 
             sb.AppendLine("</div></div>");
 
-            // Radar + Sankey lado a lado
             sb.AppendLine("""
 <div class="section">
     <div class="section-title">
@@ -5117,11 +5336,11 @@ namespace RefactorScope.Exporters
 """);
 
             sb.AppendLine($"""
-<div class="panel half-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="panel half-panel chart-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     {charts.RenderQualityRadar(
         metrics.ParserConfidence,
         metrics.EffortConfidence,
-        metrics.StatisticsSupportCoverage,
+        metrics.StatisticsCoverageScore,
         gateReadiness,
         unresolvedPressure,
         metrics.OverallReadinessScore)}
@@ -5129,11 +5348,11 @@ namespace RefactorScope.Exporters
 """);
 
             sb.AppendLine($"""
-<div class="panel half-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="panel half-panel chart-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     {charts.RenderTrustFlowSankey(
         metrics.ParserConfidence,
         metrics.EffortConfidence,
-        metrics.StatisticsSupportCoverage,
+        metrics.StatisticsCoverageScore,
         gateReadiness,
         metrics.OverallReadinessScore)}
 </div>
@@ -5318,12 +5537,37 @@ namespace RefactorScope.Exporters
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
-    align-items: start;
+    align-items: stretch;
 }
 
 .half-panel {
-    overflow: hidden;
     min-width: 0;
+    overflow: hidden;
+}
+
+.chart-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 460px;
+}
+
+.chart-panel .chart-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
+.dashboard-radar-svg,
+.dashboard-sankey-svg,
+.dashboard-donut-svg,
+.dashboard-constellation-svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
 }
 
 .chart-container {
@@ -5348,6 +5592,10 @@ namespace RefactorScope.Exporters
 @media (max-width: 1080px) {
     .quality-half-grid {
         grid-template-columns: 1fr;
+    }
+
+    .chart-panel {
+        min-height: unset;
     }
 }
 
@@ -6696,11 +6944,6 @@ public sealed class ExportFolderBootstrapper
     public void EnsureStructure()
     {
         Directory.CreateDirectory(_paths.RootOutputPath);
-        Directory.CreateDirectory(_paths.GetAssetsDirectory());
-        Directory.CreateDirectory(_paths.GetDatasetsDirectory());
-        Directory.CreateDirectory(_paths.GetCsvDatasetsDirectory());
-        Directory.CreateDirectory(_paths.GetDumpsDirectory());
-        Directory.CreateDirectory(_paths.GetTrendsDirectory());
     }
 }
 
