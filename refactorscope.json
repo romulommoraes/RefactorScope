@@ -19,10 +19,6 @@
     "logParsingBreakdown": true
   },
 
-  "statistics": {
-    "enabled": true
-  },
-
   "estimator": {
     "enabled": true
   },
@@ -34,7 +30,8 @@
     "coreIsolation": true,
     "entrypoints": true,
     "coupling": true,
-    "solid": true
+    "solid": true,
+    "statistics": true
   },
 
   "zombieDetection": {
