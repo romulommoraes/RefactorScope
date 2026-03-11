@@ -4,6 +4,7 @@
 <meta charset='UTF-8' />
 <meta name='viewport' content='width=device-width, initial-scale=1.0' />
 <title>Quality / Gates Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
 <link rel='stylesheet' href='assets/vendor/Charts.css' />
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
@@ -21,8 +22,8 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-10 01:46 UTC</div>
-        <div><b>Parser:</b> HybridSelectiveParser</div>
+        <div><b>Generated:</b> 2026-03-11 06:18 UTC</div>
+        <div><b>Parser:</b> HybridParser (Adaptive)</div>
         <div><b>Readiness:</b> Ready</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
     </div>
@@ -42,25 +43,31 @@
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Effort Confidence</div>
-        <div class="value">0,60</div>
+        <div class="value">0,64</div>
         <div class="hint">Confidence level attached to the current refactor effort estimate</div>
     </div>
 
-    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Gate Readiness</div>
+        <div class="value">100%</div>
+        <div class="hint">Positive quality reading of gate health for visual comparison</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistics Support</div>
-        <div class="value" style="font-size:24px;">Low</div>
+        <div class="value" style="font-size:24px;">High</div>
         <div class="hint">Availability and completeness of the statistical validation payload</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">18</div>
+        <div class="value">17</div>
         <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
     </div>
 
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Overall Readiness</div>
-        <div class="value" style="font-size:24px;">Moderate</div>
+        <div class="value" style="font-size:24px;">High</div>
         <div class="hint">Executive quality band across gates, parser, effort and statistics</div>
     </div>
 </div>
@@ -72,7 +79,7 @@
     <div class="dual">
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Interpretation</h3>
-    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, statistics coverage is low, and the overall quality snapshot is moderate.</p>
+    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, gate readiness is high, statistics coverage is high, and the overall quality snapshot is high.</p>
 
     <ul class="clean" style="margin-top:16px;">
         <li>Fitness gates summarize whether the execution appears ready for interpretation.</li>
@@ -87,18 +94,20 @@
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge green"><span class="badge-dot"></span> Parser: High</div>
         <div class="badge amber"><span class="badge-dot"></span> Effort: Moderate</div>
-        <div class="badge red"><span class="badge-dot"></span> Statistics: Low</div>
-        <div class="badge amber"><span class="badge-dot"></span> Overall: Moderate</div>
+        <div class="badge green"><span class="badge-dot"></span> Gates: High</div>
+        <div class="badge green"><span class="badge-dot"></span> Statistics: High</div>
+        <div class="badge green"><span class="badge-dot"></span> Overall: High</div>
     </div>
 
     <ul class="clean">
-        <li><b>Execution Time:</b> 4442 ms</li>
-        <li><b>Files:</b> 177</li>
+        <li><b>Execution Time:</b> 538 ms</li>
+        <li><b>Files:</b> 174</li>
         <li><b>Types:</b> 161</li>
-        <li><b>References:</b> 532</li>
-        <li><b>Estimated Hours:</b> 18,0</li>
-        <li><b>RDI:</b> 45</li>
-        <li><b>Statistics Support Score:</b> 0,20</li>
+        <li><b>References:</b> 588</li>
+        <li><b>Estimated Hours:</b> 19,2</li>
+        <li><b>RDI:</b> 48</li>
+        <li><b>Gate Readiness:</b> 1,00</li>
+        <li><b>Statistics Support Score:</b> 1,00</li>
     </ul>
 </div>
 </div></div>
@@ -109,186 +118,146 @@
     </div>
     <div class="quality-half-grid">
 <div class="panel half-panel chart-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    <div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:450px;box-sizing:border-box;'>
-<h3 style='margin:0 0 6px 0;text-align:center;'>Quality Signal Radar</h3>
-<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Quality posture across the main execution trust dimensions.</div>
-<div style='display:flex;flex-direction:row;align-items:center;justify-content:center;gap:36px;width:100%;flex:1;flex-wrap:wrap;'>
-<svg width="360" height="400" viewBox="0 0 360 400" style="display:block;max-width:100%;height:auto;flex-shrink:0;border-radius:16px;overflow:visible">
-    <defs>
-        <radialGradient id="qualityRadarBg" cx="50%" cy="45%" r="75%">
-            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
-            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
-            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
-        </radialGradient>
+    <div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Quality Signal Radar</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Quality posture across trust dimensions.</div>
+<div id="p5-quality-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const qualityRadarSketch = (p) => {
+    const data = [95, 64.28, 100, 100, 57.764, 91.106];
+    const labels = ["Parser", "Effort", "Statistics", "Gates", "Unresolved", "Overall"];
+    const maxRadius = 100;
 
-        <filter id="qualityRadarGlow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="4" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
+    p.setup = () => {
+        let canvas = p.createCanvas(420, 320);
+        canvas.parent('p5-quality-radar-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
 
-    <rect x="0" y="0" width="360" height="400" rx="16" fill="url(#qualityRadarBg)" />
-<polygon points='180,84 263.138,132 263.138,228 180,276 96.862,228 96.862,132' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='180,103.2 246.511,141.6 246.511,218.4 180,256.8 113.489,218.4 113.489,141.6' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='180,122.4 229.883,151.2 229.883,208.8 180,237.6 130.117,208.8 130.117,151.2' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='180,141.6 213.255,160.8 213.255,199.2 180,218.4 146.745,199.2 146.745,160.8' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='180,160.8 196.628,170.4 196.628,189.6 180,199.2 163.372,189.6 163.372,170.4' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<line x1='180' y1='180' x2='180' y2='84' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='180' y1='180' x2='263.138' y2='132' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='180' y1='180' x2='263.138' y2='228' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='180' y1='180' x2='180' y2='276' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='180' y1='180' x2='96.862' y2='228' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='180' y1='180' x2='96.862' y2='132' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<text x='186' y='171.8' fill='rgba(235,214,194,0.42)' font-size='9'>20%</text>
-<text x='186' y='152.6' fill='rgba(235,214,194,0.42)' font-size='9'>40%</text>
-<text x='186' y='133.4' fill='rgba(235,214,194,0.42)' font-size='9'>60%</text>
-<text x='186' y='114.2' fill='rgba(235,214,194,0.42)' font-size='9'>80%</text>
-<text x='186' y='95' fill='rgba(235,214,194,0.42)' font-size='9'>100%</text>
-<text x='180' y='66' fill='#f2e1d2' font-size='11' text-anchor='middle'>Parser</text>
-<text x='278.727' y='123' fill='#f2e1d2' font-size='11' text-anchor='start'>Effort</text>
-<text x='278.727' y='237' fill='#f2e1d2' font-size='11' text-anchor='start'>Statistics</text>
-<text x='180' y='294' fill='#f2e1d2' font-size='11' text-anchor='middle'>Gates</text>
-<text x='81.273' y='237' fill='#f2e1d2' font-size='11' text-anchor='end'>Unresolved Ctrl</text>
-<text x='81.273' y='123' fill='#f2e1d2' font-size='11' text-anchor='end'>Overall</text>
-<polygon points='180,88.8 230.159,151.041 196.628,189.6 180,180 134.041,206.534 117.383,143.848' fill='rgba(255,140,60,0.18)' stroke='#ff9a3c' stroke-width='2.4' filter='url(#qualityRadarGlow)'/>
-<circle cx="180" cy="88.8" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
-    <title>Parser — 95,0%</title>
-</circle>
-<circle cx="230.159" cy="151.041" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
-    <title>Effort — 60,3%</title>
-</circle>
-<circle cx="196.628" cy="189.6" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
-    <title>Statistics — 20,0%</title>
-</circle>
-<circle cx="180" cy="180" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
-    <title>Gates — 0,0%</title>
-</circle>
-<circle cx="134.041" cy="206.534" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
-    <title>Unresolved Ctrl — 55,3%</title>
-</circle>
-<circle cx="117.383" cy="143.848" r="4.5" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.2">
-    <title>Overall — 75,3%</title>
-</circle>
-<circle cx='180' cy='180' r='2.5' fill='rgba(255,240,214,0.92)'/>
-<g transform="translate(20,378)">
-    <rect x="0" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="#ff9a3c" stroke-width="1.2"/>
-    <text x="18" y="-2" fill="#d9c8b8" font-size="10">Normalized quality signal distribution</text>
-</g>
-</svg>
-<div class="chart-interpretation" style="flex:1;max-width:320px;min-width:240px;">
-    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:16px;">
-        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Parser:</b><br/>Confidence that structural extraction is usable for downstream analysis.</li>
-        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Effort:</b><br/>Confidence attached to current refactor effort estimation.</li>
-        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Statistics:</b><br/>Support level of the current statistical payload.</li>
-        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Gates:</b><br/>Aggregate readiness inferred from fitness gate states.</li>
-        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Unresolved Ctrl:</b><br/>Inverse pressure of unresolved structural candidates.</li>
-        <li style="font-size:12px;color:#c8d6e6;line-height:1.4;"><span style="color:#ff9a3c;margin-right:8px;font-size:10px;">■</span><b style="color:#f2e1d2;">Overall:</b><br/>Executive readiness across all quality layers.</li>
-    </ul>
-</div>
-</div>
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2);
+        let pulse = p.sin(p.frameCount * 3) * 5 + 10;
+        let numAxes = labels.length;
+
+        p.stroke('#8fa8ff'); p.noFill(); p.strokeWeight(1); p.drawingContext.shadowBlur = 0;
+        for (let i = 1; i <= 5; i++) {
+            let r = (maxRadius / 5) * i;
+            p.beginShape();
+            for (let a = 0; a < 360; a += (360 / numAxes)) p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            p.endShape(p.CLOSE);
+            if(i < 5) {
+                p.fill('#8fa8ff'); p.noStroke(); p.textSize(9); p.text(`${i * 20}%`, 5, -r);
+                p.noFill(); p.stroke('#8fa8ff');
+            }
+        }
+        for (let a = 0; a < 360; a += (360 / numAxes)) p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+
+        p.drawingContext.shadowColor = '#ff9a3c'; p.drawingContext.shadowBlur = pulse;
+        p.stroke('#ff9a3c'); p.strokeWeight(2.5); p.fill('rgba(255, 154, 60, 0.2)');
+        p.beginShape();
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            p.vertex(p.cos(angle) * r, p.sin(angle) * r);
+        }
+        p.endShape(p.CLOSE);
+
+        let scanAngle = p.frameCount * 2;
+        p.drawingContext.shadowBlur = 0;
+        p.noStroke(); p.fill('rgba(255, 154, 60, 0.15)');
+        p.arc(0, 0, maxRadius * 2, maxRadius * 2, scanAngle - 60, scanAngle);
+        p.stroke('#ff9a3c'); p.strokeWeight(1.5);
+        p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
+
+        p.fill('#eef4ff'); p.noStroke(); p.textSize(11);
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let lx = p.cos(angle) * (maxRadius + 20);
+            let ly = p.sin(angle) * (maxRadius + 20);
+            p.textAlign(p.CENTER, p.CENTER);
+            if (p.cos(angle) > 0.35) p.textAlign(p.LEFT, p.CENTER);
+            else if (p.cos(angle) < -0.35) p.textAlign(p.RIGHT, p.CENTER);
+            p.text(labels[i], lx, ly);
+        }
+    };
+};
+new p5(qualityRadarSketch);
+</script>
 </div>
 
 </div>
 <div class="panel half-panel chart-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-    <div class='chart-container' style='display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:450px;box-sizing:border-box;'>
-<h3 style='margin:0 0 6px 0;text-align:center;'>Trust Flow Sankey</h3>
-<div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>How the major support layers contribute to the final execution readiness signal.</div>
-<div style='display:flex;align-items:center;justify-content:center;width:100%;flex:1;'>
-<svg width="100%" height="100%" viewBox="0 0 800 400" style="display:block;width:90%;max-width:800px;height:auto;border-radius:16px;overflow:visible">
-    <defs>
-        <radialGradient id="trustSankeyBg" cx="50%" cy="45%" r="75%">
-            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
-            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
-            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
-        </radialGradient>
+    <div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Trust Flow Sankey</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Support layers contributing to final execution readiness.</div>
+<style>#p5-trust-sankey-container canvas { width: 100% !important; max-width: 860px; height: auto !important; }</style>
+<div id="p5-trust-sankey-container" style="width:100%; display:flex; justify-content:center;"></div>
+<script>
+const trustSankeySketch = (p) => {
+    const nodes = [
+        { id: 0, name: "Parser",      x: 20,  y: 52,  val: 95, col: '#6ea8ff' },
+        { id: 1, name: "Effort",      x: 20,  y: 156, val: 64, col: '#ffc15d' },
+        { id: 2, name: "Statistics",  x: 20,  y: 260, val: 100, col: '#ff9a3c' },
+        { id: 3, name: "Fitness Gates",x: 360, y: 156, val: 100, col: '#7fd36b' },
+        { id: 4, name: "Overall Readiness", x: 700, y: 156, val: 91, col: '#ff8a3d' }
+    ];
 
-        <filter id="trustGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.2" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
+    const links = [
+        { src: 0, tgt: 3, val: 95, col: '#6ea8ff', offset: 0.1 },
+        { src: 1, tgt: 3, val: 64, col: '#ffc15d', offset: 0.4 },
+        { src: 2, tgt: 3, val: 100, col: '#ff9a3c', offset: 0.7 },
+        { src: 3, tgt: 4, val: 100, col: '#7fd36b', offset: 0.3 },
+        { src: 1, tgt: 4, val: 32, col: '#ffb14d', offset: 0.6 },
+        { src: 2, tgt: 4, val: 50, col: '#ff9a3c', offset: 0.9 }
+    ];
 
-    <rect x="0" y="0" width="800" height="400" rx="16" fill="url(#trustSankeyBg)" />
-<path d="M 140 76 C 220 76, 280 150, 340 150"
-      fill="none"
-      stroke="#6ea8ff"
-      stroke-opacity="0.88"
-      stroke-width="25.1"
-      stroke-linecap="round"
-      filter="url(#trustGlow)" />
-<path d="M 140 150 C 220 150, 280 150, 340 150"
-      fill="none"
-      stroke="#ffc15d"
-      stroke-opacity="0.88"
-      stroke-width="18.8"
-      stroke-linecap="round"
-      filter="url(#trustGlow)" />
-<path d="M 140 224 C 220 224, 280 150, 340 150"
-      fill="none"
-      stroke="#ffc15d"
-      stroke-opacity="0.88"
-      stroke-width="11.6"
-      stroke-linecap="round"
-      filter="url(#trustGlow)" />
-<path d="M 460 150 C 540 150, 600 150, 660 150"
-      fill="none"
-      stroke="#7fd36b"
-      stroke-opacity="0.88"
-      stroke-width="8"
-      stroke-linecap="round"
-      filter="url(#trustGlow)" />
-<path d="M 140 150 C 348 150, 504 150, 660 150"
-      fill="none"
-      stroke="#ffb14d"
-      stroke-opacity="0.88"
-      stroke-width="13.4"
-      stroke-linecap="round"
-      filter="url(#trustGlow)" />
-<path d="M 140 224 C 348 224, 504 150, 660 150"
-      fill="none"
-      stroke="#ff9a3c"
-      stroke-opacity="0.88"
-      stroke-width="9.8"
-      stroke-linecap="round"
-      filter="url(#trustGlow)" />
-<g>
-    <rect x="20" y="52" width="120" height="48" rx="10"
-          fill="rgba(6,12,24,0.92)" stroke="#6ea8ff" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #6ea8ff55);" />
-    <text x="30" y="70" fill="#f2e1d2" font-size="10.5" font-weight="700">Parser</text>
-    <text x="30" y="86" fill="#d9c8b8" font-size="10.5">95%</text>
-</g>
-<g>
-    <rect x="20" y="126" width="120" height="48" rx="10"
-          fill="rgba(6,12,24,0.92)" stroke="#ffc15d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ffc15d55);" />
-    <text x="30" y="144" fill="#f2e1d2" font-size="10.5" font-weight="700">Effort</text>
-    <text x="30" y="160" fill="#d9c8b8" font-size="10.5">60%</text>
-</g>
-<g>
-    <rect x="20" y="200" width="120" height="48" rx="10"
-          fill="rgba(6,12,24,0.92)" stroke="#ffc15d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ffc15d55);" />
-    <text x="30" y="218" fill="#f2e1d2" font-size="10.5" font-weight="700">Statistics</text>
-    <text x="30" y="234" fill="#d9c8b8" font-size="10.5">20%</text>
-</g>
-<g>
-    <rect x="340" y="126" width="120" height="48" rx="10"
-          fill="rgba(6,12,24,0.92)" stroke="#7fd36b" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #7fd36b55);" />
-    <text x="350" y="144" fill="#f2e1d2" font-size="10.5" font-weight="700">Fitness Gates</text>
-    <text x="350" y="160" fill="#d9c8b8" font-size="10.5">0%</text>
-</g>
-<g>
-    <rect x="660" y="126" width="120" height="48" rx="10"
-          fill="rgba(6,12,24,0.92)" stroke="#ff8a3d" stroke-width="1.2" style="filter:drop-shadow(0 0 12px #ff8a3d55);" />
-    <text x="670" y="144" fill="#f2e1d2" font-size="10.5" font-weight="700">Overall Readiness</text>
-    <text x="670" y="160" fill="#d9c8b8" font-size="10.5">75%</text>
-</g>
-</svg>
-</div>
+    p.setup = () => {
+        let canvas = p.createCanvas(860, 360);
+        canvas.parent('p5-trust-sankey-container');
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        p.noFill();
+
+        links.forEach(link => {
+            let source = nodes[link.src]; let target = nodes[link.tgt];
+            let thickness = p.map(link.val, 0, 100, 8, 26);
+            let x1 = source.x + 120; let y1 = source.y + 24;
+            let x2 = target.x;       let y2 = target.y + 24;
+            let c1x = x1 + (x2 - x1) * 0.4; let c2x = x1 + (x2 - x1) * 0.7;
+
+            p.strokeWeight(thickness);
+            p.drawingContext.shadowBlur = 15; p.drawingContext.shadowColor = link.col;
+            let alpha = p.map(p.sin(p.frameCount * 2 + link.src * 20), -1, 1, 60, 160);
+            let col = p.color(link.col); col.setAlpha(alpha);
+            p.stroke(col);
+            p.bezier(x1, y1, c1x, y1, c2x, y2, x2, y2);
+
+            let t = (p.frameCount * 0.005 + link.offset) % 1;
+            let px = p.bezierPoint(x1, c1x, c2x, x2, t);
+            let py = p.bezierPoint(y1, y1, y2, y2, t);
+            
+            p.drawingContext.shadowColor = '#fff'; p.drawingContext.shadowBlur = 20;
+            p.fill(255); p.noStroke(); p.ellipse(px, py, thickness * 0.5); p.noFill();
+        });
+
+        nodes.forEach(node => {
+            p.drawingContext.shadowBlur = 15; p.drawingContext.shadowColor = node.col;
+            p.fill('rgba(6,12,24,0.92)'); p.stroke(node.col); p.strokeWeight(1.5);
+            p.rect(node.x, node.y, 120, 48, 8);
+
+            p.drawingContext.shadowBlur = 0; p.fill('#f4e6d8'); p.noStroke();
+            p.textAlign(p.LEFT, p.TOP); p.textSize(10.5); p.textStyle(p.BOLD); p.text(node.name, node.x + 10, node.y + 12);
+            p.fill('#8fa8ff'); p.textStyle(p.NORMAL); p.text(`${node.val}%`, node.x + 10, node.y + 28);
+        });
+    };
+};
+new p5(trustSankeySketch);
+</script>
 </div>
 
 </div>
@@ -299,23 +268,23 @@
         <div class="line"></div>
     </div>
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-<div class='chart-container' style='display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);'>
+<div class='chart-container' style='display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);' augmented-ui='tr-clip bl-clip border'>
 <h3 style='margin:0 0 6px 0;text-align:center;'>Fitness Gate Strip</h3>
 <div class='chart-note' style='margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;'>Linear gate board for rapid operational reading.</div>
-<div style='display:grid;gap:10px;'>
-<div style="display:grid;grid-template-columns:180px 110px 1fr;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(110,168,255,0.14),rgba(8,12,22,0.92));border:1px solid #6ea8ff;box-shadow:0 0 24px rgba(0,0,0,0.16);">
-    <div style="color:#f2e1d2;font-weight:700;font-size:12px;">Overall Fitness</div>
-    <div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:#6ea8ff;color:#08111f;font-weight:800;font-size:11px;">
+<div style='display:grid;gap:12px;'>
+<div style="display:grid;grid-template-columns:180px 100px 1fr;gap:16px;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.03);border-left:4px solid #6ea8ff;" augmented-ui="tl-clip br-clip border">
+    <div style="color:#eef4ff;font-weight:700;font-size:12px;">Overall Fitness</div>
+    <div style="display:inline-flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:999px;background:#6ea8ff;color:#08111f;font-weight:800;font-size:11px;">
         Info
     </div>
-    <div style="color:#d9c8b8;font-size:12px;">No failing fitness gate was detected.</div>
+    <div style="color:#8fa8ff;font-size:12px;">No failing fitness gate was detected.</div>
 </div>
-<div style="display:grid;grid-template-columns:180px 110px 1fr;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(110,168,255,0.14),rgba(8,12,22,0.92));border:1px solid #6ea8ff;box-shadow:0 0 24px rgba(0,0,0,0.16);">
-    <div style="color:#f2e1d2;font-weight:700;font-size:12px;">UnreferencedTypes</div>
-    <div style="display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;background:#6ea8ff;color:#08111f;font-weight:800;font-size:11px;">
+<div style="display:grid;grid-template-columns:180px 100px 1fr;gap:16px;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.03);border-left:4px solid #6ea8ff;" augmented-ui="tl-clip br-clip border">
+    <div style="color:#eef4ff;font-weight:700;font-size:12px;">UnreferencedTypes</div>
+    <div style="display:inline-flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:999px;background:#6ea8ff;color:#08111f;font-weight:800;font-size:11px;">
         Info
     </div>
-    <div style="color:#d9c8b8;font-size:12px;">Structural Unreferenced controlado: 0%</div>
+    <div style="color:#8fa8ff;font-size:12px;">Structural Unreferenced controlado: 0%</div>
 </div>
 </div></div>
 
@@ -358,9 +327,9 @@
     <h3>Effort Estimation</h3>
     <ul class="clean">
         <li><b>Difficulty:</b> Moderate</li>
-        <li><b>Estimated Hours:</b> 18,0</li>
-        <li><b>Confidence:</b> 0,60</li>
-        <li><b>RDI:</b> 45</li>
+        <li><b>Estimated Hours:</b> 19,2</li>
+        <li><b>Confidence:</b> 0,64</li>
+        <li><b>RDI:</b> 48</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -369,14 +338,14 @@
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.225;">
-                        <span class="data">18,0h</span>
+                    <td style="--size: 0.24;">
+                        <span class="data">19,2h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.6033;">
-                        <span class="data">0,60</span>
+                    <td style="--size: 0.6428;">
+                        <span class="data">0,64</span>
                     </td>
                 </tr>
             </tbody>
@@ -385,7 +354,36 @@
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Statistical Summary</h3>
-<p>No structured statistics payload was available for this execution.</p>
+<table class="link-table compact-table">
+    <thead>
+        <tr>
+            <th>Metric</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Classes Per File</td>
+    <td>0.925</td>
+</tr>
+<tr>
+    <td>References Per Class</td>
+    <td>3.652</td>
+</tr>
+<tr>
+    <td>Mean Coupling</td>
+    <td>3.652</td>
+</tr>
+<tr>
+    <td>Unresolved Candidate Ratio</td>
+    <td>0.106</td>
+</tr>
+<tr>
+    <td>Namespace Drift Ratio</td>
+    <td>0.143</td>
+</tr>
+    </tbody>
+</table>
 </div></div></div>
 <div class="section">
     <div class="section-title">
@@ -396,6 +394,7 @@
         <ul class="clean">
             <li>This dashboard summarizes quality signals across parsing, gating, effort and statistical support.</li>
             <li>Fitness gates express execution readiness, not scientific certainty.</li>
+            <li>Gate Readiness is a positive visual score: higher means healthier gate state.</li>
             <li>Effort confidence is useful as a planning aid and should not be treated as an absolute forecast.</li>
             <li>Statistics support reflects the availability and completeness of the current statistical payload.</li>
             <li>Final interpretation should always include human review, especially when unresolved structural signals remain.</li>
@@ -405,7 +404,7 @@
 <style>
 .grid-kpis.quality-kpis {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -459,9 +458,9 @@
     margin-bottom: 8px;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
     .grid-kpis.quality-kpis {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 

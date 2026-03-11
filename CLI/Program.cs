@@ -1,5 +1,6 @@
 ﻿using RefactorScope.Analyzers;
 using RefactorScope.Analyzers.Solid;
+using RefactorScope.CLI;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Analyzers;
 using RefactorScope.Core.Configuration;
@@ -9,6 +10,7 @@ using RefactorScope.Core.Metrics;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Parsing;
+using RefactorScope.Core.Parsing.Arena;
 using RefactorScope.Core.Parsing.Enum;
 using RefactorScope.Core.Results;
 using RefactorScope.Execution.Dump;
@@ -34,19 +36,54 @@ IParserResult? parsingResult = null;
 // PIPELINE PRINCIPAL
 // =====================================================
 
-if (!RunConfiguration(out var config)) return;
+if (!RunConfiguration(out var config, out var isSelfAnalysis, out var isBatchMode))
+    return;
 
-if (!RunParsing(config, out var context, out parsingResult)) return;
+const bool enableParserSelector = true;
+
+var parserStrategy =
+    ParserSelector.ResolveStrategy(
+        config.Parser,
+        enableParserSelector);
+
+config.Parser = parserStrategy.ToString();
+
+if (isBatchMode)
+{
+    if (parserStrategy != ParserStrategy.Comparative)
+    {
+        TerminalRenderer.Warn("Batch Arena requires Comparative parser strategy.");
+        return;
+    }
+
+    if (!ParserArenaCliRunner.RunBatch(config))
+        return;
+
+    return;
+}
+
+if (parserStrategy == ParserStrategy.Comparative)
+{
+    if (!ParserArenaCliRunner.RunSingleProject(config, isSelfAnalysis))
+        return;
+
+    return;
+}
+
+if (!RunParsing(config, parserStrategy, out var context, out parsingResult))
+    return;
 
 RunTopLevelRecovery(context);
 
-if (!RunAnalysis(context, out var report)) return;
+if (!RunAnalysis(context, out var report))
+    return;
 
 RunArchitecturalHygiene(report);
 
 PrintStructuralBreakdown(report);
 
-if (!RunExport(config, context, report, parsingResult)) return;
+if (!RunExport(config, context, report, parsingResult))
+    return;
 
 RunVisualization(report);
 
@@ -56,21 +93,29 @@ ApplyCiExitCode(report);
    CONFIGURAÇÃO
    ===================================================== */
 
-static bool RunConfiguration(out RefactorScopeConfig config)
+static bool RunConfiguration(
+    out RefactorScopeConfig config,
+    out bool isSelfAnalysis,
+    out bool isBatchMode)
 {
     config = null!;
+    isSelfAnalysis = false;
+    isBatchMode = false;
 
     try
     {
         const bool enableSelfSelector = true;
 
-        var configPath =
-            RefactorScope.CLI.SelfAnalysisSelector.ResolveConfigPath(
+        var startupSelection =
+            RefactorScope.CLI.SelfAnalysisSelector.Resolve(
                 "refactorscope.json",
                 "refactorscope_v1_1_self.json",
                 enableSelfSelector);
 
-        config = ConfigLoader.Load(configPath);
+        isSelfAnalysis = startupSelection.IsSelfAnalysis;
+        isBatchMode = startupSelection.IsBatchMode;
+
+        config = ConfigLoader.Load(startupSelection.ConfigPath);
 
         ConfigValidator.Validate(config);
 
@@ -103,6 +148,7 @@ static bool RunConfiguration(out RefactorScopeConfig config)
 
 static bool RunParsing(
     RefactorScopeConfig config,
+    ParserStrategy parserStrategy,
     out AnalysisContext context,
     out IParserResult? parsingResult)
 {
@@ -111,21 +157,8 @@ static bool RunParsing(
 
     try
     {
-        if (!Enum.TryParse<ParserStrategy>(
-                config.Parser,
-                true,
-                out _))
-        {
-            Console.WriteLine(
-                $"[WARN] Estratégia de parser '{config.Parser}' inválida. Usando Selective.");
-        }
-
-        const bool enableParserSelector = true;
-
         var parser =
-            ParserSelector.ResolveParser(
-                config.Parser,
-                enableParserSelector);
+            ParserSelector.ResolveParser(parserStrategy);
 
         var result =
             TerminalRenderer.WithSpinner(
@@ -232,7 +265,6 @@ static bool RunAnalysis(
     try
     {
         var analyzers = BuildAnalyzers(context);
-
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
@@ -365,7 +397,14 @@ static bool RunExport(
         // -------------------------------------------------
         RunHtmlExporters(htmlExporters, context, report, rootOutputPath);
 
+        ArchitecturalDashboardExporterAdapter.ExportDirect(
+            context,
+            report,
+            parsingResult,
+            rootOutputPath);
+
         RunParsingDashboardExporter(context, parsingResult, rootOutputPath);
+
 
         QualityDashboardExporterAdapter.ExportDirect(
             context,
@@ -626,8 +665,7 @@ static List<IExporter> BuildHtmlExportersWithoutHub()
 {
     return new List<IExporter>
     {
-        new StructuralDashboardExporterAdapter(),
-        new ArchitecturalDashboardExporterAdapter()
+        new StructuralDashboardExporterAdapter()
     };
 }
 
@@ -688,7 +726,34 @@ static void RunParsingDashboardExporter(
         CrashLogger.Log(ex, "HTML_EXPORT_PARSING-DASHBOARD");
     }
 }
+static void RunParserArenaDashboardExporter(
+    AnalysisContext context,
+    IReadOnlyList<ParserArenaProjectResult> results,
+    string outputDirectory)
+{
+    try
+    {
+        if (results == null || results.Count == 0)
+            return;
 
+        Directory.CreateDirectory(outputDirectory);
+
+        var themeFileName = ResolveThemeFileName(context);
+        DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+        var htmlPath = Path.Combine(outputDirectory, "ParserArenaDashboard.html");
+
+        var exporter = new ParserArenaDashboardExporter();
+        exporter.Export(results, htmlPath, themeFileName);
+
+        TerminalRenderer.Success("parser-arena-dashboard gerado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO AO GERAR HTML - parser-arena-dashboard]: {ex.Message}");
+        CrashLogger.Log(ex, "HTML_EXPORT_PARSER-ARENA-DASHBOARD");
+    }
+}
 static void RunHtmlHubExporter(
     AnalysisContext context,
     ConsolidatedReport report,

@@ -4,6 +4,7 @@
 <meta charset='UTF-8' />
 <meta name='viewport' content='width=device-width, initial-scale=1.0' />
 <title>Architectural Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
 <link rel='stylesheet' href='assets/vendor/Charts.css' />
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
@@ -20,77 +21,77 @@
 <div class='subtitle'>Target Scope: <b>C:\Users\romul\source\repos\Scriptome</b></div>
 </div>
 <div class='run-meta'>
-<div><b>Generated:</b> 2026-03-10 01:46 UTC</div>
+<div><b>Generated:</b> 2026-03-11 06:18 UTC</div>
 <div><b>View:</b> Executive architectural summary</div>
 <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
 </div>
 </div>
-<div class='grid-kpis'>
-<div class='kpi' augmented-ui='tr-clip bl-clip border'>
+<div class='grid-kpis' style='display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:32px;'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Modules</div>
 <div class='value'>5</div>
 <div class='hint'>Detected architectural folders</div>
 </div>
-<div class='kpi' augmented-ui='tr-clip bl-clip border'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Average Score</div>
-<div class='value'>71,8</div>
+<div class='value'>70,5</div>
 <div class='hint'>Composite health by module</div>
 </div>
-<div class='kpi alert' augmented-ui='tr-clip bl-clip border'>
+<div class='kpi alert' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Unresolved</div>
-<div class='value'>18</div>
+<div class='value'>17</div>
 <div class='hint'>Final unresolved structural candidates</div>
 </div>
-<div class='kpi good' augmented-ui='tr-clip bl-clip border'>
-<div class='label'>Fitness</div>
-<div class='value'>Ready</div>
-<div class='hint'>Overall architectural readiness</div>
+<div class='kpi warning' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Implicit Coupling</div>
+<div class='value'>17</div>
+<div class='hint'>Potential dependency hotspots</div>
 </div>
-<div class='kpi' augmented-ui='tr-clip bl-clip border'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Abstractness (A)</div>
 <div class='value'>0,11</div>
 <div class='hint'>Average architectural abstraction</div>
 </div>
-<div class='kpi' augmented-ui='tr-clip bl-clip border'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Instability (I)</div>
-<div class='value'>0,46</div>
+<div class='value'>0,45</div>
 <div class='hint'>Average outgoing dependency pressure</div>
 </div>
-<div class='kpi' augmented-ui='tr-clip bl-clip border'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Distance (D)</div>
-<div class='value'>0,42</div>
+<div class='value'>0,43</div>
 <div class='hint'>Average distance from main sequence</div>
 </div>
-<div class='kpi warning' augmented-ui='tr-clip bl-clip border'>
-<div class='label'>Implicit Coupling</div>
-<div class='value'>14</div>
-<div class='hint'>Potential dependency hotspots</div>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Core Density</div>
+<div class='value'>Check Table</div>
+<div class='hint'>Amount of inner core objects</div>
 </div>
 </div>
 <div class="section">
     <div class="section-title">
-        <h2>Module Health</h2>
+        <h2>Architecture & Structure</h2>
         <div class="line"></div>
     </div>
 </div>
-<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border' style='margin-bottom:24px; display:flex; flex-direction:column; min-width:0;'>
 <h3>Architectural Health by Module</h3>
-<div class='table-wrap'>
+<div class='table-wrap' style='flex:1;'>
 <table>
 <tr><th>Module</th><th>Score</th><th>Unresolved</th><th>Coupling</th><th>Isolation</th><th>Core Density</th></tr>
 <tr>
 <td>Fingerprint</td>
-<td><span class='metric-warn'>69,6</span></td>
+<td><span class='metric-warn'>66,0</span></td>
 <td>3 (6%)</td>
-<td>1,00</td>
+<td>1,12</td>
 <td>0,02</td>
 <td>0,10</td>
 </tr>
 <tr>
 <td>Infrastructure</td>
-<td><span class='metric-warn'>47,8</span></td>
-<td>3 (11%)</td>
-<td>3,30</td>
+<td><span class='metric-warn'>48,1</span></td>
+<td>2 (7%)</td>
+<td>3,52</td>
 <td>0,00</td>
 <td>0,00</td>
 </tr>
@@ -104,9 +105,9 @@
 </tr>
 <tr>
 <td>Nucleo</td>
-<td><span class='metric-good'>89,7</span></td>
+<td><span class='metric-good'>86,4</span></td>
 <td>5 (11%)</td>
-<td>0,63</td>
+<td>0,74</td>
 <td>0,15</td>
 <td>0,96</td>
 </tr>
@@ -121,116 +122,688 @@
 </table>
 </div>
 </div>
+<div class="chart-container"
+     style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 12px 12px 12px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:980px;"
+     augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;font-size:18px;">Architectural Structure</h3>
+<div class="chart-note" style="margin:0 0 10px 0;font-size:13px;color:#9fb3c8;text-align:center;">Root: <b>AvaliaRoteiro</b> // domains and hierarchical layout.</div>
+<style>#p5-radial-tree-container canvas { width: 100% !important; max-width: 1400px; height: auto !important; display:block; }</style>
+<div id="p5-radial-tree-container" style="width:100%; display:flex; justify-content:center; align-items:center; flex:1;"></div>
+<script>
+const radialTreeSketch = (p) => {
+  let folderPaths = [
+  "AvaliaRoteiro/Baselines",
+  "AvaliaRoteiro/Baselines/etograma",
+  "AvaliaRoteiro/Baselines/etograma/3-BANHO",
+  "AvaliaRoteiro/Baselines/etograma/3-BANHO v0",
+  "AvaliaRoteiro/Baselines/etograma/3-BANHO v1",
+  "AvaliaRoteiro/Baselines/legacy",
+  "AvaliaRoteiro/Baselines/legacy/3-BANHO",
+  "AvaliaRoteiro/Data",
+  "AvaliaRoteiro/Data/Config",
+  "AvaliaRoteiro/Data/Output",
+  "AvaliaRoteiro/Data/Output/bs",
+  "AvaliaRoteiro/Data/Sandbox",
+  "AvaliaRoteiro/Data/Sandbox/old",
+  "AvaliaRoteiro/Data/Scripts",
+  "AvaliaRoteiro/Fingerprint",
+  "AvaliaRoteiro/Fingerprint/Classificadores",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Arquetipos",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Cartesianos",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Energia",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Narrativa",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Psique",
+  "AvaliaRoteiro/Fingerprint/Dados",
+  "AvaliaRoteiro/Fingerprint/Forense",
+  "AvaliaRoteiro/Fingerprint/Interfaces",
+  "AvaliaRoteiro/Fingerprint/Modelos",
+  "AvaliaRoteiro/Fingerprint/Modulos",
+  "AvaliaRoteiro/Fingerprint/Motores",
+  "AvaliaRoteiro/Fingerprint/MotoresEtograma",
+  "AvaliaRoteiro/Fingerprint/MotoresInterpretativos",
+  "AvaliaRoteiro/Infrastructure",
+  "AvaliaRoteiro/Infrastructure/Baseline",
+  "AvaliaRoteiro/Infrastructure/Exportacao",
+  "AvaliaRoteiro/Infrastructure/Exportacao/Excel",
+  "AvaliaRoteiro/Infrastructure/Exportacao/Excel/Abas",
+  "AvaliaRoteiro/Infrastructure/Interfaces",
+  "AvaliaRoteiro/Infrastructure/Validador",
+  "AvaliaRoteiro/Limbic",
+  "AvaliaRoteiro/Limbic/Algoritimos",
+  "AvaliaRoteiro/Limbic/Dados",
+  "AvaliaRoteiro/Limbic/Interfaces",
+  "AvaliaRoteiro/Limbic/Linguistica",
+  "AvaliaRoteiro/Limbic/Modelos",
+  "AvaliaRoteiro/Limbic/Motor",
+  "AvaliaRoteiro/Limbic/Pipeline",
+  "AvaliaRoteiro/Limbic/Testes",
+  "AvaliaRoteiro/Nucleo",
+  "AvaliaRoteiro/Nucleo/Adaptadores",
+  "AvaliaRoteiro/Nucleo/Especialistas",
+  "AvaliaRoteiro/Nucleo/Interfaces",
+  "AvaliaRoteiro/Nucleo/Leitores",
+  "AvaliaRoteiro/Nucleo/Modelos",
+  "AvaliaRoteiro/Nucleo/Modelos/Analise",
+  "AvaliaRoteiro/Nucleo/Modelos/Enums",
+  "AvaliaRoteiro/Nucleo/Modelos/Fenotipo",
+  "AvaliaRoteiro/Nucleo/Modelos/Genoma",
+  "AvaliaRoteiro/Nucleo/Modelos/Resultados",
+  "AvaliaRoteiro/Nucleo/Modelos/Script",
+  "AvaliaRoteiro/Nucleo/Motores"
+  ];
+
+  const BG = "#050814";
+  const LABEL_STROKE = "rgba(0,0,0,0.92)";
+
+  const DOMAIN_COLORS = [
+    "#00f0ff", "#ff9a3c", "#39ff14", "#6c63ff",
+    "#ff003c", "#ffea00", "#d100ff", "#00aeff"
+  ];
+
+  let rootNode;
+  let allNodes = [];
+  let links = [];
+  let maxDepth = 0;
+  let domains = [];
+
+  p.setup = () => {
+    let canvas = p.createCanvas(1400, 1160);
+    canvas.parent("p5-radial-tree-container");
+    p.angleMode(p.DEGREES);
+    p.textFont("monospace");
+
+    buildTree();
+    calculateLeafCounts(rootNode);
+
+    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
+    calculatePositions(rootNode, 0, 360, 0, radiusStep);
+  };
+
+  p.draw = () => {
+    p.background(BG);
+    p.translate(p.width / 2, p.height / 2);
+
+    drawRadarBackground();
+    drawDomainShading();
+    drawLinks();
+    drawNodes();
+  };
+
+  function buildTree() {
+    rootNode = { name: "AvaliaRoteiro", children: [], depth: 0, leafCount: 0 };
+    allNodes.push(rootNode);
+
+    folderPaths.forEach(path => {
+      let normalized = path.replaceAll("\\\\", "/");
+      let prefix = "AvaliaRoteiro/";
+      let parts = normalized.startsWith(prefix)
+        ? normalized.replace(prefix, "").split("/").filter(Boolean)
+        : normalized.split("/").filter(Boolean);
+
+      let currentNode = rootNode;
+
+      parts.forEach((part, index) => {
+        let existingChild = currentNode.children.find(c => c.name === part);
+        if (!existingChild) {
+          let newNode = {
+            name: part,
+            children: [],
+            depth: index + 1,
+            parent: currentNode
+          };
+          currentNode.children.push(newNode);
+          allNodes.push(newNode);
+          currentNode = newNode;
+          if (newNode.depth > maxDepth) maxDepth = newNode.depth;
+        } else {
+          currentNode = existingChild;
+        }
+      });
+    });
+  }
+
+  function calculateLeafCounts(node) {
+    if (node.children.length === 0) {
+      node.leafCount = 1;
+    } else {
+      node.leafCount = 0;
+      node.children.forEach(c => {
+        node.leafCount += calculateLeafCounts(c);
+      });
+    }
+    return node.leafCount;
+  }
+
+  function calculatePositions(node, angleStart, angleEnd, depth, radiusStep) {
+    let r = depth * radiusStep;
+    let angle = (angleStart + angleEnd) / 2;
+
+    if (depth === 0) {
+      node.x = 0;
+      node.y = 0;
+      node.angle = 0;
+    } else {
+      node.x = p.cos(angle) * r;
+      node.y = p.sin(angle) * r;
+      node.angle = angle;
+
+      if (depth === 1) {
+        let colorIndex = rootNode.children.indexOf(node) % DOMAIN_COLORS.length;
+        node.color = DOMAIN_COLORS[colorIndex];
+        domains.push({
+          name: node.name,
+          angleStart: angleStart,
+          angleEnd: angleEnd,
+          color: node.color,
+          radius: maxDepth * radiusStep + 42
+        });
+      } else {
+        node.color = node.parent.color;
+      }
+
+      links.push({ source: node.parent, target: node, color: node.color });
+    }
+
+    let currentAngle = angleStart;
+    node.children.forEach(child => {
+      let angleSpan = (child.leafCount / Math.max(1, node.leafCount)) * (angleEnd - angleStart);
+      calculatePositions(child, currentAngle, currentAngle + angleSpan, depth + 1, radiusStep);
+      currentAngle += angleSpan;
+    });
+  }
+
+  function drawRadarBackground() {
+    p.noFill();
+    p.stroke(255, 255, 255, 10);
+    p.strokeWeight(1);
+
+    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
+
+    for (let i = 1; i <= maxDepth + 1; i++) {
+      p.ellipse(0, 0, i * radiusStep * 2);
+    }
+  }
+
+  function drawDomainShading() {
+    p.noStroke();
+
+    domains.forEach(d => {
+      let c = p.color(d.color);
+      c.setAlpha(16);
+      p.fill(c);
+
+      p.beginShape();
+      p.vertex(0, 0);
+      for (let a = d.angleStart; a <= d.angleEnd; a += 1) {
+        p.vertex(p.cos(a) * d.radius, p.sin(a) * d.radius);
+      }
+      p.endShape(p.CLOSE);
+
+      let edge = p.color(d.color);
+      edge.setAlpha(120);
+      p.stroke(edge);
+      p.strokeWeight(1.6);
+      p.line(0, 0, p.cos(d.angleStart) * d.radius, p.sin(d.angleStart) * d.radius);
+      p.noStroke();
+    });
+  }
+
+  function drawLinks() {
+    p.noFill();
+
+    links.forEach((link, i) => {
+      p.stroke(link.color);
+      p.drawingContext.shadowBlur = 10;
+      p.drawingContext.shadowColor = link.color;
+      p.strokeWeight(p.map(link.target.depth, 1, Math.max(1, maxDepth), 2.2, 0.6));
+
+      p.line(link.source.x, link.source.y, link.target.x, link.target.y);
+
+      let t = (p.frameCount * 0.002 + (i * 0.1)) % 1;
+
+      let px = p.lerp(link.target.x, link.source.x, t);
+      let py = p.lerp(link.target.y, link.source.y, t);
+
+      p.drawingContext.shadowColor = "#ffffff";
+      p.drawingContext.shadowBlur = 14;
+      p.fill(255);
+      p.noStroke();
+      p.ellipse(px, py, 3.8, 3.8);
+    });
+
+    p.drawingContext.shadowBlur = 0;
+  }
+
+  function drawNodes() {
+    p.drawingContext.shadowBlur = 0;
+
+    allNodes.forEach(node => {
+      let nColor = node.depth === 0 ? "#ffffff" : node.color;
+
+      p.drawingContext.shadowBlur = 15;
+      p.drawingContext.shadowColor = nColor;
+      p.fill(BG);
+      p.stroke(nColor);
+      p.strokeWeight(2);
+
+      let nodeSize = node.depth === 0 ? 16 : p.map(node.depth, 1, Math.max(1, maxDepth), 12, 6);
+      p.ellipse(node.x, node.y, nodeSize, nodeSize);
+
+      p.noStroke();
+      p.fill(nColor);
+      p.ellipse(node.x, node.y, nodeSize * 0.4);
+
+      p.drawingContext.shadowBlur = 0;
+
+      p.push();
+      p.translate(node.x, node.y);
+
+      if (node.depth === 0) {
+        drawRootLabel(node);
+      } else {
+        drawRadialLabel(node);
+      }
+
+      p.pop();
+    });
+  }
+
+  function drawRootLabel(node) {
+    let label = node.name;
+
+    p.textAlign(p.CENTER, p.BOTTOM);
+    p.textSize(20);
+    p.textStyle(p.BOLD);
+
+    p.drawingContext.shadowBlur = 0;
+    p.drawingContext.shadowColor = "transparent";
+
+    p.stroke(0, 0, 0, 180);
+    p.strokeWeight(2.4);
+    p.strokeJoin(p.ROUND);
+    p.fill(255);
+    p.text(label, 0, -18);
+
+    p.noStroke();
+  }
+
+  function drawRadialLabel(node) {
+    let isLeftSide = node.angle > 90 && node.angle < 270;
+    let textAngle = isLeftSide ? node.angle + 180 : node.angle;
+    p.rotate(textAngle);
+
+    let label = node.name;
+    let fontSize = p.map(node.depth, 1, Math.max(1, maxDepth), 14, 11.5);
+    p.textSize(fontSize);
+    p.textStyle(p.BOLD);
+
+    let radialOffset = p.map(node.depth, 1, Math.max(1, maxDepth), 18, 13);
+    let perpendicularOffset =
+      ((node.depth % 2 === 0) ? 1 : -1) * p.map(node.depth, 1, Math.max(1, maxDepth), 6, 2.5);
+
+    let xOffset = isLeftSide ? -radialOffset : radialOffset;
+    let yOffset = perpendicularOffset;
+
+    p.textAlign(isLeftSide ? p.RIGHT : p.LEFT, p.CENTER);
+
+    let isLeaf = node.children.length === 0;
+
+    p.drawingContext.shadowBlur = isLeaf ? 14 : 10;
+    p.drawingContext.shadowColor = node.color;
+
+    p.stroke(LABEL_STROKE);
+    p.strokeWeight(isLeaf ? 3 : 3.4);
+    p.strokeJoin(p.ROUND);
+
+    if (isLeaf) {
+      p.fill(255);
+    } else {
+      p.fill(255, 255, 255, 220);
+    }
+
+    p.text(label, xOffset, yOffset);
+
+    p.drawingContext.shadowBlur = 0;
+    p.noStroke();
+  }
+};
+new p5(radialTreeSketch);
+</script>
+</div>
+
 <div class="section">
     <div class="section-title">
-        <h2>Architectural Signals</h2>
+        <h2>Control Room // Deep Structure</h2>
         <div class="line"></div>
     </div>
-</div>
-<div class='panel-grid'>
-<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
-<h3>Interpretation</h3>
-<ul class='clean'>
-<li>Structural Candidates: 29</li>
-<li>Pattern Similarity: 11</li>
-<li>Unresolved: 18</li>
-<li>Implicit Coupling Suspicions: 14</li>
-<li>Average Abstractness: 0,11</li>
-<li>Average Instability: 0,46</li>
-<li>Average Distance: 0,42</li>
-</ul>
-<div class='note' style='margin-top:14px;'>
-This dashboard is an executive architectural view.
-It complements the Markdown report rather than replacing it.
-The Markdown artifact remains useful for direct textual reading, project tree inspection and documentation-friendly export.
-</div>
-</div>
-<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
-<h3>Fitness Gates</h3>
-<div class='table-wrap'>
-<table>
-<tr><th>Gate</th><th>Status</th><th>Message</th></tr>
-<tr>
-<td>UnreferencedTypes</td>
-<td><span class='metric-good'>PASS</span></td>
-<td>Structural Unreferenced controlado: 0%</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="section">
-    <div class="section-title">
-        <h2>Project Structure</h2>
-        <div class="line"></div>
-    </div>
-</div>
-<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
-<h3>Root Structure Snapshot</h3>
-<pre class='tree-view'>
-│   ├── AvaliaRoteiro
-│   │   ├── Baselines
-│   │   │   ├── etograma
-│   │   │   │   ├── 3-BANHO
-│   │   │   │   ├── 3-BANHO v0
-│   │   │   │   ├── 3-BANHO v1
-│   │   │   ├── legacy
-│   │   │   │   ├── 3-BANHO
-│   │   ├── Data
-│   │   │   ├── Config
-│   │   │   ├── Output
-│   │   │   │   ├── bs
-│   │   │   ├── Sandbox
-│   │   │   │   ├── old
-│   │   │   ├── Scripts
-│   │   ├── Fingerprint
-│   │   │   ├── Classificadores
-│   │   │   │   ├── Arquetipos
-│   │   │   │   ├── Cartesianos
-│   │   │   │   ├── Energia
-│   │   │   │   ├── Narrativa
-│   │   │   │   ├── Psique
-│   │   │   ├── Dados
-│   │   │   ├── Forense
-│   │   │   ├── Interfaces
-│   │   │   ├── Modelos
-│   │   │   ├── Modulos
-│   │   │   ├── Motores
-│   │   │   ├── MotoresEtograma
-│   │   │   ├── MotoresInterpretativos
-│   │   ├── Infrastructure
-│   │   │   ├── Baseline
-│   │   │   ├── Exportacao
-│   │   │   │   ├── Excel
-│   │   │   │   │   ├── Abas
-│   │   │   ├── Interfaces
-│   │   │   ├── Validador
-│   │   ├── Limbic
-│   │   │   ├── Algoritimos
-│   │   │   ├── Dados
-│   │   │   ├── Interfaces
-│   │   │   ├── Linguistica
-│   │   │   ├── Modelos
-│   │   │   ├── Motor
-│   │   │   ├── Pipeline
-│   │   │   ├── Testes
-│   │   ├── Nucleo
-│   │   │   ├── Adaptadores
-│   │   │   ├── Especialistas
-│   │   │   ├── Interfaces
-│   │   │   ├── Leitores
-│   │   │   ├── Modelos
-│   │   │   │   ├── Analise
-│   │   │   │   ├── Enums
-│   │   │   │   ├── Fenotipo
-│   │   │   │   ├── Genoma
-│   │   │   │   ├── Resultados
-│   │   │   │   ├── Script
-│   │   │   ├── Motores
-│   ├── Baselines
-│   │   ├── etograma
-</pre>
-</div>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);width:100%;" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Information Flow Pipeline</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Parsing &rarr; structural model &rarr; analyzers &rarr; reconsolidation &rarr; outputs.</div>
+<style>#p5-pipeline-container canvas { width: 100% !important; max-width: 1600px; height: auto !important; }</style>
+<div id="p5-pipeline-container" style="width:100%; display:flex; justify-content:center; align-items:center;"></div>
+<script>
+const pipelineSketch = (p) => {
+    let nodes = [];
+    let links = [];
+    let particles = [];
+    let palette;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(1600, 980);
+        canvas.parent('p5-pipeline-container');
+        p.pixelDensity(2);
+        p.textFont("monospace");
+        p.rectMode(p.CORNER);
+        p.angleMode(p.DEGREES);
+
+        palette = {
+            bg: p.color("#0b1020"), 
+            grid: p.color(40, 90, 140, 30),
+            text: p.color("#eef4ff"),
+            muted: p.color("#8fa8ff"),
+            parser: p.color("#ff9a3c"),
+            parseBranch: p.color("#ffc15d"),
+            dto: p.color("#7fd36b"),
+            analyzer: p.color("#6ea8ff"),
+            derived: p.color("#d08cff"),
+            hub: p.color("#ff6a3d"),
+            output: p.color("#00e5ff"),
+            optional: p.color("#ff9ad5")
+        };
+
+        buildLayout();
+        buildParticles();
+    };
+
+    p.draw = () => {
+        p.clear();
+        drawBackground();
+        drawDomainBands();
+        drawLinks();
+        drawParticles();
+        drawNodes();
+        drawLegend();
+    };
+
+    function buildLayout() {
+        nodes = [
+            p.makeNode("startup", "Startup / CLI", 60, 80, 180, 54, "entry"),
+            p.makeNode("config", "RunConfiguration", 300, 80, 180, 54, "entry"),
+            p.makeNode("scope", "RefactorScopeConfig", 540, 80, 200, 54, "entry"),
+            p.makeNode("selector", "ParserSelector", 780, 80, 180, 54, "parser"),
+            p.makeNode("strategy", "Parsing Strategy", 1040, 80, 180, 54, "parser"),
+
+            p.makeNode("regex", "Regex Baseline", 1320, 80, 180, 52, "parseBranch"),
+            p.makeNode("complexity", "Complexity Scan", 1320, 180, 180, 52, "parseBranch"),
+            p.makeNode("textual", "Textual / Selective", 1320, 280, 180, 52, "parseBranch"),
+
+            p.makeNode("merge", "Parsing Merge", 1040, 280, 180, 54, "parser"),
+            p.makeNode("parserResult", "IParserResult", 780, 280, 180, 54, "dto"),
+            p.makeNode("model", "ModeloEstrutural", 540, 280, 180, 54, "dto"),
+            p.makeNode("context", "AnalysisContext", 300, 280, 180, 54, "dto"),
+
+            p.makeNode("structure", "Project Structure", 60, 420, 180, 54, "analyzer"),
+            p.makeNode("candidates", "Structural Candidates", 300, 420, 190, 54, "analyzer"),
+            p.makeNode("architecture", "Architecture", 540, 420, 160, 54, "analyzer"),
+            p.makeNode("coupling", "Coupling", 840, 420, 140, 54, "analyzer"),
+            p.makeNode("implicit", "Implicit Coupling", 1080, 420, 180, 54, "analyzer"),
+
+            p.makeNode("refinement", "Refinement", 220, 540, 160, 54, "derived"),
+            p.makeNode("fitness", "Fitness Gates", 460, 540, 160, 54, "derived"),
+            p.makeNode("hygiene", "Hygiene", 680, 540, 140, 54, "derived"),
+            p.makeNode("solid", "SOLID", 920, 540, 120, 54, "derived"),
+
+            p.makeNode("report", "ConsolidatedReport", 540, 680, 240, 64, "hub"),
+            p.makeNode("statistics", "Statistics", 1020, 680, 150, 54, "optional"),
+            p.makeNode("effort", "Effort", 1260, 680, 120, 54, "optional"),
+
+            p.makeNode("html", "HTML Outputs", 60, 840, 160, 54, "output"),
+            p.makeNode("markdown", "Markdown Outputs", 300, 840, 190, 54, "output"),
+            p.makeNode("csv", "CSV Outputs", 540, 840, 150, 54, "output"),
+            p.makeNode("analyzerOut", "Output Analyzers", 780, 840, 190, 54, "output"),
+            p.makeNode("statsOut", "Output Statistics", 1020, 840, 180, 54, "output"),
+            p.makeNode("effortOut", "Output Effort", 1260, 840, 170, 54, "output")
+        ];
+
+        links = [
+            p.makeLink("startup", "config", "main"), p.makeLink("config", "scope", "main"),
+            p.makeLink("scope", "selector", "main"), p.makeLink("selector", "strategy", "main"),
+            p.makeLink("strategy", "regex", "branch"), p.makeLink("strategy", "complexity", "branch"),
+            p.makeLink("strategy", "textual", "branch"), p.makeLink("regex", "merge", "branch"),
+            p.makeLink("complexity", "merge", "branch"), p.makeLink("textual", "merge", "branch"),
+            p.makeLink("merge", "parserResult", "main"), p.makeLink("parserResult", "model", "main"),
+            p.makeLink("model", "context", "main"), p.makeLink("context", "structure", "analyzer"),
+            p.makeLink("context", "candidates", "analyzer"), p.makeLink("context", "architecture", "analyzer"),
+            p.makeLink("context", "coupling", "analyzer"), p.makeLink("context", "implicit", "analyzer"),
+            p.makeLink("candidates", "refinement", "derived"), p.makeLink("coupling", "solid", "derived"),
+            p.makeLink("architecture", "fitness", "derived"), p.makeLink("architecture", "hygiene", "derived"),
+            p.makeLink("implicit", "hygiene", "derived"), p.makeLink("structure", "report", "return"),
+            p.makeLink("refinement", "report", "return"), p.makeLink("fitness", "report", "return"),
+            p.makeLink("hygiene", "report", "return"), p.makeLink("solid", "report", "return"),
+            p.makeLink("candidates", "report", "return"), p.makeLink("architecture", "report", "return"),
+            p.makeLink("coupling", "report", "return"), p.makeLink("implicit", "report", "return"),
+            p.makeLink("report", "statistics", "optional"), p.makeLink("report", "effort", "optional"),
+            p.makeLink("report", "html", "output"), p.makeLink("report", "markdown", "output"),
+            p.makeLink("report", "csv", "output"), p.makeLink("report", "analyzerOut", "output"),
+            p.makeLink("statistics", "statsOut", "output"), p.makeLink("effort", "effortOut", "output")
+        ];
+    }
+
+    function buildParticles() {
+        particles = [];
+        for (let i = 0; i < links.length; i++) {
+            particles.push({
+                linkIndex: i,
+                t: p.random(),
+                speed: p.random(0.002, 0.005),
+                size: p.random(3, 6)
+            });
+        }
+    }
+
+    p.makeNode = (id, label, x, y, w, h, kind) => {
+        return { id, label, x, y, w, h, kind };
+    };
+
+    p.makeLink = (from, to, kind) => {
+        return { from, to, kind };
+    };
+
+    function getNode(id) {
+        return nodes.find(n => n.id === id);
+    }
+
+    function drawBackground() {
+        p.stroke(palette.grid);
+        p.strokeWeight(1);
+        for (let x = 0; x < p.width; x += 40) p.line(x, 0, x, p.height);
+        for (let y = 0; y < p.height; y += 40) p.line(0, y, p.width, y);
+    }
+
+    function drawDomainBands() {
+        const bands = [
+            { x: 40, y: 45, w: 720, h: 120, title: "CONFIG", c: p.color(100, 140, 255, 12) },
+            { x: 760, y: 45, w: 760, h: 310, title: "PARSING", c: p.color(255, 154, 60, 10) },
+            { x: 40, y: 380, w: 1240, h: 240, title: "ANALYSIS", c: p.color(110, 168, 255, 10) }
+        ];
+
+        for (let b of bands) {
+            p.noStroke();
+            p.fill(b.c);
+            p.rect(b.x, b.y, b.w, b.h, 16);
+            p.fill(255, 255, 255, 100);
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.textStyle(p.BOLD);
+            p.text(b.title, b.x + 14, b.y + 10);
+        }
+    }
+
+    function getEdgePoints(a, b) {
+        let cx1 = a.x + a.w / 2; let cy1 = a.y + a.h / 2;
+        let cx2 = b.x + b.w / 2; let cy2 = b.y + b.h / 2;
+        let dx = cx2 - cx1; let dy = cy2 - cy1;
+        let isHoriz = p.abs(dx) > p.abs(dy) * 0.8;
+        
+        let x1 = cx1, y1 = cy1, x2 = cx2, y2 = cy2;
+        
+        if (isHoriz) {
+            x1 = dx > 0 ? a.x + a.w : a.x;
+            x2 = dx > 0 ? b.x : b.x + b.w;
+        } else {
+            y1 = dy > 0 ? a.y + a.h : a.y;
+            y2 = dy > 0 ? b.y : b.y + b.h;
+        }
+        
+        let cp1x = x1, cp1y = y1, cp2x = x2, cp2y = y2;
+        if (isHoriz) {
+            let bend = p.max(40, p.abs(x2 - x1) * 0.4);
+            cp1x = x1 + (dx > 0 ? bend : -bend); cp2x = x2 + (dx > 0 ? -bend : bend);
+        } else {
+            let bend = p.max(40, p.abs(y2 - y1) * 0.4);
+            cp1y = y1 + (dy > 0 ? bend : -bend); cp2y = y2 + (dy > 0 ? -bend : bend);
+        }
+        
+        return { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 };
+    }
+
+    function drawLinks() {
+        for (let link of links) {
+            let a = getNode(link.from);
+            let b = getNode(link.to);
+            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(a, b);
+
+            let col = getLinkColor(link.kind);
+            let alpha = p.map(p.sin(p.frameCount * 2 + a.x * 0.01), -1, 1, 80, 180);
+            
+            let c = p.color(col); c.setAlpha(alpha);
+            p.stroke(c);
+            p.strokeWeight(getLinkThickness(link.kind));
+            p.noFill();
+            p.drawingContext.shadowBlur = 10;
+            p.drawingContext.shadowColor = col.toString();
+            
+            p.bezier(x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2);
+            p.drawingContext.shadowBlur = 0;
+
+            let t = 1.0;
+            let tx = p.bezierTangent(x1, cp1x, cp2x, x2, t);
+            let ty = p.bezierTangent(y1, cp1y, cp2y, y2, t);
+            
+            p.push();
+            p.translate(x2, y2);
+            p.rotate(p.atan2(ty, tx));
+            p.noStroke(); p.fill(col);
+            p.triangle(0, 0, -10, 5, -10, -5);
+            p.pop();
+        }
+    }
+
+    function drawParticles() {
+        for (let pt of particles) {
+            let link = links[pt.linkIndex];
+            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(getNode(link.from), getNode(link.to));
+
+            pt.t += pt.speed;
+            if (pt.t > 1) pt.t = 0;
+
+            let px = p.bezierPoint(x1, cp1x, cp2x, x2, pt.t);
+            let py = p.bezierPoint(y1, cp1y, cp2y, y2, pt.t);
+
+            let col = getLinkColor(link.kind);
+            p.noStroke(); p.fill(255);
+            p.drawingContext.shadowBlur = 15;
+            p.drawingContext.shadowColor = col.toString();
+            p.ellipse(px, py, pt.size);
+            p.drawingContext.shadowBlur = 0;
+        }
+    }
+
+    function drawNodes() {
+        for (let node of nodes) drawSciFiNode(node);
+    }
+
+    function drawSciFiNode(node) {
+        let col = getNodeColor(node.kind);
+        let pulse = p.map(p.sin(p.frameCount * 2 + node.x * 0.05), -1, 1, 5, 16);
+        let c = 12; 
+
+        p.noStroke(); p.fill(p.red(col), p.green(col), p.blue(col), 15);
+        p.rect(node.x - 5, node.y - 5, node.w + 10, node.h + 10, 16);
+
+        p.fill(12, 18, 30, 240);
+        p.stroke(col);
+        p.strokeWeight(node.kind === "hub" ? 2.2 : 1.4);
+        p.drawingContext.shadowBlur = pulse;
+        p.drawingContext.shadowColor = col.toString();
+
+        p.beginShape();
+        p.vertex(node.x + c, node.y);
+        p.vertex(node.x + node.w, node.y);
+        p.vertex(node.x + node.w, node.y + node.h - c);
+        p.vertex(node.x + node.w - c, node.y + node.h);
+        p.vertex(node.x, node.y + node.h);
+        p.vertex(node.x, node.y + c);
+        p.endShape(p.CLOSE);
+
+        p.drawingContext.shadowBlur = 0;
+
+        p.noStroke(); p.fill(col);
+        p.rect(node.x + 8, node.y + 12, 4, node.h - 24, 2);
+
+        p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER);
+        p.textSize(node.kind === "hub" ? 15 : 12);
+        p.textStyle(p.BOLD);
+        p.text(node.label, node.x + 22, node.y + node.h / 2 - 4);
+
+        p.fill(255, 255, 255, 130);
+        p.textSize(10); p.textStyle(p.NORMAL);
+        p.text(getSubtitle(node.kind), node.x + 22, node.y + node.h / 2 + 12);
+    }
+
+    function getSubtitle(kind) {
+        if (kind === "entry") return "startup / config";
+        if (kind === "parser") return "flow control";
+        if (kind === "parseBranch") return "parser branch";
+        if (kind === "dto") return "data carrier";
+        if (kind === "analyzer") return "domain reader";
+        if (kind === "derived") return "derived signal";
+        if (kind === "hub") return "reconsolidation point";
+        if (kind === "optional") return "optional branch";
+        if (kind === "output") return "projection";
+        return "";
+    }
+
+    function getNodeColor(k) {
+        return k==="entry"?palette.muted : k==="parser"?palette.parser : k==="parseBranch"?palette.parseBranch : k==="dto"?palette.dto : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="hub"?palette.hub : k==="optional"?palette.optional : palette.output;
+    }
+    function getLinkColor(k) {
+        return k==="main"?palette.parser : k==="branch"?palette.parseBranch : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="return"?palette.hub : k==="optional"?palette.optional : palette.output;
+    }
+    function getLinkThickness(k) {
+        return k==="main"?3.5 : k==="return"?3.2 : k==="output"?3.0 : k==="branch"?2.2 : k==="analyzer"?2.1 : k==="derived"?1.8 : 1.9;
+    }
+
+    function drawLegend() {
+        const items = [
+            ["Main Flow", palette.parser], ["Parser Branch", palette.parseBranch],
+            ["DTO / Context", palette.dto], ["Analyzer", palette.analyzer],
+            ["Derived Signal", palette.derived], ["Consolidation", palette.hub], ["Output", palette.output]
+        ];
+
+        let x = 40; let y = p.height - 30;
+        for (let i = 0; i < items.length; i++) {
+            p.fill(items[i][1]); p.noStroke(); p.rect(x, y, 10, 10, 2);
+            p.fill(255, 255, 255, 180); p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
+            p.text(items[i][0], x + 16, y + 5);
+            x += p.textWidth(items[i][0]) + 50;
+        }
+    }
+};
+new p5(pipelineSketch);
+</script>
+</div></div>
+
 <div class='footer'>Generated by RefactorScope Architectural Dashboard</div>
 </div>
 </body>

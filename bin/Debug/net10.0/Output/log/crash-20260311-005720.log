@@ -1,0 +1,15 @@
+================================================
+RefactorScope Crash Report
+Timestamp: 11/03/2026 00:57:20
+Phase: ANALYZER_fitnessGates
+
+System.ArgumentException: An item with the same key has already been added. Key: Boids.Form1
+   at System.Collections.Generic.Dictionary`2.TryInsert(TKey key, TValue value, InsertionBehavior behavior)
+   at System.Collections.Generic.Dictionary`2.Add(TKey key, TValue value)
+   at System.Linq.Enumerable.SpanToDictionary[TSource,TKey,TElement](ReadOnlySpan`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector, IEqualityComparer`1 comparer)
+   at System.Linq.Enumerable.ToDictionary[TSource,TKey,TElement](IEnumerable`1 source, Func`2 keySelector, Func`2 elementSelector)
+   at RefactorScope.Analyzers.FitnessGateAnalyzer.Analyze(AnalysisContext context) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Analyzers\FitnessGateAnalyzer.cs:line 42
+   at RefactorScope.Core.Orchestration.AnalysisOrchestrator.RunAnalyzers(AnalysisContext context, List`1 results) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs:line 80
+
+================================================

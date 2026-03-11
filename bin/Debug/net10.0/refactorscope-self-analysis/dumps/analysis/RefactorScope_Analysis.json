@@ -10,11 +10,11 @@
     "StatisticsValidationAnalyzer",
     "StructuralCandidateAnalyzer",
     "StructuralCandidateRefinementAnalyzer",
+    "ParserArenaCliRunner",
     "SelfAnalysisSelector",
     "FakeZombieService",
     "ConfigLoader",
     "ConfigValidator",
-    "TerminalRenderer",
     "SolidAnalyzer",
     "FitnessGateConfigResolver",
     "AnalysisContextExtensions",
@@ -39,7 +39,6 @@
     "QualityDashboardExporterAdapter",
     "StructuralDashboardExporterAdapter",
     "HtmlDashboardExporter",
-    "ParsingChartsRenderer",
     "DatasetExporter",
     "FitnessGateCsvExporter",
     "DumpAnaliseExporter",
@@ -47,6 +46,7 @@
     "ExportOrchestrator",
     "ExportPackage",
     "ProjectStructureExporter",
+    "ParserArenaOrchestrator",
     "ParsingControlChartsRenderer"
   ],
   "PatternSimilarity": [
@@ -60,10 +60,10 @@
     "StatisticsValidationAnalyzer",
     "StructuralCandidateAnalyzer",
     "StructuralCandidateRefinementAnalyzer",
+    "ParserArenaCliRunner",
     "SelfAnalysisSelector",
     "ConfigLoader",
     "ConfigValidator",
-    "TerminalRenderer",
     "SolidAnalyzer",
     "FitnessGateConfigResolver",
     "AnalysisContextExtensions",
@@ -88,7 +88,6 @@
     "QualityDashboardExporterAdapter",
     "StructuralDashboardExporterAdapter",
     "HtmlDashboardExporter",
-    "ParsingChartsRenderer",
     "DatasetExporter",
     "FitnessGateCsvExporter",
     "DumpAnaliseExporter",
@@ -96,6 +95,7 @@
     "ExportOrchestrator",
     "ExportPackage",
     "ProjectStructureExporter",
+    "ParserArenaOrchestrator",
     "ParsingControlChartsRenderer"
   ],
   "Unresolved": [
@@ -128,7 +128,8 @@
     "AnalysisOrchestrator",
     "ConsolidatedReportExtensions",
     "StructuralBreakdownExtensions",
-    "ScopeFilteredFileDiscovery"
+    "ScopeFilteredFileDiscovery",
+    "ParserArenaOrchestrator"
   ],
   "EntryPoints": []
 }

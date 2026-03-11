@@ -4,6 +4,7 @@
 <meta charset='UTF-8' />
 <meta name='viewport' content='width=device-width, initial-scale=1.0' />
 <title>Structural Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
 <link rel='stylesheet' href='assets/vendor/Charts.css' />
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
@@ -21,7 +22,7 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 10-03-2026 01:46 UTC</div>
+        <div><b>Generated:</b> 11-03-2026 06:18 UTC</div>
         <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
         <div><b>Total Types:</b> 161</div>
         <div><b>Hygiene:</b> 🟢 Healthy</div>
@@ -48,7 +49,7 @@
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Dead Code Candidates</div>
-        <div class="value">29</div>
+        <div class="value">28</div>
         <div class="hint">Possible dead code types</div>
     </div>
 
@@ -60,7 +61,7 @@
 
     <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">18</div>
+        <div class="value">17</div>
         <div class="hint">Candidates who could not be refuted as dead code</div>
     </div>
 
@@ -84,13 +85,13 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Code Smell Index</div>
-        <div class="value">13,0</div>
+        <div class="value">12,7</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Implicit Coupling</div>
-        <div class="value">14</div>
+        <div class="value">17</div>
         <div class="hint">Types suggesting concentrated dependency flow toward specific modules</div>
     </div>
 
@@ -102,7 +103,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">A / I / D</div>
-        <div class="value" style="font-size:22px;">0,11 / 0,46 / 0,42</div>
+        <div class="value" style="font-size:22px;">0,11 / 0,45 / 0,43</div>
         <div class="hint">Average abstractness, instability and distance from main sequence</div>
     </div>
 </div>
@@ -120,14 +121,14 @@
         <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
         <li>Potential dead or orphaned code detected through structural analysis.</li>
         <li>Minor SOLID design alerts detected.</li>
-        <li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
+        <li>Significant implicit coupling detected. Hidden dependencies may reduce modularity.</li>
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge red"><span class="badge-dot"></span> Unresolved: 18</div>
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 17</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 35</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 2</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 14</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 17</div>
     </div>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -148,210 +149,152 @@
     </div>
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
 <div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>
-<div class='chart-container'>
-<h3>Architectural Risk Radar</h3>
-<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Higher area indicates stronger concentration of structural signals.</div>
-<div class='tooltip'>
-<svg width="410" height="456" viewBox="0 0 410 456" style="border-radius:16px;overflow:visible">
-    <defs>
-        <radialGradient id="radarBg" cx="50%" cy="45%" r="75%">
-            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
-            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
-            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
-        </radialGradient>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Architectural Risk Radar</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Structural signal concentration.</div>
+<div id="p5-arch-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const archRadarSketch = (p) => {
+    const data = [17.391, 6.832, 10.559, 21.739, 3.727, 5.59, 10.559, 6.211];
+    const labels = ["Dead Code", "Pattern", "Unresolved", "Drift", "Global", "Core", "Coupling", "SOLID"];
+    const maxRadius = 110;
 
-        <filter id="radarGlow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="5" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
+    p.setup = () => {
+        let canvas = p.createCanvas(460, 360);
+        canvas.parent('p5-arch-radar-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
 
-    <rect x="0" y="0" width="410" height="456" rx="16" fill="url(#radarBg)" />
-<polygon points='205,77 295.51,114.49 333,205 295.51,295.51 205,333 114.49,295.51 77,205 114.49,114.49' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='205,102.6 277.408,132.592 307.4,205 277.408,277.408 205,307.4 132.592,277.408 102.6,205 132.592,132.592' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='205,128.2 259.306,150.694 281.8,205 259.306,259.306 205,281.8 150.694,259.306 128.2,205 150.694,150.694' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='205,153.8 241.204,168.796 256.2,205 241.204,241.204 205,256.2 168.796,241.204 153.8,205 168.796,168.796' fill='rgba(255,140,40,0.030)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<polygon points='205,179.4 223.102,186.898 230.6,205 223.102,223.102 205,230.6 186.898,223.102 179.4,205 186.898,186.898' fill='rgba(255,180,90,0.014)' stroke='rgba(210,120,45,0.34)' stroke-width='1' />
-<line x1='205' y1='205' x2='205' y2='77' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='295.51' y2='114.49' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='333' y2='205' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='295.51' y2='295.51' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='205' y2='333' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='114.49' y2='295.51' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='77' y2='205' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<line x1='205' y1='205' x2='114.49' y2='114.49' stroke='rgba(210,125,48,0.26)' stroke-width='1' />
-<text x='211' y='190.4' fill='rgba(235,214,194,0.42)' font-size='9'>20%</text>
-<text x='211' y='164.8' fill='rgba(235,214,194,0.42)' font-size='9'>40%</text>
-<text x='211' y='139.2' fill='rgba(235,214,194,0.42)' font-size='9'>60%</text>
-<text x='211' y='113.6' fill='rgba(235,214,194,0.42)' font-size='9'>80%</text>
-<text x='211' y='88' fill='rgba(235,214,194,0.42)' font-size='9'>100%</text>
-<text x='205' y='61' fill='#f2e1d2' font-size='11' text-anchor='middle'><title>Dead Code — 18% of classes</title>Dead Code</text>
-<text x='306.823' y='103.177' fill='#f2e1d2' font-size='11' text-anchor='start'><title>Pattern — 7% of classes</title>Pattern</text>
-<text x='349' y='205' fill='#f2e1d2' font-size='11' text-anchor='start'><title>Unresolved — 11% of classes</title>Unresolved</text>
-<text x='306.823' y='306.823' fill='#f2e1d2' font-size='11' text-anchor='start'><title>Drift — 22% of classes</title>Drift</text>
-<text x='205' y='349' fill='#f2e1d2' font-size='11' text-anchor='middle'><title>Global — 4% of classes</title>Global</text>
-<text x='103.177' y='306.823' fill='#f2e1d2' font-size='11' text-anchor='end'><title>Core — 6% of classes</title>Core</text>
-<text x='61' y='205' fill='#f2e1d2' font-size='11' text-anchor='end'><title>Coupling — 9% of classes</title>Coupling</text>
-<text x='103.177' y='103.177' fill='#f2e1d2' font-size='11' text-anchor='end'><title>SOLID — 6% of classes</title>SOLID</text>
-<polygon points='205,181.944 211.184,198.816 219.311,205 224.676,224.676 205,209.77 199.94,210.06 193.87,205 199.378,199.378' fill='rgba(255,140,60,0.18)' stroke='#ff9a3c' stroke-width='2.4' filter='url(#radarGlow)'/>
-<circle cx="205" cy="181.944" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Dead Code — 18,0% of classes</title>
-</circle>
-<circle cx="211.184" cy="198.816" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Pattern — 6,8% of classes</title>
-</circle>
-<circle cx="219.311" cy="205" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Unresolved — 11,2% of classes</title>
-</circle>
-<circle cx="224.676" cy="224.676" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Drift — 21,7% of classes</title>
-</circle>
-<circle cx="205" cy="209.77" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Global — 3,7% of classes</title>
-</circle>
-<circle cx="199.94" cy="210.06" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Core — 5,6% of classes</title>
-</circle>
-<circle cx="193.87" cy="205" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>Coupling — 8,7% of classes</title>
-</circle>
-<circle cx="199.378" cy="199.378" r="4.8" fill="#ffb14d" stroke="#fff0d6" stroke-width="1.4">
-    <title>SOLID — 6,2% of classes</title>
-</circle>
-<circle cx='205' cy='205' r='2.5' fill='rgba(255,240,214,0.92)'/>
-<g transform="translate(20,428)">
-    <rect x="0" y="-12" width="12" height="12" rx="2" fill="rgba(255,140,60,0.18)" stroke="#ff9a3c" stroke-width="1.2"/>
-    <text x="18" y="-2" fill="#d9c8b8" font-size="10">Normalized structural signal distribution</text>
-</g>
-</svg>
-<span class='tooltiptext'>
-Enhanced radar of structural signals.
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2);
+        let pulse = p.sin(p.frameCount * 3) * 5 + 10;
+        let numAxes = labels.length;
 
-Interpretation:
-• Larger area = stronger concentration of structural findings
-• Unresolved is the strongest manual-review bucket
-• Core should be interpreted in context, not as an error by itself
-</span>
-</div>
+        // Grid
+        p.stroke('#8fa8ff'); p.noFill(); p.strokeWeight(1); p.drawingContext.shadowBlur = 0;
+        for (let i = 1; i <= 5; i++) {
+            let r = (maxRadius / 5) * i;
+            p.beginShape();
+            for (let a = 0; a < 360; a += (360 / numAxes)) p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            p.endShape(p.CLOSE);
+            if(i < 5) {
+                p.fill('#8fa8ff'); p.noStroke(); p.textSize(9);
+                p.text(`${i * 20}%`, 5, -r);
+                p.noFill(); p.stroke('#8fa8ff');
+            }
+        }
+        for (let a = 0; a < 360; a += (360 / numAxes)) p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+
+        // Polígono Neon
+        p.drawingContext.shadowColor = '#ff9a3c'; p.drawingContext.shadowBlur = pulse;
+        p.stroke('#ff9a3c'); p.strokeWeight(2.5); p.fill('rgba(255, 154, 60, 0.2)');
+        p.beginShape();
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            p.vertex(p.cos(angle) * r, p.sin(angle) * r);
+        }
+        p.endShape(p.CLOSE);
+
+        // Scanner Line
+        p.drawingContext.shadowBlur = 0;
+        let scanAngle = p.frameCount * 2;
+        p.noStroke(); p.fill('rgba(255, 154, 60, 0.15)');
+        p.arc(0, 0, maxRadius * 2, maxRadius * 2, scanAngle - 45, scanAngle);
+        p.stroke('#ff9a3c'); p.strokeWeight(1.5);
+        p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
+
+        // Labels
+        p.fill('#eef4ff'); p.noStroke(); p.textSize(11);
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let lx = p.cos(angle) * (maxRadius + 25);
+            let ly = p.sin(angle) * (maxRadius + 20);
+            p.textAlign(p.CENTER, p.CENTER);
+            if (p.cos(angle) > 0.35) p.textAlign(p.LEFT, p.CENTER);
+            else if (p.cos(angle) < -0.35) p.textAlign(p.RIGHT, p.CENTER);
+            p.text(labels[i], lx, ly);
+        }
+    };
+};
+new p5(archRadarSketch);
+</script>
 </div>
 
-<div class='chart-container'>
-<h3>Architectural Galaxy (A/I Distribution)</h3>
-<div class='chart-note' style='margin:4px 0 12px 0;font-size:12px;color:#9fb3c8;'>Bubble size reflects module fan-out. Warmer colors suggest higher coupling intensity.</div>
-<div class='tooltip'>
-<svg width="430" height="474" viewBox="0 0 430 474" style="border-radius:16px;overflow:visible">
-    <defs>
-        <radialGradient id="galaxyBg" cx="50%" cy="45%" r="78%">
-            <stop offset="0%" stop-color="rgba(120,52,8,0.18)" />
-            <stop offset="55%" stop-color="rgba(28,14,6,0.14)" />
-            <stop offset="100%" stop-color="rgba(8,5,3,0.03)" />
-        </radialGradient>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Architectural Galaxy (A/I)</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Instability (X) vs Abstractness (Y).</div>
+<div id="p5-galaxy-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const galaxySketch = (p) => {
+    const points = [{ name: 'Infrastructure', inst: 0.642, abs: 0.074, fan: 95, col: '#ff8a3d', hl: true },{ name: 'Fingerprint', inst: 0.28, abs: 0.26, fan: 56, col: '#ff8a3d', hl: true },{ name: 'Limbic', inst: 0.234, abs: 0.162, fan: 36, col: '#ff8a3d', hl: true },{ name: 'Nucleo', inst: 0.111, abs: 0.065, fan: 34, col: '#ff8a3d', hl: true },{ name: 'Program.cs', inst: 1, abs: 0, fan: 16, col: '#ffc15d', hl: false },];
+    
+    p.setup = () => {
+        let canvas = p.createCanvas(420, 420);
+        canvas.parent('p5-galaxy-container');
+        p.textFont("monospace");
+    };
 
-        <filter id="bubbleGlow" x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="3.4" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
+    p.draw = () => {
+        p.clear();
+        let margin = 40;
+        let plotW = p.width - (margin * 2);
+        let plotH = p.height - (margin * 2);
 
-    <rect x="0" y="0" width="430" height="474" rx="16" fill="url(#galaxyBg)" />
-<rect x="44" y="44" width="342" height="342" fill="rgba(255,140,40,0.020)" />
-<polygon points="44,44 386,386 44,386"
-         fill="rgba(255,180,90,0.030)" />
-<polygon points="44,44 386,44 386,386"
-         fill="rgba(255,120,40,0.020)" />
-<line x1='44' y1='44' x2='44' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<line x1='44' y1='386' x2='386' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<text x='44' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0</text>
-<text x='34' y='389' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0</text>
-<line x1='129.5' y1='44' x2='129.5' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<line x1='44' y1='300.5' x2='386' y2='300.5' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<text x='129.5' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0,25</text>
-<text x='34' y='303.5' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0,25</text>
-<line x1='215' y1='44' x2='215' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<line x1='44' y1='215' x2='386' y2='215' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<text x='215' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0,5</text>
-<text x='34' y='218' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0,5</text>
-<line x1='300.5' y1='44' x2='300.5' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<line x1='44' y1='129.5' x2='386' y2='129.5' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<text x='300.5' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>0,75</text>
-<text x='34' y='132.5' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>0,75</text>
-<line x1='386' y1='44' x2='386' y2='386' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<line x1='44' y1='44' x2='386' y2='44' stroke='rgba(210,125,48,0.16)' stroke-width='1' />
-<text x='386' y='402' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='middle'>1</text>
-<text x='34' y='47' fill='rgba(235,214,194,0.52)' font-size='9' text-anchor='end'>1</text>
-<line x1='44' y1='386' x2='386' y2='386' stroke='rgba(235,150,70,0.38)' stroke-width='1.2'/>
-<line x1='44' y1='386' x2='44' y2='44' stroke='rgba(235,150,70,0.38)' stroke-width='1.2'/>
-<line x1='44' y1='44' x2='386' y2='386' stroke='rgba(255,190,100,0.40)' stroke-width='1.2' stroke-dasharray='5,5'/>
-<text x='354' y='420' fill='#f2e1d2' font-size='11'>Instability</text>
-<text x='10' y='20' fill='#f2e1d2' font-size='11'>Abstractness</text>
-<text x='292' y='56' fill='rgba(255,205,140,0.58)' font-size='9'>Main Sequence</text>
-<circle cx="276.351" cy="360.667" r="17" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
-    <title>Infrastructure
-Abstractness: 0,07
-Instability: 0,68
-Distance: 0,25
-FanOut: 89</title>
-</circle>
-<text x="299.351" y="339.667" fill="#f4e6d8" font-size="10" text-anchor="start">Infrastructure</text>
-<circle cx="140.61" cy="297.08" r="17" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
-    <title>Fingerprint
-Abstractness: 0,26
-Instability: 0,28
-Distance: 0,46
-FanOut: 50</title>
-</circle>
-<text x="163.61" y="276.08" fill="#f4e6d8" font-size="10" text-anchor="start">Fingerprint</text>
-<circle cx="130.098" cy="330.541" r="17" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
-    <title>Limbic
-Abstractness: 0,16
-Instability: 0,25
-Distance: 0,59
-FanOut: 36</title>
-</circle>
-<text x="153.098" y="309.541" fill="#f4e6d8" font-size="10" text-anchor="start">Limbic</text>
-<circle cx="79.935" cy="363.696" r="15.357" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1.5" filter="url(#bubbleGlow)">
-    <title>Nucleo
-Abstractness: 0,07
-Instability: 0,11
-Distance: 0,83
-FanOut: 29</title>
-</circle>
-<text x="101.292" y="344.339" fill="#f4e6d8" font-size="10" text-anchor="start">Nucleo</text>
-<circle cx="386" cy="386" r="10.714" fill="#ffc15d" fill-opacity="0.84" stroke="#fff1cc" stroke-width="1.5" filter="url(#bubbleGlow)">
-    <title>Program.cs
-Abstractness: 0,00
-Instability: 1,00
-Distance: 0,00
-FanOut: 16</title>
-</circle>
-<g transform="translate(44,448)">
-    <circle cx="8" cy="0" r="5" fill="#ffb14d" fill-opacity="0.84" stroke="#fff0d6" stroke-width="1"/>
-    <text x="20" y="4" fill="#d9c8b8" font-size="10">Low coupling</text>
+        // Zone Fills
+        p.noStroke();
+        p.fill('rgba(255,140,40,0.020)'); p.rect(margin, margin, plotW, plotH);
+        p.fill('rgba(255,180,90,0.030)'); p.triangle(margin, margin, p.width - margin, p.height - margin, margin, p.height - margin);
+        p.fill('rgba(255,120,40,0.020)'); p.triangle(margin, margin, p.width - margin, margin, p.width - margin, p.height - margin);
 
-    <circle cx="128" cy="0" r="6.5" fill="#ffc15d" fill-opacity="0.84" stroke="#fff1cc" stroke-width="1"/>
-    <text x="142" y="4" fill="#d9c8b8" font-size="10">Moderate coupling</text>
+        // Grid & Ticks
+        p.stroke('rgba(210,125,48,0.16)'); p.strokeWeight(1);
+        p.fill('rgba(235,214,194,0.52)'); p.noStroke(); p.textSize(9);
+        [0, 0.25, 0.5, 0.75, 1].forEach(tick => {
+            let x = margin + plotW * tick; let y = margin + plotH * (1 - tick);
+            p.stroke('rgba(210,125,48,0.16)'); p.line(x, margin, x, p.height - margin); p.line(margin, y, p.width - margin, y);
+            p.noStroke(); p.textAlign(p.CENTER, p.TOP); p.text(tick, x, p.height - margin + 8);
+            p.textAlign(p.RIGHT, p.CENTER); p.text(tick, margin - 6, y);
+        });
 
-    <circle cx="298" cy="0" r="8" fill="#ff8a3d" fill-opacity="0.84" stroke="#ffe0c2" stroke-width="1"/>
-    <text x="312" y="4" fill="#d9c8b8" font-size="10">High coupling</text>
-</g>
-</svg>
-<span class='tooltiptext'>
-Enhanced A/I distribution view.
+        // Main Axes
+        p.stroke('rgba(235,150,70,0.38)'); p.strokeWeight(1.5);
+        p.line(margin, p.height - margin, p.width - margin, p.height - margin);
+        p.line(margin, p.height - margin, margin, margin);
 
-Interpretation:
-• X axis = Instability
-• Y axis = Abstractness
-• Bubble size = fan-out intensity
-• Dashed diagonal = Main Sequence
-• Labeled bubbles highlight the most coupled modules
-</span>
-</div>
+        // Main Sequence
+        p.stroke('rgba(255,190,100,0.40)'); p.drawingContext.setLineDash([5, 5]);
+        p.line(margin, margin, p.width - margin, p.height - margin);
+        p.drawingContext.setLineDash([]);
+        
+        p.noStroke(); p.fill('#f2e1d2'); p.textSize(11);
+        p.textAlign(p.RIGHT, p.TOP); p.text("Instability", p.width - margin, p.height - margin + 25);
+        p.textAlign(p.LEFT, p.BOTTOM); p.text("Abstractness", 0, margin - 15);
+
+        // Bubbles
+        points.forEach(pt => {
+            let x = margin + plotW * pt.inst;
+            let y = (p.height - margin) - (plotH * pt.abs);
+            let baseSize = 5 + Math.min(12, pt.fan / 2.8);
+            // Efeito pulsante de "estrela"
+            let size = baseSize + p.sin(p.frameCount * 0.05 + pt.fan) * 2;
+
+            p.drawingContext.shadowColor = pt.col; p.drawingContext.shadowBlur = 12;
+            p.fill(pt.col); p.stroke('#fff0d6'); p.strokeWeight(1.5);
+            p.ellipse(x, y, size * 2);
+
+            p.drawingContext.shadowBlur = 0;
+            if(pt.hl) {
+                p.fill('#f4e6d8'); p.noStroke(); p.textSize(10); p.textAlign(p.LEFT, p.BOTTOM);
+                p.text(pt.name, x + size + 4, y - size - 2);
+            }
+        });
+    };
+};
+new p5(galaxySketch);
+</script>
 </div>
 
 <div style='flex:1; min-width:280px;'>
@@ -361,7 +304,7 @@ Interpretation:
 <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
 <li>Potential dead or orphaned code detected through structural analysis.</li>
 <li>Minor SOLID design alerts detected.</li>
-<li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
+<li>Significant implicit coupling detected. Hidden dependencies may reduce modularity.</li>
 </ul>
 </div>
 </div>
@@ -512,13 +455,6 @@ Interpretation:
     <td>Unreferenced</td>
     <td>Review Required</td>
 </tr>
-<tr class='row-alert'>
-    <td>ScriptomeVisualizer.cs</td>
-    <td>Scriptome\Infrastructure</td>
-    <td>0</td>
-    <td>Unreferenced</td>
-    <td>Review Required</td>
-</tr>
 <tr class='row-warning'>
     <td>AbaEstrutura.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
@@ -599,7 +535,7 @@ Interpretation:
 <tr class='row-core'>
     <td>Elementos.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>10</td>
+    <td>11</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -655,7 +591,7 @@ Interpretation:
 <tr class='row-core'>
     <td>Cena.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>6</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -669,7 +605,7 @@ Interpretation:
 <tr class='row-core'>
     <td>Elementos.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>14</td>
+    <td>17</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -690,28 +626,28 @@ Interpretation:
 <tr class='row-core'>
     <td>EspecialistaBeats.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EspecialistaDuracao.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EspecialistaInteracao.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EspecialistaVocabulario.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -725,14 +661,14 @@ Interpretation:
 <tr class='row-core'>
     <td>EstatisticasRoteiro.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>28</td>
+    <td>29</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>Etograma.cs</td>
     <td>Scriptome\Fingerprint\Modelos</td>
-    <td>25</td>
+    <td>32</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -753,7 +689,7 @@ Interpretation:
 <tr class='row-core'>
     <td>IModuloAnalise.cs</td>
     <td>Scriptome\Nucleo\Interfaces</td>
-    <td>11</td>
+    <td>12</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -781,14 +717,14 @@ Interpretation:
 <tr class='row-core'>
     <td>MotorDeTranscricao.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>6</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>MotorFenotipoV2.cs</td>
     <td>Scriptome\Nucleo\Motores</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -816,7 +752,7 @@ Interpretation:
 <tr class='row-core'>
     <td>PerfilPersonagem.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>40</td>
+    <td>42</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -830,7 +766,7 @@ Interpretation:
 <tr class='row-core'>
     <td>ResultadoDeriva.cs</td>
     <td>Scriptome\Limbic\Modelos</td>
-    <td>8</td>
+    <td>9</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -844,14 +780,14 @@ Interpretation:
 <tr class='row-core'>
     <td>ResultadoInteracao.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>3</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ResultadoJung.cs</td>
     <td>Scriptome\Fingerprint\Modelos</td>
-    <td>2</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -872,7 +808,7 @@ Interpretation:
 <tr class='row-core'>
     <td>RnaBruto.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>25</td>
+    <td>29</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -886,21 +822,21 @@ Interpretation:
 <tr class='row-core'>
     <td>Roteiro.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>16</td>
+    <td>17</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ResultadoAnalise.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>TermoLexical.cs</td>
     <td>Scriptome\Limbic\Modelos</td>
-    <td>2</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -928,42 +864,42 @@ Interpretation:
 <tr >
     <td>AbaAnaliseDeCenas.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaBeatSheet.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaDashboard.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaElenco.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaMatrizSocial.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaTaxonomia.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -998,21 +934,21 @@ Interpretation:
 <tr >
     <td>BibliotecaArquetipos.cs</td>
     <td>Scriptome\Fingerprint\Dados</td>
-    <td>4</td>
+    <td>5</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>BibliotecaCentroidesEtograma.cs</td>
     <td>Scriptome\Fingerprint\Modelos</td>
-    <td>3</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ZumbiScanner.cs</td>
     <td>Scriptome\Infrastructure</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1089,7 +1025,7 @@ Interpretation:
 <tr >
     <td>ClassificadorScriptome.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
-    <td>3</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1103,14 +1039,14 @@ Interpretation:
 <tr >
     <td>MotorTaxonomia.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ComparacaoJung.cs</td>
     <td>Scriptome\Infrastructure\Validador</td>
-    <td>6</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1138,14 +1074,14 @@ Interpretation:
 <tr >
     <td>ContextoLimbic.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>7</td>
+    <td>8</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>EstatisticaForense.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>2</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1173,21 +1109,21 @@ Interpretation:
 <tr >
     <td>ExtratorEtogramaDeriva6.cs</td>
     <td>Scriptome\Fingerprint\MotoresEtograma</td>
-    <td>3</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>HeuristicaContextual.cs</td>
     <td>Scriptome\Limbic\Algoritimos</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>IAbaExcel.cs</td>
     <td>Scriptome\Infrastructure\Interfaces</td>
-    <td>8</td>
+    <td>9</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1327,7 +1263,7 @@ Interpretation:
 <tr >
     <td>BibliotecaArquetipos.cs</td>
     <td>Scriptome\Fingerprint\Dados</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1362,7 +1298,7 @@ Interpretation:
 <tr >
     <td>MotorDeFusao.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1411,14 +1347,14 @@ Interpretation:
 <tr >
     <td>MotorTaxonomia.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>2</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ParametrosVader.cs</td>
     <td>Scriptome\Limbic\Dados</td>
-    <td>9</td>
+    <td>10</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1432,21 +1368,21 @@ Interpretation:
 <tr >
     <td>PerfilPersonagemConsolidado.cs</td>
     <td>Scriptome\Nucleo\Modelos\Fenotipo</td>
-    <td>8</td>
+    <td>12</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>PipelineLimbic.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ProcessadorLinguistico.cs</td>
     <td>Scriptome\Limbic\Linguistica</td>
-    <td>5</td>
+    <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1467,7 +1403,7 @@ Interpretation:
 <tr >
     <td>RepositorioLexicoUnificado.cs</td>
     <td>Scriptome\Limbic\Dados</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1479,9 +1415,16 @@ Interpretation:
     <td>N/A</td>
 </tr>
 <tr >
+    <td>ScriptomeVisualizer.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
     <td>DefinicoesLingusticas.cs</td>
     <td>Scriptome\Limbic\Linguistica</td>
-    <td>14</td>
+    <td>16</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1509,7 +1452,7 @@ Interpretation:
 <tr >
     <td>VisualizadorEtograma.cs</td>
     <td>Scriptome\Infrastructure\Exportacao</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1771,10 +1714,10 @@ Interpretation:
     <td>Program</td>
     <td>Program.cs</td>
     <td>Infrastructure</td>
-    <td>17</td>
+    <td>16</td>
     <td>0</td>
     <td>1,00</td>
-    <td>17</td>
+    <td>16</td>
 </tr>
 <tr>
     <td>MotorDeIdentidade</td>
@@ -1789,10 +1732,10 @@ Interpretation:
     <td>OrquestradorNucleo</td>
     <td>Nucleo</td>
     <td>Fingerprint</td>
-    <td>6</td>
+    <td>11</td>
     <td>2</td>
-    <td>0,75</td>
-    <td>6</td>
+    <td>0,85</td>
+    <td>11</td>
 </tr>
 <tr>
     <td>ModuloEtogramaV2</td>
@@ -1810,6 +1753,24 @@ Interpretation:
     <td>6</td>
     <td>2</td>
     <td>0,75</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>MotorEtogramaCartesiano3D</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>7</td>
+    <td>2</td>
+    <td>0,78</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>MotorEtogramaHeuristico</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>6</td>
+    <td>0</td>
+    <td>1,00</td>
     <td>6</td>
 </tr>
 <tr>
@@ -1843,10 +1804,10 @@ Interpretation:
     <td>PipelineLimbic</td>
     <td>Limbic</td>
     <td>Nucleo</td>
-    <td>14</td>
-    <td>1</td>
-    <td>0,93</td>
-    <td>14</td>
+    <td>13</td>
+    <td>2</td>
+    <td>0,87</td>
+    <td>13</td>
 </tr>
 <tr>
     <td>VerificadorLimbic</td>
@@ -1861,28 +1822,37 @@ Interpretation:
     <td>AdaptadorLimbic</td>
     <td>Nucleo</td>
     <td>Limbic</td>
-    <td>15</td>
+    <td>23</td>
     <td>2</td>
-    <td>0,88</td>
-    <td>15</td>
-</tr>
-<tr>
-    <td>EspecialistaDinamica</td>
-    <td>Nucleo</td>
-    <td>Unknown</td>
-    <td>8</td>
-    <td>0</td>
-    <td>1,00</td>
-    <td>8</td>
+    <td>0,92</td>
+    <td>23</td>
 </tr>
 <tr>
     <td>MotorFenotipoV2</td>
     <td>Nucleo</td>
     <td>Fingerprint</td>
-    <td>17</td>
-    <td>1</td>
-    <td>0,94</td>
-    <td>17</td>
+    <td>16</td>
+    <td>2</td>
+    <td>0,89</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>ClassificadorJungV2</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>6</td>
+    <td>2</td>
+    <td>0,75</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>ClassificadorTermico</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>7</td>
+    <td>2</td>
+    <td>0,78</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>ClassificadorPsicodinamicoAvancado</td>

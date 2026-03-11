@@ -60,6 +60,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static void RenderExecutiveOverview(StringBuilder sb, ReportSnapshot snapshot)
         {
+            var parserConfidence = Clamp01(snapshot.Parsing.ParserConfidence);
+
             sb.AppendLine("## Executive Overview");
             sb.AppendLine();
             sb.AppendLine("This section summarizes the overall state of the run in a compact, management-friendly format.");
@@ -68,7 +70,7 @@ namespace RefactorScope.Exporters.Reports
 
             sb.AppendLine("| Signal | Value | Interpretation |");
             sb.AppendLine("|--------|-------|----------------|");
-            sb.AppendLine($"| Parser Confidence | `{snapshot.Parsing.ParserConfidence:P0}` | {snapshot.Parsing.ConfidenceBand} confidence for structural extraction |");
+            sb.AppendLine($"| Parser Confidence | `{parserConfidence:P0}` | {snapshot.Parsing.ConfidenceBand} confidence for structural extraction |");
             sb.AppendLine($"| Structural Candidates | `{snapshot.Structural.StructuralCandidates}` | Initial dead-code hypothesis set |");
             sb.AppendLine($"| Unresolved | `{snapshot.Structural.Unresolved}` | Candidates still not explained after refinement |");
             sb.AppendLine($"| Pattern Similarity | `{snapshot.Structural.PatternSimilarity}` | Candidates protected by architectural pattern similarity |");
@@ -87,6 +89,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static void RenderParserTelemetry(StringBuilder sb, ReportSnapshot snapshot)
         {
+            var parserConfidence = Clamp01(snapshot.Parsing.ParserConfidence);
+
             sb.AppendLine("## Parser Telemetry");
             sb.AppendLine();
             sb.AppendLine("This section describes how the parser behaved during the run and how much structural evidence was extracted.");
@@ -95,7 +99,7 @@ namespace RefactorScope.Exporters.Reports
             sb.AppendLine("| Metric | Value |");
             sb.AppendLine("|--------|-------|");
             sb.AppendLine($"| Parser Name | `{snapshot.Parsing.ParserName}` |");
-            sb.AppendLine($"| Confidence | `{snapshot.Parsing.ParserConfidence:P0}` |");
+            sb.AppendLine($"| Confidence | `{parserConfidence:P0}` |");
             sb.AppendLine($"| Confidence Band | `{snapshot.Parsing.ConfidenceBand}` |");
             sb.AppendLine($"| Files | `{snapshot.Parsing.Files}` |");
             sb.AppendLine($"| Types | `{snapshot.Parsing.Types}` |");
@@ -212,6 +216,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static void RenderOperationalGuidance(StringBuilder sb, ReportSnapshot snapshot)
         {
+            var parserConfidence = Clamp01(snapshot.Parsing.ParserConfidence);
+
             sb.AppendLine("## Operational Guidance");
             sb.AppendLine();
             sb.AppendLine("Below is a concise operational interpretation of the current run.");
@@ -219,7 +225,7 @@ namespace RefactorScope.Exporters.Reports
             sb.AppendLine("### Suggested interpretation");
             sb.AppendLine();
 
-            if (snapshot.Parsing.ParserConfidence < 0.65)
+            if (parserConfidence < 0.65)
             {
                 sb.AppendLine("- Parser output should be treated with caution because extraction confidence is low.");
             }
@@ -296,5 +302,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static string YesNo(bool value)
             => value ? "Yes" : "No";
+
+        private static double Clamp01(double value)
+            => Math.Max(0, Math.Min(1, value));
     }
 }

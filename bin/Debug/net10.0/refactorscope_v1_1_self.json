@@ -11,7 +11,7 @@
     "refactorscope-self-analysis"
   ],
 
-  "parser": "Selective",
+   "parser": "Selective",
 
   "parserOptions": {
     "enableInteractiveSelector": true,
@@ -98,5 +98,7 @@
       "warnAbove": 40,
       "failAbove": 65
     }
+
+
   }
 }

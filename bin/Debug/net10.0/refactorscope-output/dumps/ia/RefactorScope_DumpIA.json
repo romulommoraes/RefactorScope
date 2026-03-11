@@ -686,14 +686,29 @@
       "Kind": 3
     },
     {
-      "FromType": "LematizadorVerbal",
-      "ToType": "token",
-      "Kind": 0
+      "FromType": "MotorDeriva6",
+      "ToType": "ParametrosVader",
+      "Kind": 1
     },
     {
-      "FromType": "LematizadorVerbal",
-      "ToType": "token",
+      "FromType": "MotorDeriva6",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "ResultadoDeriva",
+      "Kind": 1
+    },
+    {
+      "FromType": "MotorDeriva6",
+      "ToType": "HeuristicaContextual",
       "Kind": 2
+    },
+    {
+      "FromType": "BancoDeDadosLexico",
+      "ToType": "RepositorioLexicoUnificado",
+      "Kind": 1
     },
     {
       "FromType": "ConfiguradorLimbic",
@@ -703,6 +718,11 @@
     {
       "FromType": "ConfiguradorLimbic",
       "ToType": "ParametrosVader",
+      "Kind": 3
+    },
+    {
+      "FromType": "RepositorioLexicoUnificado",
+      "ToType": "TermoLexical",
       "Kind": 3
     },
     {
@@ -727,6 +747,11 @@
     },
     {
       "FromType": "ProcessadorLinguistico",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "MotorLimbic",
       "ToType": "Token",
       "Kind": 3
     },
@@ -774,11 +799,6 @@
       "FromType": "PipelineLimbic",
       "ToType": "AnalisadorContextual",
       "Kind": 1
-    },
-    {
-      "FromType": "PipelineLimbic",
-      "ToType": "cena",
-      "Kind": 2
     },
     {
       "FromType": "VerificadorLimbic",

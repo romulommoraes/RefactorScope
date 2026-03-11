@@ -1,11 +1,11 @@
 ﻿Metric,Module,AbsoluteValue,ContributionWithinScope
-Coupling,Analyzers,72,0,24
-Coupling,CLI,0,0,00
+Coupling,Analyzers,72,0,23
+Coupling,CLI,8,0,03
 Coupling,Debug,0,0,00
 Coupling,Estimation,6,0,02
 Coupling,Infrastructure,6,0,02
 Coupling,Core,9,0,03
-Coupling,Execution,20,0,07
-Coupling,Exporters,140,0,47
+Coupling,Execution,20,0,06
+Coupling,Exporters,141,0,46
 Coupling,Parsers,42,0,14
 Coupling,Statistics,4,0,01

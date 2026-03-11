@@ -1,6 +1,5 @@
 {
   "StructuralCandidates": [
-    "ScriptomeVisualizer",
     "DivergenceLogger",
     "DivergenceScore",
     "EstadoIdentidade",
@@ -44,7 +43,6 @@
     "AbaEstrutura"
   ],
   "Unresolved": [
-    "ScriptomeVisualizer",
     "DivergenceScore",
     "EstadoIdentidade",
     "ModuloEtogramaV2",

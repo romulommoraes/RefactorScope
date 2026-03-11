@@ -3,10 +3,10 @@
 > Executive textual companion for the current analysis snapshot.
 > This report consolidates parser telemetry, structural signals, architectural indicators and readiness interpretation.
 
-- **Generated at:** 2026-03-11 02:04 UTC
+- **Generated at:** 2026-03-11 05:40 UTC
 - **Target scope:** `C:\Users\romul\source\repos\RefactorScope`
-- **Parser:** `Unknown`
-- **Confidence band:** `Unknown`
+- **Parser:** `HybridSelectiveParser`
+- **Confidence band:** `High`
 
 ---
 
@@ -17,17 +17,17 @@ It should be read as an architectural snapshot, not as a formal proof.
 
 | Signal | Value | Interpretation |
 |--------|-------|----------------|
-| Parser Confidence | `0%` | Unknown confidence for structural extraction |
+| Parser Confidence | `100%` | High confidence for structural extraction |
 | Structural Candidates | `48` | Initial dead-code hypothesis set |
 | Unresolved | `1` | Candidates still not explained after refinement |
 | Pattern Similarity | `47` | Candidates protected by architectural pattern similarity |
-| Implicit Coupling | `43` | Heuristic coupling hotspots |
+| Implicit Coupling | `44` | Heuristic coupling hotspots |
 | Modules | `10` | Architectural groups detected in classification |
 | Fitness Status | `Ready` | Execution-level readiness gate summary |
-| Overall Readiness | `Moderate` | Consolidated operational interpretation |
+| Overall Readiness | `High` | Consolidated operational interpretation |
 
 > **Executive reading:**
-> Parsing posture is **Unknown**, structural pressure remains at **1 unresolved**, and the run is currently interpreted as **Moderate readiness**.
+> Parsing posture is **High**, structural pressure remains at **1 unresolved**, and the run is currently interpreted as **High readiness**.
 
 ---
 
@@ -37,29 +37,29 @@ This section describes how the parser behaved during the run and how much struct
 
 | Metric | Value |
 |--------|-------|
-| Parser Name | `Unknown` |
-| Confidence | `0%` |
-| Confidence Band | `Unknown` |
-| Files | `0` |
-| Types | `0` |
-| References | `0` |
-| Execution Time | `0 ms` |
-| Types / File | `0,00` |
-| References / Type | `0,00` |
-| ms / File | `0,00` |
-| ms / Type | `0,00` |
-| Estimated Memory | `0 bytes` |
+| Parser Name | `HybridSelectiveParser` |
+| Confidence | `100%` |
+| Confidence Band | `High` |
+| Files | `173` |
+| Types | `176` |
+| References | `647` |
+| Execution Time | `842 ms` |
+| Types / File | `1,02` |
+| References / Type | `3,68` |
+| ms / File | `4,87` |
+| ms / Type | `4,78` |
+| Estimated Memory | `5.550.360 bytes` |
 | Sparse Extraction | `No` |
 | Anomaly Detected | `No` |
-| Extraction Index | `0,00` |
+| Extraction Index | `88,73` |
 
 ### Context
 
-- 
-- 
-- 
-- 
-- 
+- Parser confidence is high. The extracted structural model appears reliable for downstream analysis.
+- Structural density appears healthy. Parsed types and references show consistent extraction volume.
+- Parsing cost remains in an acceptable range for the extracted structural volume.
+- No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.
+- No anomaly flag was raised during parsing telemetry.
 
 ---
 
@@ -94,9 +94,9 @@ This section summarizes architectural tension signals derived from the consolida
 | Modules | `10` | Distinct architectural groups detected in the classification layer |
 | Average Score | `84,8` | Composite health score across modules |
 | Average Abstractness | `0,05` | Mean abstraction level across modules |
-| Average Instability | `0,42` | Mean outward dependency pressure |
-| Average Distance | `0,53` | Distance from main sequence |
-| Implicit Coupling Suspicions | `43` | Concentrated dependency hotspots |
+| Average Instability | `0,49` | Mean outward dependency pressure |
+| Average Distance | `0,46` | Distance from main sequence |
+| Implicit Coupling Suspicions | `44` | Concentrated dependency hotspots |
 
 ### Context
 
@@ -112,16 +112,16 @@ This section transforms raw metrics into a more executive narrative.
 
 | Dimension | Band / Value |
 |-----------|---------------|
-| Parser Confidence | `Unknown` |
+| Parser Confidence | `High` |
 | Statistics Coverage | `High` (1,00) |
-| Overall Readiness | `Moderate` (0,58) |
+| Overall Readiness | `High` (0,93) |
 | Fitness Status | `Ready` |
 | SOLID Alerts | `0` |
 
 ### Narrative
 
-The current execution is interpreted as **Moderate readiness**.
-Parser confidence is **Unknown**, statistics coverage is **High**, and the global fitness status is **Ready**.
+The current execution is interpreted as **High readiness**.
+Parser confidence is **High**, statistics coverage is **High**, and the global fitness status is **Ready**.
 
 ### Recommended Reading
 
@@ -137,9 +137,9 @@ Below is a concise operational interpretation of the current run.
 
 ### Suggested interpretation
 
-- Parser output should be treated with caution because extraction confidence is low.
+- Parser output is strong enough for higher-level interpretation.
 - `1` unresolved candidate(s) still deserve manual inspection.
-- `43` implicit coupling hotspot(s) were detected and may deserve architectural review.
+- `44` implicit coupling hotspot(s) were detected and may deserve architectural review.
 - The current run presents a healthy enough structural baseline for forward interpretation.
 
 ---

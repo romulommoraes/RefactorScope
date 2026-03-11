@@ -3,6 +3,7 @@ using RefactorScope.Core.Model;
 using RefactorScope.Core.Results;
 using RefactorScope.Exporters.Styling;
 using System.Text;
+using RefactorScope.Exporters.Dashboards.Renderers;
 
 namespace RefactorScope.Exporters.Dashboards
 {

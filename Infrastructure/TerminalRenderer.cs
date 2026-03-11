@@ -7,6 +7,47 @@ namespace RefactorScope.Infrastructure
     public static class TerminalRenderer
     {
         // -------------------------------------------------
+        // Flavor / Theme
+        // -------------------------------------------------
+
+        // Alterado para o verde neon absoluto (estilo terminal/Matrix)
+        private const string NeonGreen = "#00ff00";
+        private const string NeonCyan = "deepskyblue1";
+        private const string NeonMagenta = "hotpink";
+        private const string NeonAmber = "gold1";
+        private const string NeonRed = "indianred1";
+        private const string SoftGrey = "grey70";
+        private const string DimGrey = "grey42";
+        private const string WhiteGlow = "white";
+        private const string DefaultModuleColor = "white";
+
+        private static readonly HashSet<string> SafeNamedColors =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                "white",
+                "grey",
+                "grey42",
+                "grey70",
+                "black",
+                "red",
+                "yellow",
+                "green",
+                "cyan",
+                "magenta",
+                "blue",
+                "hotpink",
+                "gold1",
+                "orange1",
+                "#00ff00", // Adicionado o hex code aqui para validação de segurança
+                "deepskyblue1",
+                "indianred1",
+                "steelblue1",
+                "mediumpurple",
+                "turquoise2",
+                "pink1"
+            };
+
+        // -------------------------------------------------
         // Backwards compatibility
         // -------------------------------------------------
 
@@ -17,10 +58,14 @@ namespace RefactorScope.Infrastructure
         public static void Section(string title)
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.Write(
-                new Rule($"[bold]{title}[/]")
-                    .RuleStyle("grey")
-                    .Centered());
+
+            var styledTitle = $"[bold {NeonCyan}]{Markup.Escape(title)}[/]";
+
+            var rule = new Rule(styledTitle)
+                .RuleStyle(DimGrey)
+                .Centered();
+
+            AnsiConsole.Write(rule);
         }
 
         // -------------------------------------------------
@@ -29,9 +74,16 @@ namespace RefactorScope.Infrastructure
 
         public static void ShowHeader(string root)
         {
-            var panel = new Panel($"[bold yellow]{root}[/]")
-                .Header("[bold green]RefactorScope v1.0[/]")
-                .Border(BoxBorder.Rounded);
+            var headerText =
+                $"[bold {NeonMagenta}]REFACTORSCOPE v1.0[/]\n" +
+                $"[{NeonGreen}]ARCHITECTURAL FORENSICS[/]\n\n" +
+                $"[{SoftGrey}]TARGET[/]: [bold {NeonAmber}]{Markup.Escape(root)}[/]";
+
+            var panel = new Panel(headerText)
+                .Border(BoxBorder.Double)
+                .BorderStyle(Style.Parse(NeonCyan))
+                .Header($"[bold {NeonGreen}]SYSTEM ONLINE[/]")
+                .Expand();
 
             AnsiConsole.Write(panel);
             AnsiConsole.WriteLine();
@@ -43,22 +95,22 @@ namespace RefactorScope.Infrastructure
 
         public static void Stage(string name)
         {
-            AnsiConsole.MarkupLine($"[bold cyan]> {name}[/]");
+            AnsiConsole.MarkupLine($"[bold {NeonCyan}]>[/] [bold {WhiteGlow}]{Markup.Escape(name)}[/]");
         }
 
         public static void StageSuccess(string message)
         {
-            AnsiConsole.MarkupLine($"[green]✓[/] {message}");
+            AnsiConsole.MarkupLine($"[{NeonGreen}]✔[/] [{WhiteGlow}]{Markup.Escape(message)}[/]");
         }
 
         public static void StageWarning(string message)
         {
-            AnsiConsole.MarkupLine($"[yellow]![/] {message}");
+            AnsiConsole.MarkupLine($"[{NeonAmber}]![/] [{WhiteGlow}]{Markup.Escape(message)}[/]");
         }
 
         public static void Info(string message)
         {
-            AnsiConsole.MarkupLine($"[grey]i[/] {message}");
+            AnsiConsole.MarkupLine($"[{DimGrey}]i[/] [{SoftGrey}]{Markup.Escape(message)}[/]");
         }
 
         // -------------------------------------------------
@@ -70,19 +122,19 @@ namespace RefactorScope.Infrastructure
             var friendly = ResolveParserDisplayName(parserName);
 
             AnsiConsole.MarkupLine(
-                $"[grey]Parser[/]: [bold cyan]{friendly}[/]");
+                $"[{DimGrey}]Parser[/]: [bold {NeonCyan}]{Markup.Escape(friendly)}[/]");
         }
 
         public static void ParsingFallback(string fromParser, string toParser)
         {
             AnsiConsole.MarkupLine(
-                $"[yellow]Fallback[/]: {ResolveParserDisplayName(fromParser)} → {ResolveParserDisplayName(toParser)}");
+                $"[{NeonAmber}]Fallback[/]: [{SoftGrey}]{Markup.Escape(ResolveParserDisplayName(fromParser))}[/] → [bold {NeonAmber}]{Markup.Escape(ResolveParserDisplayName(toParser))}[/]");
         }
 
         public static void ParsingMerge()
         {
             AnsiConsole.MarkupLine(
-                $"[magenta]Merge[/]: consolidating structural model + dependency signals");
+                $"[{NeonMagenta}]Merge[/]: [{SoftGrey}]consolidating structural model + dependency signals[/]");
         }
 
         public static void ParsingSummary(
@@ -93,13 +145,14 @@ namespace RefactorScope.Infrastructure
         {
             var table = new Table()
                 .Border(TableBorder.Rounded)
-                .AddColumn("[bold]Metric[/]")
-                .AddColumn("[bold]Value[/]");
+                .Expand()
+                .AddColumn($"[bold {NeonMagenta}]Metric[/]")
+                .AddColumn($"[bold {NeonGreen}]Value[/]");
 
-            table.AddRow("Files", files.ToString());
-            table.AddRow("Types", types.ToString());
-            table.AddRow("References", references.ToString());
-            table.AddRow("Execution", $"{execution.TotalMilliseconds:0} ms");
+            table.AddRow($"[{SoftGrey}]Files[/]", $"[bold {WhiteGlow}]{files}[/]");
+            table.AddRow($"[{SoftGrey}]Types[/]", $"[bold {WhiteGlow}]{types}[/]");
+            table.AddRow($"[{SoftGrey}]References[/]", $"[bold {WhiteGlow}]{references}[/]");
+            table.AddRow($"[{SoftGrey}]Execution[/]", $"[bold {NeonAmber}]{execution.TotalMilliseconds:0} ms[/]");
 
             AnsiConsole.Write(table);
         }
@@ -115,21 +168,22 @@ namespace RefactorScope.Infrastructure
             double reductionRate,
             double threshold)
         {
-            var unresolvedColor = confirmedUnresolved == 0 ? "green" : "red";
+            var unresolvedColor = confirmedUnresolved == 0 ? NeonGreen : NeonRed;
             var reductionColor = reductionRate >= 0.75
-                ? "green"
+                ? NeonGreen
                 : reductionRate >= 0.40
-                    ? "yellow"
-                    : "red";
+                    ? NeonAmber
+                    : NeonRed;
 
             var panel = new Panel(
-                $"[bold]Structural Candidates[/]: {structuralCandidates}\n" +
-                $"[bold]Confirmed Unresolved (≥ {threshold:0.00})[/]: [{unresolvedColor}]{confirmedUnresolved}[/]\n" +
-                $"[bold]Filtered by Validation[/]: {filteredByValidation}\n" +
-                $"[bold]Reduction[/]: [{reductionColor}]{reductionRate * 100:0.0}%[/]"
+                $"[bold {NeonCyan}]Structural Candidates[/]: [white]{structuralCandidates}[/]\n" +
+                $"[bold {NeonCyan}]Confirmed Unresolved (≥ {threshold:0.00})[/]: [{unresolvedColor}]{confirmedUnresolved}[/]\n" +
+                $"[bold {NeonCyan}]Filtered by Validation[/]: [white]{filteredByValidation}[/]\n" +
+                $"[bold {NeonCyan}]Reduction[/]: [{reductionColor}]{reductionRate * 100:0.0}%[/]"
             )
-            .Header("[bold yellow]Structural Validation[/]")
-            .Border(BoxBorder.Rounded);
+            .Header($"[bold {NeonMagenta}]Structural Validation[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderStyle(Style.Parse(NeonMagenta));
 
             AnsiConsole.Write(panel);
         }
@@ -145,28 +199,33 @@ namespace RefactorScope.Infrastructure
                          double Coupling,
                          double Isolation)> rows)
         {
+            var rowList = rows.ToList();
+            var useDefaultModuleColor = rowList.Count > 15;
+
             var table = new Table()
                 .Border(TableBorder.Rounded)
                 .Expand();
 
-            table.AddColumn("[bold]Module[/]");
-            table.AddColumn("[bold]Score[/]");
-            table.AddColumn("[bold]Unresolved[/]");
-            table.AddColumn("[bold]Coupling[/]");
-            table.AddColumn("[bold]Isolation[/]");
+            table.AddColumn($"[bold {NeonMagenta}]Module[/]");
+            table.AddColumn($"[bold {NeonGreen}]Score[/]");
+            table.AddColumn($"[bold {NeonAmber}]Unresolved[/]");
+            table.AddColumn($"[bold {NeonCyan}]Coupling[/]");
+            table.AddColumn($"[bold {NeonCyan}]Isolation[/]");
 
-            foreach (var r in rows)
+            foreach (var r in rowList)
             {
                 var scoreColor = ResolveScoreColor(r.Score);
-                var unresolvedColor = r.Unresolved.StartsWith("0") ? "green" : "red";
-                var moduleColor = ResolveModuleColor(r.Module);
+                var unresolvedColor = r.Unresolved.StartsWith("0") ? NeonGreen : NeonRed;
+                var moduleColor = useDefaultModuleColor
+                    ? DefaultModuleColor
+                    : ResolveSafeModuleColor(r.Module);
 
                 table.AddRow(
-                    $"[{moduleColor}]{r.Module}[/]",
+                    $"[{moduleColor}]{Markup.Escape(r.Module)}[/]",
                     $"[{scoreColor}]{r.Score:0.0}[/]",
-                    $"[{unresolvedColor}]{r.Unresolved}[/]",
-                    $"{r.Coupling:0.00}",
-                    $"{r.Isolation:0.00}"
+                    $"[{unresolvedColor}]{Markup.Escape(r.Unresolved)}[/]",
+                    $"[{SoftGrey}]{r.Coupling:0.00}[/]",
+                    $"[{SoftGrey}]{r.Isolation:0.00}[/]"
                 );
             }
 
@@ -188,15 +247,16 @@ namespace RefactorScope.Infrastructure
             var smellColor = ResolveSmellColor(hygiene.SmellIndex);
 
             var panel = new Panel(
-                $"[bold]Code Smell Index[/]: [{smellColor}]{hygiene.SmellIndex:0.0}[/]\n" +
-                $"[bold]Status[/]: {ResolveHygieneStatus(hygiene.HygieneLevel)}\n\n" +
-                $"[bold]Dead Code Candidates[/]: {hygiene.UnreferencedCount}\n" +
-                $"[bold]Namespace Drift[/]: {hygiene.NamespaceDriftCount}\n" +
-                $"[bold]Global Namespace Types[/]: {hygiene.GlobalNamespaceCount}\n" +
-                $"[bold]Core Isolation Flags[/]: {hygiene.IsolatedCoreCount}"
+                $"[bold {NeonCyan}]Code Smell Index[/]: [{smellColor}]{hygiene.SmellIndex:0.0}[/]\n" +
+                $"[bold {NeonCyan}]Status[/]: {ResolveHygieneStatus(hygiene.HygieneLevel)}\n\n" +
+                $"[bold {NeonCyan}]Dead Code Candidates[/]: [white]{hygiene.UnreferencedCount}[/]\n" +
+                $"[bold {NeonCyan}]Namespace Drift[/]: [white]{hygiene.NamespaceDriftCount}[/]\n" +
+                $"[bold {NeonCyan}]Global Namespace Types[/]: [white]{hygiene.GlobalNamespaceCount}[/]\n" +
+                $"[bold {NeonCyan}]Core Isolation Flags[/]: [white]{hygiene.IsolatedCoreCount}[/]"
             )
-            .Header("[bold yellow]Code Hygiene[/]")
-            .Border(BoxBorder.Rounded);
+            .Header($"[bold {NeonMagenta}]Code Hygiene[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderStyle(Style.Parse(NeonMagenta));
 
             AnsiConsole.Write(panel);
         }
@@ -210,12 +270,13 @@ namespace RefactorScope.Infrastructure
             AnsiConsole.WriteLine();
 
             var panel = new Panel(
-                $"[bold]RDI[/]: {estimate.RDI}\n" +
-                $"[bold]Difficulty[/]: {estimate.Difficulty}\n" +
-                $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
-                $"[bold]Confidence[/]: {estimate.Confidence:0.00}")
-            .Header("[bold yellow]Refactor Effort Estimation[/]")
-            .Border(BoxBorder.Rounded);
+                $"[bold {NeonCyan}]RDI[/]: [white]{estimate.RDI}[/]\n" +
+                $"[bold {NeonCyan}]Difficulty[/]: [white]{Markup.Escape(estimate.Difficulty)}[/]\n" +
+                $"[bold {NeonCyan}]Estimated Hours[/]: [white]{estimate.EstimatedHours:0.0}[/]\n" +
+                $"[bold {NeonCyan}]Confidence[/]: [white]{estimate.Confidence:0.00}[/]")
+            .Header($"[bold {NeonMagenta}]Refactor Effort Estimation[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderStyle(Style.Parse(NeonMagenta));
 
             AnsiConsole.Write(panel);
         }
@@ -224,23 +285,24 @@ namespace RefactorScope.Infrastructure
         {
             var difficultyColor = estimate.Difficulty switch
             {
-                "Low" => "green",
-                "Medium" => "yellow",
+                "Low" => NeonGreen,
+                "Medium" => NeonAmber,
                 "High" => "orange1",
-                _ => "red"
+                _ => NeonRed
             };
 
             var effortBar = BuildEffortBar(estimate.EstimatedHours);
 
             var panel = new Panel(
-                $"[bold]RDI[/]: {estimate.RDI}\n" +
-                $"[bold]Difficulty[/]: [{difficultyColor}]{estimate.Difficulty}[/]\n" +
-                $"[bold]Estimated Hours[/]: {estimate.EstimatedHours:0.0}\n" +
-                $"[bold]Confidence[/]: {estimate.Confidence:0.00}\n\n" +
-                $"[bold]Effort[/]: {effortBar}"
+                $"[bold {NeonCyan}]RDI[/]: [white]{estimate.RDI}[/]\n" +
+                $"[bold {NeonCyan}]Difficulty[/]: [{difficultyColor}]{Markup.Escape(estimate.Difficulty)}[/]\n" +
+                $"[bold {NeonCyan}]Estimated Hours[/]: [white]{estimate.EstimatedHours:0.0}[/]\n" +
+                $"[bold {NeonCyan}]Confidence[/]: [white]{estimate.Confidence:0.00}[/]\n\n" +
+                $"[bold {NeonCyan}]Effort[/]: {effortBar}"
             )
-            .Header("[bold yellow]Refactor Effort Estimation[/]")
-            .Border(BoxBorder.Rounded);
+            .Header($"[bold {NeonMagenta}]Refactor Effort Estimation[/]")
+            .Border(BoxBorder.Rounded)
+            .BorderStyle(Style.Parse(NeonMagenta));
 
             AnsiConsole.Write(panel);
         }
@@ -252,13 +314,9 @@ namespace RefactorScope.Infrastructure
         public static T WithSpinner<T>(string message, Func<T> action)
         {
             return AnsiConsole.Status()
-                .Start(message, ctx =>
-                {
-                    ctx.Spinner(Spinner.Known.Dots);
-                    ctx.SpinnerStyle(Style.Parse("green"));
-
-                    return action();
-                });
+                .Spinner(Spinner.Known.Dots)
+                .SpinnerStyle(Style.Parse(NeonGreen))
+                .Start($"[{NeonCyan}]{Markup.Escape(message)}[/]", _ => action());
         }
 
         // -------------------------------------------------
@@ -280,31 +338,43 @@ namespace RefactorScope.Infrastructure
         {
             return module.ToLower() switch
             {
-                "core" => "cyan",
-                "analyzers" => "green",
-                "parsers" => "yellow",
-                "statistics" => "magenta",
+                "core" => NeonCyan,
+                "analyzers" => NeonGreen,
+                "parsers" => NeonAmber,
+                "statistics" => NeonMagenta,
                 "cli" => "orange1",
-                "debug" => "grey",
+                "debug" => DimGrey,
                 "exporters" => "deepskyblue1",
                 "execution" => "steelblue1",
                 "infrastructure" => "gold1",
-                "datasets" => "darkseagreen1",
+                "datasets" => "green",
                 "metrics" => "mediumpurple",
-                "model" => "cadetblue1",
-                "reporting" => "lightpink1",
+                "model" => "cyan",
+                "reporting" => "pink1",
                 "scope" => "turquoise2",
-                _ => "white"
+                _ => WhiteGlow
             };
+        }
+
+        private static string ResolveSafeModuleColor(string module)
+        {
+            var color = ResolveModuleColor(module);
+
+            if (string.IsNullOrWhiteSpace(color))
+                return DefaultModuleColor;
+
+            return SafeNamedColors.Contains(color)
+                ? color
+                : DefaultModuleColor;
         }
 
         private static string ResolveScoreColor(double score)
         {
             return score switch
             {
-                >= 80 => "green",
-                >= 60 => "yellow",
-                _ => "red"
+                >= 80 => NeonGreen,
+                >= 60 => NeonAmber,
+                _ => NeonRed
             };
         }
 
@@ -312,10 +382,10 @@ namespace RefactorScope.Infrastructure
         {
             return smell switch
             {
-                <= 20 => "green",
-                <= 40 => "yellow",
+                <= 20 => NeonGreen,
+                <= 40 => NeonAmber,
                 <= 60 => "orange1",
-                <= 80 => "red",
+                <= 80 => NeonRed,
                 _ => "maroon"
             };
         }
@@ -336,15 +406,15 @@ namespace RefactorScope.Infrastructure
         private static string ResolveHygieneStatus(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                return "[grey]Unknown[/]";
+                return $"[{DimGrey}]Unknown[/]";
 
             return value.ToLower() switch
             {
-                "healthy" => "[green]Healthy[/]",
-                "stable" => "[yellow]Stable[/]",
+                "healthy" => $"[{NeonGreen}]Healthy[/]",
+                "stable" => $"[{NeonAmber}]Stable[/]",
                 "warning" => "[orange1]Warning[/]",
-                "critical" => "[red]Critical[/]",
-                _ => value
+                "critical" => $"[{NeonRed}]Critical[/]",
+                _ => Markup.Escape(value)
             };
         }
 
@@ -358,7 +428,7 @@ namespace RefactorScope.Infrastructure
             int filled = (int)Math.Round(normalized * width);
             int empty = width - filled;
 
-            return $"[orange1]{new string('█', filled)}[/][grey]{new string('░', empty)}[/]";
+            return $"[{NeonMagenta}]{new string('█', filled)}[/][{DimGrey}]{new string('░', empty)}[/]";
         }
     }
 }

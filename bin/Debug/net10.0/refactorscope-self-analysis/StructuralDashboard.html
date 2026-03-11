@@ -22,9 +22,9 @@
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 11-03-2026 02:04 UTC</div>
+        <div><b>Generated:</b> 11-03-2026 05:40 UTC</div>
         <div><b>Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
-        <div><b>Total Types:</b> 170</div>
+        <div><b>Total Types:</b> 176</div>
         <div><b>Hygiene:</b> 🟢 Healthy</div>
     </div>
 </div>
@@ -37,13 +37,13 @@
 <div class="grid-kpis structural-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Total Classes</div>
-        <div class="value">170</div>
+        <div class="value">176</div>
         <div class="hint">Total number of structurally classified types</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
     <div class="label">Namespaces</div>
-    <div class="value">40</div>
+    <div class="value">41</div>
     <div class="hint">Distinct namespaces represented in the scope</div>
 </div>
 
@@ -79,19 +79,19 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Isolated Core</div>
-        <div class="value">27</div>
+        <div class="value">28</div>
         <div class="hint">Number of core types structurally isolated from outer layers</div>
     </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Code Smell Index</div>
-        <div class="value">12,7</div>
+        <div class="value">12,4</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Implicit Coupling</div>
-        <div class="value">43</div>
+        <div class="value">44</div>
         <div class="hint">Types suggesting concentrated dependency flow toward specific modules</div>
     </div>
 
@@ -103,7 +103,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">A / I / D</div>
-        <div class="value" style="font-size:22px;">0,05 / 0,42 / 0,53</div>
+        <div class="value" style="font-size:22px;">0,05 / 0,49 / 0,46</div>
         <div class="hint">Average abstractness, instability and distance from main sequence</div>
     </div>
 </div>
@@ -128,7 +128,7 @@
         <div class="badge red"><span class="badge-dot"></span> Unresolved: 1</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 2</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 0</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 43</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 44</div>
     </div>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -155,7 +155,7 @@
 <div id="p5-arch-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const archRadarSketch = (p) => {
-    const data = [28.235, 27.647, 0.588, 1.176, 0, 15.882, 25.294, 0];
+    const data = [27.273, 26.705, 0.568, 1.136, 0, 15.909, 25, 0];
     const labels = ["Dead Code", "Pattern", "Unresolved", "Drift", "Global", "Core", "Coupling", "SOLID"];
     const maxRadius = 110;
 
@@ -229,7 +229,7 @@ new p5(archRadarSketch);
 <div id="p5-galaxy-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const galaxySketch = (p) => {
-    const points = [{ name: 'Exporters', inst: 0.66, abs: 0, fan: 140, col: '#ff8a3d', hl: true },{ name: 'Analyzers', inst: 0.692, abs: 0.1, fan: 72, col: '#ff8a3d', hl: true },{ name: 'Parsers', inst: 0.627, abs: 0, fan: 42, col: '#ff8a3d', hl: true },{ name: 'Execution', inst: 0.571, abs: 0.25, fan: 20, col: '#ffc15d', hl: true },{ name: 'Core', inst: 0.019, abs: 0.107, fan: 9, col: '#ffb14d', hl: false },{ name: 'Estimation', inst: 0.375, abs: 0, fan: 6, col: '#ffb14d', hl: false },{ name: 'Infrastructure', inst: 0.6, abs: 0, fan: 6, col: '#ffb14d', hl: false },{ name: 'Statistics', inst: 0.667, abs: 0, fan: 4, col: '#ffb14d', hl: false },{ name: 'CLI', inst: 0, abs: 0, fan: 0, col: '#ffb14d', hl: false },{ name: 'Debug', inst: 0, abs: 0, fan: 0, col: '#ffb14d', hl: false },];
+    const points = [{ name: 'Exporters', inst: 0.662, abs: 0, fan: 141, col: '#ff8a3d', hl: true },{ name: 'Analyzers', inst: 0.692, abs: 0.1, fan: 72, col: '#ff8a3d', hl: true },{ name: 'Parsers', inst: 0.627, abs: 0, fan: 42, col: '#ff8a3d', hl: true },{ name: 'Execution', inst: 0.571, abs: 0.25, fan: 20, col: '#ffc15d', hl: true },{ name: 'Core', inst: 0.018, abs: 0.101, fan: 9, col: '#ffb14d', hl: false },{ name: 'CLI', inst: 0.8, abs: 0, fan: 8, col: '#ffb14d', hl: false },{ name: 'Estimation', inst: 0.375, abs: 0, fan: 6, col: '#ffb14d', hl: false },{ name: 'Infrastructure', inst: 0.5, abs: 0, fan: 6, col: '#ffb14d', hl: false },{ name: 'Statistics', inst: 0.667, abs: 0, fan: 4, col: '#ffb14d', hl: false },{ name: 'Debug', inst: 0, abs: 0, fan: 0, col: '#ffb14d', hl: false },];
     
     p.setup = () => {
         let canvas = p.createCanvas(420, 420);
@@ -533,8 +533,15 @@ new p5(galaxySketch);
     <td>Review Required</td>
 </tr>
 <tr class='row-warning'>
-    <td>ParsingChartsRenderer.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>ParserArenaCliRunner.cs</td>
+    <td>RefactorScope\CLI</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ParserArenaOrchestrator.cs</td>
+    <td>RefactorScope\Core\Parsing\Arena</td>
     <td>0</td>
     <td>Unreferenced</td>
     <td>Review Required</td>
@@ -654,13 +661,6 @@ new p5(galaxySketch);
 <tr class='row-warning'>
     <td>StructuralTrendDatasetBuilder.cs</td>
     <td>RefactorScope\Core\Datasets</td>
-    <td>0</td>
-    <td>Unreferenced</td>
-    <td>Review Required</td>
-</tr>
-<tr class='row-warning'>
-    <td>TerminalRenderer.cs</td>
-    <td>RefactorScope\Infrastructure</td>
     <td>0</td>
     <td>Unreferenced</td>
     <td>Review Required</td>
@@ -899,14 +899,14 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>IParserCodigo.cs</td>
     <td>RefactorScope\Core\Abstractions</td>
-    <td>7</td>
+    <td>9</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>IParserResult.cs</td>
     <td>RefactorScope\Core\Abstractions</td>
-    <td>13</td>
+    <td>15</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -946,9 +946,30 @@ new p5(galaxySketch);
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
+    <td>ParserArenaProjectResult.cs</td>
+    <td>RefactorScope\Core\Parsing\Arena</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ParserArenaRunResult.cs</td>
+    <td>RefactorScope\Core\Parsing\Arena</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ParserArenaScoreCalculator.cs</td>
+    <td>RefactorScope\Core\Parsing\Arena</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
     <td>ParserSelector.cs</td>
     <td>RefactorScope\Core\Parsing</td>
-    <td>1</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -976,7 +997,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>RefactorScopeConfig.cs</td>
     <td>RefactorScope\Core\Configuration</td>
-    <td>11</td>
+    <td>12</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1144,7 +1165,7 @@ new p5(galaxySketch);
 <tr >
     <td>CrashLogger.cs</td>
     <td>RefactorScope\Infrastructure</td>
-    <td>1</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1394,6 +1415,13 @@ new p5(galaxySketch);
     <td>N/A</td>
 </tr>
 <tr >
+    <td>ProjectRootResolver.cs</td>
+    <td>RefactorScope\CLI</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
     <td>QualityControlChartsRenderer.cs</td>
     <td>RefactorScope\Exporters\Dashboards\Renderers</td>
     <td>2</td>
@@ -1485,6 +1513,13 @@ new p5(galaxySketch);
     <td>N/A</td>
 </tr>
 <tr >
+    <td>StartupModeSelection.cs</td>
+    <td>RefactorScope\CLI</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
     <td>StructuralInventoryExporter.cs</td>
     <td>RefactorScope\Exporters\Dashboards</td>
     <td>1</td>
@@ -1502,6 +1537,13 @@ new p5(galaxySketch);
     <td>StructuralTokenGuard.cs</td>
     <td>RefactorScope\Parsers\Common</td>
     <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>TerminalRenderer.cs</td>
+    <td>RefactorScope\Infrastructure</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1645,6 +1687,15 @@ new p5(galaxySketch);
     <td>8</td>
 </tr>
 <tr>
+    <td>ParserArenaCliRunner</td>
+    <td>CLI</td>
+    <td>Core</td>
+    <td>9</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>9</td>
+</tr>
+<tr>
     <td>EffortEstimator</td>
     <td>Estimation</td>
     <td>Core</td>
@@ -1676,8 +1727,8 @@ new p5(galaxySketch);
     <td>Core</td>
     <td>Parsers</td>
     <td>9</td>
-    <td>1</td>
-    <td>0,90</td>
+    <td>3</td>
+    <td>0,75</td>
     <td>9</td>
 </tr>
 <tr>
@@ -1711,10 +1762,10 @@ new p5(galaxySketch);
     <td>ArchitecturalDashboardExporterAdapter</td>
     <td>Exporters</td>
     <td>Core</td>
-    <td>10</td>
+    <td>11</td>
     <td>0</td>
     <td>1,00</td>
-    <td>10</td>
+    <td>11</td>
 </tr>
 <tr>
     <td>ParsingDashboardExporterAdapter</td>

@@ -1,6 +1,6 @@
 ﻿Metric,Module,AbsoluteValue,ContributionWithinScope
 Coupling,Program.cs,16,0,07
-Coupling,Fingerprint,50,0,23
-Coupling,Infrastructure,89,0,40
-Coupling,Nucleo,29,0,13
-Coupling,Limbic,36,0,16
+Coupling,Fingerprint,56,0,24
+Coupling,Infrastructure,95,0,40
+Coupling,Nucleo,34,0,14
+Coupling,Limbic,36,0,15

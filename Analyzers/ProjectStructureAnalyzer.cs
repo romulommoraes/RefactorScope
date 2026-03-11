@@ -189,7 +189,9 @@ namespace RefactorScope.Analyzers
             return name.Equals("Docs", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("Doc", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("Documentation", StringComparison.OrdinalIgnoreCase)
-                || name.Equals(".github", StringComparison.OrdinalIgnoreCase);
+                || name.Equals(".github", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("Batch", StringComparison.OrdinalIgnoreCase); 
+
         }
 
         private bool LooksLikeInfraNoise(string name)
@@ -201,6 +203,7 @@ namespace RefactorScope.Analyzers
                 || name.Equals(".idea", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("node_modules", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("packages", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("Batch", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("TestResults", StringComparison.OrdinalIgnoreCase);
         }
     }
