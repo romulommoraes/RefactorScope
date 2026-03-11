@@ -114,41 +114,7 @@ namespace RefactorScope.Exporters.Dashboards
         {
             return config?.Dashboard?.Theme;
         }
-
-        //private static void EnsureCssAssets(string outputPath, string themeFileName)
-        //{
-        //    var cssDir = Path.Combine(outputPath, "assets", "css");
-        //    Directory.CreateDirectory(cssDir);
-
-        //    var baseCssPath = Path.Combine(cssDir, "dashboard-base.css");
-        //    var componentsCssPath = Path.Combine(cssDir, "dashboard-components.css");
-        //    var themeCssPath = Path.Combine(cssDir, themeFileName);
-
-        //    if (!File.Exists(baseCssPath))
-        //        File.WriteAllText(baseCssPath, DashboardBaseCss(), Encoding.UTF8);
-
-        //    if (!File.Exists(componentsCssPath))
-        //        File.WriteAllText(componentsCssPath, DashboardComponentsCss(), Encoding.UTF8);
-
-        //    if (!File.Exists(themeCssPath))
-        //        File.WriteAllText(themeCssPath, ThemeCyberBlueCss(), Encoding.UTF8);
-        //}
-
-        //private static void EnsureVendorAssets(string outputPath)
-        //{
-        //    var vendorDir = Path.Combine(outputPath, "assets", "vendor");
-        //    Directory.CreateDirectory(vendorDir);
-
-        //    var chartsCssPath = Path.Combine(vendorDir, "charts.min.css");
-        //    var augmentedUiPath = Path.Combine(vendorDir, "augmented-ui.min.css");
-
-        //    if (!File.Exists(chartsCssPath))
-        //        File.WriteAllText(chartsCssPath, PlaceholderChartsCss(), Encoding.UTF8);
-
-        //    if (!File.Exists(augmentedUiPath))
-        //        File.WriteAllText(augmentedUiPath, PlaceholderAugmentedUiCss(), Encoding.UTF8);
-        //}
-
+         
 
     }
 }

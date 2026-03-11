@@ -2,6 +2,7 @@
 using RefactorScope.Core.Model;
 using RefactorScope.Exporters.Styling;
 using System.Text;
+using RefactorScope.Exporters.Dashboards.Renderers;
 
 namespace RefactorScope.Exporters.Dashboards;
 
@@ -53,6 +54,8 @@ public sealed class ParsingDashboardExporter
 
         double executionMs = result.Stats?.ExecutionTime.TotalMilliseconds ?? 0;
 
+        double normalizedConfidence = Clamp01(result.Confidence);
+
         double typesPerFile = files == 0 ? 0 : types / (double)files;
         double refsPerType = types == 0 ? 0 : refs / (double)types;
         double msPerFile = files == 0 ? 0 : executionMs / files;
@@ -62,12 +65,12 @@ public sealed class ParsingDashboardExporter
         double memoryPerFileKb = files == 0 ? 0 : (memoryBytes / 1024d) / files;
         double memoryPerTypeKb = types == 0 ? 0 : (memoryBytes / 1024d) / types;
 
-        var parserConfidenceBand = GetConfidenceBand(result.Confidence);
+        var parserConfidenceBand = GetConfidenceBand(normalizedConfidence);
         var sparseExtraction = IsSparseExtraction(refsPerType, typesPerFile);
         var anomalyDetected = TryGetAnomalyDetected(result);
 
         var extractionIndex = ComputeExtractionIndex(
-            result.Confidence,
+            normalizedConfidence,
             refsPerType,
             typesPerFile,
             msPerType);
@@ -82,7 +85,7 @@ public sealed class ParsingDashboardExporter
             files,
             types,
             refs,
-            result.Confidence,
+            normalizedConfidence,
             sparseExtraction,
             anomalyDetected,
             msPerType);
@@ -91,7 +94,7 @@ public sealed class ParsingDashboardExporter
         // 3. RENDERERS
         // =====================================================
 
-        var controlCharts = new ParsingControlChartsRenderer();
+        var controlCharts = new ParsingControlChartsRendererP5();
         var sb = new StringBuilder();
 
         // =====================================================
@@ -117,7 +120,7 @@ public sealed class ParsingDashboardExporter
     <div class="run-meta">
         <div><b>Generated:</b> {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC</div>
         <div><b>Target:</b> {Html(targetName)}</div>
-        <div><b>Confidence:</b> {result.Confidence:P0}</div>
+        <div><b>Confidence:</b> {normalizedConfidence:P0}</div>
         <div><b>Confidence Band:</b> {Html(parserConfidenceBand)}</div>
     </div>
 </div>
@@ -162,13 +165,13 @@ public sealed class ParsingDashboardExporter
         <div class="hint">Structural references extracted between parsed types</div>
     </div>
 
-    <div class="kpi {(result.Confidence >= 0.85 ? "good" : result.Confidence >= 0.65 ? "warning" : "alert")}" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi {(normalizedConfidence >= 0.85 ? "good" : normalizedConfidence >= 0.65 ? "warning" : "alert")}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Confidence</div>
-        <div class="value">{result.Confidence:P0}</div>
+        <div class="value">{normalizedConfidence:P0}</div>
         <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
     </div>
 
-    <div class="kpi {(result.Confidence >= 0.85 ? "good" : result.Confidence >= 0.65 ? "warning" : "alert")}" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi {(normalizedConfidence >= 0.85 ? "good" : normalizedConfidence >= 0.65 ? "warning" : "alert")}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Confidence Band</div>
         <div class="value" style="font-size:24px;">{Html(parserConfidenceBand)}</div>
         <div class="hint">High, Medium or Low confidence band derived from parser confidence</div>
@@ -249,7 +252,7 @@ public sealed class ParsingDashboardExporter
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Reading</h3>
     <ul class="clean">
-        <li>{Html(GetConfidenceDiagnosis(result.Confidence))}</li>
+        <li>{Html(GetConfidenceDiagnosis(normalizedConfidence))}</li>
         <li>{Html(GetDensityDiagnosis(refsPerType, typesPerFile))}</li>
         <li>{Html(GetPerformanceDiagnosis(msPerType, msPerFile))}</li>
         <li>{Html(GetSparseExtractionDiagnosis(sparseExtraction))}</li>
@@ -257,7 +260,7 @@ public sealed class ParsingDashboardExporter
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge {(result.Confidence >= 0.85 ? "green" : result.Confidence >= 0.65 ? "amber" : "red")}"><span class="badge-dot"></span> Confidence: {result.Confidence:P0}</div>
+        <div class="badge {(normalizedConfidence >= 0.85 ? "green" : normalizedConfidence >= 0.65 ? "amber" : "red")}"><span class="badge-dot"></span> Confidence: {normalizedConfidence:P0}</div>
         <div class="badge {(sparseExtraction ? "amber" : "green")}" style="margin-top:8px;"><span class="badge-dot"></span> Sparse Extraction: {(sparseExtraction ? "Yes" : "No")}</div>
         <div class="badge {(anomalyDetected ? "red" : "green")}" style="margin-top:8px;"><span class="badge-dot"></span> Anomaly Detected: {(anomalyDetected ? "Yes" : "No")}</div>
     </div>
@@ -266,11 +269,10 @@ public sealed class ParsingDashboardExporter
 
         sb.AppendLine("</div></div>");
 
- // =====================================================
-// 8. CHARTS & DIAGNOSTICS
-// =====================================================
-
-sb.AppendLine("""
+        // =====================================================
+        // 8. CHARTS & DIAGNOSTICS (FIXED 3-COLUMN GRID)
+        // =====================================================
+        sb.AppendLine("""
 <div class="section">
     <div class="section-title">
         <h2>Charts & Diagnostics</h2>
@@ -279,37 +281,31 @@ sb.AppendLine("""
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
 """);
 
-sb.AppendLine("<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>");
+        sb.AppendLine("<div style='display:grid; grid-template-columns: auto auto 1fr; gap:24px; align-items:stretch; width:100%;'>");
 
-sb.AppendLine(controlCharts.RenderParsingRadarEnhanced(
-    typesPerFile,
-    refsPerType,
-    result.Confidence,
-    msPerType));
+        sb.AppendLine(controlCharts.RenderParsingRadarEnhanced(typesPerFile, refsPerType, normalizedConfidence, msPerType));
 
-sb.AppendLine(controlCharts.RenderParsingRouteDonut(
-    routeMetrics.SafeFiles,
-    routeMetrics.ComplexFiles,
-    routeMetrics.AstPatternFiles,
-    routeMetrics.RecoveryFiles,
-    routeMetrics.RiskFiles));
-// aqui
-sb.AppendLine("<div style='flex:1; min-width:280px;'>");
-sb.AppendLine("<ul class='clean'>");
-sb.AppendLine($"<li><b>Safe:</b> Files likely handled in the most stable parsing route.</li>");
-sb.AppendLine($"<li><b>Complex:</b> Files requiring more structural interpretation effort.</li>");
-sb.AppendLine($"<li><b>AST / Pattern:</b> Files more dependent on structural pattern handling.</li>");
-sb.AppendLine($"<li><b>Recovery:</b> Files likely requiring fallback or recovery behavior.</li>");
-sb.AppendLine($"<li><b>Risk:</b> Files concentrated in the highest reliability-pressure bucket.</li>");
-sb.AppendLine($"<li><b>Risk:</b> Files concentrated in the highest reliability-pressure bucket.</li>");
-sb.AppendLine($"<li><b>Graph Rich:</b> Reference density per extracted type.</li>");
-sb.AppendLine($"<li><b>Confidence:</b> Heuristic structural usability of the parsed model.</li>");
-sb.AppendLine($"<li><b>Efficiency:</b> Lower per-type parsing cost produces stronger score.</li>");
-sb.AppendLine($"<li>{Html(GetRouteDiagnosis(routeMetrics))}</li>");
-sb.AppendLine("</ul>");
-sb.AppendLine("</div>");
+        sb.AppendLine(controlCharts.RenderParsingRouteDonut(
+            routeMetrics.SafeFiles,
+            routeMetrics.ComplexFiles,
+            routeMetrics.AstPatternFiles,
+            routeMetrics.RecoveryFiles,
+            routeMetrics.RiskFiles));
+
+        sb.AppendLine("<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border' style='margin:0; background:rgba(255,255,255,0.02); min-width:320px; display:flex; flex-direction:column; justify-content:center;'>");
+        sb.AppendLine("<ul class='clean' style='font-size:12px; line-height:1.6;'>");
+        sb.AppendLine("<li><b>Safe:</b> Files likely handled in the most stable parsing route.</li>");
+        sb.AppendLine("<li><b>Complex:</b> Files requiring more structural interpretation effort.</li>");
+        sb.AppendLine("<li><b>AST / Pattern:</b> Files dependent on structural pattern handling.</li>");
+        sb.AppendLine("<li><b>Recovery:</b> Files requiring fallback or recovery behavior.</li>");
+        sb.AppendLine("<li><b>Risk:</b> Concentration in highest reliability-pressure bucket.</li>");
+        sb.AppendLine($"<li style='margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); color:#ff9a3c;'>{Html(GetRouteDiagnosis(routeMetrics))}</li>");
+        sb.AppendLine("</ul>");
         sb.AppendLine("</div>");
-sb.AppendLine("</div></div>");
+
+        sb.AppendLine("</div>");
+        sb.AppendLine("</div></div>");
+
         // =====================================================
         // 9. SANKEY FULL WIDTH
         // =====================================================
@@ -356,12 +352,6 @@ sb.AppendLine("</div></div>");
             routeMetrics.RecoveryDependentFiles));
 
         sb.AppendLine("</div></div>");
-
-        // =====================================================
-        // 11. CONSTELLATION
-        // =====================================================
-
-//legado
 
         // =====================================================
         // 12. PARSED TYPES TABLE
@@ -588,13 +578,15 @@ function sortTable(n) {
         double typesPerFile,
         double msPerType)
     {
+        var safeConfidence = Clamp01(confidence);
+
         var densityScore = Math.Min(1.0, refsPerType / 3.0);
         var structureScore = Math.Min(1.0, typesPerFile / 4.0);
         var performanceScore = msPerType <= 0
             ? 1.0
             : Math.Max(0, 1.0 - Math.Min(1.0, msPerType / 50.0));
 
-        return ((confidence * 0.5) + (densityScore * 0.25) + (structureScore * 0.15) + (performanceScore * 0.10)) * 100.0;
+        return ((safeConfidence * 0.5) + (densityScore * 0.25) + (structureScore * 0.15) + (performanceScore * 0.10)) * 100.0;
     }
 
     private static bool IsSparseExtraction(double refsPerType, double typesPerFile)
@@ -602,8 +594,10 @@ function sortTable(n) {
 
     private static string GetConfidenceBand(double confidence)
     {
-        if (confidence >= 0.85) return "High";
-        if (confidence >= 0.65) return "Medium";
+        var safeConfidence = Clamp01(confidence);
+
+        if (safeConfidence >= 0.85) return "High";
+        if (safeConfidence >= 0.65) return "Medium";
         return "Low";
     }
 
@@ -619,8 +613,10 @@ function sortTable(n) {
         if (files <= 0)
             return new RouteMetrics(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        var safeRatio = confidence >= 0.85 ? 0.62 : confidence >= 0.65 ? 0.48 : 0.32;
-        var complexRatio = confidence >= 0.85 ? 0.18 : confidence >= 0.65 ? 0.24 : 0.28;
+        var safeConfidence = Clamp01(confidence);
+
+        var safeRatio = safeConfidence >= 0.85 ? 0.62 : safeConfidence >= 0.65 ? 0.48 : 0.32;
+        var complexRatio = safeConfidence >= 0.85 ? 0.18 : safeConfidence >= 0.65 ? 0.24 : 0.28;
         var astRatio = types > 0 && refs > 0 ? 0.12 : 0.08;
         var recoveryRatio = anomalyDetected ? 0.12 : 0.08;
 
@@ -659,7 +655,7 @@ function sortTable(n) {
         var recoveryFiles = Math.Max(0, files - usedSoFar);
 
         var riskFiles = 0;
-        if (confidence < 0.65) riskFiles += Math.Max(1, files / 6);
+        if (safeConfidence < 0.65) riskFiles += Math.Max(1, files / 6);
         if (sparseExtraction) riskFiles += Math.Max(1, files / 8);
         if (anomalyDetected) riskFiles += Math.Max(1, files / 10);
 
@@ -702,6 +698,7 @@ function sortTable(n) {
             return false;
         }
     }
+
     private static string GetRouteDiagnosis(RouteMetrics routeMetrics)
     {
         var total = routeMetrics.SafeFiles
@@ -724,6 +721,7 @@ function sortTable(n) {
 
         return "Route distribution is mixed. The execution appears usable, but some files required more complex handling paths.";
     }
+
     private static long TryGetMemoryBytes(IParserResult result)
     {
         try
@@ -811,10 +809,12 @@ function sortTable(n) {
 
     private static string GetConfidenceDiagnosis(double confidence)
     {
-        if (confidence >= 0.85)
+        var safeConfidence = Clamp01(confidence);
+
+        if (safeConfidence >= 0.85)
             return "Parser confidence is high. The extracted structural model appears reliable for downstream analysis.";
 
-        if (confidence >= 0.65)
+        if (safeConfidence >= 0.65)
             return "Parser confidence is moderate. The extracted model appears usable, but some structural loss may exist.";
 
         return "Parser confidence is low. Review extraction quality before relying on downstream architectural conclusions.";
@@ -848,6 +848,9 @@ function sortTable(n) {
         => anomalyDetected
             ? "An anomaly flag was raised during parsing. Review this execution before treating the extracted model as fully representative."
             : "No anomaly flag was raised during parsing telemetry.";
+
+    private static double Clamp01(double value)
+        => Math.Max(0, Math.Min(1, value));
 
     private static string Html(string? text)
     {

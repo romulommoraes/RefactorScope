@@ -4,7 +4,7 @@ using RefactorScope.Exporters.Styling;
 using System.Globalization;
 using System.Text;
 
-namespace RefactorScope.Exporters.Dashboards
+namespace RefactorScope.Exporters.Dashboards.Renderers
 {
     public sealed class QualityDashboardExporter
     {
@@ -51,9 +51,9 @@ namespace RefactorScope.Exporters.Dashboards
                 parsingTypes,
                 parsingReferences);
 
-            var charts = new QualityControlChartsRenderer();
+            var charts = new QualityControlChartsRendererP5();
 
-            var gateReadiness = ComputeGateReadiness(metrics);
+            var gateReadiness = metrics.GateReadinessScore;
             var unresolvedPressure = ComputeUnresolvedPressure(metrics);
 
             var statisticsBand = DashboardMetricsCalculator.GetSupportBandFromScore(metrics.StatisticsCoverageScore);
@@ -117,6 +117,12 @@ namespace RefactorScope.Exporters.Dashboards
         <div class="hint">Confidence level attached to the current refactor effort estimate</div>
     </div>
 
+    <div class="kpi {metrics.GateReadinessCss}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Gate Readiness</div>
+        <div class="value">{metrics.GateReadinessScore:P0}</div>
+        <div class="hint">Positive quality reading of gate health for visual comparison</div>
+    </div>
+
     <div class="kpi {statisticsBandCss}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistics Support</div>
         <div class="value" style="font-size:24px;">{Html(statisticsBand)}</div>
@@ -167,6 +173,7 @@ namespace RefactorScope.Exporters.Dashboards
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.ParserConfidence)}"><span class="badge-dot"></span> Parser: {Html(metrics.ParserBand)}</div>
         <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.EffortConfidence)}"><span class="badge-dot"></span> Effort: {Html(metrics.EffortBand)}</div>
+        <div class="badge {metrics.GateReadinessCss switch { "good" => "green", "warning" => "amber", _ => "red" }}"><span class="badge-dot"></span> Gates: {Html(metrics.GateReadinessBand)}</div>
         <div class="badge {statisticsBadgeCss}"><span class="badge-dot"></span> Statistics: {Html(statisticsBand)}</div>
         <div class="badge {DashboardMetricsCalculator.GetBadgeCssForBand(metrics.OverallReadinessScore)}"><span class="badge-dot"></span> Overall: {Html(metrics.OverallReadinessBand)}</div>
     </div>
@@ -178,6 +185,7 @@ namespace RefactorScope.Exporters.Dashboards
         <li><b>References:</b> {metrics.ParsingReferences}</li>
         <li><b>Estimated Hours:</b> {metrics.EffortHours:0.0}</li>
         <li><b>RDI:</b> {metrics.EffortRdi:0.##}</li>
+        <li><b>Gate Readiness:</b> {metrics.GateReadinessScore:0.00}</li>
         <li><b>Statistics Support Score:</b> {metrics.StatisticsCoverageScore:0.00}</li>
     </ul>
 </div>
@@ -376,6 +384,7 @@ namespace RefactorScope.Exporters.Dashboards
         <ul class="clean">
             <li>This dashboard summarizes quality signals across parsing, gating, effort and statistical support.</li>
             <li>Fitness gates express execution readiness, not scientific certainty.</li>
+            <li>Gate Readiness is a positive visual score: higher means healthier gate state.</li>
             <li>Effort confidence is useful as a planning aid and should not be treated as an absolute forecast.</li>
             <li>Statistics support reflects the availability and completeness of the current statistical payload.</li>
             <li>Final interpretation should always include human review, especially when unresolved structural signals remain.</li>
@@ -388,7 +397,7 @@ namespace RefactorScope.Exporters.Dashboards
 <style>
 .grid-kpis.quality-kpis {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -442,9 +451,9 @@ namespace RefactorScope.Exporters.Dashboards
     margin-bottom: 8px;
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
     .grid-kpis.quality-kpis {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -487,65 +496,14 @@ namespace RefactorScope.Exporters.Dashboards
             };
         }
 
-        private static double ComputeGateReadiness(dynamic metrics)
+        private static double ComputeUnresolvedPressure(QualityDashboardMetrics metrics)
         {
-            try
-            {
-                if (metrics.GateRows == null || metrics.GateRows.Count == 0)
-                    return 0.75;
+            var unresolved = metrics.Hub.Unresolved;
+            var parsingTypes = Math.Max(1, metrics.ParsingTypes);
 
-                var total = metrics.GateRows.Count;
-                var pass = 0;
-                var warn = 0;
-                var fail = 0;
+            var pressure = unresolved / (double)parsingTypes;
 
-                foreach (var row in metrics.GateRows)
-                {
-                    var status = (row.Status?.ToString() ?? string.Empty).Trim().ToLowerInvariant();
-
-                    switch (status)
-                    {
-                        case "pass":
-                            pass++;
-                            break;
-                        case "warn":
-                        case "warning":
-                            warn++;
-                            break;
-                        case "fail":
-                            fail++;
-                            break;
-                    }
-                }
-
-                var score =
-                    ((pass * 1.0) +
-                     (warn * 0.55) +
-                     (fail * 0.10)) / Math.Max(1, total);
-
-                return Clamp01(score);
-            }
-            catch
-            {
-                return 0.75;
-            }
-        }
-
-        private static double ComputeUnresolvedPressure(dynamic metrics)
-        {
-            try
-            {
-                var unresolved = (double)metrics.Hub.Unresolved;
-                var parsingTypes = (double)Math.Max(1, metrics.ParsingTypes);
-
-                var pressure = unresolved / parsingTypes;
-
-                return Clamp01(pressure * 4.0);
-            }
-            catch
-            {
-                return 0.0;
-            }
+            return Clamp01(pressure * 4.0);
         }
 
         private static string Html(string? text)

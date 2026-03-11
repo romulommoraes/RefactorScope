@@ -28,7 +28,7 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
-    "ParserSelector",
+    "ConsolidatedReportSnapshotExtensions",
     "ReportConsolidator",
     "ConsolidatedReportExtensions",
     "StructuralBreakdownExtensions",
@@ -46,7 +46,8 @@
     "DumpIaExporter",
     "ExportOrchestrator",
     "ExportPackage",
-    "ProjectStructureExporter"
+    "ProjectStructureExporter",
+    "ParsingControlChartsRenderer"
   ],
   "PatternSimilarity": [
     "ArchitecturalClassificationAnalyzer",
@@ -76,7 +77,7 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
-    "ParserSelector",
+    "ConsolidatedReportSnapshotExtensions",
     "ReportConsolidator",
     "ConsolidatedReportExtensions",
     "StructuralBreakdownExtensions",
@@ -94,7 +95,8 @@
     "DumpIaExporter",
     "ExportOrchestrator",
     "ExportPackage",
-    "ProjectStructureExporter"
+    "ProjectStructureExporter",
+    "ParsingControlChartsRenderer"
   ],
   "Unresolved": [
     "FakeZombieService"
@@ -124,7 +126,6 @@
     "TypeContributionDatasetBuilder",
     "FitnessGateEvaluator",
     "AnalysisOrchestrator",
-    "ParserSelector",
     "ConsolidatedReportExtensions",
     "StructuralBreakdownExtensions",
     "ScopeFilteredFileDiscovery"

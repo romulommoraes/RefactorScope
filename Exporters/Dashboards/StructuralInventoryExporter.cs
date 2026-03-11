@@ -3,6 +3,7 @@ using RefactorScope.Core.Analyzers;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Results;
 using RefactorScope.Exporters.Styling;
+using RefactorScope.Exporters.Dashboards.Renderers;
 using System.Text;
 
 namespace RefactorScope.Exporters.Dashboards
@@ -646,7 +647,7 @@ function sortTable(n) {
             CouplingResult? coupling)
         {
             var sb = new StringBuilder();
-            var render = new ChartsRenderer();
+            var render = new ChartsRendererP5();
 
             sb.AppendLine("<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>");
             sb.AppendLine(render.RenderRadarSvgEnhanced(hygiene, breakdown, solid, implicitCoupling));

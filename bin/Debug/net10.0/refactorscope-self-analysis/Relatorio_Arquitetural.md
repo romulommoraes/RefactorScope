@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-10 02:09 UTC  
+📅 **Execution Time:** 2026-03-11 02:04 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -8,68 +8,68 @@
 ## 📂 Project Structure (Clean)
 
 ```
-│   ├── Docs
-│   ├── RefactorScope
-│   │   ├── Analyzers
-│   │   │   ├── Solid
-│   │   │   │   ├── Rules
-│   │   ├── CLI
-│   │   ├── Core
-│   │   │   ├── Abstractions
-│   │   │   ├── Configuration
-│   │   │   ├── Context
-│   │   │   ├── Datasets
-│   │   │   ├── Governance
-│   │   │   ├── Metrics
-│   │   │   ├── Model
-│   │   │   ├── Orchestration
-│   │   │   ├── Parsing
-│   │   │   │   ├── Enum
-│   │   │   ├── Patterns
-│   │   │   ├── Reporting
-│   │   │   ├── Results
-│   │   │   ├── Scope
-│   │   │   ├── Structure
-│   │   ├── Debug
-│   │   ├── Docs
-│   │   ├── Estimation
-│   │   │   ├── Classification
-│   │   │   ├── Models
-│   │   │   ├── Scoring
-│   │   ├── Execution
-│   │   │   ├── Dump
-│   │   │   │   ├── Segmentation
-│   │   │   │   ├── Strategies
-│   │   ├── Exporters
-│   │   │   ├── Adapters
-│   │   │   ├── Assets
-│   │   │   │   ├── Css
-│   │   │   │   ├── Vendor
-│   │   │   ├── Dashboards
-│   │   │   ├── Datasets
-│   │   │   ├── Dumps
-│   │   │   ├── Infrastructure
-│   │   │   ├── Reports
-│   │   │   ├── Styling
-│   │   │   ├── Trends
-│   │   ├── Infrastructure
-│   │   ├── Parsers
-│   │   │   ├── Analysis
-│   │   │   ├── Common
-│   │   │   ├── CsharpParsers
-│   │   │   │   ├── Hybrid
-│   │   │   ├── Results
-│   │   ├── Statistics
-│   │   │   ├── Engines
-│   │   │   ├── Models
+└── RefactorScope
+├── Analyzers
+│   └── Solid
+│       └── Rules
+├── CLI
+├── Core
+│   ├── Abstractions
+│   ├── Configuration
+│   ├── Context
+│   ├── Datasets
+│   ├── Governance
+│   ├── Metrics
+│   ├── Model
+│   ├── Orchestration
+│   ├── Parsing
+│   │   └── Enum
+│   ├── Patterns
+│   ├── Reporting
+│   ├── Results
+│   ├── Scope
+│   └── Structure
+├── Debug
+├── Estimation
+│   ├── Classification
+│   ├── Models
+│   └── Scoring
+├── Execution
+│   └── Dump
+│       ├── Segmentation
+│       └── Strategies
+├── Exporters
+│   ├── Adapters
+│   ├── Assets
+│   │   ├── Css
+│   │   └── Vendor
+│   ├── Dashboards
+│   │   └── Renderers
+│   ├── Datasets
+│   ├── Dumps
+│   ├── Infrastructure
+│   ├── Reports
+│   ├── Styling
+│   └── Trends
+├── Infrastructure
+├── Parsers
+│   ├── Analysis
+│   ├── Common
+│   ├── CsharpParsers
+│   │   └── Hybrid
+│   └── Results
+├── Properties
+└── Statistics
+    ├── Engines
+    └── Models
 ```
 
 ---
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 47
-- **Pattern Similarity:** 46
+- **Structural Candidates:** 48
+- **Pattern Similarity:** 47
 - **Unresolved:** 1
 
 ---
@@ -121,8 +121,8 @@
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
 - **Coupling:** 0,12
-- **Isolation:** 0,25
-- **Core Density:** 0,99
+- **Isolation:** 0,21
+- **Core Density:** 0,88
 
 ### 🟢 Execution
 
@@ -136,7 +136,7 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 3,67
+- **Coupling:** 3,50
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -172,22 +172,22 @@
 | EffortEstimator | Estimation | Core | 4 | 1 | 0,80 | 4 |
 | SolidAnalyzer | Analyzers | Core | 12 | 0 | 1,00 | 12 |
 | AnalysisOrchestrator | Core | Estimation | 7 | 0 | 1,00 | 7 |
-| ParserSelector | Core | Parsers | 9 | 0 | 1,00 | 9 |
+| ParserSelector | Core | Parsers | 9 | 1 | 0,90 | 9 |
+| ReportSnapshotBuilder | Core | Exporters | 10 | 3 | 0,77 | 10 |
 | RDICalculator | Estimation | Core | 9 | 1 | 0,90 | 9 |
 | DumpStrategyResolver | Execution | Core | 7 | 0 | 1,00 | 7 |
-| ArchitecturalDashboardExporterAdapter | Exporters | Core | 8 | 0 | 1,00 | 8 |
+| ArchitecturalDashboardExporterAdapter | Exporters | Core | 10 | 0 | 1,00 | 10 |
 | ParsingDashboardExporterAdapter | Exporters | Core | 8 | 0 | 1,00 | 8 |
 | QualityDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | StructuralDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | ArchitecturalDashboardExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
-| ChartsRenderer | Exporters | Core | 5 | 1 | 0,83 | 5 |
-| DashboardMetricsCalculator | Exporters | Core | 16 | 5 | 0,76 | 16 |
+| ArchitecturalStructureRendererP5 | Exporters | Core | 7 | 1 | 0,88 | 7 |
 | HubDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
 | ArchitecturalDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
-| QualityDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
+| QualityDashboardMetrics | Exporters | Core | 16 | 4 | 0,80 | 16 |
 | HtmlDashboardExporter | Exporters | Core | 8 | 0 | 1,00 | 8 |
 | ParsingDashboardExporter | Exporters | Core | 5 | 1 | 0,83 | 5 |
-| QualityDashboardExporter | Exporters | Core | 4 | 1 | 0,80 | 4 |
+| QualityDashboardExporter | Exporters | Core | 6 | 1 | 0,86 | 6 |
 | StructuralInventoryExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
 | DumpAnaliseExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
 | MarkdownReportExporter | Exporters | Core | 8 | 1 | 0,89 | 8 |
@@ -201,6 +201,7 @@
 | TopFolderSegmentationResolver | Execution | Core | 4 | 1 | 0,80 | 4 |
 | GlobalDumpStrategy | Execution | Core | 5 | 1 | 0,83 | 5 |
 | SegmentedDumpStrategy | Execution | Core | 6 | 1 | 0,86 | 6 |
+| ChartsRendererP5 | Exporters | Core | 5 | 1 | 0,83 | 5 |
 | HybridAdaptiveParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
 | HybridIncrementalParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
 | HybridSelectiveParser | Parsers | Core | 8 | 1 | 0,89 | 8 |
@@ -219,9 +220,9 @@ Manual inspection is recommended.
 | Debug | 0,00 | 0,00 | 1,00 |
 | Estimation | 0,00 | 0,38 | 0,63 |
 | Infrastructure | 0,00 | 0,60 | 0,40 |
-| Core | 0,12 | 0,02 | 0,86 |
+| Core | 0,11 | 0,02 | 0,87 |
 | Execution | 0,25 | 0,57 | 0,18 |
-| Exporters | 0,00 | 0,67 | 0,33 |
+| Exporters | 0,00 | 0,66 | 0,34 |
 | Parsers | 0,00 | 0,63 | 0,37 |
 | Statistics | 0,00 | 0,67 | 0,33 |
 

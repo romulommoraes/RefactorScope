@@ -26,7 +26,6 @@
 	<ItemGroup>
 		<Folder Include="Exporters\Trends\" />
 		<Folder Include="Parsers\Results\" />
-		<Folder Include="Properties\" />
 	</ItemGroup>
 
 </Project>

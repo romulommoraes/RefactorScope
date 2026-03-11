@@ -47,5 +47,25 @@ public enum ParserStrategy
     /// Utilizado para parsing parcial de projetos grandes
     /// onde apenas arquivos alterados são reprocessados.
     /// </summary>
-    IncrementalExperimental
+    IncrementalExperimental,
+
+    /// <summary>
+    /// Estratégia comparativa do Arena.
+    ///
+    /// Em vez de executar apenas um parser sobre um único projeto,
+    /// o sistema percorre uma pasta de lote (BATCH), executa
+    /// múltiplos parsers sobre cada projeto encontrado e consolida
+    /// os resultados para comparação.
+    ///
+    /// Esse modo não executa o fluxo tradicional de dashboards.
+    /// Em vez disso, ativa o pipeline do Arena, gerando:
+    ///
+    /// - JSON por execução
+    /// - CSV consolidado por projeto
+    /// - dashboard HTML comparativo
+    ///
+    /// Objetivo:
+    /// apoiar a escolha do parser mais adequado para cada caso.
+    /// </summary>
+    Comparative
 }

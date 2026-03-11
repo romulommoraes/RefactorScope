@@ -38,6 +38,7 @@
 │   │   │   │   ├── Css
 │   │   │   │   ├── Vendor
 │   │   │   ├── Dashboards
+│   │   │   │   ├── Renderers
 │   │   │   ├── Datasets
 │   │   │   ├── Dumps
 │   │   │   ├── Infrastructure
@@ -51,6 +52,10 @@
 │   │   │   ├── CsharpParsers
 │   │   │   │   ├── Hybrid
 │   │   │   ├── Results
+│   │   ├── Properties
 │   │   ├── Statistics
 │   │   │   ├── Engines
 │   │   │   ├── Models
+│   ├── RefactorScope.Tests
+│   │   ├── Parsing
+│   │   ├── Structural

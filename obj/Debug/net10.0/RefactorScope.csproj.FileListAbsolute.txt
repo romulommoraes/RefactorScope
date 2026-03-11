@@ -25,3 +25,5 @@ C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Export
 C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Exporters\Assets\Css\dashboard-theme-neon-grid.css
 C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Exporters\Assets\Vendor\augmented-ui.css
 C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Exporters\Assets\Vendor\Charts.css
+C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Exporters\Assets\Vendor\p5.js
+C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Exporters\Assets\Vendor\p5.sound.min.js

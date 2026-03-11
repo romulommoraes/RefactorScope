@@ -63,14 +63,16 @@ namespace RefactorScope.Exporters.Dashboards
         /// parsing, estrutura, coupling, esforço e higiene arquitetural.
         /// </summary>
         public static HubDashboardMetrics BuildHubMetrics(
-            ConsolidatedReport report,
-            string parserName,
-            double parserConfidence,
-            TimeSpan parsingExecution,
-            int parsingFiles,
-            int parsingTypes,
-            int parsingReferences)
+     ConsolidatedReport report,
+     string parserName,
+     double parserConfidence,
+     TimeSpan parsingExecution,
+     int parsingFiles,
+     int parsingTypes,
+     int parsingReferences)
         {
+            var normalizedParserConfidence = Clamp01(parserConfidence);
+
             var hygiene = new ArchitecturalHygieneAnalyzer().Analyze(report);
             var structural = report.GetStructuralCandidateBreakdown();
             var coupling = report.GetResult<CouplingResult>();
@@ -103,7 +105,7 @@ namespace RefactorScope.Exporters.Dashboards
                 ? "Unknown"
                 : fitness.HasFailure ? "Attention Required" : "Ready";
 
-            var parserSupportScore = Clamp01(parserConfidence);
+            var parserSupportScore = Clamp01(normalizedParserConfidence);
             var parserSupportBand = GetSupportBandFromScore(parserSupportScore);
 
             var structuralSupportScore = CalculateStructuralSupportScore(
@@ -114,7 +116,7 @@ namespace RefactorScope.Exporters.Dashboards
             var structuralSupportBand = GetSupportBandFromScore(structuralSupportScore);
 
             var couplingSupportScore = CalculateCouplingSupportScore(
-                parserConfidence,
+                normalizedParserConfidence,
                 hygiene.TotalClasses,
                 parsingReferences,
                 coupling);
@@ -160,7 +162,7 @@ namespace RefactorScope.Exporters.Dashboards
             return new HubDashboardMetrics
             {
                 ParserName = parserName,
-                ParserConfidence = parserConfidence,
+                ParserConfidence = normalizedParserConfidence,
                 ParsingExecution = parsingExecution,
                 ParsingFiles = parsingFiles,
                 ParsingTypes = parsingTypes,
@@ -310,20 +312,33 @@ namespace RefactorScope.Exporters.Dashboards
         /// Portanto, o indicador usado aqui é "Statistics Coverage",
         /// isto é, uma métrica executiva derivada da presença e completude
         /// do payload estatístico disponível na execução.
+        ///
+        /// Gate Readiness
+        /// --------------
+        /// Para visualizações como radar e scorecards, os gates devem ser
+        /// interpretados positivamente:
+        ///
+        /// - 0 falhas / 0 avisos -> readiness alto
+        /// - mais falhas / avisos -> readiness menor
+        ///
+        /// Em outras palavras, este score não representa "quantidade de erro",
+        /// e sim "qualidade do estado final dos gates".
         /// </summary>
         public static QualityDashboardMetrics BuildQualityMetrics(
-            ConsolidatedReport report,
-            string parserName,
-            double parserConfidence,
-            TimeSpan parsingExecution,
-            int parsingFiles,
-            int parsingTypes,
-            int parsingReferences)
+          ConsolidatedReport report,
+          string parserName,
+          double parserConfidence,
+          TimeSpan parsingExecution,
+          int parsingFiles,
+          int parsingTypes,
+          int parsingReferences)
         {
+            var normalizedParserConfidence = Clamp01(parserConfidence);
+
             var hubMetrics = BuildHubMetrics(
                 report,
                 parserName,
-                parserConfidence,
+                normalizedParserConfidence,
                 parsingExecution,
                 parsingFiles,
                 parsingTypes,
@@ -334,9 +349,6 @@ namespace RefactorScope.Exporters.Dashboards
             var effort = effortResult?.Estimate;
             var statistics = report.GetResult<StatisticsResult>();
 
-            Console.WriteLine($"[QUALITY] Statistics result present: {statistics != null}");
-            Console.WriteLine($"[QUALITY] Statistics report present: {statistics?.Report != null}");
-
             var gateRows = ExtractFitnessGateRows(fitness);
             var statisticsRows = ExtractStatisticsRows(statistics);
 
@@ -344,8 +356,8 @@ namespace RefactorScope.Exporters.Dashboards
                 ? "Unknown"
                 : fitness.HasFailure ? "Attention Required" : "Ready";
 
-            var parserBand = GetSupportBandFromScore(parserConfidence);
-            var parserBandCss = GetBandCssClass(parserConfidence);
+            var parserBand = GetSupportBandFromScore(normalizedParserConfidence);
+            var parserBandCss = GetBandCssClass(normalizedParserConfidence);
 
             var effortConfidence = effort?.Confidence ?? 0;
             var effortBand = GetSupportBandFromScore(effortConfidence);
@@ -355,10 +367,14 @@ namespace RefactorScope.Exporters.Dashboards
             var statisticsCoverageBand = GetSupportBandFromScore(statisticsCoverageScore);
             var statisticsCoverageBandCss = GetBandCssClass(statisticsCoverageScore);
 
+            var gateReadinessScore = CalculateGateReadinessScore(fitness);
+            var gateReadinessBand = GetSupportBandFromScore(gateReadinessScore);
+            var gateReadinessCss = GetBandCssClass(gateReadinessScore);
+
             var overallReadinessScore = CalculateOverallReadinessScore(
-                parserConfidence,
+                normalizedParserConfidence,
                 effortConfidence,
-                fitness == null ? 0.50 : (fitness.HasFailure ? 0.30 : 0.90),
+                gateReadinessScore,
                 statisticsCoverageScore);
 
             var overallReadinessBand = GetSupportBandFromScore(overallReadinessScore);
@@ -368,6 +384,7 @@ namespace RefactorScope.Exporters.Dashboards
                 fitStatus,
                 parserBand,
                 effortBand,
+                gateReadinessBand,
                 statisticsCoverageBand,
                 overallReadinessBand);
 
@@ -378,7 +395,7 @@ namespace RefactorScope.Exporters.Dashboards
                 FitStatus = fitStatus,
 
                 ParserName = parserName,
-                ParserConfidence = parserConfidence,
+                ParserConfidence = normalizedParserConfidence,
                 ParserBand = parserBand,
                 ParserBandCss = parserBandCss,
 
@@ -393,6 +410,10 @@ namespace RefactorScope.Exporters.Dashboards
                 EffortRdi = effort?.RDI ?? 0,
                 EffortBand = effortBand,
                 EffortBandCss = effortBandCss,
+
+                GateReadinessScore = gateReadinessScore,
+                GateReadinessBand = gateReadinessBand,
+                GateReadinessCss = gateReadinessCss,
 
                 StatisticsCoverageScore = statisticsCoverageScore,
                 StatisticsCoverageBand = statisticsCoverageBand,
@@ -638,18 +659,12 @@ namespace RefactorScope.Exporters.Dashboards
 
             double score = 0.40;
 
-            // ------------------------------
-            // Blocos estruturais principais
-            // ------------------------------
             if (hasConfidenceBlock)
                 score += 0.20;
 
             if (hasSummaryBlock)
                 score += 0.20;
 
-            // ------------------------------
-            // Cobertura interna do bloco Confidence
-            // ------------------------------
             if (confidence != null)
             {
                 if (confidence.ClassesPerFile > 0)
@@ -659,9 +674,6 @@ namespace RefactorScope.Exporters.Dashboards
                     score += 0.10;
             }
 
-            // ------------------------------
-            // Cobertura interna do bloco Summary
-            // ------------------------------
             if (summary != null)
             {
                 if (summary.MeanCoupling >= 0)
@@ -678,12 +690,43 @@ namespace RefactorScope.Exporters.Dashboards
         }
 
         /// <summary>
+        /// Mede a prontidão positiva dos fitness gates para uso em radar,
+        /// scorecards e indicadores executivos.
+        ///
+        /// Semântica:
+        /// ----------
+        /// - score alto  = gates saudáveis / execução pronta
+        /// - score baixo = gates com fricção / execução exige atenção
+        ///
+        /// Peso:
+        /// -----
+        /// - Fail pesa mais que Warn
+        /// - ausência de gates retorna valor neutro/moderado
+        /// </summary>
+        private static double CalculateGateReadinessScore(FitnessGateResult? fitness)
+        {
+            if (fitness == null)
+                return 0.50;
+
+            if (fitness.Gates == null || fitness.Gates.Count == 0)
+                return fitness.HasFailure ? 0.30 : 1.00;
+
+            var total = fitness.Gates.Count;
+            var failCount = fitness.Gates.Count(g => g.Status == GateStatus.Fail);
+            var warnCount = fitness.Gates.Count(g => g.Status == GateStatus.Warn);
+
+            var penalty = (failCount * 1.0 + warnCount * 0.5) / Math.Max(total, 1);
+
+            return Clamp01(1.0 - penalty);
+        }
+
+        /// <summary>
         /// Constrói um score executivo de readiness da execução.
         ///
         /// Esse score mistura:
         /// - parser confidence
         /// - effort confidence
-        /// - fitness gates
+        /// - gate readiness
         /// - statistics coverage
         ///
         /// É uma banda executiva de leitura, não uma prova formal de qualidade.
@@ -691,13 +734,13 @@ namespace RefactorScope.Exporters.Dashboards
         private static double CalculateOverallReadinessScore(
             double parserConfidence,
             double effortConfidence,
-            double gateScore,
+            double gateReadinessScore,
             double statisticsCoverage)
         {
             return Clamp01(
                 (Clamp01(parserConfidence) * 0.35) +
                 (Clamp01(effortConfidence) * 0.20) +
-                (Clamp01(gateScore) * 0.30) +
+                (Clamp01(gateReadinessScore) * 0.30) +
                 (Clamp01(statisticsCoverage) * 0.15));
         }
 
@@ -733,13 +776,15 @@ namespace RefactorScope.Exporters.Dashboards
             string fitStatus,
             string parserBand,
             string effortBand,
+            string gateReadinessBand,
             string statisticsCoverageBand,
             string overallBand)
         {
             return
                 $"The current execution is marked as {fitStatus.ToLowerInvariant()} overall. " +
                 $"Parsing confidence is {parserBand.ToLowerInvariant()}, effort support is {effortBand.ToLowerInvariant()}, " +
-                $"statistics coverage is {statisticsCoverageBand.ToLowerInvariant()}, and the overall quality snapshot is {overallBand.ToLowerInvariant()}.";
+                $"gate readiness is {gateReadinessBand.ToLowerInvariant()}, statistics coverage is {statisticsCoverageBand.ToLowerInvariant()}, " +
+                $"and the overall quality snapshot is {overallBand.ToLowerInvariant()}.";
         }
 
         private static double CalculateAverageArchitecturalScore(
@@ -1001,13 +1046,14 @@ namespace RefactorScope.Exporters.Dashboards
     /// - NÃO representa significância inferencial
     /// - NÃO substitui um score metodológico nativo futuro
     ///
-    /// Evolução futura
-    /// ---------------
-    /// Em versões futuras, este snapshot poderá consumir diretamente do
-    /// módulo Statistics:
-    /// - CoverageScore nativo
-    /// - EvidenceScore nativo
-    /// - bandas formais de suporte estatístico
+    /// Gate Readiness
+    /// --------------
+    /// Este campo representa a leitura positiva do estado dos gates para uso
+    /// em radar, scorecards e comparativos executivos.
+    ///
+    /// Exemplo:
+    /// - 1.00 -> nenhum problema relevante nos gates
+    /// - 0.30 -> execução com fricção importante nos gates
     /// </summary>
     internal sealed class QualityDashboardMetrics
     {
@@ -1031,6 +1077,10 @@ namespace RefactorScope.Exporters.Dashboards
         public double EffortRdi { get; init; }
         public string EffortBand { get; init; } = "Unknown";
         public string EffortBandCss { get; init; } = "warning";
+
+        public double GateReadinessScore { get; init; }
+        public string GateReadinessBand { get; init; } = "Unknown";
+        public string GateReadinessCss { get; init; } = "warning";
 
         /// <summary>
         /// Cobertura do payload estatístico disponível para leitura executiva.

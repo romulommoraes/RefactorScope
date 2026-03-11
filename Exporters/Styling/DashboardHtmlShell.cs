@@ -48,6 +48,7 @@ namespace RefactorScope.Exporters.Styling
             sb.AppendLine("<meta name='viewport' content='width=device-width, initial-scale=1.0' />");
             sb.AppendLine($"<title>{Html(title)}</title>");
 
+            sb.AppendLine("<script src='assets/vendor/p5.js'></script>");
             // Vendor CSS local
             sb.AppendLine("<link rel='stylesheet' href='assets/vendor/Charts.css' />");
             sb.AppendLine("<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />");
