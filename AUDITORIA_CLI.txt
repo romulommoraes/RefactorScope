@@ -1,4 +1,31 @@
 ==========================================
+ARQUIVO: AnalysisScope.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\AnalysisScope.cs
+==========================================
+namespace RefactorScope.CLI;
+
+public enum AnalysisScope
+{
+    Normal,
+    Self
+}
+
+
+==========================================
+ARQUIVO: ExecutionMode.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\ExecutionMode.cs
+==========================================
+namespace RefactorScope.CLI;
+
+public enum ExecutionMode
+{
+    SingleParser,
+    Comparative,
+    BatchArena
+}
+
+
+==========================================
 ARQUIVO: ParserArenaCliRunner.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\ParserArenaCliRunner.cs
 ==========================================
@@ -14,24 +41,19 @@ using Spectre.Console;
 
 namespace RefactorScope.CLI;
 
-/// <summary>
-/// Encapsula o fluxo de CLI do Parser Arena / Comparative mode,
-/// evitando que o Program.cs concentre responsabilidades visuais
-/// e operacionais específicas desse modo.
-/// </summary>
 public static class ParserArenaCliRunner
 {
     public static bool RunSingleProject(
         RefactorScopeConfig config,
-        bool isSelfAnalysis)
+        AnalysisScope scope)
     {
         try
         {
-            TerminalRenderer.Section("Parser Arena");
+            TerminalRenderer.Section("Parser Comparative");
 
-            var modeLabel = isSelfAnalysis
+            var modeLabel = scope == AnalysisScope.Self
                 ? "Comparative mode selected for self analysis."
-                : "Comparative mode selected for single-project analysis.";
+                : "Comparative mode selected for current target.";
 
             TerminalRenderer.Step(modeLabel);
 
@@ -63,7 +85,7 @@ public static class ParserArenaCliRunner
                 ParserStrategy.IncrementalExperimental
             };
 
-            TerminalRenderer.Success($"Arena target: {config.RootPath}");
+            TerminalRenderer.Success($"Comparative target: {config.RootPath}");
 
             var effectiveExcludes = BuildSingleProjectExcludes(config);
 
@@ -133,8 +155,14 @@ public static class ParserArenaCliRunner
             RenderDetailedResults(wrappedResults);
             RenderWinners(wrappedResults);
 
+            RunSingleProjectComparativeDashboardExporter(
+                wrappedResults,
+                ResolveArenaOutputPath(),
+                ResolveThemeFileName(config),
+                scope);
+
             TerminalRenderer.Success("Comparative analysis executed successfully.");
-            Console.WriteLine("[INFO] Next step: add optional batch mode as a separate startup mode.");
+            Console.WriteLine("[INFO] Comparative HTML dashboard generated.");
 
             return true;
         }
@@ -146,12 +174,17 @@ public static class ParserArenaCliRunner
         }
     }
 
-    public static bool RunBatch(RefactorScopeConfig config)
+    public static bool RunBatch(
+        RefactorScopeConfig config,
+        AnalysisScope scope)
     {
         try
         {
             TerminalRenderer.Section("Parser Arena");
-            TerminalRenderer.Step("Comparative batch mode selected.");
+            TerminalRenderer.Step(
+                scope == AnalysisScope.Self
+                    ? "Batch Arena selected under self-analysis scope."
+                    : "Batch Arena selected under normal-analysis scope.");
 
             var batchPath = ResolveBatchPath(config);
 
@@ -267,7 +300,7 @@ public static class ParserArenaCliRunner
             RenderDetailedResults(projectResults);
             RenderWinners(projectResults);
 
-            RunParserArenaDashboardExporter(
+            RunBatchArenaDashboardExporter(
                 projectResults,
                 ResolveArenaOutputPath(),
                 ResolveThemeFileName(config));
@@ -285,19 +318,11 @@ public static class ParserArenaCliRunner
         }
     }
 
-    /// <summary>
-    /// Pasta Batch de ENTRADA dos projetos comparativos.
-    /// </summary>
     public static string ResolveBatchPath(RefactorScopeConfig config)
     {
         return @"C:\Users\romul\source\repos\RefactorScope\Batch";
     }
 
-    /// <summary>
-    /// Pasta Batch de SAÍDA do Arena ao lado do executável.
-    /// Exemplo:
-    /// RefactorScope\RefactorScope\bin\Debug\net10.0\Batch
-    /// </summary>
     private static string ResolveArenaOutputPath()
     {
         var outputPath = Path.Combine(AppContext.BaseDirectory, "Batch");
@@ -305,7 +330,43 @@ public static class ParserArenaCliRunner
         return outputPath;
     }
 
-    private static void RunParserArenaDashboardExporter(
+    private static void RunSingleProjectComparativeDashboardExporter(
+        IReadOnlyList<ParserArenaProjectResult> results,
+        string outputDirectory,
+        string themeFileName,
+        AnalysisScope scope)
+    {
+        try
+        {
+            if (results == null || results.Count == 0)
+                return;
+
+            Directory.CreateDirectory(outputDirectory);
+
+            DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+            var fileName = scope == AnalysisScope.Self
+                ? "ParserComparativeSelfDashboard.html"
+                : "ParserComparativeDashboard.html";
+
+            var htmlPath = Path.Combine(outputDirectory, fileName);
+
+            var exporter = new ParserArenaDashboardExporter();
+            exporter.Export(results, htmlPath, themeFileName);
+
+            TerminalRenderer.Success(
+                scope == AnalysisScope.Self
+                    ? "parser-comparative-self-dashboard gerado"
+                    : "parser-comparative-dashboard gerado");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO AO GERAR HTML - parser-comparative-dashboard]: {ex.Message}");
+            CrashLogger.Log(ex, "HTML_EXPORT_PARSER-COMPARATIVE-DASHBOARD");
+        }
+    }
+
+    private static void RunBatchArenaDashboardExporter(
         IReadOnlyList<ParserArenaProjectResult> results,
         string outputDirectory,
         string themeFileName)
@@ -586,67 +647,63 @@ using Spectre.Console;
 
 Console.WriteLine();
 
-// ?? TESTE DI CONTROLADO
-var __fake = "services.AddScoped<FakeZombieService>();";
-
 IParserResult? parsingResult = null;
 
 // =====================================================
 // PIPELINE PRINCIPAL
 // =====================================================
 
-if (!RunConfiguration(out var config, out var isSelfAnalysis, out var isBatchMode))
+if (!RunConfiguration(out var config, out var executionPlan))
     return;
 
-const bool enableParserSelector = true;
-
-var parserStrategy =
-    ParserSelector.ResolveStrategy(
-        config.Parser,
-        enableParserSelector);
-
-config.Parser = parserStrategy.ToString();
-
-if (isBatchMode)
+switch (executionPlan.Mode)
 {
-    if (parserStrategy != ParserStrategy.Comparative)
-    {
-        TerminalRenderer.Warn("Batch Arena requires Comparative parser strategy.");
-        return;
-    }
-
-    if (!ParserArenaCliRunner.RunBatch(config))
+    case ExecutionMode.BatchArena:
+        if (!ParserArenaCliRunner.RunBatch(config, executionPlan.Scope))
+            return;
         return;
 
-    return;
+    case ExecutionMode.Comparative:
+        if (!ParserArenaCliRunner.RunSingleProject(config, executionPlan.Scope))
+            return;
+        return;
+
+    case ExecutionMode.SingleParser:
+    default:
+        if (executionPlan.SelectedParser == null)
+        {
+            TerminalRenderer.Warn("Nenhum parser concreto foi selecionado para Single Parser.");
+            return;
+        }
+
+        config.Parser = executionPlan.SelectedParser.Value.ToString();
+
+        if (!RunParsing(
+                config,
+                executionPlan.SelectedParser.Value,
+                out var context,
+                out parsingResult))
+        {
+            return;
+        }
+
+        RunTopLevelRecovery(context);
+
+        if (!RunAnalysis(context, out var report))
+            return;
+
+        RunArchitecturalHygiene(report);
+
+        PrintStructuralBreakdown(report);
+
+        if (!RunExport(config, context, report, parsingResult))
+            return;
+
+        RunVisualization(report);
+
+        ApplyCiExitCode(report);
+        return;
 }
-
-if (parserStrategy == ParserStrategy.Comparative)
-{
-    if (!ParserArenaCliRunner.RunSingleProject(config, isSelfAnalysis))
-        return;
-
-    return;
-}
-
-if (!RunParsing(config, parserStrategy, out var context, out parsingResult))
-    return;
-
-RunTopLevelRecovery(context);
-
-if (!RunAnalysis(context, out var report))
-    return;
-
-RunArchitecturalHygiene(report);
-
-PrintStructuralBreakdown(report);
-
-if (!RunExport(config, context, report, parsingResult))
-    return;
-
-RunVisualization(report);
-
-ApplyCiExitCode(report);
 
 /* =====================================================
    CONFIGURAÇÃO
@@ -654,31 +711,24 @@ ApplyCiExitCode(report);
 
 static bool RunConfiguration(
     out RefactorScopeConfig config,
-    out bool isSelfAnalysis,
-    out bool isBatchMode)
+    out StartupExecutionPlan executionPlan)
 {
     config = null!;
-    isSelfAnalysis = false;
-    isBatchMode = false;
+    executionPlan = null!;
 
     try
     {
-        const bool enableSelfSelector = true;
+        const bool enableInteractiveSelector = true;
+        const bool enableParserSelector = true;
 
-        var startupSelection =
-            RefactorScope.CLI.SelfAnalysisSelector.Resolve(
+        executionPlan =
+            StartupExecutionPlanSelector.Resolve(
                 "refactorscope.json",
                 "refactorscope_v1_1_self.json",
-                enableSelfSelector);
+                enableInteractiveSelector,
+                enableParserSelector);
 
-        isSelfAnalysis = startupSelection.IsSelfAnalysis;
-        isBatchMode = startupSelection.IsBatchMode;
-
-        config = ConfigLoader.Load(startupSelection.ConfigPath);
-        Console.WriteLine($"[DEBUG] Config carregada: {startupSelection.ConfigPath}");
-        Console.WriteLine($"[DEBUG] RootPath: {config.RootPath}");
-        Console.WriteLine($"[DEBUG] OutputPath: {config.OutputPath}");
-        Console.WriteLine($"[DEBUG] BaseDirectory: {AppContext.BaseDirectory}");
+        config = ConfigLoader.Load(executionPlan.ConfigPath);
 
         ConfigValidator.Validate(config);
 
@@ -694,6 +744,16 @@ static bool RunConfiguration(
         }
 
         TerminalRenderer.ShowHeader(config.RootPath);
+
+        TerminalRenderer.Step(
+            $"Scope: {executionPlan.Scope} | Mode: {executionPlan.Mode}");
+
+        if (executionPlan.Mode == ExecutionMode.SingleParser &&
+            executionPlan.SelectedParser != null)
+        {
+            TerminalRenderer.Step(
+                $"Selected parser: {executionPlan.SelectedParser.Value}");
+        }
 
         return true;
     }
@@ -720,8 +780,7 @@ static bool RunParsing(
 
     try
     {
-        var parser =
-            ParserSelector.ResolveParser(parserStrategy);
+        var parser = ParserSelector.ResolveParser(parserStrategy);
 
         var result =
             TerminalRenderer.WithSpinner(
@@ -828,7 +887,6 @@ static bool RunAnalysis(
     try
     {
         var analyzers = BuildAnalyzers(context);
-
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
         report =
@@ -918,7 +976,6 @@ static void PrintStructuralBreakdown(ConsolidatedReport report)
     AnsiConsole.WriteLine($"Probabilistic Confirmed (= {report.UnresolvedProbabilityThreshold:0.00}) : {breakdown.ProbabilisticConfirmed}");
     AnsiConsole.WriteLine($"Absolved : {breakdown.PatternSimilarity}");
     AnsiConsole.WriteLine($"Reduction : {breakdown.ReductionRate:P1}");
-
     AnsiConsole.WriteLine();
 }
 
@@ -967,7 +1024,6 @@ static bool RunExport(
             rootOutputPath);
 
         RunParsingDashboardExporter(context, parsingResult, rootOutputPath);
-
 
         QualityDashboardExporterAdapter.ExportDirect(
             context,
@@ -1289,6 +1345,7 @@ static void RunParsingDashboardExporter(
         CrashLogger.Log(ex, "HTML_EXPORT_PARSING-DASHBOARD");
     }
 }
+
 static void RunParserArenaDashboardExporter(
     AnalysisContext context,
     IReadOnlyList<ParserArenaProjectResult> results,
@@ -1317,6 +1374,7 @@ static void RunParserArenaDashboardExporter(
         CrashLogger.Log(ex, "HTML_EXPORT_PARSER-ARENA-DASHBOARD");
     }
 }
+
 static void RunHtmlHubExporter(
     AnalysisContext context,
     ConsolidatedReport report,
@@ -1420,81 +1478,214 @@ public static class ProjectRootResolver
 
 
 ==========================================
-ARQUIVO: SelfAnalysisSelector.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\SelfAnalysisSelector.cs
+ARQUIVO: StartupExecutionPlan.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\StartupExecutionPlan.cs
 ==========================================
-namespace RefactorScope.CLI
+using RefactorScope.Core.Parsing.Enum;
+
+namespace RefactorScope.CLI;
+
+/// <summary>
+/// Plano de execução resolvido pelo CLI antes do carregamento completo do pipeline.
+/// Se o modo for SingleParser, SelectedParser deve conter um parser concreto.
+/// Se o modo for Comparative ou BatchArena, SelectedParser pode ser nulo.
+/// </summary>
+public sealed class StartupExecutionPlan
 {
-    public static class SelfAnalysisSelector
+    public required string ConfigPath { get; init; }
+
+    public required AnalysisScope Scope { get; init; }
+
+    public required ExecutionMode Mode { get; init; }
+
+    public ParserStrategy? SelectedParser { get; init; }
+
+    public bool IsSelfAnalysis => Scope == AnalysisScope.Self;
+}
+
+
+==========================================
+ARQUIVO: StartupExecutionPlanSelector.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\StartupExecutionPlanSelector.cs
+==========================================
+using RefactorScope.Core.Parsing;
+using RefactorScope.Core.Parsing.Enum;
+
+namespace RefactorScope.CLI;
+
+public static class StartupExecutionPlanSelector
+{
+    public static StartupExecutionPlan Resolve(
+        string defaultConfigPath,
+        string selfConfigPath,
+        bool enableInteractiveSelector,
+        bool enableParserSelector)
     {
-        public static StartupModeSelection Resolve(
-            string defaultConfigPath,
-            string selfConfigPath,
-            bool enableInteractiveSelector)
+        if (!enableInteractiveSelector)
         {
-            if (!enableInteractiveSelector)
+            return new StartupExecutionPlan
             {
-                return new StartupModeSelection
-                {
-                    ConfigPath = defaultConfigPath,
-                    IsSelfAnalysis = false,
-                    IsBatchMode = false
-                };
+                ConfigPath = defaultConfigPath,
+                Scope = AnalysisScope.Normal,
+                Mode = ExecutionMode.SingleParser,
+                SelectedParser = ParserStrategy.Selective
+            };
+        }
+
+        var scope = ResolveScope();
+        var mode = ResolveExecutionMode(scope);
+
+        var configPath = scope == AnalysisScope.Self
+            ? selfConfigPath
+            : defaultConfigPath;
+
+        ParserStrategy? selectedParser = null;
+
+        if (mode == ExecutionMode.SingleParser)
+            selectedParser = ResolveConcreteParser(enableParserSelector);
+
+        return new StartupExecutionPlan
+        {
+            ConfigPath = configPath,
+            Scope = scope,
+            Mode = mode,
+            SelectedParser = selectedParser
+        };
+    }
+
+    private static AnalysisScope ResolveScope()
+    {
+        Console.WriteLine();
+        Console.WriteLine("?? RefactorScope Analysis Scope");
+        Console.WriteLine("---------------------------------");
+        Console.WriteLine("1) Normal Analysis");
+        Console.WriteLine("2) Self Analysis (RefactorScope analyzing itself)");
+        Console.WriteLine();
+        Console.Write("Select scope (1 or 2) [default=1]: ");
+
+        var input = Console.ReadLine()?.Trim();
+
+        var scope = input == "2"
+            ? AnalysisScope.Self
+            : AnalysisScope.Normal;
+
+        Console.WriteLine(
+            scope == AnalysisScope.Self
+                ? "?? Self Analysis Scope Enabled"
+                : "?? Normal Analysis Scope Enabled");
+
+        return scope;
+    }
+
+    private static ExecutionMode ResolveExecutionMode(AnalysisScope scope)
+    {
+        Console.WriteLine();
+        Console.WriteLine("?? Execution Mode");
+        Console.WriteLine("---------------------------------");
+        Console.WriteLine("1) Single Parser");
+        Console.WriteLine("2) Comparative (current target only)");
+
+        if (scope == AnalysisScope.Normal)
+            Console.WriteLine("3) Batch Arena");
+
+        Console.WriteLine();
+
+        var prompt = scope == AnalysisScope.Normal
+            ? "Select mode (1, 2 or 3) [default=1]: "
+            : "Select mode (1 or 2) [default=1]: ";
+
+        while (true)
+        {
+            Console.Write(prompt);
+            var input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                Console.WriteLine("?? Single Parser Mode Enabled");
+                return ExecutionMode.SingleParser;
             }
 
+            if (scope == AnalysisScope.Self)
+            {
+                var selfMode = input switch
+                {
+                    "2" => ExecutionMode.Comparative,
+                    "1" => ExecutionMode.SingleParser,
+                    _ => (ExecutionMode?)null
+                };
+
+                if (selfMode.HasValue)
+                {
+                    Console.WriteLine(selfMode.Value switch
+                    {
+                        ExecutionMode.Comparative => "?? Comparative Mode Enabled",
+                        _ => "?? Single Parser Mode Enabled"
+                    });
+
+                    return selfMode.Value;
+                }
+
+                Console.WriteLine("[WARN] Em Self Analysis, apenas os modos 1) Single Parser e 2) Comparative estão disponíveis.");
+                continue;
+            }
+
+            var normalMode = input switch
+            {
+                "2" => ExecutionMode.Comparative,
+                "3" => ExecutionMode.BatchArena,
+                "1" => ExecutionMode.SingleParser,
+                _ => (ExecutionMode?)null
+            };
+
+            if (normalMode.HasValue)
+            {
+                Console.WriteLine(normalMode.Value switch
+                {
+                    ExecutionMode.Comparative => "?? Comparative Mode Enabled",
+                    ExecutionMode.BatchArena => "??? Batch Arena Mode Enabled",
+                    _ => "?? Single Parser Mode Enabled"
+                });
+
+                return normalMode.Value;
+            }
+
+            Console.WriteLine("[WARN] Opção inválida. Escolha um modo disponível.");
+        }
+    }
+
+    private static ParserStrategy ResolveConcreteParser(bool enableParserSelector)
+    {
+        if (!enableParserSelector)
+            return ParserStrategy.Selective;
+
+        while (true)
+        {
             Console.WriteLine();
-            Console.WriteLine("?? RefactorScope Startup Mode");
-            Console.WriteLine("---------------------------------");
-            Console.WriteLine("1) Normal Analysis");
-            Console.WriteLine("2) Self Analysis (RefactorScope analyzing itself)");
-            Console.WriteLine("3) Batch Arena");
+            Console.WriteLine("?? Parser Selection");
+            Console.WriteLine("------------------------------------------------");
+            Console.WriteLine("1) Fast Scan (Regex)");
+            Console.WriteLine("2) Accurate Scan (Selective)");
+            Console.WriteLine("3) Adaptive (Experimental)");
+            Console.WriteLine("4) Incremental (Experimental)");
             Console.WriteLine();
-            Console.Write("Select mode (1, 2 or 3) [default=1]: ");
+            Console.Write("Select parser [1-4] (default 2): ");
 
             var input = Console.ReadLine()?.Trim();
 
-            return input switch
+            var parser = input switch
             {
-                "2" => ResolveSelf(selfConfigPath),
-                "3" => ResolveBatch(defaultConfigPath),
-                _ => ResolveNormal(defaultConfigPath)
+                "1" => ParserStrategy.RegexFast,
+                "3" => ParserStrategy.AdaptiveExperimental,
+                "4" => ParserStrategy.IncrementalExperimental,
+                "" or null => ParserStrategy.Selective,
+                "2" => ParserStrategy.Selective,
+                _ => (ParserStrategy?)null
             };
-        }
 
-        private static StartupModeSelection ResolveNormal(string configPath)
-        {
-            Console.WriteLine("?? Normal Analysis Mode Enabled");
+            if (parser.HasValue)
+                return parser.Value;
 
-            return new StartupModeSelection
-            {
-                ConfigPath = configPath,
-                IsSelfAnalysis = false,
-                IsBatchMode = false
-            };
-        }
-
-        private static StartupModeSelection ResolveSelf(string configPath)
-        {
-            Console.WriteLine("?? Self Analysis Mode Enabled");
-
-            return new StartupModeSelection
-            {
-                ConfigPath = configPath,
-                IsSelfAnalysis = true,
-                IsBatchMode = false
-            };
-        }
-
-        private static StartupModeSelection ResolveBatch(string configPath)
-        {
-            Console.WriteLine("??? Batch Arena Mode Enabled");
-
-            return new StartupModeSelection
-            {
-                ConfigPath = configPath,
-                IsSelfAnalysis = false,
-                IsBatchMode = true
-            };
+            Console.WriteLine("[WARN] Opção inválida. Escolha um parser concreto.");
         }
     }
 }
@@ -1504,18 +1695,18 @@ namespace RefactorScope.CLI
 ARQUIVO: StartupModeSelection.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\StartupModeSelection.cs
 ==========================================
-namespace RefactorScope.CLI;
+//namespace RefactorScope.CLI;
 
-/// <summary>
-/// Represents the startup mode selection resolved before configuration loading.
-/// </summary>
-public sealed class StartupModeSelection
-{
-    public required string ConfigPath { get; init; }
+///// <summary>
+///// Represents the startup mode selection resolved before configuration loading.
+///// </summary>
+//public sealed class StartupModeSelection
+//{
+//    public required string ConfigPath { get; init; }
 
-    public required bool IsSelfAnalysis { get; init; }
+//    public required bool IsSelfAnalysis { get; init; }
 
-    public required bool IsBatchMode { get; init; }
-}
+//    public required bool IsBatchMode { get; init; }
+//}
 
 

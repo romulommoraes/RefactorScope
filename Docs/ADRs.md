@@ -1,543 +1,424 @@
-📜 Architectural Decision Records
+# Registos de Decisão de Arquitetura (ADRs) - RefactorScope
 
-This document consolidates the main architectural decisions of RefactorScope.
+## ADR-001 — Arquitetura Fundamental e *Flow Pipeline* do RefactorScope
+**Status:** Accepted
 
-The goal of ADRs is to:
+### Contexto
+O RefactorScope foi concebido como uma ferramenta de análise estrutural para apoiar processos de refatoração arquitetural, com foco em previsibilidade, modularidade e diagnóstico *offline*. Ferramentas deste tipo sofrem frequentemente de alguns problemas recorrentes:
+* Acoplamento entre módulos.
+* *Pipelines* implícitos e difíceis de auditar.
+* Mistura entre *parsing*, análise e exportação.
+* Crescimento descontrolado de escopo.
 
-preserve important structural decisions
+O objetivo do RefactorScope 1.x é manter um *pipeline* explícito, determinístico e modular.
 
-prevent architectural drift
+### Decisão
+O RefactorScope adota uma arquitetura baseada num **Pipeline Orquestrado de Extração, Análise e Consolidação**.
 
-document technical trade-offs
-
-enable controlled system evolution
-
-🧱 Core Architecture
-ADR-001 — RefactorScope Core Architecture
-
-Status: Accepted
-
-Context
-
-RefactorScope was created as a structural code analysis tool designed to support architectural refactoring processes.
-
-Previous experience with similar tools has shown that analysis systems often suffer from:
-
-coupling between modules
-
-implicit execution pipelines
-
-uncontrolled scope growth
-
-The goal of RefactorScope 1.0 is to provide:
-
-deterministic structural diagnostics
-
-modular architecture
-
-predictable analysis pipeline
-
-Decision
-
-RefactorScope adopts a model based on an:
-
-Orchestrated Pipeline of Independent Analyzers
-
-Execution flow:
-
-Configuration
+**Fluxo principal:**
+```text
+Configuração / CLI
    ↓
 Parser
    ↓
-Structural Model
+Modelo Estrutural
    ↓
-Orchestrator
+Orquestrador
    ↓
-[ Independent Analyzers ]
+[ Analyzers Independentes ]
    ↓
-Results
+Resultados
    ↓
-Consolidation
+Consolidação
    ↓
-Export
-Principles
+Exportação
 
-Analyzers are independent
 
-Analyzers do not communicate with each other
 
-Communication occurs only through Result Objects
 
-Execution must be deterministic
+Descrição do Flow Pipeline
+1. Configuração
 
-System scope must remain controlled
+A execução começa na CLI e no ficheiro refactorscope.json, que definem:
 
-The core must remain language-agnostic
+    Escopo de análise.
 
-RefactorScope 1.0 focuses strictly on structural analysis
+    Inclusão/exclusão de pastas.
 
-ADR-002 — Language-Agnostic Structural Model
+    Analyzers ativos.
+
+    Regras de camada.
+
+    Limites (thresholds) e gates.
+
+2. Parsing
+
+O código-fonte é processado por um parser estrutural. O objetivo desta etapa não é compilar, mas extrair um modelo estrutural suficientemente confiável para análise.
+Saídas típicas:
+
+    Ficheiros.
+
+    Namespaces.
+
+    Tipos.
+
+    Referências.
+
+3. Modelo Estrutural
+
+O parser gera um modelo intermediário agnóstico, usado como entrada para toda a fase analítica.
+Este modelo desacopla:
+
+    O código-fonte real.
+
+    Os analyzers.
+
+    Os exporters.
+
+4. Análise
+
+Os analyzers operam sobre o modelo estrutural e calculam sinais como:
+
+    Candidatos estruturais.
+
+    Risco de zombie code.
+
+    Coupling (acoplamento).
+
+    Métricas arquiteturais.
+
+    Refinamentos heurísticos.
+
+    Gates de qualidade.
+
+5. Consolidação
+
+Os resultados emitidos pelos analyzers são reunidos num relatório consolidado, sem que os analyzers dependam entre si.
+6. Exportação
+
+A camada de exportação converte os resultados em artefatos de consumo humano ou analítico, como:
+
+    Dashboards HTML.
+
+    Relatórios Markdown.
+
+    Datasets CSV.
+
+    Dumps auxiliares.
+
+Princípios Arquiteturais
+
+    Pipeline explícito.
+
+    Analyzers independentes.
+
+    Comunicação via Result Objects.
+
+    Execução previsível.
+
+    Núcleo desacoplado de UI.
+
+    Separação entre extração, análise e saída.
+
+    Escopo 1.x centrado em análise estrutural.
+
+Consequências
+
+Positivas:
+
+    Previsibilidade de execução.
+
+    Facilidade de expansão.
+
+    Menor acoplamento entre módulos.
+
+    Maior auditabilidade do fluxo.
+
+Negativas:
+
+    Mais objetos intermediários.
+
+    Necessidade de contratos estáveis.
+
+    Maior disciplina arquitetural para evitar atalhos.
+
+ADR-002 — Modelo Estrutural Agnóstico como Contrato Central
 
 Status: Accepted
+Contexto
 
-Context
+Analisar diretamente código C# dentro dos analyzers acoplaria o sistema ao parser e reduziria a capacidade de evolução futura. O projeto precisava de um contrato intermediário que permitisse:
 
-Analyzing C# code directly would tightly couple the system to a specific parser implementation.
+    Trocar estratégias de parsing.
 
-To allow future evolution and potential support for other languages, an intermediate neutral representation was required.
+    Suportar novas linguagens no futuro.
 
-Decision
+    Manter analyzers independentes do parser concreto.
 
-RefactorScope uses a Language-Agnostic Structural Model.
+Decisão
 
-Pipeline:
+O RefactorScope utiliza um Modelo Estrutural Agnóstico como contrato central entre parsing e análise.
 
-Source Code
+Fluxo:
+Plaintext
+
+Código Fonte
    ↓
 Parser
    ↓
-Structural Model
+Modelo Estrutural
    ↓
-Analyzers
-Components
-FileInfo
+Analyzers / Exporters
 
-Represents analyzed source files.
+Componentes Principais
 
-Contains:
+ArquivoInfo
+Representa um ficheiro analisado. Contém tipicamente:
 
-relative path
+    Caminho relativo.
 
-namespace
+    Namespace.
 
-declared types
+    Tipos declarados.
 
-source code
+    Código-fonte associado.
 
-TypeInfo
+TipoInfo
+Representa entidades estruturais como:
 
-Represents structural types such as:
+    Classes.
 
-classes
+    Interfaces.
 
-interfaces
+    Records.
 
-records
+    Structs.
 
-structs
+Contém:
 
-Contains:
+    Nome.
 
-name
+    Namespace.
 
-namespace
+    Tipo lógico.
 
-source file
+    Ficheiro de declaração.
 
-structural references
+    Referências associadas.
 
-ReferenceInfo
+ReferenciaInfo
+Representa dependências ou relações detetadas entre tipos. Exemplos:
 
-Represents dependencies between types.
+    Menção.
 
-Directory Structure
+    Instanciação.
 
-Used for:
+    Uso genérico.
 
-modular analysis
+    typeof.
 
-AI-ready structural dumps
+    nameof.
 
-ADR-003 — Analyzer Execution Contract
+Princípios
+
+    Analyzers operam sobre estrutura, não sobre sintaxe crua.
+
+    Parser é substituível.
+
+    Modelo é neutro em relação à linguagem.
+
+    Outputs não dependem diretamente de um parser concreto.
+
+Consequências
+
+Positivas:
+
+    Desacoplamento entre parsing e análise.
+
+    Suporte futuro a múltiplos parsers.
+
+    Maior legibilidade do pipeline.
+
+    Melhor testabilidade dos analyzers.
+
+Negativas:
+
+    O modelo precisa de ser mantido com rigor.
+
+    Limitações de deteção do parser impactam o restante do pipeline.
+
+ADR-003 — Execução Independente dos Analyzers e Consolidação Central
 
 Status: Accepted
+Contexto
 
-All analyzers follow the contract:
+Uma das fontes mais comuns de deriva arquitetural em ferramentas analíticas é o acoplamento entre regras de análise. Quando os analyzers passam a depender uns dos outros, surgem problemas como:
+
+    Ordem implícita de execução.
+
+    Efeitos colaterais.
+
+    Dificuldade de teste.
+
+    Crescimento acidental de dependências.
+
+Decisão
+
+Todos os analyzers do RefactorScope devem operar de forma isolada, recebendo apenas o contexto de análise e emitindo um resultado próprio.
+
+Contrato:
+C#
 
 public interface IAnalyzer
 {
     IAnalysisResult Analyze(AnalysisContext context);
 }
-Rules
 
-An analyzer:
+Regras
 
-✔ receives an AnalysisContext
-✔ executes independently
-✔ returns an IAnalysisResult
+Um analyzer:
 
-An analyzer must not:
+    Recebe AnalysisContext.
 
-❌ access results from other analyzers
-❌ access the filesystem directly
-❌ modify the analysis context
-❌ depend on another analyzer
+    Executa isoladamente.
 
-ADR-004 — Orchestrator and Result Consolidation
+    Retorna IAnalysisResult.
 
-Status: Accepted
+Um analyzer não deve:
 
-The system includes a Central Orchestrator.
+    Consultar diretamente o resultado de outro analyzer.
 
-Responsibilities:
+    Aceder ao sistema de ficheiros (filesystem) como parte da análise.
 
-selecting enabled analyzers
+    Modificar o contexto partilhado.
 
-executing analyzers
+    Depender de ordem implícita externa.
 
-consolidating results
+Consolidação
 
-The orchestrator does not interpret analysis results.
+A responsabilidade de reunir os resultados pertence ao Orquestrador Central, que produz o ConsolidatedReport.
+O orquestrador:
 
-Its role is only to produce:
+    Seleciona analyzers ativos.
 
-ConsolidatedReport
-ADR-005 — Configuration System
+    Executa analyzers.
 
-Status: Accepted
+    Coleta resultados.
 
-RefactorScope uses an external configuration file:
+    Consolida saídas.
 
-refactorscope.json
+O orquestrador não deve conter lógica analítica de domínio que pertença aos analyzers.
+Consequências
 
-This configuration allows defining:
+Positivas:
 
-analysis scope
+    Analyzers testáveis isoladamente.
 
-enabled analyzers
+    Pipeline previsível.
 
-architectural layer rules
+    Menos acoplamento lateral.
 
-fitness gates
+    Evolução mais segura do sistema.
 
-Example:
+Negativas:
 
-{
-  "scope": {
-    "include": ["src/Core"],
-    "exclude": ["tests"]
-  },
-  "analyzers": {
-    "zombie": true,
-    "coupling": true
-  }
-}
-🔬 Analysis & Detection
-ADR-EXP-011 — Zombie Detection Refinement
+    Resultados cruzados precisam de ser modelados explicitamente.
+
+    Análises compostas exigem uma etapa clara de consolidação.
+
+ADR-004 — Precisão Estrutural e Heurística Probabilística Acima de Cobertura Total
 
 Status: Accepted
+Contexto
 
-Problem
+Na análise estrutural estática, tentar cobrir todos os cenários possíveis costuma gerar um aumento de falsos positivos, especialmente em arquiteturas modernas com:
 
-Modern architectures using patterns such as:
+    Injeção de Dependências (DI).
 
-Dependency Injection
+    Strategy / Factory.
 
-Strategy
+    Uso via interfaces.
 
-Factory
+    Bootstrap no Program.cs.
 
-may generate false positives for dead code detection.
+    Padrões indiretos de ativação.
 
-Decision
+No contexto do RefactorScope, uma ferramenta útil precisa de ser conservadora o suficiente para não acusar como problema aquilo que faz parte da arquitetura esperada.
+Decisão
 
-Adopt a three-layer probabilistic model.
+O RefactorScope prioriza:
+Precisão estrutural acima de cobertura universal.
 
-Layer 0 — Structural Suspicion
-UsageCount == 0
+Isso implica aceitar conscientemente que:
 
-Classified as:
+    Alguns falsos negativos existirão.
 
-ZombieSuspect
-Layer 1 — DI Contamination
+    A cobertura total não é o objetivo primário.
 
-Detect patterns such as:
+    Heurísticas probabilísticas são preferíveis a inferências agressivas.
 
-AddScoped<
-AddTransient<
-AddSingleton<
+Aplicação Prática
 
-These patterns reduce the probability of a zombie classification.
+Esta decisão fundamenta regras como:
 
-Layer 2 — Polymorphism
+    Refinamento probabilístico de zombie detection.
 
-If:
+    Redução de suspeita quando há registo explícito em DI.
 
-a class implements an interface
+    Redução de suspeita quando existe interface correspondente e uso polimórfico.
 
-the interface is referenced elsewhere
+    Proteção para tipos estruturais esperados.
 
-then the probability of zombie classification is reduced.
+    Proteção para bootstrap e top-level startup.
 
-ADR-EXP-007 — Zombie Model Redefinition
+Também fundamenta decisões como:
 
-Status: Accepted
+    SmellIndex relativo em vez de absoluto.
 
-A type is considered a Confirmed Zombie only if:
+    Escopo de deteção explicitamente documentado.
 
-it has no structural references
+    Distinção entre suspeita estrutural e confirmação.
 
-it was not probabilistically absolved
+Escopo de Deteção Assumido
 
-it is not registered in DI
+O sistema deteta de forma explícita sinais como:
 
-it is not used via interface polymorphism
+    Referências via new.
 
-it is not a structural component of the system itself
+    Uso genérico.
 
-Final Classification Categories
+    typeof(T).
 
-Structural Candidate
+    nameof(T).
 
-Suspicious
+    Registos explícitos de DI.
 
-Absolved
+    Uso de interfaces.
 
-Confirmed Zombie
+O sistema não pretende detetar de forma universal:
 
-Publication Rule
-SelfAnalysis → Confirmed Zombies MUST equal 0
-ADR-EXP-008 — Relative SmellIndex
+    Reflection dinâmica.
 
-Status: Accepted
+    Plugin loading.
 
-Problem
+    Assembly scanning.
 
-A SmellIndex based on absolute numbers introduces distortions.
+    Code generation runtime.
 
-New Formula
-deadRatio = confirmedZombies / totalClasses
-legacyRatio = legacyCount / totalClasses
-isolationRatio = isolatedCoreCount / totalClasses
+Consequências
 
-SmellIndex =
-(deadRatio * 40)
-+ (legacyRatio * 20)
-+ (isolationRatio * 20)
-+ (entropy * 20)
+Positivas:
 
-Range:
+    Menos falsos positivos.
 
-0–100
-ADR-EXP-012 — Precision Over Total Coverage
+    Análise mais confiável.
 
-Status: Accepted
+    Heurísticas mais úteis em projetos reais.
 
-RefactorScope prioritizes:
+    Melhor aceitação prática da ferramenta.
 
-Structural precision > universal coverage
+Negativas:
 
-Implications:
+    Parte do comportamento dinâmico fica fora do escopo.
 
-fewer false positives
-
-documented acceptance of some false negatives
-
-ADR-EXP-013 — Detection Scope
-
-Automatically detected patterns include:
-
-instantiation via new
-
-simple generics usage
-
-explicit DI registration
-
-interface implementations
-
-typeof(T)
-
-Not Automatically Detected
-
-dynamic reflection
-
-plugin loading
-
-assembly scanning
-
-runtime code generation
-
-📊 Data & Visualization
-ADR-006 — BI Dataset Export
-
-Status: Accepted
-
-RefactorScope generates datasets suitable for Business Intelligence tools.
-
-Files:
-
-dataset_structural_overview.csv
-dataset_arch_health.csv
-dataset_type_risk.csv
-dataset_entrypoints.csv
-dataset_coupling_matrix.csv
-
-These datasets feed tools such as:
-
-Amazon QuickSight
-
-Power BI
-
-analytical dashboards
-
-ADR-007 — Architectural Observability
-
-Status: Accepted
-
-The system records historical architectural metrics.
-
-File:
-
-datasets/trend/structural_history.csv
-
-Fields:
-
-Timestamp
-Scope
-StructuralScore
-Coupling
-ZombieRate
-IsolationRate
-CoreDensity
-
-This enables:
-
-temporal monitoring
-
-architectural regression detection
-
-ADR-EXP-007 — Deterministic Offline Dashboard
-
-Status: Proposed
-
-Dashboards will be generated without runtime JavaScript.
-
-Structure:
-
-refactorscope-output/
-   dashboards/
-      index.html
-
-Charts:
-
-SVG based
-
-pre-rendered
-
-offline friendly
-
-🧪 Testing Strategy
-ADR-TEST-001 — Testing Strategy
-
-Status: Proposed
-
-RefactorScope should include a dedicated test project:
-
-RefactorScope.Tests
-
-Testing tools:
-
-xUnit
-
-FluentAssertions
-
-Minimal Test Coverage (Quick Win)
-
-Tests should cover:
-
-Shannon Entropy
-
-entropy equals zero for uniform strings
-
-entropy increases with diversity
-
-Analyzer Pipeline
-
-Validate:
-
-analyzer execution
-
-correct execution order
-
-report integrity
-
-Fitness Gates
-
-Validate:
-
-execution after analyzers
-
-CI pipeline blocking when FAIL occurs
-
-ConsolidatedReport
-
-Snapshot tests verifying report structure.
-
-🔬 Textual Parser Tests
-
-The textual parser presents specific risks.
-
-Dedicated tests must exist.
-
-1 — String Trap
-
-Prevent URLs from being interpreted as namespaces.
-
-Input:
-
-string url = "http://example.com";
-
-Expected result:
-
-No namespace detected
-2 — Line Comments
-
-Commented code must not produce symbols.
-
-// using Fake.Namespace
-3 — Block Comments
-/*
-namespace Fake
-class Fake
-*/
-
-Must not generate types.
-
-4 — Multiline Strings
-
-Strings containing code should not trigger parsing.
-
-var code = "class Fake {}";
-5 — Partial Code
-
-Parser must tolerate:
-
-incomplete files
-
-broken code
-
-syntax errors
-
-6 — Modern C# Tokens
-
-Ignore tokens such as:
-
-record
-init
-with
-🧭 Backlog ADRs
-ADR-BACKLOG-002 — Snapshot Consistency
-
-Ensure full result consistency before governance decisions.
-
-Planned for v1.2.
-
-ADR-BACKLOG-003 — Advisory vs CI Messaging
-
-Separate:
-
-diagnostic information
-
-governance policy
-
-Planned for v1.2.
+    Os resultados precisam de ser interpretados como evidência, não verdade absoluta.

@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-12 01:02 UTC  
+📅 **Execution Time:** 2026-03-12 02:08 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -30,7 +30,6 @@
 │   ├── Results
 │   ├── Scope
 │   └── Structure
-├── Debug
 ├── Estimation
 │   ├── Classification
 │   ├── Models
@@ -45,11 +44,12 @@
 │   │   ├── Css
 │   │   └── Vendor
 │   ├── Dashboards
-│   │   ├── Renderers
-│   │   └── Routemap
+│   │   └── Renderers
 │   ├── Datasets
 │   ├── Dumps
 │   ├── Infrastructure
+│   ├── Projections
+│   │   └── Architecture
 │   ├── Reports
 │   ├── Styling
 │   └── Trends
@@ -70,9 +70,9 @@
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 48
+- **Structural Candidates:** 47
 - **Pattern Similarity:** 47
-- **Unresolved:** 1
+- **Unresolved:** 0
 
 ---
 
@@ -91,14 +91,6 @@
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
 - **Coupling:** 2,75
-- **Isolation:** 0,00
-- **Core Density:** 0,00
-
-### 🟢 Debug
-
-- **Score:** `91,7`
-- **Unresolved Candidates:** 🔴 1 (100%)
-- **Coupling:** 0,00
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -184,15 +176,15 @@
 | QualityDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | StructuralDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | ArchitecturalDashboardExporter | Exporters | Core | 18 | 1 | 0,95 | 18 |
-| HubDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
-| ArchitecturalDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
-| QualityDashboardMetrics | Exporters | Core | 16 | 4 | 0,80 | 16 |
 | HtmlDashboardExporter | Exporters | Core | 8 | 0 | 1,00 | 8 |
 | StrategyAggregateMetric | Exporters | Core | 5 | 1 | 0,83 | 5 |
 | ParsingDashboardExporter | Exporters | Core | 5 | 1 | 0,83 | 5 |
 | QualityDashboardExporter | Exporters | Core | 6 | 1 | 0,86 | 6 |
 | StructuralInventoryExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
 | DumpAnaliseExporter | Exporters | Core | 5 | 0 | 1,00 | 5 |
+| HubDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
+| ArchitecturalDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
+| QualityDashboardMetrics | Exporters | Core | 16 | 4 | 0,80 | 16 |
 | MarkdownReportExporter | Exporters | Core | 8 | 1 | 0,89 | 8 |
 | CSharpRegexParser | Parsers | Core | 11 | 1 | 0,92 | 11 |
 | HigienizadorLexico | Parsers | Core | 13 | 1 | 0,93 | 13 |
@@ -223,7 +215,6 @@ Manual inspection is recommended.
 |--------|------------------|-----------------|--------------|
 | Analyzers | 0,10 | 0,69 | 0,21 |
 | CLI | 0,00 | 0,85 | 0,15 |
-| Debug | 0,00 | 0,00 | 1,00 |
 | Estimation | 0,00 | 0,38 | 0,63 |
 | Infrastructure | 0,00 | 0,50 | 0,50 |
 | Core | 0,10 | 0,02 | 0,88 |

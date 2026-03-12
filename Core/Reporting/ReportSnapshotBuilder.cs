@@ -1,7 +1,7 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Results;
-using RefactorScope.Exporters.Dashboards;
+using RefactorScope.Exporters.Projections;
 
 
 namespace RefactorScope.Core.Reporting

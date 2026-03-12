@@ -27,9 +27,6 @@ using Spectre.Console;
 
 Console.WriteLine();
 
-// 🔬 TESTE DI CONTROLADO
-var __fake = "services.AddScoped<FakeZombieService>();";
-
 IParserResult? parsingResult = null;
 
 // =====================================================

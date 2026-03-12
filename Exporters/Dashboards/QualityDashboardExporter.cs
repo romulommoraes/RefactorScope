@@ -1,10 +1,11 @@
 ﻿using RefactorScope.Core.Results;
-using RefactorScope.Exporters.Dashboards;
+using RefactorScope.Exporters.Projections;
+using RefactorScope.Exporters.Dashboards.Renderers;
 using RefactorScope.Exporters.Styling;
 using System.Globalization;
 using System.Text;
 
-namespace RefactorScope.Exporters.Dashboards.Renderers
+namespace RefactorScope.Exporters.Dashboards
 {
     public sealed class QualityDashboardExporter
     {

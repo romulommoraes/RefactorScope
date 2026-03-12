@@ -1,211 +1,80 @@
-# 🔬 Analysis Methodology
+# 🔬 Metodologia de Análise e Métricas (Methodology & Metrics)
 
-## Purpose
+O RefactorScope executa uma **análise estrutural estática** para avaliar a saúde arquitetural de uma base de código C#. O sistema foca na detecção de **sinais arquiteturais**, não em violações definitivas. O código não é executado em nenhum momento.
 
-RefactorScope performs **static structural analysis** to evaluate the architectural health of a codebase.
+A metodologia segue quatro princípios fundamentais:
+1. Observação Estrutural
+2. Interpretação Heurística
+3. Refinamento Probabilístico
+4. Verificação Humana
 
-The system focuses on detecting **architectural signals**, not definitive violations.
-
----
-
-# Scientific Approach
-
-The methodology follows four principles:
-
-1. Structural observation
-2. Heuristic interpretation
-3. Probabilistic refinement
-4. Human verification
-
----
-
-# Structural Analysis Model
-
-The scanner observes structural signals including:
-
-- type declarations
-- namespace relationships
-- dependency edges
-- module boundaries
-
-The system does **not execute code**.
-
----
-
-# Zombie Detection
-
-Zombie detection identifies types that appear unused.
-
-Initial rule:
-
-
-UsageCount == 0
-
-
-These are classified as:
-
-
-Structural Candidates
 
 
 ---
 
-# Probabilistic Refinement
+## 1. Detecção de Candidatos Estruturais (Antigo "Zombie Detection")
 
-Modern architectures use:
+> **Nota de Arquitetura (ADR-EXP-007):** A análise é puramente estrutural. A ausência de referências não declara a "morte" definitiva de uma classe, nem toma decisões de remoção.
 
-- dependency injection
-- interface polymorphism
-- factory patterns
+O processo inicia mapeando o uso estrutural de todos os tipos. Se `UsageCount == 0`, o tipo é classificado como um **Structural Candidate** (Candidato Estrutural). 
 
-To reduce false positives, RefactorScope applies refinement layers.
+Como arquiteturas modernas utilizam injeção de dependência e polimorfismo, o sistema aplica camadas de **Refinamento Probabilístico** para reduzir falsos positivos:
 
----
+* **Camada 1 (Injeção de Dependência):** Detecta padrões de registro como `AddScoped<`, `AddTransient<` e `AddSingleton<`.
+* **Camada 2 (Uso de Interface):** Se a classe implementa uma interface e essa interface é referenciada no sistema, a probabilidade de ser código morto cai drasticamente.
+* **Camada 3 (Regras de Omissão e SOLID):** Avalia sufixos conhecidos (ex: Orquestradores, Handlers). Uma classe pública sem uso direto (`PublicZeroUsageOmissionRule`), mas que atua como orquestradora, é protegida contra marcações indevidas.
 
-## Layer 1 — Dependency Injection Detection
-
-Patterns detected:
-
-
-AddScoped<
-AddTransient<
-AddSingleton<
-
-
-These reduce the probability of dead code.
+Candidatos que sobrevivem a todos os filtros sem explicação arquitetural tornam-se **Unresolved Candidates** e exigem inspeção manual.
 
 ---
 
-## Layer 2 — Interface Usage
+## 2. Acoplamento e Métricas Complementares
 
-If:
+A análise de acoplamento foi expandida para detectar concentrações de dependência que indicam fragilidade ou hubs arquiteturais.
 
-- class implements interface
-- interface is referenced
+* **Fan-Out:** Número de dependências de saída. Um alto Fan-Out sugere uma classe com alta concentração de responsabilidade (ex: Orquestradores) ou forte acoplamento arquitetural.
+* **Fan-In:** Número de dependências de entrada. Um alto Fan-In indica serviços core ou infraestrutura compartilhada crítica para a estabilidade do sistema.
+* **Dominância (Dominance):** Mede a influência relativa de um componente na rede. Calculado por `FanOut / (FanOut + FanIn)`. Valores próximos a **1** indicam componentes que exercem forte influência direcional (camadas de coordenação ou integração).
 
-Then the class may be instantiated indirectly.
-
----
-
-# Zombie Classification
-
-Final categories:
-
-| Category | Meaning |
-|---|---|
-Structural Candidate | no reference detected |
-Suspicious | uncertain |
-Absolved | probable indirect usage |
-Confirmed Zombie | high confidence dead code |
+### Acoplamento Implícito
+Identifica classes cujas dependências convergem assimetricamente para um módulo específico. Não é necessariamente um erro de design (pode ser um Adapter legítimo), mas serve como alerta de tensão estrutural.
 
 ---
 
-# Smell Index
+## 3. Estabilidade e "Architectural Galaxy"
 
-Architectural health is measured through a normalized index.
+O sistema avalia a relação de cada módulo com a linha de equilíbrio arquitetural usando as métricas clássicas de Robert C. Martin:
 
-Formula:
-
-
-SmellIndex =
-(deadRatio * 40)
-
-(legacyRatio * 20)
-
-(isolationRatio * 20)
-
-(entropy * 20)
+* **Abstração (A):** `A = Na / Nc` (Proporção de tipos abstratos/interfaces em relação ao total).
+* **Instabilidade (I):** `I = Ce / (Ce + Ca)` (Proporção de dependências externas vs internas).
+* **Distância da Sequência Principal (D):** `D = | A + I − 1 |`. 
 
 
-Range:
 
-
-0–100
-
-
-Classification:
-
-| Range | Interpretation |
-|---|---|
-0–20 | Healthy |
-20–40 | Stable |
-40–60 | Degrading |
-60–80 | Critical |
-80–100 | Structural Risk |
+Módulos com alto valor de **D** indicam forte tensão: ou são concretos e rígidos demais (difíceis de alterar), ou abstratos e instáveis demais (inúteis).
 
 ---
 
-# Entropy Metric
+## 4. Estimativa de Esforço (Refactor Difficulty Index - RDI)
 
-Entropy measures lexical variability in the codebase.
+*Esta seção detalha o motor de estimativa integrado ao pipeline de análise.*
 
-Used as a proxy for:
+O RefactorScope não apenas aponta os problemas, mas calcula o esforço estimado para resolvê-los usando o **RDI (Refactor Difficulty Index)**. O cálculo é baseado em pressões estruturais e modelagem de risco:
 
-- complexity
-- structural disorder
+* **Pressão de Arquivo:** Avalia a proporção de classes por arquivo. (Muitas classes em um único arquivo aumentam o atrito de refatoração).
+* **Structural Risk Model:** Calcula o nível de degradação ponderando duas variáveis principais:
+  * `NamespaceDriftRatio`: Proporção de tipos com desalinhamento entre diretório físico e namespace lógico.
+  * `UnresolvedCandidateRatio`: Proporção de "zombies" confirmados após o refinamento probabilístico.
 
-Calculation based on **Shannon entropy**.
-
----
-
-# Coupling Analysis
-
-The system evaluates:
-
-- fan-in
-- fan-out
-- dependency density
-
-High coupling signals potential architectural fragility.
+O risco estrutural é normalizado e combinado com a complexidade geral para gerar uma **Estimativa de Horas** e um nível de **Dificuldade** (Low, Medium, High, Critical).
 
 ---
 
-# Layer Isolation
+## 5. Higiene do Código e Fitness Gates
 
-RefactorScope checks architectural layering rules.
+A saúde global do projeto é consolidada no **Smell Index**, um índice normalizado (0-100) que determina o status de higiene:
 
-Example:
+`SmellIndex = (DeadRatio * 40) + (LegacyRatio * 20) + (IsolationRatio * 20) + (Entropy * 20)`
 
-
-Core should not depend on Infrastructure
-
-
-Violations produce architecture alerts.
-
----
-
-# Fitness Gates
-
-Fitness gates transform metrics into CI decisions.
-
-Example:
-
-| Gate | Condition |
-|---|---|
-DeadCode | ZombieRate > threshold |
-CoreIntegrity | Core depends on Infra |
-
-Failing gates may block CI pipelines.
-
----
-
-# Limitations
-
-RefactorScope does not detect:
-
-- reflection-based instantiation
-- plugin loading
-- runtime DI scanning
-- code generation
-
-Therefore, results must always be **reviewed by humans**.
-
----
-
-# Philosophy
-
-RefactorScope is designed to:
-
-
-measure architectural signals
-not declare absolute truths
+* **Entropia:** Baseada na Entropia de Shannon, mede a variabilidade léxica do código como indicativo de desordem estrutural.
+* **Status:** Varia de *Healthy* (0-20) até *Structural Risk* (80-100).

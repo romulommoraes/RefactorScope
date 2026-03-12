@@ -176,7 +176,7 @@
             <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
         </div>
 
-        <div><b>Generated:</b> 12-03-2026 01:02 UTC</div>
+        <div><b>Generated:</b> 12-03-2026 02:08 UTC</div>
         <div><b>View:</b> Executive architectural summary</div>
         <div><b>Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
     </div>
@@ -184,17 +184,17 @@
 <div class='grid-kpis' style='display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:32px;'>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Modules</div>
-<div class='value'>10</div>
+<div class='value'>9</div>
 <div class='hint'>Detected architectural folders</div>
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Average Score</div>
-<div class='value'>84,8</div>
+<div class='value'>84,0</div>
 <div class='hint'>Composite health by module</div>
 </div>
-<div class='kpi alert' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='kpi good' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Unresolved</div>
-<div class='value'>1</div>
+<div class='value'>0</div>
 <div class='hint'>Final unresolved structural candidates</div>
 </div>
 <div class='kpi warning' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
@@ -209,12 +209,12 @@
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Instability (I)</div>
-<div class='value'>0,49</div>
+<div class='value'>0,54</div>
 <div class='hint'>Average outgoing dependency pressure</div>
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Distance (D)</div>
-<div class='value'>0,47</div>
+<div class='value'>0,41</div>
 <div class='hint'>Average distance from main sequence</div>
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
@@ -257,14 +257,6 @@
 <td>0,11</td>
 <td>0,22</td>
 <td>0,89</td>
-</tr>
-<tr>
-<td>Debug</td>
-<td><span class='metric-good'>91,7</span></td>
-<td>1 (100%)</td>
-<td>0,00</td>
-<td>0,00</td>
-<td>0,00</td>
 </tr>
 <tr>
 <td>Estimation</td>
@@ -348,7 +340,6 @@ const radialTreeSketch = (p) => {
   "RefactorScope/Core/Results",
   "RefactorScope/Core/Scope",
   "RefactorScope/Core/Structure",
-  "RefactorScope/Debug",
   "RefactorScope/Estimation",
   "RefactorScope/Estimation/Classification",
   "RefactorScope/Estimation/Models",
@@ -364,10 +355,11 @@ const radialTreeSketch = (p) => {
   "RefactorScope/Exporters/Assets/Vendor",
   "RefactorScope/Exporters/Dashboards",
   "RefactorScope/Exporters/Dashboards/Renderers",
-  "RefactorScope/Exporters/Dashboards/Routemap",
   "RefactorScope/Exporters/Datasets",
   "RefactorScope/Exporters/Dumps",
   "RefactorScope/Exporters/Infrastructure",
+  "RefactorScope/Exporters/Projections",
+  "RefactorScope/Exporters/Projections/Architecture",
   "RefactorScope/Exporters/Reports",
   "RefactorScope/Exporters/Styling",
   "RefactorScope/Exporters/Trends",

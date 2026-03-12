@@ -5,7 +5,7 @@ using RefactorScope.Core.Model;
 using RefactorScope.Core.Results;
 using System.Globalization;
 
-namespace RefactorScope.Exporters.Dashboards
+namespace RefactorScope.Exporters.Projections
 {
     /// <summary>
     /// Centraliza cálculos auxiliares da camada de exportação.

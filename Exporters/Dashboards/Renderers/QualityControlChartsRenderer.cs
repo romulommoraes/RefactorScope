@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace RefactorScope.Exporters.Dashboards;
+namespace RefactorScope.Exporters.Dashboards.Renderers;
 
 public sealed class QualityControlChartsRenderer
 {

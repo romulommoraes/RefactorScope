@@ -1,7 +1,8 @@
-﻿using System.Text;
+﻿using RefactorScope.Exporters.Projections.Architecture;
+using System.Text;
 using System.Text.Json;
 
-namespace RefactorScope.Exporters.Dashboards.RouteMap
+namespace RefactorScope.Exporters.Dashboards.Renderers
 {
     public sealed class ModuleRouteMapRenderer
     {

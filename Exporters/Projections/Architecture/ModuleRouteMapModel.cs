@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RefactorScope.Exporters.Dashboards.RouteMap
+namespace RefactorScope.Exporters.Projections.Architecture
 {
     public sealed class ModuleRouteMapModel
     {

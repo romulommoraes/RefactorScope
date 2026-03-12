@@ -1,4 +1,4 @@
-﻿namespace RefactorScope.Exporters.Dashboards.RouteMap
+﻿namespace RefactorScope.Exporters.Projections.Architecture
 {
     public sealed class ArchitectureVisualizationDecision
     {

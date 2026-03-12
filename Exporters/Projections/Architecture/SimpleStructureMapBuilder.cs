@@ -1,6 +1,6 @@
 ﻿using RefactorScope.Core.Results;
 
-namespace RefactorScope.Exporters.Dashboards.RouteMap
+namespace RefactorScope.Exporters.Projections.Architecture
 {
     public sealed class SimpleStructureMapBuilder
     {

@@ -1,396 +1,111 @@
-# 🧬 RefactorScope
+🧬 RefactorScope (English)
 
-**RefactorScope** is a **static structural analysis tool** designed to audit, visualize, and maintain the architectural health of C# codebases.
+RefactorScope is a static structural analysis tool designed to audit, visualize, and ensure the architectural health of C# codebases.
 
-It detects **structural candidates (potential dead code)**, evaluates **architectural coupling**, checks **layer isolation**, and generates **architectural dashboards and datasets for BI analysis**.
+Instead of focusing only on syntax errors or code formatting (like traditional linters), RefactorScope acts as a forensic structural hygiene scanner. It maps dependencies, evaluates adherence to architectural principles, and outputs rich visual dashboards to guide complex refactoring efforts.
+💡 Origin (The Scriptome Project)
 
-The main goal is to support **metric-driven architectural refactoring**.
+RefactorScope was born out of a practical need: to audit and guide the refactoring of Scriptome — a complex narrative analysis tool built in C#. As the system grew, it became critical to detect dead code, verify Core layer isolation, measure coupling, and identify namespace drift.
 
----
+RefactorScope was then extracted as an independent, agnostic tool capable of analyzing any C# codebase.
+🎯 Core Capabilities
 
-# 💡 Project Origin
+    🔍 Fast Structural Auditing: Dependency extraction without compiling the code (independent of heavy APIs like Roslyn).
 
-RefactorScope emerged from a real-world need: auditing and guiding the architectural refactor of **Scriptome**, a complex narrative analysis engine written in C#.
+    🧠 Heuristic Dead Code Detection: Identification of dead code candidates (Zombies / Unresolved) refined by probabilistic rules (Dependency Injection, Polymorphism, etc.).
 
-As Scriptome grew, it became necessary to:
+    🧱 Isolation and SOLID Analysis: Layer rule validation (e.g., Core must not depend on Infrastructure).
 
-- detect structural dead code
-- verify Core layer isolation
-- measure architectural coupling
-- enforce SOLID adherence
-- detect namespace drift
-- produce architecture dashboards
+    🔗 Implicit Coupling: Mapping of architectural tensions, bottlenecks (Hubs), and calculation of the Distance from the Main Sequence (A/I/D).
 
-RefactorScope was created as an **independent, language-agnostic architectural scanner** for C# codebases.
+    📊 Rich Exporting: Generation of interactive HTML Dashboards (HUD/Cyberpunk aesthetic), Markdown reports, and datasets for BI and AI integration.
 
----
+📚 Documentation (Knowledge Base)
 
-# 🎯 Goals
+To keep this repository clean, detailed documentation has been split by domain. Refer to the guides in the docs/ folder to understand RefactorScope's inner workings:
+Module	Document	Description
+Overview	Architecture & Flow	The execution pipeline, engines, and domain tree.
+Extraction Engine	Parser Design	How extraction strategies work (Regex, Textual, Hybrid).
+Rules & Business	Methodology & Metrics	Details on Probabilistic Refinement, RDI (Effort), and the Smell Index.
+Visualization	Export Artifacts	The anatomy of HTML Dashboards and the CLI interface.
+Testing	Test Suite	Forensic coverage of the MVP and validated scenarios.
+Governance	Decision Records (ADRs)	The project's architectural decision history.
+Quick Reference	Technical Appendix	A consolidated summary of system formulas and thresholds.
+⚙️ Configuration (refactorscope.json)
 
-RefactorScope aims to provide:
-
-- fast structural auditing of C# projects
-- heuristic dead code detection
-- architectural isolation analysis
-- structural dependency mapping
-- architecture dashboards
-- BI-ready datasets
-- structured exports for AI analysis
-- CI/CD architecture monitoring
-
----
-
-# 🏗️ Architecture
-
-RefactorScope follows **Clean Architecture principles** with strongly separated modules.
-
-
-RefactorScope
-│
-├── Core
-│ Domain model and datasets
-│
-├── Parsers
-│ Code structure extraction
-│
-├── Analyzers
-│ Architectural analysis modules
-│
-├── Exporters
-│ Dashboards and report generators
-│
-├── Infrastructure
-│ External integrations
-│
-└── CLI
-Command-line interface
-
-
----
-
-# ⚙️ Execution Pipeline
-
-The analysis pipeline follows a deterministic flow:
-
-
-Parser
-↓
-Structural Model
-↓
-Analyzers
-↓
-Consolidated Results
-↓
-Exporters
-
-
----
-
-# Parser
-
-Extracts structural information:
-
-- classes
-- interfaces
-- namespaces
-- dependencies
-- physical location
-
-Produces a **structural dependency graph**.
-
----
-
-# Analyzers
-
-Analyzers are **plug-in modules** that perform architectural analysis.
-
-Each analyzer:
-
-- consumes the structural model
-- produces a **result DTO**
-
-Examples:
-
-
-StructuralCandidateAnalyzer
-CouplingAnalyzer
-SolidAnalyzer
-CoreIsolationAnalyzer
-NamespaceDriftAnalyzer
-
-
----
-
-# Consolidated Results
-
-All analyzer outputs are aggregated into:
-
-
-ConsolidatedReport
-
-
-This represents the **architectural state of the analyzed project**.
-
----
-
-# Exporters
-
-Exporters generate output formats without performing analysis.
-
-Supported outputs include:
-
-- HTML dashboards
-- Markdown reports
-- CSV datasets
-- AI-ready structural dumps
-
----
-
-# ⚙️ Parsing Engines
-
-RefactorScope prioritizes **speed and resilience**, avoiding heavy AST dependencies.
-
-Two parsing engines are available.
-
----
-
-## CSharpRegexParser (Stable)
-
-Regex-based parser designed for performance.
-
-Features:
-
-- very fast
-- resilient to syntax errors
-- CI-friendly
-- ignores modern keywords (`record`, `init`)
-
----
-
-## CSharpTextualParser (Experimental)
-
-Advanced textual parser with lexical sanitization.
-
-Steps:
-
-1. comment removal
-2. string neutralization
-3. structural extraction
-
-Prevents traps such as URLs being interpreted as namespaces.
-
----
-
-# 📊 Structural Metrics
-
-## Structural Candidates
-
-Classes with zero structural references.
-
-Possible causes:
-
-- dead code
-- CLI entry points
-- plugins
-- DI wiring
-- reflection
-
----
-
-## Pattern Similarity
-
-Classes matching known architectural patterns.
-
-Examples:
-
-
-Factory
-Strategy
-Handler
-Repository
-Dto
-Adapter
-
-
----
-
-## Unresolved
-
-Structural candidates not explained by heuristics.
-
-These are the **strongest indicators of dead code**.
-
----
-
-## Namespace Drift
-
-Detects mismatch between:
-
-
-declared namespace
-vs
-physical folder structure
-
-
-Clean architectures usually align both.
-
----
-
-## Global Namespace
-
-Classes declared without a namespace.
-
-This reduces modular clarity.
-
----
-
-## Isolated Core
-
-Evaluates whether the Core layer remains isolated.
-
-Healthy architecture:
-
-
-Core → independent
-Infra → depends on Core
-
-
----
-
-## SOLID Alerts
-
-Heuristic detection of possible violations:
-
-- SRP
-- LSP
-- ISP
-- DIP
-
-These are **architectural signals**, not proofs.
-
----
-
-# 📡 Architectural Radar
-
-The dashboard includes a **radar chart** summarizing architectural health.
-
-Values normalized between **0 and 1**.
-
-
-0.00 – 0.10 healthy
-0.10 – 0.25 moderate signal
-0.25 – 0.50 architectural attention
-0.50 – 1.00 high risk
-
-
----
-
-# 🧠 Heuristic Refinement
-
-Two layers reduce false positives.
-
-## Pattern Signature Library
-
-Detects known design patterns from class names.
-
-Example:
-
-
-OrderRepository
-CommandHandler
-UserFactory
-
-
----
-
-## Structural Heuristics
-
-Detects framework-related structural contexts.
-
-Examples:
-
-
-*.CLI
-*.Infrastructure
-*.Extensions
-*.Options
-
-
----
-
-# 📊 BI Datasets
-
-RefactorScope generates datasets suitable for BI tools:
-
-- Power BI
-- QuickSight
-- custom analytics
-
-This enables **historical architecture tracking**.
-
----
-
-# 🤖 AI Integration
-
-Reports can be exported as **AI-ready structural dumps**.
-
-Use cases:
-
-- AI-assisted architecture review
-- automated refactor suggestions
-- design audits
-
----
-
-# ⚙️ Configuration
-
-Behavior is controlled through `refactorscope.json`.
-
+RefactorScope's entire behavior is governed by the refactorscope.json file, which must be placed in your execution root.
+Example Configuration
 ```json
 {
-  "RootPath": "C:\\project",
-  "Include": [ "src" ],
-  "Exclude": [ "bin", "obj", "tests" ],
-  "Parser": "CSharpRegex"
+  "rootPath": "C:\\Users\\romul\\source\\repos\\Scriptome",
+  "outputPath": "refactorscope-output",
+  "include": [],
+  "exclude": [ "bin", "obj", ".vs", "refactorscope-output" ],
+  "parser": "Selective",
+  "estimator": { "enabled": true },
+  "analyzers": {
+    "zombie": true,
+    "zombieRefinement": true,
+    "architecture": true,
+    "coreIsolation": true,
+    "entrypoints": true,
+    "coupling": true,
+    "solid": true,
+    "statistics": true
+  },
+  "zombieDetection": {
+    "enableRefinement": true,
+    "globalRateThreshold_DI": 0.25,
+    "globalRateThreshold_Interface": 0.20,
+    "diProbability": 0.15,
+    "interfaceProbability": 0.20,
+    "minUnresolvedProbabilityThreshold": 0.30
+  },
+  "layerRules": {
+    "UI": { "namespaceContains": [ "Reporting", "CLI" ] },
+    "Core": { "namespaceContains": [ "Core", "Analyzers", "Model" ] },
+    "Infra": { "namespaceContains": [ "Infrastructure" ] }
+  },
+  "exporters": [ "htmlDashboard", "dumpAnalysis" ],
+  "dashboard": { "theme": "midnight-blue" }
 }
-🚀 Usage
+```
+
+Options Breakdown
+
+    ⚠️ ARCHITECTURAL RECOMMENDATION: It is strongly advised to keep the values in the zombieDetection and analyzers sections at their factory defaults. The system has been exhaustively calibrated to reduce false positives. Altering the probabilistic thresholds can destabilize the results and the effort calculation (RDI).
+
+    rootPath / outputPath: Absolute or relative paths for the project to be analyzed and where the reports will be generated.
+
+    include / exclude: Arrays of strings to filter directories. (It is highly recommended to always exclude bin, obj, and test folders).
+
+    parser: Defines the reading engine.
+
+        Options: "CSharpRegex" (Fast), "Selective" (Hybrid and Recommended), "Adaptive" (Recovery fallback), "Incremental".
+
+    analyzers & estimator: Toggle switches (true/false) to turn parts of the system's intelligence on/off. Keep them all active for the full experience.
+
+    zombieDetection: (Legacy naming for Structural Candidates). Controls the weights of the Dependency Injection and Polymorphism heuristics. Keep the default values.
+
+    layerRules: Extremely important. Here you map your architecture. Use namespaceContains, nameStartsWith, or nameEquals to teach RefactorScope which folders/namespaces belong to which layers (UI, Core, Infra, etc).
+
+    exporters: Which formats to output.
+
+        Options: "htmlDashboard", "dumpAnalysis" (Consolidated JSON), "dumpIA" (JSON optimized for LLM prompts).
+
+    dashboard.theme: Defines the visual palette of the panels.
+
+        Options: "midnight-blue" (Default), "ember-ops", "neon-grid".
+
+🚀 Quick Start
+
+With your refactorscope.json configured:
+Bash
+
+# Running via source code
 dotnet run --project RefactorScope.CLI
 
-or
-
+# Or via installed tool
 RefactorScope analyze
-🔮 Roadmap
 
-Future improvements:
-
-Roslyn-based parser
-
-ScottPlot visualizations
-
-historical architecture analysis
-
-plug-in library mode
-
-advanced CI integration
-
-multi-language analysis
-
-⚠️ Limitations
-
-The analysis is purely structural and static.
-
-Runtime mechanisms may generate false positives:
-
-Dependency Injection
-
-Reflection
-
-framework wiring
-
-plugin architectures
-
-Human review is always required.
-
-📜 License
-
-Open for educational use, research and architectural auditing.
+Human review is always required. RefactorScope points out the probabilistic evidence; the architect makes the refactoring decisions.

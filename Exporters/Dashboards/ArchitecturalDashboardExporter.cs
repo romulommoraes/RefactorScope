@@ -4,7 +4,7 @@ using RefactorScope.Core.Results;
 using RefactorScope.Exporters.Styling;
 using System.Text;
 using RefactorScope.Exporters.Dashboards.Renderers;
-using RefactorScope.Exporters.Dashboards.RouteMap;
+using RefactorScope.Exporters.Projections.Architecture;
 
 namespace RefactorScope.Exporters.Dashboards
 {

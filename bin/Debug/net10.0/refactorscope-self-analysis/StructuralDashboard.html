@@ -175,9 +175,9 @@
             <span class="optic-label">OPTIC_MODE</span>
             <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
         </div>
-        <div><b>Generated:</b> 12-03-2026 01:02 UTC</div>
+        <div><b>Generated:</b> 12-03-2026 02:08 UTC</div>
         <div><b>Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
-        <div><b>Total Types:</b> 191</div>
+        <div><b>Total Types:</b> 190</div>
         <div><b>Hygiene:</b> 🟢 Healthy</div>
     </div>
 </div>
@@ -190,7 +190,7 @@
 <div class="grid-kpis structural-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Total Classes</div>
-        <div class="value">191</div>
+        <div class="value">190</div>
         <div class="hint">Total number of structurally classified types</div>
     </div>
 
@@ -202,7 +202,7 @@
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Dead Code Candidates</div>
-        <div class="value">48</div>
+        <div class="value">47</div>
         <div class="hint">Possible dead code types</div>
     </div>
 
@@ -214,13 +214,13 @@
 
     <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">1</div>
+        <div class="value">0</div>
         <div class="hint">Candidates who could not be refuted as dead code</div>
     </div>
 
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Namespace Drift</div>
-        <div class="value">13</div>
+        <div class="value">0</div>
         <div class="hint">Types whose namespace remains incompatible with folder structure</div>
     </div>
 
@@ -238,7 +238,7 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Code Smell Index</div>
-        <div class="value">12,5</div>
+        <div class="value">11,1</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
@@ -256,7 +256,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">A / I / D</div>
-        <div class="value" style="font-size:22px;">0,05 / 0,49 / 0,47</div>
+        <div class="value" style="font-size:22px;">0,05 / 0,54 / 0,41</div>
         <div class="hint">Average abstractness, instability and distance from main sequence</div>
     </div>
 </div>
@@ -270,16 +270,16 @@
     <h3>Structural Interpretation</h3>
     <ul class="clean">
         <li>Core isolation detected. Architectural boundaries appear preserved.</li>
-        <li>Moderate namespace drift detected. Minor structural inconsistencies present.</li>
+        <li>Namespace hierarchy aligned with project structure.</li>
         <li>No global namespace usage detected.</li>
-        <li>Potential dead or orphaned code detected through structural analysis.</li>
+        <li>No unresolved structural candidates detected.</li>
         <li>No SOLID design alerts detected.</li>
         <li>Critical implicit coupling detected. System architecture may be entangled.</li>
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge red"><span class="badge-dot"></span> Unresolved: 1</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 13</div>
+        <div class="badge green"><span class="badge-dot"></span> Unresolved: 0</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 0</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 0</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 47</div>
     </div>
@@ -308,9 +308,9 @@
 <div id="p5-arch-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const archRadarSketch = (p) => {
-    const data = [25.131, 24.607, 0.524, 6.806, 0, 14.66, 24.607, 0];
+    const data = [24.737, 24.737, 0, 0, 0, 14.737, 24.737, 0];
     const labels = ["Dead Code", "Pattern", "Unresolved", "Drift", "Global", "Core", "Coupling", "SOLID"];
-    const rawValues = [48, 47, 1, 13, 0, 28, 47, 0];
+    const rawValues = [47, 47, 0, 0, 0, 28, 47, 0];
     const maxRadius = 110;
     let hovered = null;
 
@@ -463,7 +463,7 @@ new p5(archRadarSketch);
 <div id="p5-galaxy-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const galaxySketch = (p) => {
-    const points = [{ name: 'Exporters', inst: 0.595, abs: 0, fan: 156, dist: 0.405, col: '#ff8a3d', hl: true },{ name: 'Analyzers', inst: 0.686, abs: 0.1, fan: 72, dist: 0.214, col: '#ff8a3d', hl: true },{ name: 'Parsers', inst: 0.627, abs: 0, fan: 42, dist: 0.373, col: '#ff8a3d', hl: true },{ name: 'Execution', inst: 0.571, abs: 0.25, fan: 20, dist: 0.179, col: '#ffc15d', hl: true },{ name: 'CLI', inst: 0.846, abs: 0, fan: 11, dist: 0.154, col: '#ffc15d', hl: false },{ name: 'Core', inst: 0.018, abs: 0.101, fan: 9, dist: 0.881, col: '#ffb14d', hl: false },{ name: 'Estimation', inst: 0.375, abs: 0, fan: 6, dist: 0.625, col: '#ffb14d', hl: false },{ name: 'Infrastructure', inst: 0.5, abs: 0, fan: 6, dist: 0.5, col: '#ffb14d', hl: false },{ name: 'Statistics', inst: 0.667, abs: 0, fan: 4, dist: 0.333, col: '#ffb14d', hl: false },{ name: 'Debug', inst: 0, abs: 0, fan: 0, dist: 1, col: '#ffb14d', hl: false },];
+    const points = [{ name: 'Exporters', inst: 0.595, abs: 0, fan: 156, dist: 0.405, col: '#ff8a3d', hl: true },{ name: 'Analyzers', inst: 0.686, abs: 0.1, fan: 72, dist: 0.214, col: '#ff8a3d', hl: true },{ name: 'Parsers', inst: 0.627, abs: 0, fan: 42, dist: 0.373, col: '#ff8a3d', hl: true },{ name: 'Execution', inst: 0.571, abs: 0.25, fan: 20, dist: 0.179, col: '#ffc15d', hl: true },{ name: 'CLI', inst: 0.846, abs: 0, fan: 11, dist: 0.154, col: '#ffc15d', hl: false },{ name: 'Core', inst: 0.018, abs: 0.101, fan: 9, dist: 0.881, col: '#ffb14d', hl: false },{ name: 'Estimation', inst: 0.375, abs: 0, fan: 6, dist: 0.625, col: '#ffb14d', hl: false },{ name: 'Infrastructure', inst: 0.5, abs: 0, fan: 6, dist: 0.5, col: '#ffb14d', hl: false },{ name: 'Statistics', inst: 0.667, abs: 0, fan: 4, dist: 0.333, col: '#ffb14d', hl: false },];
     let hovered = null;
     
     p.setup = () => {
@@ -595,9 +595,9 @@ new p5(galaxySketch);
 <div style='flex:1; min-width:280px;'>
 <ul class='clean'>
 <li>Core isolation detected. Architectural boundaries appear preserved.</li>
-<li>Moderate namespace drift detected. Minor structural inconsistencies present.</li>
+<li>Namespace hierarchy aligned with project structure.</li>
 <li>No global namespace usage detected.</li>
-<li>Potential dead or orphaned code detected through structural analysis.</li>
+<li>No unresolved structural candidates detected.</li>
 <li>No SOLID design alerts detected.</li>
 <li>Critical implicit coupling detected. System architecture may be entangled.</li>
 </ul>
@@ -631,13 +631,6 @@ new p5(galaxySketch);
         </tr>
     </thead>
     <tbody>
-<tr class='row-alert'>
-    <td>FakeZombieService.cs</td>
-    <td>RefactorScope\Debug</td>
-    <td>0</td>
-    <td>Unreferenced</td>
-    <td>Review Required</td>
-</tr>
 <tr class='row-warning'>
     <td>AnalysisContextExtensions.cs</td>
     <td>RefactorScope\Core\Context</td>
@@ -1417,7 +1410,7 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>DashboardMetricsCalculator.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>RefactorScope\Exporters\Projections</td>
     <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1431,14 +1424,14 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>ArchitectureVisualizationDecision.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ArchitectureVisualizationResolver.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1515,7 +1508,7 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>DashboardMetricsCalculator.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>RefactorScope\Exporters\Projections</td>
     <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1641,7 +1634,7 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>DashboardMetricsCalculator.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>RefactorScope\Exporters\Projections</td>
     <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1711,35 +1704,35 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>ModuleRouteEdge.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ModuleRouteMapBuilder.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ModuleRouteMapModel.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ModuleRouteMapRenderer.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ModuleRouteNode.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1802,7 +1795,7 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>DashboardMetricsCalculator.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>RefactorScope\Exporters\Projections</td>
     <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1865,28 +1858,28 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>SimpleStructureMapBuilder.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>SimpleStructureMapModel.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>SimpleStructureMapRenderer.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>SimpleStructureMapModel.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope\Exporters\Projections\Architecture</td>
     <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1971,104 +1964,6 @@ new p5(galaxySketch);
     </tbody>
 </table>
 </div>
-</div>
-<div class="section">
-    <div class="section-title">
-        <h2>Namespace Drift Review</h2>
-        <div class="line"></div>
-    </div>
-    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-        <table class="link-table">
-            <thead>
-                <tr>
-                    <th>Class</th>
-                    <th>Folder</th>
-                    <th>Namespace</th>
-                    <th>Expected Namespace</th>
-                </tr>
-            </thead>
-            <tbody>
-<tr class="row-warning">
-    <td>QualityDashboardExporter.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
-    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
-    <td>RefactorScope.Exporters.Dashboards</td>
-</tr>
-<tr class="row-warning">
-    <td>QualityControlChartsRenderer.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Renderers</td>
-    <td>RefactorScope.Exporters.Dashboards</td>
-    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
-</tr>
-<tr class="row-warning">
-    <td>ArchitectureVisualizationDecision.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>ArchitectureVisualizationResolver.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>ModuleRouteEdge.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>ModuleRouteMapBuilder.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>ModuleRouteMapModel.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>ModuleRouteMapRenderer.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>ModuleRouteNode.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>SimpleStructureMapBuilder.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>SimpleStructureMapModel.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>SimpleStructureMapRenderer.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-<tr class="row-warning">
-    <td>SimpleStructureMapModel.cs</td>
-    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
-    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
-    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
-</tr>
-            </tbody>
-        </table>
-    </div>
 </div>
 <div class="section">
     <div class="section-title">
@@ -2270,33 +2165,6 @@ new p5(galaxySketch);
     <td>18</td>
 </tr>
 <tr>
-    <td>HubDashboardMetrics</td>
-    <td>Exporters</td>
-    <td>Core</td>
-    <td>16</td>
-    <td>3</td>
-    <td>0,84</td>
-    <td>16</td>
-</tr>
-<tr>
-    <td>ArchitecturalDashboardMetrics</td>
-    <td>Exporters</td>
-    <td>Core</td>
-    <td>16</td>
-    <td>3</td>
-    <td>0,84</td>
-    <td>16</td>
-</tr>
-<tr>
-    <td>QualityDashboardMetrics</td>
-    <td>Exporters</td>
-    <td>Core</td>
-    <td>16</td>
-    <td>4</td>
-    <td>0,80</td>
-    <td>16</td>
-</tr>
-<tr>
     <td>HtmlDashboardExporter</td>
     <td>Exporters</td>
     <td>Core</td>
@@ -2349,6 +2217,33 @@ new p5(galaxySketch);
     <td>0</td>
     <td>1,00</td>
     <td>5</td>
+</tr>
+<tr>
+    <td>HubDashboardMetrics</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>16</td>
+    <td>3</td>
+    <td>0,84</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>ArchitecturalDashboardMetrics</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>16</td>
+    <td>3</td>
+    <td>0,84</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>QualityDashboardMetrics</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>16</td>
+    <td>4</td>
+    <td>0,80</td>
+    <td>16</td>
 </tr>
 <tr>
     <td>MarkdownReportExporter</td>

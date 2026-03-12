@@ -1,4 +1,5 @@
 ﻿using RefactorScope.Core.Results;
+using RefactorScope.Exporters.Projections;
 using RefactorScope.Exporters.Styling;
 using Spectre.Console;
 using System.Diagnostics;
