@@ -1,0 +1,25 @@
+Tenho a impressão de que quase todo desenvolvedor já passou por isso: uma mudança puxa outra, começam os erros em cascata, aparecem warnings por todo lado e o projeto para de compilar com confiança.
+
+Em algum momento, você já não sabe mais o que é legado, o que ainda é usado, onde o acoplamento apertou e até onde os namespaces deixaram de fazer sentido.
+
+Cheguei exatamente nesse ponto com um projeto pessoal em C#. A refatoração estava ficando tão dolorosa que considerei o caminho mais tentador: jogar tudo fora e começar do zero.
+
+Mas aí veio a pergunta que mudou o rumo da história: e se, em vez de recomeçar no escuro, eu tivesse uma ferramenta para mostrar onde estavam as tensões arquiteturais da base?
+
+Foi assim que nasceu o RefactorScope. 🚀
+
+Nos últimos 13 dias, do primeiro commit ao MVP, construí uma ferramenta de análise estrutural estática para projetos .NET. Ela nasceu de uma dor prática, mas evoluiu para um scanner forense de higiene estrutural capaz de responder a perguntas difíceis:
+
+🔍 Onde existe acoplamento implícito?
+🧟‍♂️ Onde há candidatos reais a código morto?
+🏗️ Onde o legado se mistura com o código atual?
+📂 Onde há drift estrutural entre módulos e namespaces?
+📊 Quão saudável está a arquitetura (de forma auditável)?
+
+O projeto combina diferentes estratégias de parsing, heurísticas para reduzir falsos positivos e uma camada rica de exportação (dashboards em estilo HUD/cyberpunk, relatórios MD e datasets).
+
+Trabalhei sozinho, mas com forte apoio de IA. E aqui fica um aprendizado: usei ChatGPT e Gemini não para "gerar código cego", mas muitas vezes colocando um para auditar as decisões do outro. Foi muito menos sobre automatizar a digitação e mais sobre ter uma "fricção crítica" para pensar, revisar e arquitetar melhor.
+
+O RefactorScope nasceu para me ajudar a enxergar uma refatoração difícil. No caminho, virou um produto open-source e me fez crescer muito como engenheiro.
+
+Hoje lanço o MVP com muita satisfação! O link para o GitHub, com documentação e exemplos dos dashboards, está nos comentários. 👇

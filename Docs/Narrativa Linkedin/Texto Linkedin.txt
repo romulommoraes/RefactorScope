@@ -1,0 +1,44 @@
+Tenho a impressão de que quase todo desenvolvedor já passou por isso em alguma refatoração: uma mudança puxa outra, começam os erros em cascata, aparecem warnings por todo lado, o projeto para de compilar com confiança… e em algum momento você já não sabe mais o que é legado, o que ainda é usado, onde o acoplamento apertou e até onde os namespaces deixaram de fazer sentido.
+
+Eu cheguei exatamente nesse ponto com um projeto pessoal.
+
+A refatoração estava ficando tão dolorosa que eu considerei o caminho mais tentador: abandonar a base atual e começar tudo do zero, com uma arquitetura nova.
+
+Mas aí veio a pergunta que mudou o rumo da história:
+e se, em vez de recomeçar no escuro, eu tivesse uma ferramenta para mostrar onde estavam as tensões arquiteturais da base?
+
+Foi assim que nasceu o RefactorScope.
+
+Nos últimos 13 dias, do primeiro commit até o lançamento do MVP, eu parei o que estava fazendo para construir uma ferramenta de análise estrutural estática voltada para auditoria e refatoração de projetos C#. Ela nasceu de uma dor prática, mas acabou evoluindo para algo maior: um scanner de higiene estrutural capaz de inspecionar qualquer codebase C# com uma visão mais forense do que os linters tradicionais.
+
+A proposta do RefactorScope é ajudar a responder perguntas difíceis demais para uma refatoração grande feita no braço:
+
+onde existe acoplamento implícito
+
+onde o legado se mistura com código atual
+
+onde há candidatos reais a código morto
+
+onde há drift estrutural entre módulos, pastas e namespaces
+
+quão saudável está a arquitetura de forma visual e auditável
+
+Tecnicamente, o projeto combina estratégias diferentes de parsing estrutural, heurísticas para reduzir falsos positivos e uma camada de exportação rica, com dashboards HTML, relatórios em Markdown e datasets para análise posterior.
+
+Entre as partes que mais me deram orgulho nesse processo estão:
+
+o parser híbrido, tentando equilibrar velocidade e resiliência
+
+a heurística probabilística para refinar detecção de código morto
+
+os dashboards visuais em estilo HUD/cyberpunk
+
+a própria arquitetura da ferramenta, que precisou nascer modular para não repetir o problema que eu estava tentando resolver
+
+Trabalhei sozinho, mas com forte apoio de IA no processo — principalmente ChatGPT e Gemini, muitas vezes um auditando o código e as decisões do outro. No fim, isso acabou sendo menos “usar IA para gerar código” e mais “usar IA como fricção crítica para pensar, revisar e decidir melhor”.
+
+O RefactorScope nasceu para me ajudar a enxergar melhor uma refatoração difícil. No caminho, virou um produto agnóstico — e também um projeto que me fez crescer bastante como desenvolvedor, engenheiro e arquiteto de software.
+
+Hoje estou lançando o MVP com muita satisfação.
+
+GitHub, documentação e dashboards vêm junto.
