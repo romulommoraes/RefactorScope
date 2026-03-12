@@ -106,7 +106,7 @@ public sealed class ParsingDashboardExporter
             themeFileName));
 
         // =====================================================
-        // 5. TOPBAR
+        // 5. TOPBAR COM OPTIC MODE
         // =====================================================
 
         sb.AppendLine($"""
@@ -115,10 +115,16 @@ public sealed class ParsingDashboardExporter
         <div class="brand-kicker">RefactorScope // Parsing Module</div>
         <h1>Parsing Dashboard</h1>
         <div class="subtitle">Parser: <b>{Html(result.ParserName)}</b></div>
+           {DashboardHtmlShell.RenderTacticalNav("Architectural")}
     </div>
 
-    <div class="run-meta">
-        <div><b>Generated:</b> {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC</div>
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> {DateTime.UtcNow:dd-MM-yyyy HH:mm} UTC</div>
         <div><b>Target:</b> {Html(targetName)}</div>
         <div><b>Confidence:</b> {normalizedConfidence:P0}</div>
         <div><b>Confidence Band:</b> {Html(parserConfidenceBand)}</div>

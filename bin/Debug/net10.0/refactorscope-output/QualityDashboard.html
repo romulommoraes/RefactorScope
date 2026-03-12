@@ -9,9 +9,153 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -19,11 +163,22 @@
         <div class="brand-kicker">RefactorScope // Quality Module</div>
         <h1>Quality / Gates Dashboard</h1>
         <div class="subtitle">Target Project: <b>Scriptome</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
+
     </div>
 
-    <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-11 06:18 UTC</div>
-        <div><b>Parser:</b> HybridParser (Adaptive)</div>
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 2026-03-11 22:38 UTC</div>
+        <div><b>Parser:</b> CSharpRegex</div>
         <div><b>Readiness:</b> Ready</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
     </div>
@@ -37,13 +192,13 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Parser Confidence</div>
-        <div class="value">95%</div>
+        <div class="value">93%</div>
         <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
     </div>
 
-    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
         <div class="label">Effort Confidence</div>
-        <div class="value">0,64</div>
+        <div class="value">0,54</div>
         <div class="hint">Confidence level attached to the current refactor effort estimate</div>
     </div>
 
@@ -61,7 +216,7 @@
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">17</div>
+        <div class="value">18</div>
         <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
     </div>
 
@@ -79,7 +234,7 @@
     <div class="dual">
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Interpretation</h3>
-    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, gate readiness is high, statistics coverage is high, and the overall quality snapshot is high.</p>
+    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is low, gate readiness is high, statistics coverage is high, and the overall quality snapshot is high.</p>
 
     <ul class="clean" style="margin-top:16px;">
         <li>Fitness gates summarize whether the execution appears ready for interpretation.</li>
@@ -93,19 +248,19 @@
 
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge green"><span class="badge-dot"></span> Parser: High</div>
-        <div class="badge amber"><span class="badge-dot"></span> Effort: Moderate</div>
+        <div class="badge red"><span class="badge-dot"></span> Effort: Low</div>
         <div class="badge green"><span class="badge-dot"></span> Gates: High</div>
         <div class="badge green"><span class="badge-dot"></span> Statistics: High</div>
         <div class="badge green"><span class="badge-dot"></span> Overall: High</div>
     </div>
 
     <ul class="clean">
-        <li><b>Execution Time:</b> 538 ms</li>
+        <li><b>Execution Time:</b> 288 ms</li>
         <li><b>Files:</b> 174</li>
         <li><b>Types:</b> 161</li>
-        <li><b>References:</b> 588</li>
-        <li><b>Estimated Hours:</b> 19,2</li>
-        <li><b>RDI:</b> 48</li>
+        <li><b>References:</b> 416</li>
+        <li><b>Estimated Hours:</b> 13,2</li>
+        <li><b>RDI:</b> 33</li>
         <li><b>Gate Readiness:</b> 1,00</li>
         <li><b>Statistics Support Score:</b> 1,00</li>
     </ul>
@@ -124,7 +279,7 @@
 <div id="p5-quality-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const qualityRadarSketch = (p) => {
-    const data = [95, 64.28, 100, 100, 57.764, 91.106];
+    const data = [92.529, 53.597, 100, 100, 55.28, 88.104];
     const labels = ["Parser", "Effort", "Statistics", "Gates", "Unresolved", "Overall"];
     const maxRadius = 100;
 
@@ -197,19 +352,19 @@ new p5(qualityRadarSketch);
 <script>
 const trustSankeySketch = (p) => {
     const nodes = [
-        { id: 0, name: "Parser",      x: 20,  y: 52,  val: 95, col: '#6ea8ff' },
-        { id: 1, name: "Effort",      x: 20,  y: 156, val: 64, col: '#ffc15d' },
+        { id: 0, name: "Parser",      x: 20,  y: 52,  val: 93, col: '#6ea8ff' },
+        { id: 1, name: "Effort",      x: 20,  y: 156, val: 54, col: '#ffc15d' },
         { id: 2, name: "Statistics",  x: 20,  y: 260, val: 100, col: '#ff9a3c' },
         { id: 3, name: "Fitness Gates",x: 360, y: 156, val: 100, col: '#7fd36b' },
-        { id: 4, name: "Overall Readiness", x: 700, y: 156, val: 91, col: '#ff8a3d' }
+        { id: 4, name: "Overall Readiness", x: 700, y: 156, val: 88, col: '#ff8a3d' }
     ];
 
     const links = [
-        { src: 0, tgt: 3, val: 95, col: '#6ea8ff', offset: 0.1 },
-        { src: 1, tgt: 3, val: 64, col: '#ffc15d', offset: 0.4 },
+        { src: 0, tgt: 3, val: 93, col: '#6ea8ff', offset: 0.1 },
+        { src: 1, tgt: 3, val: 54, col: '#ffc15d', offset: 0.4 },
         { src: 2, tgt: 3, val: 100, col: '#ff9a3c', offset: 0.7 },
         { src: 3, tgt: 4, val: 100, col: '#7fd36b', offset: 0.3 },
-        { src: 1, tgt: 4, val: 32, col: '#ffb14d', offset: 0.6 },
+        { src: 1, tgt: 4, val: 27, col: '#ffb14d', offset: 0.6 },
         { src: 2, tgt: 4, val: 50, col: '#ff9a3c', offset: 0.9 }
     ];
 
@@ -326,10 +481,10 @@ new p5(trustSankeySketch);
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Effort Estimation</h3>
     <ul class="clean">
-        <li><b>Difficulty:</b> Moderate</li>
-        <li><b>Estimated Hours:</b> 19,2</li>
-        <li><b>Confidence:</b> 0,64</li>
-        <li><b>RDI:</b> 48</li>
+        <li><b>Difficulty:</b> Low</li>
+        <li><b>Estimated Hours:</b> 13,2</li>
+        <li><b>Confidence:</b> 0,54</li>
+        <li><b>RDI:</b> 33</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -338,14 +493,14 @@ new p5(trustSankeySketch);
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.24;">
-                        <span class="data">19,2h</span>
+                    <td style="--size: 0.165;">
+                        <span class="data">13,2h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.6428;">
-                        <span class="data">0,64</span>
+                    <td style="--size: 0.536;">
+                        <span class="data">0,54</span>
                     </td>
                 </tr>
             </tbody>
@@ -368,15 +523,15 @@ new p5(trustSankeySketch);
 </tr>
 <tr>
     <td>References Per Class</td>
-    <td>3.652</td>
+    <td>2.584</td>
 </tr>
 <tr>
     <td>Mean Coupling</td>
-    <td>3.652</td>
+    <td>2.584</td>
 </tr>
 <tr>
     <td>Unresolved Candidate Ratio</td>
-    <td>0.106</td>
+    <td>0.112</td>
 </tr>
 <tr>
     <td>Namespace Drift Ratio</td>
@@ -481,6 +636,55 @@ new p5(trustSankeySketch);
 }
 </style>
 <div class='footer'>Generated by RefactorScope Quality / Gates Dashboard</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

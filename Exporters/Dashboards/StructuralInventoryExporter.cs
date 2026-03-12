@@ -23,8 +23,6 @@ namespace RefactorScope.Exporters.Dashboards
             ConsolidatedReport report,
             string themeFileName)
         {
-
-
             var classification = report.Results
                 .OfType<ArchitecturalClassificationResult>()
                 .FirstOrDefault();
@@ -109,9 +107,14 @@ namespace RefactorScope.Exporters.Dashboards
         <div class="brand-kicker">RefactorScope // Structural Module</div>
         <h1>Structural Dashboard</h1>
         <div class="subtitle">Target Project: <b>{Html(targetName)}</b></div>
+           {DashboardHtmlShell.RenderTacticalNav("Structural")}
     </div>
 
     <div class="run-meta">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
         <div><b>Generated:</b> {report.ExecutionTime:dd-MM-yyyy HH:mm} UTC</div>
         <div><b>Scope:</b> {Html(report.TargetScope)}</div>
         <div><b>Total Types:</b> {hygiene.TotalClasses}</div>
@@ -119,6 +122,7 @@ namespace RefactorScope.Exporters.Dashboards
     </div>
 </div>
 """);
+
             sb.AppendLine("""
 <div class="section">
     <div class="section-title">
@@ -137,10 +141,10 @@ namespace RefactorScope.Exporters.Dashboards
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
-    <div class="label">Namespaces</div>
-    <div class="value">{namespaceCount}</div>
-    <div class="hint">Distinct namespaces represented in the scope</div>
-</div>
+        <div class="label">Namespaces</div>
+        <div class="value">{namespaceCount}</div>
+        <div class="hint">Distinct namespaces represented in the scope</div>
+    </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Dead Code Candidates</div>
@@ -647,14 +651,28 @@ function sortTable(n) {
             CouplingResult? coupling)
         {
             var sb = new StringBuilder();
+
+            // IMPORTANTE:
+            // O exporter não implementa tooltip/glow por conta própria.
+            // Quem faz isso é o renderer interativo.
+            // Portanto, a transposição "equivalente" aqui é centralizar o uso
+            // do ChartsRendererP5 que deve conter os efeitos de hover, tooltip e glow.
             var render = new ChartsRendererP5();
 
             sb.AppendLine("<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>");
-            sb.AppendLine(render.RenderRadarSvgEnhanced(hygiene, breakdown, solid, implicitCoupling));
 
+            // Radar estrutural
+            sb.AppendLine(render.RenderRadarSvgEnhanced(
+                hygiene,
+                breakdown,
+                solid,
+                implicitCoupling));
+
+            // Galaxy / mapa arquitetural
             if (coupling != null)
                 sb.AppendLine(render.RenderArchitecturalGalaxyEnhanced(coupling));
 
+            // Painel textual complementar
             sb.AppendLine("<div style='flex:1; min-width:280px;'>");
             sb.AppendLine("<ul class='clean'>");
             sb.AppendLine($"<li>{Html(GetCoreDiagnosis(hygiene))}</li>");
@@ -665,6 +683,7 @@ function sortTable(n) {
             sb.AppendLine($"<li>{Html(GetImplicitCouplingDiagnosis(hygiene, implicitCoupling))}</li>");
             sb.AppendLine("</ul>");
             sb.AppendLine("</div>");
+
             sb.AppendLine("</div>");
 
             return sb.ToString();

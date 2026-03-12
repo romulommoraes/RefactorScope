@@ -10,24 +10,19 @@ using Spectre.Console;
 
 namespace RefactorScope.CLI;
 
-/// <summary>
-/// Encapsula o fluxo de CLI do Parser Arena / Comparative mode,
-/// evitando que o Program.cs concentre responsabilidades visuais
-/// e operacionais específicas desse modo.
-/// </summary>
 public static class ParserArenaCliRunner
 {
     public static bool RunSingleProject(
         RefactorScopeConfig config,
-        bool isSelfAnalysis)
+        AnalysisScope scope)
     {
         try
         {
-            TerminalRenderer.Section("Parser Arena");
+            TerminalRenderer.Section("Parser Comparative");
 
-            var modeLabel = isSelfAnalysis
+            var modeLabel = scope == AnalysisScope.Self
                 ? "Comparative mode selected for self analysis."
-                : "Comparative mode selected for single-project analysis.";
+                : "Comparative mode selected for current target.";
 
             TerminalRenderer.Step(modeLabel);
 
@@ -53,13 +48,13 @@ public static class ParserArenaCliRunner
 
             var strategies = new[]
             {
-            ParserStrategy.RegexFast,
-            ParserStrategy.Selective,
-            ParserStrategy.AdaptiveExperimental,
-            ParserStrategy.IncrementalExperimental
-        };
+                ParserStrategy.RegexFast,
+                ParserStrategy.Selective,
+                ParserStrategy.AdaptiveExperimental,
+                ParserStrategy.IncrementalExperimental
+            };
 
-            TerminalRenderer.Success($"Arena target: {config.RootPath}");
+            TerminalRenderer.Success($"Comparative target: {config.RootPath}");
 
             var effectiveExcludes = BuildSingleProjectExcludes(config);
 
@@ -129,8 +124,14 @@ public static class ParserArenaCliRunner
             RenderDetailedResults(wrappedResults);
             RenderWinners(wrappedResults);
 
+            RunSingleProjectComparativeDashboardExporter(
+                wrappedResults,
+                ResolveArenaOutputPath(),
+                ResolveThemeFileName(config),
+                scope);
+
             TerminalRenderer.Success("Comparative analysis executed successfully.");
-            Console.WriteLine("[INFO] Next step: add optional batch mode as a separate startup mode.");
+            Console.WriteLine("[INFO] Comparative HTML dashboard generated.");
 
             return true;
         }
@@ -142,12 +143,17 @@ public static class ParserArenaCliRunner
         }
     }
 
-    public static bool RunBatch(RefactorScopeConfig config)
+    public static bool RunBatch(
+        RefactorScopeConfig config,
+        AnalysisScope scope)
     {
         try
         {
             TerminalRenderer.Section("Parser Arena");
-            TerminalRenderer.Step("Comparative batch mode selected.");
+            TerminalRenderer.Step(
+                scope == AnalysisScope.Self
+                    ? "Batch Arena selected under self-analysis scope."
+                    : "Batch Arena selected under normal-analysis scope.");
 
             var batchPath = ResolveBatchPath(config);
 
@@ -255,14 +261,6 @@ public static class ParserArenaCliRunner
 
                         ParserArenaScoreCalculator.ApplyScores(projectResult);
                         projectResults.Add(projectResult);
-
-                        var themeFileName = "theme-ember-ops.css"; // ou o resolver que você já usa
-                        DashboardAssetCopier.CopyAll(config.OutputPath, themeFileName);
-
-                        var arenaHtmlPath = Path.Combine(config.OutputPath, "ParserArenaDashboard.html");
-
-                        var exporter = new ParserArenaDashboardExporter();
-                        exporter.Export(projectResults, arenaHtmlPath, themeFileName);
                     }
 
                     return true;
@@ -271,8 +269,13 @@ public static class ParserArenaCliRunner
             RenderDetailedResults(projectResults);
             RenderWinners(projectResults);
 
+            RunBatchArenaDashboardExporter(
+                projectResults,
+                ResolveArenaOutputPath(),
+                ResolveThemeFileName(config));
+
             TerminalRenderer.Success("Comparative batch executed successfully.");
-            Console.WriteLine("[INFO] Next step: export Arena JSON, CSV and comparative HTML dashboard.");
+            Console.WriteLine("[INFO] Arena comparative HTML dashboard generated.");
 
             return true;
         }
@@ -284,17 +287,80 @@ public static class ParserArenaCliRunner
         }
     }
 
-    /// <summary>
-    /// Batch is resolved from the effective project root.
-    ///
-    /// Example:
-    ///   Configured root: C:\Repos\RefactorScope
-    ///   Effective root : C:\Repos\RefactorScope\RefactorScope
-    ///   Batch          : C:\Repos\RefactorScope\Batch
-    /// </summary>
     public static string ResolveBatchPath(RefactorScopeConfig config)
     {
         return @"C:\Users\romul\source\repos\RefactorScope\Batch";
+    }
+
+    private static string ResolveArenaOutputPath()
+    {
+        var outputPath = Path.Combine(AppContext.BaseDirectory, "Batch");
+        Directory.CreateDirectory(outputPath);
+        return outputPath;
+    }
+
+    private static void RunSingleProjectComparativeDashboardExporter(
+        IReadOnlyList<ParserArenaProjectResult> results,
+        string outputDirectory,
+        string themeFileName,
+        AnalysisScope scope)
+    {
+        try
+        {
+            if (results == null || results.Count == 0)
+                return;
+
+            Directory.CreateDirectory(outputDirectory);
+
+            DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+            var fileName = scope == AnalysisScope.Self
+                ? "ParserComparativeSelfDashboard.html"
+                : "ParserComparativeDashboard.html";
+
+            var htmlPath = Path.Combine(outputDirectory, fileName);
+
+            var exporter = new ParserArenaDashboardExporter();
+            exporter.Export(results, htmlPath, themeFileName);
+
+            TerminalRenderer.Success(
+                scope == AnalysisScope.Self
+                    ? "parser-comparative-self-dashboard gerado"
+                    : "parser-comparative-dashboard gerado");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO AO GERAR HTML - parser-comparative-dashboard]: {ex.Message}");
+            CrashLogger.Log(ex, "HTML_EXPORT_PARSER-COMPARATIVE-DASHBOARD");
+        }
+    }
+
+    private static void RunBatchArenaDashboardExporter(
+        IReadOnlyList<ParserArenaProjectResult> results,
+        string outputDirectory,
+        string themeFileName)
+    {
+        try
+        {
+            if (results == null || results.Count == 0)
+                return;
+
+            Directory.CreateDirectory(outputDirectory);
+
+            DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+            var htmlPath = Path.Combine(outputDirectory, "ParserArenaDashboard.html");
+
+            var exporter = new ParserArenaDashboardExporter();
+            exporter.Export(results, htmlPath, themeFileName);
+
+            TerminalRenderer.Success("parser-arena-dashboard gerado");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO AO GERAR HTML - parser-arena-dashboard]: {ex.Message}");
+            CrashLogger.Log(ex, "HTML_EXPORT_PARSER-ARENA-DASHBOARD");
+        }
     }
 
     private static void RenderDetailedResults(
@@ -337,7 +403,7 @@ public static class ParserArenaCliRunner
                     ShortenStrategyName(run.Strategy),
                     statusMarkup,
                     run.ComparativeScore.ToString("0.00"),
-                    run.Confidence.ToString("0.00"),
+                    Clamp01(run.Confidence).ToString("0.00"),
                     run.TypeCount.ToString(),
                     run.ReferenceCount.ToString(),
                     $"{run.ExecutionTime.TotalMilliseconds:0}ms");
@@ -404,7 +470,7 @@ public static class ParserArenaCliRunner
                 ShortenStrategyName(best.Strategy),
                 statusMarkup,
                 best.ComparativeScore.ToString("0.00"),
-                best.Confidence.ToString("0.00"),
+                Clamp01(best.Confidence).ToString("0.00"),
                 best.TypeCount.ToString(),
                 best.ReferenceCount.ToString(),
                 $"{best.ExecutionTime.TotalMilliseconds:0}ms");
@@ -412,6 +478,24 @@ public static class ParserArenaCliRunner
 
         AnsiConsole.Write(table);
         Console.WriteLine();
+    }
+
+    private static string ResolveThemeFileName(RefactorScopeConfig? config)
+    {
+        try
+        {
+            var themeName = TryReadDashboardTheme(config);
+            return DashboardThemeSelector.ResolveFileName(themeName);
+        }
+        catch
+        {
+            return DashboardThemeSelector.DefaultThemeFile;
+        }
+    }
+
+    private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+    {
+        return config?.Dashboard?.Theme;
     }
 
     private static string ShortenStrategyName(ParserStrategy strategy)
@@ -493,4 +577,7 @@ public static class ParserArenaCliRunner
 
         return excludes;
     }
+
+    private static double Clamp01(double value)
+        => Math.Max(0, Math.Min(1, value));
 }

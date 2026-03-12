@@ -1,7 +1,11 @@
 ﻿using RefactorScope.Core.Results;
 using RefactorScope.Exporters.Styling;
+using Spectre.Console;
+using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RefactorScope.Exporters.Dashboards
 {
@@ -76,6 +80,8 @@ namespace RefactorScope.Exporters.Dashboards
                     Path.DirectorySeparatorChar,
                     Path.AltDirectorySeparatorChar));
 
+            var initialThemeKey = ResolveThemeKey(themeFileName);
+
             var sb = new StringBuilder();
 
             sb.AppendLine(DashboardHtmlShell.RenderDocumentStart(
@@ -83,14 +89,19 @@ namespace RefactorScope.Exporters.Dashboards
                 themeFileName));
 
             sb.AppendLine($"""
-<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="topbar hub-topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <div class="brand">
         <div class="brand-kicker">RefactorScope // Analysis Hub</div>
         <h1>Structural Command Nexus</h1>
         <div class="subtitle">Target Project: <b>{Html(targetName)}</b></div>
     </div>
 
-    <div class="run-meta">
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
         <div><b>Generated:</b> {report.ExecutionTime:yyyy-MM-dd HH:mm} UTC</div>
         <div><b>Parser:</b> {Html(metrics.ParserName)}</div>
         <div><b>Target Scope:</b> {Html(report.TargetScope)}</div>
@@ -192,7 +203,6 @@ namespace RefactorScope.Exporters.Dashboards
         <div class="value">{metrics.Hygiene.SmellIndex:0.0}</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
-
 
     <div class="kpi {DashboardMetricsCalculator.GetBandCssClass(metrics.OverallSupportScore)}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Statistical Support</div>
@@ -496,10 +506,164 @@ namespace RefactorScope.Exporters.Dashboards
 
             sb.AppendLine("</div></div>");
 
+            var scriptBlock = """
+<style>
+.hub-topbar {
+    align-items: start;
+}
+
+.run-meta--with-theme {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:flex-start;
+}
+
+/* NOVO: Wrapper invisível só para empurrar o botão e o texto pra direita */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+/* Botão Tático Vermelho Físico */
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+</style>
+
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    if (!themeLink || !cyclerBtn) {
+        console.error('[ThemeSwitcher] Elementos de HUD não encontrados.');
+        return;
+    }
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    function detectInitialTheme() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const idx = themeSequence.findIndex(t => t.id === saved);
+                if (idx !== -1) return idx;
+            }
+        } catch { }
+
+        const initialKey = '__INITIAL_THEME_KEY__';
+        const idx = themeSequence.findIndex(t => t.id === initialKey);
+        return idx !== -1 ? idx : 0;
+    }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+
+        themeLink.setAttribute('href', t.css);
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    currentIndex = detectInitialTheme();
+    applyTheme(currentIndex);
+
+    cyclerBtn.addEventListener('click', function () {
+        currentIndex = (currentIndex + 1) % themeSequence.length;
+        applyTheme(currentIndex);
+    });
+})();
+</script>
+""";
+
+            sb.AppendLine(scriptBlock.Replace("__INITIAL_THEME_KEY__", initialThemeKey));
+
             sb.AppendLine(DashboardHtmlShell.RenderDocumentEnd(
                 "Generated by RefactorScope Hub // Cyberpunk Publication Layout"));
 
             return sb.ToString();
+        }
+
+        private static string ResolveThemeKey(string? themeFileName)
+        {
+            return themeFileName?.Trim().ToLowerInvariant() switch
+            {
+                "dashboard-theme-ember-ops.css" => "ember-ops",
+                "dashboard-theme-neon-grid.css" => "neon-grid",
+                "dashboard-theme-midnight-blue.css" => "midnight-blue",
+                _ => "midnight-blue"
+            };
         }
 
         private static string Html(string? text)

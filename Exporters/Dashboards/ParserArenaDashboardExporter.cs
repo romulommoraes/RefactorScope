@@ -1,8 +1,10 @@
 ﻿using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Parsing.Arena;
 using RefactorScope.Core.Parsing.Enum;
+using RefactorScope.Exporters.Dashboards.Renderers;
 using RefactorScope.Exporters.Styling;
 using System.Globalization;
+
 using System.Text;
 
 namespace RefactorScope.Exporters.Dashboards;
@@ -12,23 +14,15 @@ namespace RefactorScope.Exporters.Dashboards;
 ///
 /// Responsabilidade
 /// ----------------
-/// Renderizar o dashboard HTML comparativo do Batch Mode / Arena,
+/// Renderizar o dashboard HTML comparativo do modo Arena,
 /// consolidando:
 ///
 /// - comparação entre estratégias de parser
 /// - vencedores por projeto
 /// - médias globais por estratégia
-/// - telemetria executiva do batch
+/// - telemetria executiva
 /// - tabelas comparativas detalhadas
-///
-/// Diretriz visual
-/// ---------------
-/// Inspirado no Parsing Dashboard:
-/// - topbar executiva
-/// - KPI grid
-/// - dois gráficos iniciais
-/// - painéis full width
-/// - leitura de control room comparativa
+/// - visualizações P5 dedicadas
 /// </summary>
 public sealed class ParserArenaDashboardExporter
 {
@@ -70,6 +64,7 @@ public sealed class ParserArenaDashboardExporter
             .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
 
         var strategyMetrics = BuildStrategyMetrics(allRuns);
+        var visualMetrics = BuildStrategyVisualMetrics(strategyMetrics);
 
         var bestOverallRun = allRuns
             .OrderByDescending(r => r.ComparativeScore)
@@ -84,8 +79,9 @@ public sealed class ParserArenaDashboardExporter
             .FirstOrDefault();
 
         var supportBand = GetSupportBand(avgConfidence);
-        var targetName = $"Batch Arena // {totalProjects} project(s)";
+        var targetName = $"Parser Arena // {totalProjects} project(s)";
 
+        var charts = new ParserArenaControlChartsRendererP5();
         var sb = new StringBuilder();
 
         sb.AppendLine(DashboardHtmlShell.RenderDocumentStart(
@@ -101,11 +97,15 @@ public sealed class ParserArenaDashboardExporter
     <div class="brand">
         <div class="brand-kicker">RefactorScope // Comparative Arena</div>
         <h1>Parser Arena Dashboard</h1>
-        <div class="subtitle">Comparative batch mode across multiple projects and parser strategies</div>
+        <div class="subtitle">Comparative parser analysis across one or more target projects</div>
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC</div>
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+        <div><b>Generated:</b> {DateTime.UtcNow:dd-MM-yyyy HH:mm} UTC</div>
         <div><b>Target:</b> {Html(targetName)}</div>
         <div><b>Projects:</b> {totalProjects}</div>
         <div><b>Avg Confidence:</b> {avgConfidence:P0}</div>
@@ -132,7 +132,7 @@ public sealed class ParserArenaDashboardExporter
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Projects</div>
         <div class="value">{totalProjects}</div>
-        <div class="hint">Projects evaluated inside comparative batch mode</div>
+        <div class="hint">Projects evaluated by the arena execution</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
@@ -144,7 +144,7 @@ public sealed class ParserArenaDashboardExporter
     <div class="kpi {(totalFailures == 0 ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
         <div class="label">Failures</div>
         <div class="value">{totalFailures}</div>
-        <div class="hint">Runs that failed completely during comparative execution</div>
+        <div class="hint">Runs that failed completely during arena execution</div>
     </div>
 
     <div class="kpi {(avgConfidence >= 0.85 ? "good" : avgConfidence >= 0.65 ? "warning" : "alert")}" augmented-ui="tr-clip bl-clip border">
@@ -244,7 +244,7 @@ public sealed class ParserArenaDashboardExporter
         sb.AppendLine("</div></div>");
 
         // =====================================================
-        // INITIAL CHARTS
+        // CHARTS
         // =====================================================
 
         sb.AppendLine("""
@@ -256,12 +256,19 @@ public sealed class ParserArenaDashboardExporter
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
 """);
 
-        sb.AppendLine("<div style='display:grid; grid-template-columns: auto auto; gap:24px; align-items:stretch; justify-content:center; width:100%;'>");
+        sb.AppendLine("""
+<div class="arena-chart-grid">
+""");
 
-        sb.AppendLine(RenderStrategyRadar(strategyMetrics));
-        sb.AppendLine(RenderWinnerDonut(winnerGroups));
+        sb.AppendLine(charts.RenderStrategyPerformanceScatter(visualMetrics));
+        sb.AppendLine(charts.RenderWinnerDonut(winnerGroups));
+        sb.AppendLine(charts.RenderEfficiencyScatter(visualMetrics));
+        sb.AppendLine(charts.RenderProjectStrategyHeatmap(results));
 
-        sb.AppendLine("</div>");
+        sb.AppendLine("""
+</div>
+""");
+
         sb.AppendLine("</div></div>");
 
         // =====================================================
@@ -479,12 +486,12 @@ public sealed class ParserArenaDashboardExporter
     </div>
     <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
         <ul class="clean">
-            <li>This dashboard compares parser strategies across multiple projects executed in Batch Arena mode.</li>
+            <li>This dashboard compares parser strategies executed over one or more target projects.</li>
             <li>Comparative Score is contextual to each project and should be interpreted as a relative ranking signal, not as a universal benchmark.</li>
             <li>Confidence is heuristic and should be read as structural usability, not formal parser correctness.</li>
-            <li>Winner distribution helps reveal which strategy most often dominates across heterogeneous codebases.</li>
+            <li>Winner distribution helps reveal which strategy most often dominates across the evaluated project set.</li>
             <li>Strategy aggregates are useful for publication, comparative baselines and future CSV / JSON analytical exports.</li>
-            <li>Failures do not invalidate the whole batch, but they indicate strategies or projects deserving inspection.</li>
+            <li>Failures do not invalidate the whole arena, but they indicate strategies or projects deserving inspection.</li>
         </ul>
     </div>
 </div>
@@ -502,9 +509,26 @@ public sealed class ParserArenaDashboardExporter
     gap: 16px;
 }
 
+.arena-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.arena-chart-grid .chart-container {
+    min-width: 0;
+}
+
 @media (max-width: 1400px) {
     .grid-kpis.arena-kpis {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1180px) {
+    .arena-chart-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -587,236 +611,6 @@ function sortArenaTable(tableId, n) {
     }
 
     // =====================================================
-    // CHARTS
-    // =====================================================
-
-    private static string RenderStrategyRadar(IReadOnlyList<StrategyAggregateMetric> metrics)
-    {
-        var regex = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.RegexFast);
-        var selective = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.Selective);
-        var adaptive = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.AdaptiveExperimental);
-        var incremental = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.IncrementalExperimental);
-
-        string JsScore(StrategyAggregateMetric? m) => F(NormalizeScore(m?.AverageScore ?? 0));
-        string JsConfidence(StrategyAggregateMetric? m) => F(Clamp01(m?.AverageConfidence ?? 0) * 100);
-        string JsSpeed(StrategyAggregateMetric? m)
-        {
-            var ms = m?.AverageExecutionMs ?? 0;
-            if (ms <= 0) return "100";
-            var normalized = Math.Max(0, 100 - Math.Min(100, ms / 10.0));
-            return F(normalized);
-        }
-
-        var sb = new StringBuilder();
-
-        sb.AppendLine("""<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">""");
-        sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;">Strategy Comparison Radar</h3>""");
-        sb.AppendLine("""<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Relative comparison of score, confidence and speed per parser strategy.</div>""");
-        sb.AppendLine("""<div id="arena-radar-container" style="display:flex;justify-content:center;width:100%;"></div>""");
-
-        sb.AppendLine($$"""
-<script>
-const arenaRadarSketch = (p) => {
-    const series = [
-        { name: "Regex",       color: "#ff9a3c", values: [{{JsScore(regex)}}, {{JsConfidence(regex)}}, {{JsSpeed(regex)}}] },
-        { name: "Selective",   color: "#7fd36b", values: [{{JsScore(selective)}}, {{JsConfidence(selective)}}, {{JsSpeed(selective)}}] },
-        { name: "Adaptive",    color: "#6ea8ff", values: [{{JsScore(adaptive)}}, {{JsConfidence(adaptive)}}, {{JsSpeed(adaptive)}}] },
-        { name: "Incremental", color: "#ffc15d", values: [{{JsScore(incremental)}}, {{JsConfidence(incremental)}}, {{JsSpeed(incremental)}}] }
-    ];
-    const labels = ["Score", "Confidence", "Speed"];
-    const maxRadius = 100;
-
-    p.setup = () => {
-        let canvas = p.createCanvas(440, 360);
-        canvas.parent('arena-radar-container');
-        p.angleMode(p.DEGREES);
-        p.textFont("monospace");
-    };
-
-    p.draw = () => {
-        p.clear();
-        p.translate(p.width / 2, p.height / 2);
-
-        p.stroke('rgba(255,255,255,0.10)');
-        p.noFill();
-
-        for (let i = 1; i <= 5; i++) {
-            let r = (maxRadius / 5) * i;
-            p.beginShape();
-            for (let a = 0; a < 360; a += 120) {
-                p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
-            }
-            p.endShape(p.CLOSE);
-        }
-
-        for (let a = 0; a < 360; a += 120) {
-            p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
-        }
-
-        series.forEach((s, idx) => {
-            p.drawingContext.shadowColor = s.color;
-            p.drawingContext.shadowBlur = 8;
-            p.stroke(s.color);
-            p.strokeWeight(2);
-            p.fill(p.color(s.color + '22'));
-
-            p.beginShape();
-            for (let i = 0; i < s.values.length; i++) {
-                let angle = (i * 120) - 90;
-                let r = p.map(s.values[i], 0, 100, 0, maxRadius);
-                p.vertex(p.cos(angle) * r, p.sin(angle) * r);
-            }
-            p.endShape(p.CLOSE);
-        });
-
-        p.drawingContext.shadowBlur = 0;
-        p.noStroke();
-        p.fill('#eef4ff');
-        p.textAlign(p.CENTER, p.CENTER);
-        p.textSize(12);
-        p.text(labels[0], 0, -maxRadius - 20);
-        p.textAlign(p.LEFT, p.CENTER);
-        p.text(labels[1], maxRadius + 12, 0);
-        p.textAlign(p.RIGHT, p.CENTER);
-        p.text(labels[2], -maxRadius - 12, 0);
-
-        let legendX = -150;
-        let legendY = 130;
-
-        series.forEach((s, i) => {
-            let x = legendX + ((i % 2) * 150);
-            let y = legendY + (Math.floor(i / 2) * 22);
-
-            p.drawingContext.shadowColor = s.color;
-            p.drawingContext.shadowBlur = 8;
-            p.fill(s.color);
-            p.rect(x, y - 7, 10, 10, 2);
-
-            p.drawingContext.shadowBlur = 0;
-            p.fill('#d9e4ff');
-            p.textAlign(p.LEFT, p.CENTER);
-            p.textSize(10);
-            p.text(s.name, x + 16, y);
-        });
-    };
-};
-new p5(arenaRadarSketch);
-</script>
-""");
-
-        sb.AppendLine("</div>");
-        return sb.ToString();
-    }
-
-    private static string RenderWinnerDonut(
-        IReadOnlyDictionary<string, int> winnerGroups)
-    {
-        var regex = winnerGroups.TryGetValue("Regex", out var r) ? r : 0;
-        var selective = winnerGroups.TryGetValue("Selective", out var s) ? s : 0;
-        var adaptive = winnerGroups.TryGetValue("Adaptive", out var a) ? a : 0;
-        var incremental = winnerGroups.TryGetValue("Incremental", out var i) ? i : 0;
-        var total = Math.Max(1, regex + selective + adaptive + incremental);
-
-        var sb = new StringBuilder();
-
-        sb.AppendLine("""<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">""");
-        sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;">Winner Distribution</h3>""");
-        sb.AppendLine("""<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">How often each strategy won across the batch projects.</div>""");
-        sb.AppendLine("""<div id="arena-donut-container" style="display:flex;justify-content:center;width:100%;"></div>""");
-
-        sb.AppendLine($$"""
-<script>
-const arenaDonutSketch = (p) => {
-    const data = [
-        { label: "Regex", value: {{regex}}, color: "#ff9a3c" },
-        { label: "Selective", value: {{selective}}, color: "#7fd36b" },
-        { label: "Adaptive", value: {{adaptive}}, color: "#6ea8ff" },
-        { label: "Incremental", value: {{incremental}}, color: "#ffc15d" }
-    ];
-    const total = {{total}};
-
-    p.setup = () => {
-        let canvas = p.createCanvas(360, 360);
-        canvas.parent('arena-donut-container');
-        p.angleMode(p.DEGREES);
-        p.textFont("monospace");
-    };
-
-    p.draw = () => {
-        p.clear();
-        p.translate(p.width / 2, p.height / 2 - 20);
-
-        const outerRadius = 100;
-        const innerRadius = 75;
-
-        let currentAngle = -90;
-        p.strokeCap(p.SQUARE);
-
-        p.noFill();
-        p.strokeWeight(1.5);
-        p.stroke('rgba(255,255,255,0.10)');
-        p.ellipse(0, 0, outerRadius * 2 + 30);
-
-        data.forEach(item => {
-            if (item.value <= 0) return;
-
-            let angleSpan = (item.value / total) * 360;
-            let gap = 3;
-
-            p.drawingContext.shadowColor = item.color;
-            p.drawingContext.shadowBlur = 12;
-            p.stroke(item.color);
-            p.strokeWeight(25);
-
-            if (angleSpan > gap) {
-                p.arc(0, 0, outerRadius + innerRadius, outerRadius + innerRadius, currentAngle + gap / 2, currentAngle + angleSpan - gap / 2);
-            }
-
-            currentAngle += angleSpan;
-        });
-
-        p.drawingContext.shadowBlur = 0;
-        p.noStroke();
-        p.fill('#eef4ff');
-        p.textAlign(p.CENTER, p.CENTER);
-        p.textSize(36);
-        p.textStyle(p.BOLD);
-        p.text(total, 0, -5);
-
-        p.textSize(11);
-        p.textStyle(p.NORMAL);
-        p.fill('#8fa8ff');
-        p.text("Project Winners", 0, 22);
-
-        let startX = -140;
-        let legendY = 160;
-        p.textAlign(p.LEFT, p.CENTER);
-
-        data.forEach((item, index) => {
-            let xOffset = startX + (index % 2) * 140;
-            let yOffset = legendY + Math.floor(index / 2) * 24;
-
-            p.drawingContext.shadowColor = item.color;
-            p.drawingContext.shadowBlur = 8;
-            p.fill(item.color);
-            p.rect(xOffset, yOffset - 4, 8, 8, 2);
-
-            p.drawingContext.shadowBlur = 0;
-            p.fill('#eef4ff');
-            p.textSize(10);
-            p.text(`${item.label} (${item.value})`, xOffset + 14, yOffset);
-        });
-    };
-};
-new p5(arenaDonutSketch);
-</script>
-""");
-
-        sb.AppendLine("</div>");
-        return sb.ToString();
-    }
-
-    // =====================================================
     // METRICS
     // =====================================================
 
@@ -838,6 +632,26 @@ new p5(arenaDonutSketch);
                 AverageTypes = g.Average(x => x.TypeCount),
                 AverageReferences = g.Average(x => x.ReferenceCount),
                 Failures = g.Count(x => x.Status == ParseStatus.Failed)
+            })
+            .ToList();
+    }
+
+    private static List<ParserArenaControlChartsRendererP5.StrategyVisualMetric> BuildStrategyVisualMetrics(
+        IReadOnlyList<StrategyAggregateMetric> metrics)
+    {
+        return metrics
+            .Select(m => new ParserArenaControlChartsRendererP5.StrategyVisualMetric
+            {
+                Strategy = m.Strategy,
+                StrategyName = m.StrategyName,
+                Color = GetStrategyColor(m.Strategy),
+                RunCount = m.RunCount,
+                AverageScore = m.AverageScore,
+                AverageConfidence = m.AverageConfidence,
+                AverageExecutionMs = m.AverageExecutionMs,
+                AverageTypes = m.AverageTypes,
+                AverageReferences = m.AverageReferences,
+                Failures = m.Failures
             })
             .ToList();
     }
@@ -885,6 +699,19 @@ new p5(arenaDonutSketch);
         };
     }
 
+    private static string GetStrategyColor(ParserStrategy strategy)
+    {
+        return strategy switch
+        {
+            ParserStrategy.RegexFast => "#ff9a3c",
+            ParserStrategy.Selective => "#7fd36b",
+            ParserStrategy.AdaptiveExperimental => "#6ea8ff",
+            ParserStrategy.IncrementalExperimental => "#ffc15d",
+            ParserStrategy.Comparative => "#ff6a3d",
+            _ => "#8fa8ff"
+        };
+    }
+
     private static string GetSupportBand(double confidence)
     {
         var safe = Clamp01(confidence);
@@ -915,27 +742,27 @@ new p5(arenaDonutSketch);
             return "No parser run failed completely. Comparative evidence is operationally clean.";
 
         if (failures <= Math.Max(1, totalRuns / 5))
-            return "A small portion of comparative runs failed. The batch remains usable, but specific projects or strategies deserve review.";
+            return "A small portion of comparative runs failed. The arena remains usable, but specific projects or strategies deserve review.";
 
-        return "Failure volume is elevated. Batch conclusions should be interpreted with caution until the failing runs are inspected.";
+        return "Failure volume is elevated. Arena conclusions should be interpreted with caution until the failing runs are inspected.";
     }
 
     private static string GetWinnerDiagnosis(IReadOnlyDictionary<string, int> winnerGroups)
     {
         if (winnerGroups.Count == 0)
-            return "No winner distribution could be established for this batch.";
+            return "No winner distribution could be established for this run.";
 
         var top = winnerGroups
             .OrderByDescending(x => x.Value)
             .First();
 
-        return $"{top.Key} won the largest number of projects in this batch, suggesting stronger comparative consistency across heterogeneous scopes.";
+        return $"{top.Key} won the largest number of projects in this arena, suggesting stronger comparative consistency across the evaluated scopes.";
     }
 
     private static string GetStrategyDiagnosis(StrategyAggregateMetric? metric)
     {
         if (metric == null)
-            return "No aggregate strategy leader was identified in the current batch.";
+            return "No aggregate strategy leader was identified in the current arena.";
 
         return $"{metric.StrategyName} currently leads the aggregate comparison with average score {metric.AverageScore:0.00} and average confidence {Clamp01(metric.AverageConfidence):P0}.";
     }
@@ -953,12 +780,6 @@ new p5(arenaDonutSketch);
 
     private static double Clamp01(double value)
         => Math.Max(0, Math.Min(1, value));
-
-    private static double NormalizeScore(double score)
-    {
-        if (score <= 0) return 0;
-        return Math.Max(0, Math.Min(100, score / 2.2));
-    }
 
     private static string Html(string? text)
     {

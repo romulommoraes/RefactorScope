@@ -9,22 +9,177 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
-<div class='page-header' augmented-ui='tl-clip tr-clip bl-clip br-clip border'>
-<div class='brand'>
-<div class='brand-kicker'>RefactorScope // Architectural Layer</div>
-<h1>Architectural Dashboard</h1>
-<div class='subtitle'>Target Scope: <b>C:\Users\romul\source\repos\Scriptome</b></div>
-</div>
-<div class='run-meta'>
-<div><b>Generated:</b> 2026-03-11 06:18 UTC</div>
-<div><b>View:</b> Executive architectural summary</div>
-<div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
-</div>
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Architectural Layer</div>
+        <h1>Architectural Dashboard</h1>
+        <div class="subtitle">Target Scope: <b>C:\Users\romul\source\repos\Scriptome</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
+    </div>
+
+    <div class="run-meta">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 11-03-2026 22:38 UTC</div>
+        <div><b>View:</b> Executive architectural summary</div>
+        <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
+    </div>
 </div>
 <div class='grid-kpis' style='display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:32px;'>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
@@ -34,17 +189,17 @@
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Average Score</div>
-<div class='value'>70,5</div>
+<div class='value'>79,7</div>
 <div class='hint'>Composite health by module</div>
 </div>
 <div class='kpi alert' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Unresolved</div>
-<div class='value'>17</div>
+<div class='value'>18</div>
 <div class='hint'>Final unresolved structural candidates</div>
 </div>
 <div class='kpi warning' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Implicit Coupling</div>
-<div class='value'>17</div>
+<div class='value'>16</div>
 <div class='hint'>Potential dependency hotspots</div>
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
@@ -54,12 +209,12 @@
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Instability (I)</div>
-<div class='value'>0,45</div>
+<div class='value'>0,46</div>
 <div class='hint'>Average outgoing dependency pressure</div>
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
 <div class='label'>Distance (D)</div>
-<div class='value'>0,43</div>
+<div class='value'>0,42</div>
 <div class='hint'>Average distance from main sequence</div>
 </div>
 <div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
@@ -81,41 +236,41 @@
 <tr><th>Module</th><th>Score</th><th>Unresolved</th><th>Coupling</th><th>Isolation</th><th>Core Density</th></tr>
 <tr>
 <td>Fingerprint</td>
-<td><span class='metric-warn'>66,0</span></td>
+<td><span class='metric-good'>72,6</span></td>
 <td>3 (6%)</td>
-<td>1,12</td>
+<td>0,90</td>
 <td>0,02</td>
 <td>0,10</td>
 </tr>
 <tr>
 <td>Infrastructure</td>
-<td><span class='metric-warn'>48,1</span></td>
-<td>2 (7%)</td>
-<td>3,52</td>
+<td><span class='metric-warn'>65,0</span></td>
+<td>3 (11%)</td>
+<td>2,15</td>
 <td>0,00</td>
 <td>0,00</td>
 </tr>
 <tr>
 <td>Limbic</td>
-<td><span class='metric-warn'>68,0</span></td>
+<td><span class='metric-good'>73,6</span></td>
 <td>7 (19%)</td>
-<td>0,97</td>
+<td>0,78</td>
 <td>0,03</td>
 <td>0,16</td>
 </tr>
 <tr>
 <td>Nucleo</td>
-<td><span class='metric-good'>86,4</span></td>
+<td><span class='metric-good'>94,2</span></td>
 <td>5 (11%)</td>
-<td>0,74</td>
+<td>0,48</td>
 <td>0,15</td>
 <td>0,96</td>
 </tr>
 <tr>
 <td>Program.cs</td>
-<td><span class='metric-good'>84,0</span></td>
+<td><span class='metric-good'>93,0</span></td>
 <td>0 (0%)</td>
-<td>16,00</td>
+<td>7,00</td>
 <td>0,00</td>
 <td>0,00</td>
 </tr>
@@ -473,338 +628,737 @@ new p5(radialTreeSketch);
 
 <div class="section">
     <div class="section-title">
-        <h2>Control Room // Deep Structure</h2>
+        <h2>Control Room // Simple Structure Map</h2>
         <div class="line"></div>
     </div>
+</div>
 <div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);width:100%;" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-<h3 style="margin:0 0 6px 0;text-align:center;">Information Flow Pipeline</h3>
-<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Parsing &rarr; structural model &rarr; analyzers &rarr; reconsolidation &rarr; outputs.</div>
-<style>#p5-pipeline-container canvas { width: 100% !important; max-width: 1600px; height: auto !important; }</style>
-<div id="p5-pipeline-container" style="width:100%; display:flex; justify-content:center; align-items:center;"></div>
+<h3 style="margin:0 0 6px 0;text-align:center;">Simple Structure Map 2.0</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">
+Refined structural projection using optional visual heuristics for exporter and central candidate highlighting.
+</div>
+<style>
+#p5-simple-structure-scroll {
+    width: 100%;
+    max-height: 980px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 6px;
+}
+
+#p5-simple-structure-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#p5-simple-structure-container canvas {
+    display: block;
+    max-width: 100%;
+    height: auto !important;
+}
+</style>
+<div id="p5-simple-structure-scroll">
+    <div id="p5-simple-structure-container"></div>
+</div>
 <script>
-const pipelineSketch = (p) => {
+const simpleStructureNodes = [{"id":"node_16","label":"Fingerprint","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_17","label":"Classificadores","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"central","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":true},{"id":"node_18","label":"Arquetipos","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_19","label":"Cartesianos","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_20","label":"Energia","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_21","label":"Narrativa","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_22","label":"Psique","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_23","label":"Dados","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_24","label":"Forense","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_25","label":"Interfaces","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_26","label":"Modelos","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_27","label":"Modulos","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_28","label":"Motores","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_29","label":"MotoresEtograma","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_31","label":"Infrastructure","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_32","label":"Baseline","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_33","label":"Exportacao","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"centralExporter","zoneLabel":"DEEP","isExporter":true,"isCentralCandidate":true},{"id":"node_34","label":"Excel","parentId":"node_33","depth":4,"csFileCount":0,"visualKind":"centralExporter","zoneLabel":"LEAF","isExporter":true,"isCentralCandidate":true},{"id":"node_35","label":"Abas","parentId":"node_34","depth":6,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_36","label":"Interfaces","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_37","label":"Validador","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_38","label":"Limbic","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_40","label":"Dados","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_41","label":"Interfaces","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_42","label":"Linguistica","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_43","label":"Modelos","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_44","label":"Motor","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_45","label":"Pipeline","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_46","label":"Testes","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_47","label":"Nucleo","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_48","label":"Adaptadores","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_49","label":"Especialistas","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_50","label":"Interfaces","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_51","label":"Leitores","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_52","label":"Modelos","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"central","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":true},{"id":"node_53","label":"Analise","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_55","label":"Fenotipo","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_56","label":"Genoma","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_57","label":"Resultados","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_58","label":"Script","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_59","label":"Motores","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false}];
+const useSimple2 = true;
+
+const simpleStructureSketch = (p) => {
     let nodes = [];
     let links = [];
-    let particles = [];
     let palette;
+    let selectedNode = null;
+    let layoutMetrics = null;
+
+    function estimateLayoutMetrics() {
+        const grouped = {};
+        let maxDepth = 0;
+        let maxColumnCount = 0;
+
+        for (const raw of simpleStructureNodes) {
+            if (!grouped[raw.depth]) grouped[raw.depth] = [];
+            grouped[raw.depth].push(raw);
+            if (raw.depth > maxDepth) maxDepth = raw.depth;
+        }
+
+        for (const key of Object.keys(grouped)) {
+            maxColumnCount = Math.max(maxColumnCount, grouped[key].length);
+        }
+
+        const topMargin = 130;
+        const bottomMargin = 180;
+        const usableHeight = Math.max(760, maxColumnCount * 78);
+        const canvasHeight = topMargin + usableHeight + bottomMargin;
+
+        return {
+            maxDepth,
+            maxColumnCount,
+            topMargin,
+            bottomMargin,
+            usableHeight,
+            canvasHeight
+        };
+    }
 
     p.setup = () => {
-        let canvas = p.createCanvas(1600, 980);
-        canvas.parent('p5-pipeline-container');
+        layoutMetrics = estimateLayoutMetrics();
+
+        p.createCanvas(1360, layoutMetrics.canvasHeight).parent('p5-simple-structure-container');
         p.pixelDensity(2);
         p.textFont("monospace");
         p.rectMode(p.CORNER);
-        p.angleMode(p.DEGREES);
 
         palette = {
-            bg: p.color("#0b1020"), 
-            grid: p.color(40, 90, 140, 30),
-            text: p.color("#eef4ff"),
-            muted: p.color("#8fa8ff"),
-            parser: p.color("#ff9a3c"),
-            parseBranch: p.color("#ffc15d"),
-            dto: p.color("#7fd36b"),
-            analyzer: p.color("#6ea8ff"),
-            derived: p.color("#d08cff"),
-            hub: p.color("#ff6a3d"),
-            output: p.color("#00e5ff"),
-            optional: p.color("#ff9ad5")
+            bg: p.color("#03060a"),
+            grid: p.color(0, 229, 255, 14),
+            text: p.color("#00e5ff"),
+            muted: p.color("#255b7a"),
+            whiteSoft: p.color(230, 245, 255, 180),
+
+            root: p.color("#ff0055"),
+            folder: p.color("#00e5ff"),
+            file: p.color("#00ff88"),
+            deep: p.color("#ffaa00"),
+
+            central: p.color("#ff9a00"),
+            exporter: p.color("#00ffcc"),
+            centralExporter: p.color("#fff275"),
+
+            link: p.color("#0088ff"),
+            fileLink: p.color("#00ffcc")
         };
 
         buildLayout();
-        buildParticles();
     };
 
     p.draw = () => {
-        p.clear();
-        drawBackground();
-        drawDomainBands();
+        p.background(palette.bg);
+        drawGrid();
+        drawZones();
         drawLinks();
-        drawParticles();
         drawNodes();
         drawLegend();
+        drawTitle();
+        drawStatsPanel();
+        drawHUDOverlay();
+    };
+
+    p.mousePressed = () => {
+        selectedNode = null;
+        for (let node of nodes) {
+            if (p.mouseX >= node.x && p.mouseX <= node.x + node.w &&
+                p.mouseY >= node.y && p.mouseY <= node.y + node.h) {
+                selectedNode = node;
+                break;
+            }
+        }
     };
 
     function buildLayout() {
-        nodes = [
-            p.makeNode("startup", "Startup / CLI", 60, 80, 180, 54, "entry"),
-            p.makeNode("config", "RunConfiguration", 300, 80, 180, 54, "entry"),
-            p.makeNode("scope", "RefactorScopeConfig", 540, 80, 200, 54, "entry"),
-            p.makeNode("selector", "ParserSelector", 780, 80, 180, 54, "parser"),
-            p.makeNode("strategy", "Parsing Strategy", 1040, 80, 180, 54, "parser"),
+        const grouped = {};
+        let maxDepth = 0;
 
-            p.makeNode("regex", "Regex Baseline", 1320, 80, 180, 52, "parseBranch"),
-            p.makeNode("complexity", "Complexity Scan", 1320, 180, 180, 52, "parseBranch"),
-            p.makeNode("textual", "Textual / Selective", 1320, 280, 180, 52, "parseBranch"),
+        for (const raw of simpleStructureNodes) {
+            if (!grouped[raw.depth]) grouped[raw.depth] = [];
+            grouped[raw.depth].push(raw);
+            if (raw.depth > maxDepth) maxDepth = raw.depth;
+        }
 
-            p.makeNode("merge", "Parsing Merge", 1040, 280, 180, 54, "parser"),
-            p.makeNode("parserResult", "IParserResult", 780, 280, 180, 54, "dto"),
-            p.makeNode("model", "ModeloEstrutural", 540, 280, 180, 54, "dto"),
-            p.makeNode("context", "AnalysisContext", 300, 280, 180, 54, "dto"),
+        const zoneLeft = 30;
+        const zoneRight = 30;
+        const zoneGap = 12;
+        const zoneTop = 95;
+        const zoneInsetX = 12;
+        const zoneInsetY = 24;
 
-            p.makeNode("structure", "Project Structure", 60, 420, 180, 54, "analyzer"),
-            p.makeNode("candidates", "Structural Candidates", 300, 420, 190, 54, "analyzer"),
-            p.makeNode("architecture", "Architecture", 540, 420, 160, 54, "analyzer"),
-            p.makeNode("coupling", "Coupling", 840, 420, 140, 54, "analyzer"),
-            p.makeNode("implicit", "Implicit Coupling", 1080, 420, 180, 54, "analyzer"),
+        const zoneCount = Math.max(1, maxDepth + 1);
+        const totalZoneWidth = p.width - zoneLeft - zoneRight;
+        const zoneWidth = (totalZoneWidth - ((zoneCount - 1) * zoneGap)) / zoneCount;
+        const zoneInnerWidth = zoneWidth - (zoneInsetX * 2);
 
-            p.makeNode("refinement", "Refinement", 220, 540, 160, 54, "derived"),
-            p.makeNode("fitness", "Fitness Gates", 460, 540, 160, 54, "derived"),
-            p.makeNode("hygiene", "Hygiene", 680, 540, 140, 54, "derived"),
-            p.makeNode("solid", "SOLID", 920, 540, 120, 54, "derived"),
+        nodes = [];
+        links = [];
 
-            p.makeNode("report", "ConsolidatedReport", 540, 680, 240, 64, "hub"),
-            p.makeNode("statistics", "Statistics", 1020, 680, 150, 54, "optional"),
-            p.makeNode("effort", "Effort", 1260, 680, 120, 54, "optional"),
+        for (let depth = 0; depth <= maxDepth; depth++) {
+            const column = grouped[depth] || [];
+            const zoneX = zoneLeft + depth * (zoneWidth + zoneGap);
+            const nodeX = zoneX + zoneInsetX;
 
-            p.makeNode("html", "HTML Outputs", 60, 840, 160, 54, "output"),
-            p.makeNode("markdown", "Markdown Outputs", 300, 840, 190, 54, "output"),
-            p.makeNode("csv", "CSV Outputs", 540, 840, 150, 54, "output"),
-            p.makeNode("analyzerOut", "Output Analyzers", 780, 840, 190, 54, "output"),
-            p.makeNode("statsOut", "Output Statistics", 1020, 840, 180, 54, "output"),
-            p.makeNode("effortOut", "Output Effort", 1260, 840, 170, 54, "output")
-        ];
+            const availableColumnHeight = layoutMetrics.usableHeight - (zoneInsetY * 2);
+            const spacing = column.length <= 1
+                ? availableColumnHeight
+                : Math.max(58, availableColumnHeight / column.length);
 
-        links = [
-            p.makeLink("startup", "config", "main"), p.makeLink("config", "scope", "main"),
-            p.makeLink("scope", "selector", "main"), p.makeLink("selector", "strategy", "main"),
-            p.makeLink("strategy", "regex", "branch"), p.makeLink("strategy", "complexity", "branch"),
-            p.makeLink("strategy", "textual", "branch"), p.makeLink("regex", "merge", "branch"),
-            p.makeLink("complexity", "merge", "branch"), p.makeLink("textual", "merge", "branch"),
-            p.makeLink("merge", "parserResult", "main"), p.makeLink("parserResult", "model", "main"),
-            p.makeLink("model", "context", "main"), p.makeLink("context", "structure", "analyzer"),
-            p.makeLink("context", "candidates", "analyzer"), p.makeLink("context", "architecture", "analyzer"),
-            p.makeLink("context", "coupling", "analyzer"), p.makeLink("context", "implicit", "analyzer"),
-            p.makeLink("candidates", "refinement", "derived"), p.makeLink("coupling", "solid", "derived"),
-            p.makeLink("architecture", "fitness", "derived"), p.makeLink("architecture", "hygiene", "derived"),
-            p.makeLink("implicit", "hygiene", "derived"), p.makeLink("structure", "report", "return"),
-            p.makeLink("refinement", "report", "return"), p.makeLink("fitness", "report", "return"),
-            p.makeLink("hygiene", "report", "return"), p.makeLink("solid", "report", "return"),
-            p.makeLink("candidates", "report", "return"), p.makeLink("architecture", "report", "return"),
-            p.makeLink("coupling", "report", "return"), p.makeLink("implicit", "report", "return"),
-            p.makeLink("report", "statistics", "optional"), p.makeLink("report", "effort", "optional"),
-            p.makeLink("report", "html", "output"), p.makeLink("report", "markdown", "output"),
-            p.makeLink("report", "csv", "output"), p.makeLink("report", "analyzerOut", "output"),
-            p.makeLink("statistics", "statsOut", "output"), p.makeLink("effort", "effortOut", "output")
-        ];
-    }
+            for (let i = 0; i < column.length; i++) {
+                const raw = column[i];
+                const size = getNodeSize(raw, zoneInnerWidth);
 
-    function buildParticles() {
-        particles = [];
-        for (let i = 0; i < links.length; i++) {
-            particles.push({
-                linkIndex: i,
-                t: p.random(),
-                speed: p.random(0.002, 0.005),
-                size: p.random(3, 6)
-            });
+                const node = {
+                    ...raw,
+                    x: nodeX,
+                    y: zoneTop + zoneInsetY + i * spacing,
+                    w: size.w,
+                    h: size.h
+                };
+
+                nodes.push(node);
+            }
+        }
+
+        for (const node of nodes) {
+            if (node.parentId) {
+                const parent = nodes.find(n => n.id === node.parentId);
+                if (parent) {
+                    links.push({
+                        from: parent.id,
+                        to: node.id,
+                        type: node.visualKind === "file" ? "file" : "folder"
+                    });
+                }
+            }
         }
     }
 
-    p.makeNode = (id, label, x, y, w, h, kind) => {
-        return { id, label, x, y, w, h, kind };
-    };
+    function getNodeSize(raw, zoneInnerWidth) {
+        const label = raw.label || "";
+        const hardMax = Math.max(140, zoneInnerWidth);
+        const preferred = 90 + label.length * 5.2;
+        const baseWidth = Math.max(138, Math.min(hardMax, preferred));
 
-    p.makeLink = (from, to, kind) => {
-        return { from, to, kind };
-    };
+        if (raw.visualKind === "root")
+            return { w: Math.min(hardMax, Math.max(150, baseWidth)), h: 54 };
+
+        if (raw.visualKind === "file")
+            return { w: Math.min(hardMax, Math.max(142, baseWidth - 8)), h: 40 };
+
+        if (raw.visualKind === "deep")
+            return { w: Math.min(hardMax, Math.max(140, baseWidth - 4)), h: 44 };
+
+        if (raw.visualKind === "central" || raw.visualKind === "exporter" || raw.visualKind === "centralExporter")
+            return { w: Math.min(hardMax, Math.max(150, baseWidth)), h: 50 };
+
+        return { w: Math.min(hardMax, Math.max(142, baseWidth)), h: 46 };
+    }
 
     function getNode(id) {
         return nodes.find(n => n.id === id);
     }
 
-    function drawBackground() {
+    function drawGrid() {
         p.stroke(palette.grid);
         p.strokeWeight(1);
+
         for (let x = 0; x < p.width; x += 40) p.line(x, 0, x, p.height);
         for (let y = 0; y < p.height; y += 40) p.line(0, y, p.width, y);
+
+        p.stroke(0, 229, 255, 22);
+        p.line(p.width / 2 - 35, p.height / 2, p.width / 2 + 35, p.height / 2);
+        p.line(p.width / 2, p.height / 2 - 35, p.width / 2, p.height / 2 + 35);
+        p.noFill();
+        p.ellipse(p.width / 2, p.height / 2, 48, 48);
     }
 
-    function drawDomainBands() {
-        const bands = [
-            { x: 40, y: 45, w: 720, h: 120, title: "CONFIG", c: p.color(100, 140, 255, 12) },
-            { x: 760, y: 45, w: 760, h: 310, title: "PARSING", c: p.color(255, 154, 60, 10) },
-            { x: 40, y: 380, w: 1240, h: 240, title: "ANALYSIS", c: p.color(110, 168, 255, 10) }
-        ];
+    function drawZones() {
+        const maxDepth = nodes.length === 0 ? 0 : Math.max(...nodes.map(n => n.depth));
 
-        for (let b of bands) {
+        const zoneLeft = 30;
+        const zoneRight = 30;
+        const zoneGap = 12;
+        const zoneTop = 95;
+        const zoneHeight = layoutMetrics.usableHeight + 56;
+
+        const zoneCount = Math.max(1, maxDepth + 1);
+        const totalZoneWidth = p.width - zoneLeft - zoneRight;
+        const zoneWidth = (totalZoneWidth - ((zoneCount - 1) * zoneGap)) / zoneCount;
+
+        for (let d = 0; d <= maxDepth; d++) {
+            const x = zoneLeft + d * (zoneWidth + zoneGap);
+            const sample = nodes.find(n => n.depth === d);
+            const label = sample ? sample.zoneLabel : resolveZoneLabelFallback(d);
+
+            drawZoneBrackets({
+                x: x,
+                y: zoneTop,
+                w: zoneWidth,
+                h: zoneHeight
+            });
+
+            p.fill(palette.text);
             p.noStroke();
-            p.fill(b.c);
-            p.rect(b.x, b.y, b.w, b.h, 16);
-            p.fill(255, 255, 255, 100);
             p.textAlign(p.LEFT, p.TOP);
-            p.textSize(11);
             p.textStyle(p.BOLD);
-            p.text(b.title, b.x + 14, b.y + 10);
+            p.textSize(9.5);
+            p.text("SEC_" + d + " // " + label, x + 8, zoneTop - 15);
         }
     }
 
-    function getEdgePoints(a, b) {
-        let cx1 = a.x + a.w / 2; let cy1 = a.y + a.h / 2;
-        let cx2 = b.x + b.w / 2; let cy2 = b.y + b.h / 2;
-        let dx = cx2 - cx1; let dy = cy2 - cy1;
-        let isHoriz = p.abs(dx) > p.abs(dy) * 0.8;
-        
-        let x1 = cx1, y1 = cy1, x2 = cx2, y2 = cy2;
-        
-        if (isHoriz) {
-            x1 = dx > 0 ? a.x + a.w : a.x;
-            x2 = dx > 0 ? b.x : b.x + b.w;
-        } else {
-            y1 = dy > 0 ? a.y + a.h : a.y;
-            y2 = dy > 0 ? b.y : b.y + b.h;
+    function resolveZoneLabelFallback(d) {
+        if (!useSimple2) {
+            return d === 0 ? "ROOT" :
+                   d === 1 ? "MODULE / FOLDER" :
+                   d === 2 ? "SUBTREE" :
+                   "DEEP STRUCTURE";
         }
-        
-        let cp1x = x1, cp1y = y1, cp2x = x2, cp2y = y2;
-        if (isHoriz) {
-            let bend = p.max(40, p.abs(x2 - x1) * 0.4);
-            cp1x = x1 + (dx > 0 ? bend : -bend); cp2x = x2 + (dx > 0 ? -bend : bend);
-        } else {
-            let bend = p.max(40, p.abs(y2 - y1) * 0.4);
-            cp1y = y1 + (dy > 0 ? bend : -bend); cp2y = y2 + (dy > 0 ? -bend : bend);
-        }
-        
-        return { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 };
+
+        return d === 0 ? "SURFACE" :
+               d === 1 ? "INTERNAL" :
+               d === 2 ? "DEEP" :
+               d === 3 ? "CORE-DEEP" :
+               "LEAF";
+    }
+
+    function drawZoneBrackets(z) {
+        p.stroke(palette.muted);
+        p.noFill();
+        p.strokeWeight(2);
+        let L = 16;
+
+        p.line(z.x, z.y + L, z.x, z.y);
+        p.line(z.x, z.y, z.x + L, z.y);
+
+        p.line(z.x + z.w - L, z.y, z.x + z.w, z.y);
+        p.line(z.x + z.w, z.y, z.x + z.w, z.y + L);
+
+        p.line(z.x, z.y + z.h - L, z.x, z.y + z.h);
+        p.line(z.x, z.y + z.h, z.x + L, z.y + z.h);
+
+        p.line(z.x + z.w - L, z.y + z.h, z.x + z.w, z.y + z.h);
+        p.line(z.x + z.w, z.y + z.h - L, z.x + z.w, z.y + z.h);
+    }
+
+    function drawTitle() {
+        p.fill(palette.text);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(22);
+        p.text(useSimple2 ? "SIMPLE STRUCTURE MAP 2.0" : "SIMPLE STRUCTURE MAP", 40, 24);
+
+        p.fill(palette.folder);
+        p.textStyle(p.NORMAL);
+        p.textSize(11);
+        p.text(
+            useSimple2
+                ? "Baseline structural view with optional visual heuristics for exporters and central candidates."
+                : "Structural projection of folders and visible structural branches.",
+            40, 52);
+
+        p.fill(palette.whiteSoft);
+        p.textSize(9.5);
+        p.text(
+            useSimple2
+                ? "Experimental refinement layer over the baseline renderer."
+                : "Honest fallback view for projects without a reliable inferred flow topology.",
+            40, 68);
     }
 
     function drawLinks() {
-        for (let link of links) {
-            let a = getNode(link.from);
-            let b = getNode(link.to);
-            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(a, b);
+        for (const link of links) {
+            const from = getNode(link.from);
+            const to = getNode(link.to);
 
-            let col = getLinkColor(link.kind);
-            let alpha = p.map(p.sin(p.frameCount * 2 + a.x * 0.01), -1, 1, 80, 180);
-            
-            let c = p.color(col); c.setAlpha(alpha);
-            p.stroke(c);
-            p.strokeWeight(getLinkThickness(link.kind));
+            if (!from || !to) continue;
+
+            const c = link.type === "file" ? palette.fileLink : palette.link;
+            const alpha = link.type === "file" ? 110 : 85;
+
+            const cc = p.color(c);
+            cc.setAlpha(alpha);
+
+            const x1 = from.x + from.w;
+            const y1 = from.y + from.h / 2;
+            const x2 = to.x;
+            const y2 = to.y + to.h / 2;
+
+            const bend = Math.max(20, Math.abs(x2 - x1) * 0.32);
+
             p.noFill();
-            p.drawingContext.shadowBlur = 10;
-            p.drawingContext.shadowColor = col.toString();
-            
-            p.bezier(x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2);
-            p.drawingContext.shadowBlur = 0;
+            p.stroke(cc);
+            p.strokeWeight(link.type === "file" ? 1.2 : 1.5);
+            p.drawingContext.shadowBlur = link.type === "file" ? 4 : 8;
+            p.drawingContext.shadowColor = c.toString();
 
-            let t = 1.0;
-            let tx = p.bezierTangent(x1, cp1x, cp2x, x2, t);
-            let ty = p.bezierTangent(y1, cp1y, cp2y, y2, t);
-            
-            p.push();
-            p.translate(x2, y2);
-            p.rotate(p.atan2(ty, tx));
-            p.noStroke(); p.fill(col);
-            p.triangle(0, 0, -10, 5, -10, -5);
-            p.pop();
+            p.bezier(
+                x1, y1,
+                x1 + bend, y1,
+                x2 - bend, y2,
+                x2, y2);
+
+            p.drawingContext.shadowBlur = 0;
+            drawArrow(x1, y1, x2, y2, bend, c);
         }
     }
 
-    function drawParticles() {
-        for (let pt of particles) {
-            let link = links[pt.linkIndex];
-            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(getNode(link.from), getNode(link.to));
+    function drawArrow(x1, y1, x2, y2, bend, c) {
+        const t = 0.97;
+        const px = p.bezierPoint(x1, x1 + bend, x2 - bend, x2, t);
+        const py = p.bezierPoint(y1, y1, y2, y2, t);
+        const tx = p.bezierTangent(x1, x1 + bend, x2 - bend, x2, t);
+        const ty = p.bezierTangent(y1, y1, y2, y2, t);
 
-            pt.t += pt.speed;
-            if (pt.t > 1) pt.t = 0;
-
-            let px = p.bezierPoint(x1, cp1x, cp2x, x2, pt.t);
-            let py = p.bezierPoint(y1, cp1y, cp2y, y2, pt.t);
-
-            let col = getLinkColor(link.kind);
-            p.noStroke(); p.fill(255);
-            p.drawingContext.shadowBlur = 15;
-            p.drawingContext.shadowColor = col.toString();
-            p.ellipse(px, py, pt.size);
-            p.drawingContext.shadowBlur = 0;
-        }
+        p.push();
+        p.translate(px, py);
+        p.rotate(p.atan2(ty, tx));
+        p.noStroke();
+        p.fill(c);
+        p.triangle(0, 0, -8, 3.5, -8, -3.5);
+        p.pop();
     }
 
     function drawNodes() {
-        for (let node of nodes) drawSciFiNode(node);
+        for (const node of nodes) {
+            drawNode(node);
+        }
     }
 
-    function drawSciFiNode(node) {
-        let col = getNodeColor(node.kind);
-        let pulse = p.map(p.sin(p.frameCount * 2 + node.x * 0.05), -1, 1, 5, 16);
-        let c = 12; 
+    function drawNode(node) {
+        const c = getNodeColor(node);
+        const cut = 10;
+        const selected = selectedNode && selectedNode.id === node.id;
 
-        p.noStroke(); p.fill(p.red(col), p.green(col), p.blue(col), 15);
-        p.rect(node.x - 5, node.y - 5, node.w + 10, node.h + 10, 16);
+        p.drawingContext.shadowBlur = selected ? 18 : 12;
+        p.drawingContext.shadowColor = c.toString();
 
-        p.fill(12, 18, 30, 240);
-        p.stroke(col);
-        p.strokeWeight(node.kind === "hub" ? 2.2 : 1.4);
-        p.drawingContext.shadowBlur = pulse;
-        p.drawingContext.shadowColor = col.toString();
+        p.fill(3, 6, 10, 228);
+        p.stroke(c);
+        p.strokeWeight(selected ? 2.2 : (node.visualKind === "root" ? 1.8 : 1.1));
 
         p.beginShape();
-        p.vertex(node.x + c, node.y);
+        p.vertex(node.x + cut, node.y);
         p.vertex(node.x + node.w, node.y);
-        p.vertex(node.x + node.w, node.y + node.h - c);
-        p.vertex(node.x + node.w - c, node.y + node.h);
+        p.vertex(node.x + node.w, node.y + node.h - cut);
+        p.vertex(node.x + node.w - cut, node.y + node.h);
         p.vertex(node.x, node.y + node.h);
-        p.vertex(node.x, node.y + c);
+        p.vertex(node.x, node.y + cut);
         p.endShape(p.CLOSE);
 
         p.drawingContext.shadowBlur = 0;
 
-        p.noStroke(); p.fill(col);
-        p.rect(node.x + 8, node.y + 12, 4, node.h - 24, 2);
+        p.noStroke();
+        p.fill(c);
+        p.rect(node.x + cut + 4, node.y, 14, 3);
+        p.rect(node.x + cut + 22, node.y, 5, 3);
 
-        p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER);
-        p.textSize(node.kind === "hub" ? 15 : 12);
+        drawNodeBadge(node, c);
+
+        p.fill(255);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.CENTER);
         p.textStyle(p.BOLD);
-        p.text(node.label, node.x + 22, node.y + node.h / 2 - 4);
+        p.textSize(node.visualKind === "root" ? 11 : 9.5);
 
-        p.fill(255, 255, 255, 130);
-        p.textSize(10); p.textStyle(p.NORMAL);
-        p.text(getSubtitle(node.kind), node.x + 22, node.y + node.h / 2 + 12);
-    }
+        const displayLabel = shorten(node.label, 18);
+        p.text(displayLabel.toUpperCase(), node.x + 28, node.y + node.h / 2 - 5);
 
-    function getSubtitle(kind) {
-        if (kind === "entry") return "startup / config";
-        if (kind === "parser") return "flow control";
-        if (kind === "parseBranch") return "parser branch";
-        if (kind === "dto") return "data carrier";
-        if (kind === "analyzer") return "domain reader";
-        if (kind === "derived") return "derived signal";
-        if (kind === "hub") return "reconsolidation point";
-        if (kind === "optional") return "optional branch";
-        if (kind === "output") return "projection";
-        return "";
+        p.fill(palette.text);
+        p.textStyle(p.NORMAL);
+        p.textSize(7.5);
+        p.text(getSubtitle(node), node.x + 28, node.y + node.h / 2 + 8);
+
+        if (selected)
+            drawSelectedPanel(node);
     }
 
-    function getNodeColor(k) {
-        return k==="entry"?palette.muted : k==="parser"?palette.parser : k==="parseBranch"?palette.parseBranch : k==="dto"?palette.dto : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="hub"?palette.hub : k==="optional"?palette.optional : palette.output;
+    function drawNodeBadge(node, c) {
+        const cx = node.x + 14;
+        const cy = node.y + node.h / 2 - 1;
+
+        p.push();
+        p.translate(cx, cy);
+        p.noFill();
+        p.stroke(c);
+        p.strokeWeight(1.2);
+
+        if (node.visualKind === "root") {
+            p.ellipse(0, 0, 12, 12);
+            p.line(-8, 0, 8, 0);
+            p.line(0, -8, 0, 8);
+        } else if (node.visualKind === "folder") {
+            p.rect(-5, -4, 10, 8);
+        } else if (node.visualKind === "deep") {
+            p.polygon = undefined;
+            polygon(0, 0, 5, 6);
+        } else if (node.visualKind === "file") {
+            p.rect(-4, -5, 8, 10);
+            p.line(-2, -1, 2, -1);
+            p.line(-2, 2, 2, 2);
+        } else if (node.visualKind === "central") {
+            p.ellipse(0, 0, 10, 10);
+            p.line(-6, 0, 6, 0);
+            p.line(0, -6, 0, 6);
+        } else if (node.visualKind === "exporter") {
+            p.triangle(5, 0, -5, -5, -5, 5);
+            p.line(6, -5, 6, 5);
+        } else if (node.visualKind === "centralExporter") {
+            p.ellipse(0, 0, 10, 10);
+            p.triangle(8, 0, -1, -5, -1, 5);
+        }
+
+        p.pop();
     }
-    function getLinkColor(k) {
-        return k==="main"?palette.parser : k==="branch"?palette.parseBranch : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="return"?palette.hub : k==="optional"?palette.optional : palette.output;
+
+    function polygon(x, y, radius, npoints) {
+        const angle = p.TWO_PI / npoints;
+        p.beginShape();
+        for (let a = 0; a < p.TWO_PI; a += angle) {
+            p.vertex(x + p.cos(a) * radius, y + p.sin(a) * radius);
+        }
+        p.endShape(p.CLOSE);
     }
-    function getLinkThickness(k) {
-        return k==="main"?3.5 : k==="return"?3.2 : k==="output"?3.0 : k==="branch"?2.2 : k==="analyzer"?2.1 : k==="derived"?1.8 : 1.9;
+
+    function getNodeColor(node) {
+        if (node.visualKind === "centralExporter") return palette.centralExporter;
+        if (node.visualKind === "exporter") return palette.exporter;
+        if (node.visualKind === "central") return palette.central;
+        if (node.visualKind === "root") return palette.root;
+        if (node.visualKind === "folder") return palette.folder;
+        if (node.visualKind === "deep") return palette.deep;
+        return palette.file;
+    }
+
+    function getSubtitle(node) {
+        if (node.visualKind === "root")
+            return "ROOT_SCOPE";
+
+        if (node.visualKind === "file")
+            return "CS_FILE";
+
+        if (node.visualKind === "centralExporter")
+            return "CENTRAL_EXPORT";
+
+        if (node.visualKind === "exporter")
+            return "EXPORT_NODE";
+
+        if (node.visualKind === "central")
+            return "CENTRAL_CANDIDATE";
+
+        if (node.visualKind === "deep")
+            return "DEEP // D:" + node.depth;
+
+        return "FOLDER // D:" + node.depth;
+    }
+
+    function shorten(text, maxLen) {
+        if (!text) return "";
+        if (text.length <= maxLen) return text;
+        return text.substring(0, maxLen - 3) + "...";
+    }
+
+    function drawSelectedPanel(node) {
+        let px = Math.min(node.x + node.w + 12, p.width - 210);
+        let py = Math.max(100, node.y - 4);
+        let pw = 180;
+        let ph = 94;
+
+        p.noStroke();
+        p.fill(4, 10, 16, 235);
+        p.rect(px, py, pw, ph, 5);
+
+        p.stroke(getNodeColor(node));
+        p.strokeWeight(1.1);
+        p.noFill();
+        p.rect(px, py, pw, ph, 5);
+
+        p.fill(255);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(9.5);
+        p.text("NODE TELEMETRY", px + 10, py + 8);
+
+        p.textStyle(p.NORMAL);
+        p.textSize(8.5);
+        p.text("TYPE: " + node.visualKind.toUpperCase(), px + 10, py + 24);
+        p.text("DEPTH: " + node.depth, px + 10, py + 38);
+        p.text("EXPORTER: " + (node.isExporter ? "YES" : "NO"), px + 10, py + 52);
+        p.text("CENTRAL: " + (node.isCentralCandidate ? "YES" : "NO"), px + 10, py + 66);
+        p.text("LABEL: " + shorten(node.label, 18), px + 10, py + 80);
+    }
+
+    function drawStatsPanel() {
+        const x = p.width - 250;
+        const y = p.height - 172;
+        const w = 210;
+        const h = 130;
+
+        p.noStroke();
+        p.fill(4, 10, 16, 220);
+        p.rect(x, y, w, h, 5);
+
+        p.stroke(palette.muted);
+        p.strokeWeight(1);
+        p.noFill();
+        p.rect(x, y, w, h, 5);
+
+        const rootCount = nodes.filter(n => n.visualKind === "root").length;
+        const folderCount = nodes.filter(n => n.visualKind === "folder").length;
+        const deepCount = nodes.filter(n => n.visualKind === "deep").length;
+        const centralCount = nodes.filter(n => n.visualKind === "central" || n.visualKind === "centralExporter").length;
+        const exporterCount = nodes.filter(n => n.visualKind === "exporter" || n.visualKind === "centralExporter").length;
+        const maxDepth = nodes.length === 0 ? 0 : Math.max(...nodes.map(n => n.depth));
+
+        p.fill(palette.text);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(10);
+        p.text(useSimple2 ? "STRUCTURE SUMMARY 2.0" : "STRUCTURE SUMMARY", x + 10, y + 10);
+
+        p.fill(255);
+        p.textStyle(p.NORMAL);
+        p.textSize(8.8);
+        p.text("ROOTS: " + rootCount, x + 10, y + 32);
+        p.text("FOLDERS: " + folderCount, x + 10, y + 48);
+        p.text("DEEP: " + deepCount, x + 10, y + 64);
+        p.text("EXPORTERS: " + exporterCount, x + 10, y + 80);
+        p.text("CENTRAL: " + centralCount, x + 10, y + 96);
+        p.text("MAX DEPTH: " + maxDepth + " // LINKS: " + links.length, x + 10, y + 112);
     }
 
     function drawLegend() {
-        const items = [
-            ["Main Flow", palette.parser], ["Parser Branch", palette.parseBranch],
-            ["DTO / Context", palette.dto], ["Analyzer", palette.analyzer],
-            ["Derived Signal", palette.derived], ["Consolidation", palette.hub], ["Output", palette.output]
-        ];
+        let x = 40;
+        let y = p.height - 90;
 
-        let x = 40; let y = p.height - 30;
+        p.fill(palette.text);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(10);
+        p.text(useSimple2 ? "STRUCTURE LEGEND 2.0" : "STRUCTURE LEGEND", x, y - 18);
+
+        const items = useSimple2
+            ? [
+                ["ROOT", palette.root],
+                ["FOLDER", palette.folder],
+                ["DEEP", palette.deep],
+                ["CENTRAL", palette.central],
+                ["EXPORTER", palette.exporter],
+                ["CENTRAL+EXPORT", palette.centralExporter]
+            ]
+            : [
+                ["ROOT", palette.root],
+                ["FOLDER", palette.folder],
+                ["DEEP", palette.deep],
+                ["CS FILE", palette.file]
+            ];
+
         for (let i = 0; i < items.length; i++) {
-            p.fill(items[i][1]); p.noStroke(); p.rect(x, y, 10, 10, 2);
-            p.fill(255, 255, 255, 180); p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
-            p.text(items[i][0], x + 16, y + 5);
-            x += p.textWidth(items[i][0]) + 50;
+            p.stroke(items[i][1]);
+            p.strokeWeight(1.2);
+            p.noFill();
+            p.rect(x, y, 9, 9);
+
+            p.fill(255);
+            p.noStroke();
+            p.textStyle(p.NORMAL);
+            p.textSize(8.5);
+            p.text(items[i][0], x + 14, y - 1);
+
+            x += p.textWidth(items[i][0]) + 48;
+        }
+
+        let y2 = p.height - 52;
+
+        p.fill(palette.text);
+        p.textStyle(p.BOLD);
+        p.textSize(10);
+        p.text("LINK TYPES", 40, y2 - 16);
+
+        p.stroke(palette.link);
+        p.strokeWeight(1.8);
+        p.line(40, y2, 76, y2);
+        p.noStroke();
+        p.fill(palette.link);
+        p.triangle(76, y2, 68, y2 - 3.5, 68, y2 + 3.5);
+        p.fill(255);
+        p.textStyle(p.NORMAL);
+        p.textSize(8.5);
+        p.text("FOLDER TREE", 84, y2 - 5);
+
+        p.stroke(palette.fileLink);
+        p.strokeWeight(1.8);
+        p.line(176, y2, 212, y2);
+        p.noStroke();
+        p.fill(palette.fileLink);
+        p.triangle(212, y2, 204, y2 - 3.5, 204, y2 + 3.5);
+        p.fill(255);
+        p.text("FILE LEAF", 220, y2 - 5);
+    }
+
+    function drawHUDOverlay() {
+        let scanY = (p.frameCount * 2) % p.height;
+        p.stroke(0, 229, 255, 20);
+        p.strokeWeight(3);
+        p.line(0, scanY, p.width, scanY);
+
+        p.stroke(0, 0, 0, 32);
+        p.strokeWeight(1);
+        for (let y = 0; y < p.height; y += 4) {
+            p.line(0, y, p.width, y);
         }
     }
 };
-new p5(pipelineSketch);
+
+new p5(simpleStructureSketch);
 </script>
-</div></div>
+</div>
 
 <div class='footer'>Generated by RefactorScope Architectural Dashboard</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

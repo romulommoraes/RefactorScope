@@ -9,22 +9,176 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <div class="brand">
         <div class="brand-kicker">RefactorScope // Parsing Module</div>
         <h1>Parsing Dashboard</h1>
-        <div class="subtitle">Parser: <b>HybridParser (Adaptive)</b></div>
+        <div class="subtitle">Parser: <b>CSharpRegex</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
     </div>
 
-    <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-11 06:18 UTC</div>
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 11-03-2026 22:38 UTC</div>
         <div><b>Target:</b> AvaliaRoteiro</div>
-        <div><b>Confidence:</b> 95%</div>
+        <div><b>Confidence:</b> 93%</div>
         <div><b>Confidence Band:</b> High</div>
     </div>
 </div>
@@ -37,7 +191,7 @@
 <div class="grid-kpis parsing-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Parser</div>
-        <div class="value" style="font-size:22px;">HybridParser (Adaptive)</div>
+        <div class="value" style="font-size:22px;">CSharpRegex</div>
         <div class="hint">Parsing strategy used to extract structural data from the codebase</div>
     </div>
 
@@ -55,13 +209,13 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">References</div>
-        <div class="value">588</div>
+        <div class="value">416</div>
         <div class="hint">Structural references extracted between parsed types</div>
     </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Confidence</div>
-        <div class="value">95%</div>
+        <div class="value">93%</div>
         <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
     </div>
 
@@ -73,7 +227,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Execution</div>
-        <div class="value">538 ms</div>
+        <div class="value">288 ms</div>
         <div class="hint">Total parsing execution time for the analyzed scope</div>
     </div>
 
@@ -85,19 +239,19 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Refs / Type</div>
-        <div class="value">3,65</div>
+        <div class="value">2,58</div>
         <div class="hint">Average extracted reference density per parsed type</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / File</div>
-        <div class="value">3,09</div>
+        <div class="value">1,65</div>
         <div class="hint">Average parsing cost per file</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / Type</div>
-        <div class="value">3,34</div>
+        <div class="value">1,79</div>
         <div class="hint">Average parsing cost per extracted type</div>
     </div>
 
@@ -118,15 +272,15 @@
     <ul class="clean">
         <li><b>Files:</b> 174</li>
         <li><b>Types:</b> 161</li>
-        <li><b>References:</b> 588</li>
-        <li><b>Execution Time:</b> 538,40 ms</li>
+        <li><b>References:</b> 416</li>
+        <li><b>Execution Time:</b> 287,84 ms</li>
         <li><b>Type Density:</b> 0,93</li>
-        <li><b>References per Type:</b> 3,65</li>
-        <li><b>Milliseconds per File:</b> 3,09</li>
-        <li><b>Milliseconds per Type:</b> 3,34</li>
+        <li><b>References per Type:</b> 2,58</li>
+        <li><b>Milliseconds per File:</b> 1,65</li>
+        <li><b>Milliseconds per Type:</b> 1,79</li>
         <li><b>Memory per File:</b> 0,00 KB</li>
         <li><b>Memory per Type:</b> 0,00 KB</li>
-        <li><b>Extraction Index:</b> 85,30</li>
+        <li><b>Extraction Index:</b> 80,91</li>
         <li><b>Anomaly Detected:</b> No</li>
     </ul>
 </div>
@@ -141,7 +295,7 @@
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge green"><span class="badge-dot"></span> Confidence: 95%</div>
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 93%</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Sparse Extraction: No</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Anomaly Detected: No</div>
     </div>
@@ -160,7 +314,7 @@
 <div id="p5-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const radarSketch = (p) => {
-    const data = [23.132, 100, 95, 93.312];
+    const data = [23.132, 86.128, 92.529, 96.424];
     const labels = ["Type Density", "Graph Rich", "Confidence", "Efficiency"];
     
     // Raio levemente menor para garantir que não encoste nas bordas
@@ -389,7 +543,7 @@ new p5(donutSketch);
 <div id="p5-sankey-container"></div>
 <script>
 const sankeySketch = (p) => {
-    const maxFlow = 588;
+    const maxFlow = 416;
 
     const nodes = [
         { id: 0, name: "Input Files",      x: 40,   y: 180, val: 174,         col: '#ff9a3c' },
@@ -398,7 +552,7 @@ const sankeySketch = (p) => {
         { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 21,    col: '#ffc15d' },
         { id: 4, name: "Recovery",         x: 290,  y: 360, val: 14,      col: '#ff9a52' },
         { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 161,     col: '#7fd36b' },
-        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 588,col: '#6ea8ff' },
+        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 416,col: '#6ea8ff' },
         { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,          col: '#ff6a3d' }
     ];
 
@@ -590,7 +744,7 @@ new p5(heatSketch);
     <td>Program</td>
     <td>Scriptome</td>
     <td>AvaliaRoteiro\Program.cs</td>
-    <td>16</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>EstatisticaForense</td>
@@ -602,13 +756,13 @@ new p5(heatSketch);
     <td>MotorDeIdentidade</td>
     <td>Scriptome.Fingerprint</td>
     <td>AvaliaRoteiro\Fingerprint\MotorDeIdentidade.cs</td>
-    <td>8</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>MotorTaxonomia</td>
     <td>Scriptome.Fingerprint</td>
     <td>AvaliaRoteiro\Fingerprint\MotorTaxonomia.cs</td>
-    <td>4</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>Cluster</td>
@@ -632,7 +786,7 @@ new p5(heatSketch);
     <td>RaizComposicao</td>
     <td>Scriptome.Infrastructure</td>
     <td>AvaliaRoteiro\Infrastructure\RaizComposicao.cs</td>
-    <td>63</td>
+    <td>33</td>
 </tr>
 <tr>
     <td>ScriptomeJsonExporter</td>
@@ -650,7 +804,7 @@ new p5(heatSketch);
     <td>ZumbiScanner</td>
     <td>Scriptome.Infrastructure</td>
     <td>AvaliaRoteiro\Infrastructure\ZumbiScanner.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ClasseInfo</td>
@@ -662,7 +816,7 @@ new p5(heatSketch);
     <td>OrquestradorNucleo</td>
     <td>Scriptome.Nucleo</td>
     <td>AvaliaRoteiro\Nucleo\OrquestradorNucleo.cs</td>
-    <td>11</td>
+    <td>6</td>
 </tr>
 <tr>
     <td>InfoArquetipo</td>
@@ -674,19 +828,19 @@ new p5(heatSketch);
     <td>BibliotecaArquetipos</td>
     <td>Scriptome.Fingerprint.Dados</td>
     <td>AvaliaRoteiro\Fingerprint\Dados\BibliotecaArquetipos.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>DivergenceLogger</td>
     <td>Scriptome.Fingerprint.Forense</td>
     <td>AvaliaRoteiro\Fingerprint\Forense\DivergenceLogger.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>DivergenceScore</td>
     <td>Scriptome.Fingerprint.Forense</td>
     <td>AvaliaRoteiro\Fingerprint\Forense\DivergenceScore.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>IClassificadorBiometrico</td>
@@ -698,7 +852,7 @@ new p5(heatSketch);
     <td>IClassificadorColetivo</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorColetivo.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IClassificadorEtogramaV2</td>
@@ -716,19 +870,19 @@ new p5(heatSketch);
     <td>IClassificadorJungV2</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorJungV2.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IClassificadorLacanianoV2</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorLacanianoV2.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>IClassificadorMBTIV2</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorMBTIV2.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>IClassificadorNarrativaV2</td>
@@ -818,19 +972,19 @@ new p5(heatSketch);
     <td>MotorEtogramaCartesiano3D</td>
     <td>Scriptome.Fingerprint.MotoresEtograma</td>
     <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaCartesiano3D.cs</td>
-    <td>7</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>MotorEtogramaHeuristico</td>
     <td>Scriptome.Fingerprint.MotoresEtograma</td>
     <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaHeuristico.cs</td>
-    <td>6</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>MotorEtogramaV2</td>
     <td>Scriptome.Fingerprint.MotoresEtograma</td>
     <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaV2.cs</td>
-    <td>5</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>MotorVetorialV2</td>
@@ -848,7 +1002,7 @@ new p5(heatSketch);
     <td>ExportadorBaselineElencoLegacyJson</td>
     <td>Scriptome.Infrastructure.Baseline</td>
     <td>AvaliaRoteiro\Infrastructure\Baseline\ExportadorBaselineElencoLegacyJson.cs</td>
-    <td>3</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ExportadorBaselineEtograma</td>
@@ -866,13 +1020,13 @@ new p5(heatSketch);
     <td>ExportadorExcelModular</td>
     <td>Scriptome.Exportacao</td>
     <td>AvaliaRoteiro\Infrastructure\Exportacao\ExportadorExcelModular.cs</td>
-    <td>20</td>
+    <td>11</td>
 </tr>
 <tr>
     <td>VisualizadorEtograma</td>
     <td>Scriptome.Infrastructure.Exportacao</td>
     <td>AvaliaRoteiro\Infrastructure\Exportacao\VisualizadorEtograma.cs</td>
-    <td>4</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IAbaExcel</td>
@@ -896,31 +1050,31 @@ new p5(heatSketch);
     <td>ComparadorJung</td>
     <td>Global</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ComparadorJung.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ExecutorValidacaoJung</td>
     <td>Scriptome.Infrastructure.Validador</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ExecutorValidacaoJung.cs</td>
-    <td>8</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>ExportadorBaselineJung</td>
     <td>Global</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ExportadorBaselineJung.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>MetricasDivergencia</td>
     <td>Scriptome.Infrastructure.Validador</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\MetricasDivergencia.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ValidadorJung</td>
     <td>Scriptome.Infrastructure.Validador</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ValidadorJung.cs</td>
-    <td>8</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>CalculadoraTensao</td>
@@ -938,7 +1092,7 @@ new p5(heatSketch);
     <td>HeuristicaContextual</td>
     <td>Scriptome.Limbic.Algoritmos</td>
     <td>AvaliaRoteiro\Limbic\Algoritimos\HeuristicaContextual.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>LematizadorCatalyst</td>
@@ -956,13 +1110,13 @@ new p5(heatSketch);
     <td>MotorDeriva6</td>
     <td>Scriptome.Limbic.Algoritmos</td>
     <td>AvaliaRoteiro\Limbic\Algoritimos\MotorDeriva6.cs</td>
-    <td>10</td>
+    <td>6</td>
 </tr>
 <tr>
     <td>BancoDeDadosLexico</td>
     <td>Scriptome.Limbic.Dados</td>
     <td>AvaliaRoteiro\Limbic\Dados\BancoDeDadosLexico.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>CarregadorLimbic</td>
@@ -974,7 +1128,7 @@ new p5(heatSketch);
     <td>ConfiguradorLimbic</td>
     <td>Scriptome.Limbic.Dados</td>
     <td>AvaliaRoteiro\Limbic\Dados\ConfiguradorLimbic.cs</td>
-    <td>3</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ParametrosVader</td>
@@ -986,7 +1140,7 @@ new p5(heatSketch);
     <td>RepositorioLexicoUnificado</td>
     <td>Scriptome.Limbic.Dados</td>
     <td>AvaliaRoteiro\Limbic\Dados\RepositorioLexicoUnificado.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ILimbicAnalyzer</td>
@@ -998,13 +1152,13 @@ new p5(heatSketch);
     <td>IMotorDeriva</td>
     <td>Scriptome.Limbic.Interfaces</td>
     <td>AvaliaRoteiro\Limbic\Interfaces\IMotorDeriva.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IMotorLexico</td>
     <td>Scriptome.Limbic.Interfaces</td>
     <td>AvaliaRoteiro\Limbic\Interfaces\IMotorLexico.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>IMotorLimbic</td>
@@ -1028,7 +1182,7 @@ new p5(heatSketch);
     <td>IPipelineLinguistico</td>
     <td>Scriptome.Linguistica</td>
     <td>AvaliaRoteiro\Limbic\Linguistica\DefinicoesLingusticas.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>LematizadorHibrido</td>
@@ -1040,7 +1194,7 @@ new p5(heatSketch);
     <td>ProcessadorLinguistico</td>
     <td>Scriptome.Linguistica</td>
     <td>AvaliaRoteiro\Limbic\Linguistica\ProcessadorLinguistico.cs</td>
-    <td>5</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>EntradaLimbic</td>
@@ -1082,19 +1236,19 @@ new p5(heatSketch);
     <td>MotorLimbic</td>
     <td>Scriptome.Limbic.Motor</td>
     <td>AvaliaRoteiro\Limbic\Motor\MotorLimbic.cs</td>
-    <td>8</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>AnalisadorContextual</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorContextual.cs</td>
-    <td>10</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>AnalisadorLexico</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorLexico.cs</td>
-    <td>8</td>
+    <td>6</td>
 </tr>
 <tr>
     <td>ConstrutorDeCena</td>
@@ -1118,7 +1272,7 @@ new p5(heatSketch);
     <td>ContextoLimbic</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
-    <td>5</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>MotorDeFusao</td>
@@ -1130,31 +1284,31 @@ new p5(heatSketch);
     <td>PipelineLimbic</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\PipelineLimbic.cs</td>
-    <td>13</td>
+    <td>10</td>
 </tr>
 <tr>
     <td>VerificadorLimbic</td>
     <td>Scriptome.Testes</td>
     <td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbic.cs</td>
-    <td>23</td>
+    <td>14</td>
 </tr>
 <tr>
     <td>VerificadorDerivaCompleto</td>
     <td>Scriptome.Testes</td>
     <td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbicCompleto.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>AdaptadorBasico</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorBasico.cs</td>
-    <td>8</td>
+    <td>6</td>
 </tr>
 <tr>
     <td>AdaptadorBeats</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorBeats.cs</td>
-    <td>5</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>AdaptadorDiagnostico</td>
@@ -1172,25 +1326,25 @@ new p5(heatSketch);
     <td>AdaptadorDuracao</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorDuracao.cs</td>
-    <td>5</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>AdaptadorInteracao</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorInteracao.cs</td>
-    <td>5</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>AdaptadorLimbic</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\AdaptadorLimbic.cs</td>
-    <td>23</td>
+    <td>15</td>
 </tr>
 <tr>
     <td>ConversorFenotipo</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\ConversorFenotipo.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>ExtratorEtogramaAdapter</td>
@@ -1208,7 +1362,7 @@ new p5(heatSketch);
     <td>EspecialistaDinamica</td>
     <td>Scriptome.Nucleo.Especialistas</td>
     <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaDinamica.cs</td>
-    <td>7</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>EspecialistaDuracao</td>
@@ -1220,7 +1374,7 @@ new p5(heatSketch);
     <td>EspecialistaInteracao</td>
     <td>Scriptome.Nucleo.Especialistas</td>
     <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaInteracao.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>EspecialistaProducao</td>
@@ -1232,7 +1386,7 @@ new p5(heatSketch);
     <td>EspecialistaVocabulario</td>
     <td>Scriptome.Nucleo.Especialistas</td>
     <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaVocabulario.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IModuloAnalise</td>
@@ -1256,37 +1410,37 @@ new p5(heatSketch);
     <td>LeitorFountain</td>
     <td>Scriptome.Nucleo.Leitores</td>
     <td>AvaliaRoteiro\Nucleo\Leitores\LeitorFountain.cs</td>
-    <td>6</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ScriptomeDashboardPipeline</td>
     <td>Scriptome.Infrastructure</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\ScriptomeDashboardPipeline.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>MotorFenotipoV2</td>
     <td>Scriptome.Nucleo.Fenotipo</td>
     <td>AvaliaRoteiro\Nucleo\Motores\MotorFenotipoV2.cs</td>
-    <td>16</td>
+    <td>10</td>
 </tr>
 <tr>
     <td>MotorSplicing</td>
     <td>Scriptome.Nucleo.Motores</td>
     <td>AvaliaRoteiro\Nucleo\Motores\MotorSplicing.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>ClassificadorJung</td>
     <td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
     <td>AvaliaRoteiro\Fingerprint\Classificadores\Arquetipos\ClassificadorJung.cs</td>
-    <td>7</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorJungV2</td>
     <td>Scriptome.Fingerprint.Classificadores.Arquetipos</td>
     <td>AvaliaRoteiro\Fingerprint\Classificadores\Arquetipos\ClassificadorJungV2.cs</td>
-    <td>6</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorEtogramaCartesiano</td>
@@ -1310,13 +1464,13 @@ new p5(heatSketch);
     <td>ClassificadorTermico</td>
     <td>Scriptome.Fingerprint.Classificadores.Energia</td>
     <td>AvaliaRoteiro\Fingerprint\Classificadores\Energia\ClassificadorTermico.cs</td>
-    <td>7</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorNarrativaV2</td>
     <td>Scriptome.Fingerprint.Classificadores.Narrativa</td>
     <td>AvaliaRoteiro\Fingerprint\Classificadores\Narrativa\ClassificadorNarrativaUnificado.cs</td>
-    <td>5</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorScriptome</td>
@@ -1340,7 +1494,7 @@ new p5(heatSketch);
     <td>ClassificadorLacanianoV2</td>
     <td>Scriptome.Fingerprint.Classificadores.Psique</td>
     <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorLacanianoV2.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>ClassificadorLacanianoV2Legado</td>
@@ -1358,7 +1512,7 @@ new p5(heatSketch);
     <td>ClassificadorMBTIV2</td>
     <td>Scriptome.Fingerprint.Classificadores.Psique</td>
     <td>AvaliaRoteiro\Fingerprint\Classificadores\Psique\ClassificadorMBTIV2.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>ClassificadorPsicodinamico</td>
@@ -1388,19 +1542,19 @@ new p5(heatSketch);
     <td>EstatisticasRoteiro</td>
     <td>Scriptome.Nucleo.Modelos</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Analise\EstatisticasRoteiro.cs</td>
-    <td>8</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>PerfilPersonagem</td>
     <td>Scriptome.Nucleo.Modelos.Analise</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Analise\PerfilPersonagem.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>ResultadoAnalise</td>
     <td>Scriptome.Nucleo.Modelos.Analise</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Analise\ResultadoAnalise.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>TermoInfluente</td>
@@ -1430,7 +1584,7 @@ new p5(heatSketch);
     <td>BaseImutavel</td>
     <td>Scriptome.Nucleo.Modelos.Genoma</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\BaseImutavel.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>GeneDiscursivo</td>
@@ -1442,7 +1596,7 @@ new p5(heatSketch);
     <td>MotorDeTranscricao</td>
     <td>Scriptome.Nucleo.Modelos.Genoma</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\MotorDeTranscricao.cs</td>
-    <td>6</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ResultadoSplice</td>
@@ -1466,19 +1620,19 @@ new p5(heatSketch);
     <td>RnaLimbic</td>
     <td>Scriptome.Nucleo.Modelos.Genoma</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaLimbic.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ResultadoModuloLimbic</td>
     <td>Scriptome.Nucleo.Modelos.Resultados</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Resultados\ResultadoModuloLimbic.cs</td>
-    <td>3</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>Cena</td>
     <td>Scriptome.Nucleo.Modelos</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Script\Cena.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>ElementoCena</td>
@@ -1508,7 +1662,7 @@ new p5(heatSketch);
     <td>Roteiro</td>
     <td>Scriptome.Nucleo.Modelos.Script</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Script\Roteiro.cs</td>
-    <td>2</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>AbaAnaliseDeCenas</td>
@@ -1550,7 +1704,7 @@ new p5(heatSketch);
     <td>AbaTaxonomia</td>
     <td>Scriptome.Exportacao.Excel.Abas</td>
     <td>AvaliaRoteiro\Infrastructure\Exportacao\Excel\Abas\AbaTaxonomia.cs</td>
-    <td>4</td>
+    <td>3</td>
 </tr>
     </tbody>
 </table>
@@ -1694,6 +1848,55 @@ function sortTable(n) {
 }
 </script>
 <div class='footer'>Generated by RefactorScope Parsing Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

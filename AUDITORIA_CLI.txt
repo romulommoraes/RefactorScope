@@ -1,9 +1,565 @@
 ==========================================
+ARQUIVO: ParserArenaCliRunner.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\ParserArenaCliRunner.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Configuration;
+using RefactorScope.Core.Parsing;
+using RefactorScope.Core.Parsing.Arena;
+using RefactorScope.Core.Parsing.Enum;
+using RefactorScope.Exporters.Dashboards;
+using RefactorScope.Exporters.Styling;
+using RefactorScope.Infrastructure;
+using Spectre.Console;
+
+namespace RefactorScope.CLI;
+
+/// <summary>
+/// Encapsula o fluxo de CLI do Parser Arena / Comparative mode,
+/// evitando que o Program.cs concentre responsabilidades visuais
+/// e operacionais específicas desse modo.
+/// </summary>
+public static class ParserArenaCliRunner
+{
+    public static bool RunSingleProject(
+        RefactorScopeConfig config,
+        bool isSelfAnalysis)
+    {
+        try
+        {
+            TerminalRenderer.Section("Parser Arena");
+
+            var modeLabel = isSelfAnalysis
+                ? "Comparative mode selected for self analysis."
+                : "Comparative mode selected for single-project analysis.";
+
+            TerminalRenderer.Step(modeLabel);
+
+            if (!Directory.Exists(config.RootPath))
+            {
+                Console.WriteLine($"[ERRO] Root path não encontrada: {config.RootPath}");
+                return false;
+            }
+
+            var projectName = Path.GetFileName(
+                config.RootPath.TrimEnd(
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar));
+
+            if (string.IsNullOrWhiteSpace(projectName))
+                projectName = config.RootPath;
+
+            var projectResult = new ParserArenaProjectResult
+            {
+                ProjectName = projectName,
+                ProjectPath = config.RootPath
+            };
+
+            var strategies = new[]
+            {
+                ParserStrategy.RegexFast,
+                ParserStrategy.Selective,
+                ParserStrategy.AdaptiveExperimental,
+                ParserStrategy.IncrementalExperimental
+            };
+
+            TerminalRenderer.Success($"Arena target: {config.RootPath}");
+
+            var effectiveExcludes = BuildSingleProjectExcludes(config);
+
+            var runs =
+                TerminalRenderer.WithSpinner(
+                    "Running comparative parser analysis...",
+                    () =>
+                    {
+                        var results = new List<ParserArenaRunResult>();
+
+                        foreach (var strategy in strategies)
+                        {
+                            IParserCodigo parser;
+
+                            try
+                            {
+                                parser = ParserSelector.ResolveParser(strategy, silent: true);
+                            }
+                            catch (Exception ex)
+                            {
+                                results.Add(
+                                    ParserArenaRunResult.FromException(
+                                        projectName,
+                                        config.RootPath,
+                                        strategy,
+                                        strategy.ToString(),
+                                        ex));
+
+                                continue;
+                            }
+
+                            try
+                            {
+                                var parserResult = parser.Parse(
+                                    config.RootPath,
+                                    config.Include,
+                                    effectiveExcludes);
+
+                                results.Add(
+                                    ParserArenaRunResult.FromParserResult(
+                                        projectName,
+                                        config.RootPath,
+                                        strategy,
+                                        parserResult));
+                            }
+                            catch (Exception ex)
+                            {
+                                results.Add(
+                                    ParserArenaRunResult.FromException(
+                                        projectName,
+                                        config.RootPath,
+                                        strategy,
+                                        parser.Name,
+                                        ex));
+                            }
+                        }
+
+                        return results;
+                    });
+
+            projectResult.Runs.AddRange(runs);
+
+            ParserArenaScoreCalculator.ApplyScores(projectResult);
+
+            var wrappedResults = new List<ParserArenaProjectResult> { projectResult };
+
+            RenderDetailedResults(wrappedResults);
+            RenderWinners(wrappedResults);
+
+            TerminalRenderer.Success("Comparative analysis executed successfully.");
+            Console.WriteLine("[INFO] Next step: add optional batch mode as a separate startup mode.");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO NO COMPARATIVE]: {ex.Message}");
+            CrashLogger.Log(ex, "COMPARATIVE_SINGLE_PROJECT");
+            return false;
+        }
+    }
+
+    public static bool RunBatch(RefactorScopeConfig config)
+    {
+        try
+        {
+            TerminalRenderer.Section("Parser Arena");
+            TerminalRenderer.Step("Comparative batch mode selected.");
+
+            var batchPath = ResolveBatchPath(config);
+
+            if (!Directory.Exists(batchPath))
+            {
+                Console.WriteLine($"[ERRO] Pasta Batch não encontrada em: {batchPath}");
+                Console.WriteLine("[INFO] O modo batch procura uma pasta 'Batch' na raiz acima do projeto efetivo.");
+                return false;
+            }
+
+            var projectDirectories = Directory
+                .GetDirectories(batchPath)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (projectDirectories.Count == 0)
+            {
+                Console.WriteLine($"[ERRO] Nenhum projeto encontrado na pasta Batch: {batchPath}");
+                return false;
+            }
+
+            TerminalRenderer.Success(
+                $"Arena initialized. Projects detected: {projectDirectories.Count}");
+
+            var strategies = new[]
+            {
+                ParserStrategy.RegexFast,
+                ParserStrategy.Selective,
+                ParserStrategy.AdaptiveExperimental,
+                ParserStrategy.IncrementalExperimental
+            };
+
+            var effectiveExcludes = BuildBatchExcludes(config);
+            var projectResults = new List<ParserArenaProjectResult>();
+
+            TerminalRenderer.WithSpinner(
+                "Running comparative parser batch...",
+                () =>
+                {
+                    foreach (var projectDirectory in projectDirectories)
+                    {
+                        var effectiveProjectRoot =
+                            ProjectRootResolver.ResolveEffectiveProjectRoot(projectDirectory);
+
+                        var projectName = Path.GetFileName(
+                            effectiveProjectRoot.TrimEnd(
+                                Path.DirectorySeparatorChar,
+                                Path.AltDirectorySeparatorChar));
+
+                        if (string.IsNullOrWhiteSpace(projectName))
+                            projectName = effectiveProjectRoot;
+
+                        var projectResult = new ParserArenaProjectResult
+                        {
+                            ProjectName = projectName,
+                            ProjectPath = effectiveProjectRoot
+                        };
+
+                        foreach (var strategy in strategies)
+                        {
+                            IParserCodigo parser;
+
+                            try
+                            {
+                                parser = ParserSelector.ResolveParser(strategy, silent: true);
+                            }
+                            catch (Exception ex)
+                            {
+                                projectResult.Runs.Add(
+                                    ParserArenaRunResult.FromException(
+                                        projectName,
+                                        effectiveProjectRoot,
+                                        strategy,
+                                        strategy.ToString(),
+                                        ex));
+
+                                continue;
+                            }
+
+                            try
+                            {
+                                var parserResult = parser.Parse(
+                                    effectiveProjectRoot,
+                                    config.Include,
+                                    effectiveExcludes);
+
+                                projectResult.Runs.Add(
+                                    ParserArenaRunResult.FromParserResult(
+                                        projectName,
+                                        effectiveProjectRoot,
+                                        strategy,
+                                        parserResult));
+                            }
+                            catch (Exception ex)
+                            {
+                                projectResult.Runs.Add(
+                                    ParserArenaRunResult.FromException(
+                                        projectName,
+                                        effectiveProjectRoot,
+                                        strategy,
+                                        parser.Name,
+                                        ex));
+                            }
+                        }
+
+                        ParserArenaScoreCalculator.ApplyScores(projectResult);
+                        projectResults.Add(projectResult);
+                    }
+
+                    return true;
+                });
+
+            RenderDetailedResults(projectResults);
+            RenderWinners(projectResults);
+
+            RunParserArenaDashboardExporter(
+                projectResults,
+                ResolveArenaOutputPath(),
+                ResolveThemeFileName(config));
+
+            TerminalRenderer.Success("Comparative batch executed successfully.");
+            Console.WriteLine("[INFO] Arena comparative HTML dashboard generated.");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO NO COMPARATIVE]: {ex.Message}");
+            CrashLogger.Log(ex, "COMPARATIVE_ARENA");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Pasta Batch de ENTRADA dos projetos comparativos.
+    /// </summary>
+    public static string ResolveBatchPath(RefactorScopeConfig config)
+    {
+        return @"C:\Users\romul\source\repos\RefactorScope\Batch";
+    }
+
+    /// <summary>
+    /// Pasta Batch de SAÍDA do Arena ao lado do executável.
+    /// Exemplo:
+    /// RefactorScope\RefactorScope\bin\Debug\net10.0\Batch
+    /// </summary>
+    private static string ResolveArenaOutputPath()
+    {
+        var outputPath = Path.Combine(AppContext.BaseDirectory, "Batch");
+        Directory.CreateDirectory(outputPath);
+        return outputPath;
+    }
+
+    private static void RunParserArenaDashboardExporter(
+        IReadOnlyList<ParserArenaProjectResult> results,
+        string outputDirectory,
+        string themeFileName)
+    {
+        try
+        {
+            if (results == null || results.Count == 0)
+                return;
+
+            Directory.CreateDirectory(outputDirectory);
+
+            DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+            var htmlPath = Path.Combine(outputDirectory, "ParserArenaDashboard.html");
+
+            var exporter = new ParserArenaDashboardExporter();
+            exporter.Export(results, htmlPath, themeFileName);
+
+            TerminalRenderer.Success("parser-arena-dashboard gerado");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERRO AO GERAR HTML - parser-arena-dashboard]: {ex.Message}");
+            CrashLogger.Log(ex, "HTML_EXPORT_PARSER-ARENA-DASHBOARD");
+        }
+    }
+
+    private static void RenderDetailedResults(
+        IReadOnlyList<ParserArenaProjectResult> results)
+    {
+        if (results == null || results.Count == 0)
+            return;
+
+        TerminalRenderer.Section("Parser Arena Detailed Summary");
+
+        foreach (var project in results)
+        {
+            AnsiConsole.MarkupLine($"[bold yellow]{project.ProjectName}[/]");
+
+            var table = new Table()
+                .Border(TableBorder.Rounded)
+                .Expand()
+                .AddColumn("Parser")
+                .AddColumn("Strategy")
+                .AddColumn("Status")
+                .AddColumn("Score")
+                .AddColumn("Confidence")
+                .AddColumn("Types")
+                .AddColumn("Refs")
+                .AddColumn("Time");
+
+            foreach (var run in project.OrderedRuns)
+            {
+                var statusMarkup = run.Status switch
+                {
+                    ParseStatus.Success => "[green]Success[/]",
+                    ParseStatus.PlausibilityWarning => "[yellow]Warning[/]",
+                    ParseStatus.FallbackTriggered => "[orange1]Fallback[/]",
+                    ParseStatus.Failed => "[red]Failed[/]",
+                    _ => run.Status.ToString()
+                };
+
+                table.AddRow(
+                    ShortenParserName(run.ParserName),
+                    ShortenStrategyName(run.Strategy),
+                    statusMarkup,
+                    run.ComparativeScore.ToString("0.00"),
+                    Clamp01(run.Confidence).ToString("0.00"),
+                    run.TypeCount.ToString(),
+                    run.ReferenceCount.ToString(),
+                    $"{run.ExecutionTime.TotalMilliseconds:0}ms");
+            }
+
+            AnsiConsole.Write(table);
+            Console.WriteLine();
+        }
+    }
+
+    private static void RenderWinners(
+        IReadOnlyList<ParserArenaProjectResult> results)
+    {
+        if (results == null || results.Count == 0)
+            return;
+
+        TerminalRenderer.Section("Best Parser Per Project");
+
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Expand()
+            .AddColumn("Project")
+            .AddColumn("Winner")
+            .AddColumn("Strategy")
+            .AddColumn("Status")
+            .AddColumn("Score")
+            .AddColumn("Confidence")
+            .AddColumn("Types")
+            .AddColumn("Refs")
+            .AddColumn("Time");
+
+        foreach (var project in results)
+        {
+            var best = project.BestRun;
+
+            if (best == null)
+            {
+                table.AddRow(
+                    project.ProjectName,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "0.00",
+                    "0.00",
+                    "0",
+                    "0",
+                    "0ms");
+
+                continue;
+            }
+
+            var statusMarkup = best.Status switch
+            {
+                ParseStatus.Success => "[green]Success[/]",
+                ParseStatus.PlausibilityWarning => "[yellow]Warning[/]",
+                ParseStatus.FallbackTriggered => "[orange1]Fallback[/]",
+                ParseStatus.Failed => "[red]Failed[/]",
+                _ => best.Status.ToString()
+            };
+
+            table.AddRow(
+                project.ProjectName,
+                ShortenParserName(best.ParserName),
+                ShortenStrategyName(best.Strategy),
+                statusMarkup,
+                best.ComparativeScore.ToString("0.00"),
+                Clamp01(best.Confidence).ToString("0.00"),
+                best.TypeCount.ToString(),
+                best.ReferenceCount.ToString(),
+                $"{best.ExecutionTime.TotalMilliseconds:0}ms");
+        }
+
+        AnsiConsole.Write(table);
+        Console.WriteLine();
+    }
+
+    private static string ResolveThemeFileName(RefactorScopeConfig? config)
+    {
+        try
+        {
+            var themeName = TryReadDashboardTheme(config);
+            return DashboardThemeSelector.ResolveFileName(themeName);
+        }
+        catch
+        {
+            return DashboardThemeSelector.DefaultThemeFile;
+        }
+    }
+
+    private static string? TryReadDashboardTheme(RefactorScopeConfig? config)
+    {
+        return config?.Dashboard?.Theme;
+    }
+
+    private static string ShortenStrategyName(ParserStrategy strategy)
+    {
+        return strategy switch
+        {
+            ParserStrategy.RegexFast => "Regex",
+            ParserStrategy.Selective => "Selective",
+            ParserStrategy.AdaptiveExperimental => "Adaptive",
+            ParserStrategy.IncrementalExperimental => "Incremental",
+            ParserStrategy.Comparative => "Comparative",
+            _ => strategy.ToString()
+        };
+    }
+
+    private static string ShortenParserName(string parserName)
+    {
+        return parserName switch
+        {
+            "CSharpRegex" => "Regex",
+            "CSharpTextual" => "Textual",
+            "HybridSelectiveParser" => "Selective",
+            "HybridParser (Adaptive)" => "Adaptive",
+            "HybridParser (Incremental)" => "Incremental",
+            _ => parserName
+        };
+    }
+
+    private static IEnumerable<string> BuildSingleProjectExcludes(RefactorScopeConfig config)
+    {
+        var excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (config.Exclude != null)
+        {
+            foreach (var item in config.Exclude)
+            {
+                if (!string.IsNullOrWhiteSpace(item))
+                    excludes.Add(item.Trim());
+            }
+        }
+
+        excludes.Add("bin");
+        excludes.Add("bin/**");
+        excludes.Add("obj");
+        excludes.Add("obj/**");
+        excludes.Add("dumps");
+        excludes.Add("dumps/**");
+        excludes.Add("datasets");
+        excludes.Add("datasets/**");
+        excludes.Add("output");
+        excludes.Add("output/**");
+
+        return excludes;
+    }
+
+    private static IEnumerable<string> BuildBatchExcludes(RefactorScopeConfig config)
+    {
+        var excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (config.Exclude != null)
+        {
+            foreach (var item in config.Exclude)
+            {
+                if (!string.IsNullOrWhiteSpace(item))
+                    excludes.Add(item.Trim());
+            }
+        }
+
+        excludes.Add("bin");
+        excludes.Add("bin/**");
+        excludes.Add("obj");
+        excludes.Add("obj/**");
+        excludes.Add("dumps");
+        excludes.Add("dumps/**");
+        excludes.Add("datasets");
+        excludes.Add("datasets/**");
+        excludes.Add("output");
+        excludes.Add("output/**");
+
+        return excludes;
+    }
+
+    private static double Clamp01(double value)
+        => Math.Max(0, Math.Min(1, value));
+}
+
+
+==========================================
 ARQUIVO: Program.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs
 ==========================================
 using RefactorScope.Analyzers;
 using RefactorScope.Analyzers.Solid;
+using RefactorScope.CLI;
 using RefactorScope.Core.Abstractions;
 using RefactorScope.Core.Analyzers;
 using RefactorScope.Core.Configuration;
@@ -13,6 +569,7 @@ using RefactorScope.Core.Metrics;
 using RefactorScope.Core.Model;
 using RefactorScope.Core.Orchestration;
 using RefactorScope.Core.Parsing;
+using RefactorScope.Core.Parsing.Arena;
 using RefactorScope.Core.Parsing.Enum;
 using RefactorScope.Core.Results;
 using RefactorScope.Execution.Dump;
@@ -38,19 +595,54 @@ IParserResult? parsingResult = null;
 // PIPELINE PRINCIPAL
 // =====================================================
 
-if (!RunConfiguration(out var config)) return;
+if (!RunConfiguration(out var config, out var isSelfAnalysis, out var isBatchMode))
+    return;
 
-if (!RunParsing(config, out var context, out parsingResult)) return;
+const bool enableParserSelector = true;
+
+var parserStrategy =
+    ParserSelector.ResolveStrategy(
+        config.Parser,
+        enableParserSelector);
+
+config.Parser = parserStrategy.ToString();
+
+if (isBatchMode)
+{
+    if (parserStrategy != ParserStrategy.Comparative)
+    {
+        TerminalRenderer.Warn("Batch Arena requires Comparative parser strategy.");
+        return;
+    }
+
+    if (!ParserArenaCliRunner.RunBatch(config))
+        return;
+
+    return;
+}
+
+if (parserStrategy == ParserStrategy.Comparative)
+{
+    if (!ParserArenaCliRunner.RunSingleProject(config, isSelfAnalysis))
+        return;
+
+    return;
+}
+
+if (!RunParsing(config, parserStrategy, out var context, out parsingResult))
+    return;
 
 RunTopLevelRecovery(context);
 
-if (!RunAnalysis(context, out var report)) return;
+if (!RunAnalysis(context, out var report))
+    return;
 
 RunArchitecturalHygiene(report);
 
 PrintStructuralBreakdown(report);
 
-if (!RunExport(config, context, report, parsingResult)) return;
+if (!RunExport(config, context, report, parsingResult))
+    return;
 
 RunVisualization(report);
 
@@ -60,21 +652,33 @@ ApplyCiExitCode(report);
    CONFIGURAÇÃO
    ===================================================== */
 
-static bool RunConfiguration(out RefactorScopeConfig config)
+static bool RunConfiguration(
+    out RefactorScopeConfig config,
+    out bool isSelfAnalysis,
+    out bool isBatchMode)
 {
     config = null!;
+    isSelfAnalysis = false;
+    isBatchMode = false;
 
     try
     {
         const bool enableSelfSelector = true;
 
-        var configPath =
-            RefactorScope.CLI.SelfAnalysisSelector.ResolveConfigPath(
+        var startupSelection =
+            RefactorScope.CLI.SelfAnalysisSelector.Resolve(
                 "refactorscope.json",
                 "refactorscope_v1_1_self.json",
                 enableSelfSelector);
 
-        config = ConfigLoader.Load(configPath);
+        isSelfAnalysis = startupSelection.IsSelfAnalysis;
+        isBatchMode = startupSelection.IsBatchMode;
+
+        config = ConfigLoader.Load(startupSelection.ConfigPath);
+        Console.WriteLine($"[DEBUG] Config carregada: {startupSelection.ConfigPath}");
+        Console.WriteLine($"[DEBUG] RootPath: {config.RootPath}");
+        Console.WriteLine($"[DEBUG] OutputPath: {config.OutputPath}");
+        Console.WriteLine($"[DEBUG] BaseDirectory: {AppContext.BaseDirectory}");
 
         ConfigValidator.Validate(config);
 
@@ -107,6 +711,7 @@ static bool RunConfiguration(out RefactorScopeConfig config)
 
 static bool RunParsing(
     RefactorScopeConfig config,
+    ParserStrategy parserStrategy,
     out AnalysisContext context,
     out IParserResult? parsingResult)
 {
@@ -115,21 +720,8 @@ static bool RunParsing(
 
     try
     {
-        if (!Enum.TryParse<ParserStrategy>(
-                config.Parser,
-                true,
-                out _))
-        {
-            Console.WriteLine(
-                $"[WARN] Estratégia de parser '{config.Parser}' inválida. Usando Selective.");
-        }
-
-        const bool enableParserSelector = true;
-
         var parser =
-            ParserSelector.ResolveParser(
-                config.Parser,
-                enableParserSelector);
+            ParserSelector.ResolveParser(parserStrategy);
 
         var result =
             TerminalRenderer.WithSpinner(
@@ -236,7 +828,6 @@ static bool RunAnalysis(
     try
     {
         var analyzers = BuildAnalyzers(context);
-
 
         var orchestrator = new AnalysisOrchestrator(analyzers);
 
@@ -369,7 +960,14 @@ static bool RunExport(
         // -------------------------------------------------
         RunHtmlExporters(htmlExporters, context, report, rootOutputPath);
 
+        ArchitecturalDashboardExporterAdapter.ExportDirect(
+            context,
+            report,
+            parsingResult,
+            rootOutputPath);
+
         RunParsingDashboardExporter(context, parsingResult, rootOutputPath);
+
 
         QualityDashboardExporterAdapter.ExportDirect(
             context,
@@ -630,8 +1228,7 @@ static List<IExporter> BuildHtmlExportersWithoutHub()
 {
     return new List<IExporter>
     {
-        new StructuralDashboardExporterAdapter(),
-        new ArchitecturalDashboardExporterAdapter()
+        new StructuralDashboardExporterAdapter()
     };
 }
 
@@ -692,7 +1289,34 @@ static void RunParsingDashboardExporter(
         CrashLogger.Log(ex, "HTML_EXPORT_PARSING-DASHBOARD");
     }
 }
+static void RunParserArenaDashboardExporter(
+    AnalysisContext context,
+    IReadOnlyList<ParserArenaProjectResult> results,
+    string outputDirectory)
+{
+    try
+    {
+        if (results == null || results.Count == 0)
+            return;
 
+        Directory.CreateDirectory(outputDirectory);
+
+        var themeFileName = ResolveThemeFileName(context);
+        DashboardAssetCopier.CopyAll(outputDirectory, themeFileName);
+
+        var htmlPath = Path.Combine(outputDirectory, "ParserArenaDashboard.html");
+
+        var exporter = new ParserArenaDashboardExporter();
+        exporter.Export(results, htmlPath, themeFileName);
+
+        TerminalRenderer.Success("parser-arena-dashboard gerado");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERRO AO GERAR HTML - parser-arena-dashboard]: {ex.Message}");
+        CrashLogger.Log(ex, "HTML_EXPORT_PARSER-ARENA-DASHBOARD");
+    }
+}
 static void RunHtmlHubExporter(
     AnalysisContext context,
     ConsolidatedReport report,
@@ -748,6 +1372,54 @@ static string? TryReadDashboardTheme(RefactorScopeConfig? config)
 
 
 ==========================================
+ARQUIVO: ProjectRootResolver.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\ProjectRootResolver.cs
+==========================================
+namespace RefactorScope.CLI;
+
+/// <summary>
+/// Resolves the effective C# project root.
+/// 
+/// Rule:
+/// - if the configured path already contains a .csproj, use it
+/// - otherwise, search downward and select the nearest directory
+///   that contains a .csproj
+/// - fallback to the original path if nothing is found
+/// </summary>
+public static class ProjectRootResolver
+{
+    public static string ResolveEffectiveProjectRoot(string configuredRootPath)
+    {
+        var fullRootPath = Path.GetFullPath(configuredRootPath);
+
+        if (!Directory.Exists(fullRootPath))
+            return fullRootPath;
+
+        var csprojFilesInRoot = Directory.GetFiles(
+            fullRootPath,
+            "*.csproj",
+            SearchOption.TopDirectoryOnly);
+
+        if (csprojFilesInRoot.Length > 0)
+            return fullRootPath;
+
+        var descendantProjectDirectories = Directory
+            .GetFiles(fullRootPath, "*.csproj", SearchOption.AllDirectories)
+            .Select(Path.GetDirectoryName)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x!.Length)
+            .ToList();
+
+        if (descendantProjectDirectories.Count > 0)
+            return descendantProjectDirectories[0]!;
+
+        return fullRootPath;
+    }
+}
+
+
+==========================================
 ARQUIVO: SelfAnalysisSelector.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\SelfAnalysisSelector.cs
 ==========================================
@@ -755,34 +1427,95 @@ namespace RefactorScope.CLI
 {
     public static class SelfAnalysisSelector
     {
-        public static string ResolveConfigPath(
+        public static StartupModeSelection Resolve(
             string defaultConfigPath,
             string selfConfigPath,
             bool enableInteractiveSelector)
         {
             if (!enableInteractiveSelector)
-                return defaultConfigPath;
+            {
+                return new StartupModeSelection
+                {
+                    ConfigPath = defaultConfigPath,
+                    IsSelfAnalysis = false,
+                    IsBatchMode = false
+                };
+            }
 
             Console.WriteLine();
             Console.WriteLine("?? RefactorScope Startup Mode");
             Console.WriteLine("---------------------------------");
             Console.WriteLine("1) Normal Analysis");
             Console.WriteLine("2) Self Analysis (RefactorScope analyzing itself)");
+            Console.WriteLine("3) Batch Arena");
             Console.WriteLine();
-            Console.Write("Select mode (1 or 2) [default=1]: ");
+            Console.Write("Select mode (1, 2 or 3) [default=1]: ");
 
-            var input = Console.ReadLine();
+            var input = Console.ReadLine()?.Trim();
 
-            if (input?.Trim() == "2")
+            return input switch
             {
-                Console.WriteLine("?? Self Analysis Mode Enabled");
-                return selfConfigPath;
-            }
+                "2" => ResolveSelf(selfConfigPath),
+                "3" => ResolveBatch(defaultConfigPath),
+                _ => ResolveNormal(defaultConfigPath)
+            };
+        }
 
+        private static StartupModeSelection ResolveNormal(string configPath)
+        {
             Console.WriteLine("?? Normal Analysis Mode Enabled");
-            return defaultConfigPath;
+
+            return new StartupModeSelection
+            {
+                ConfigPath = configPath,
+                IsSelfAnalysis = false,
+                IsBatchMode = false
+            };
+        }
+
+        private static StartupModeSelection ResolveSelf(string configPath)
+        {
+            Console.WriteLine("?? Self Analysis Mode Enabled");
+
+            return new StartupModeSelection
+            {
+                ConfigPath = configPath,
+                IsSelfAnalysis = true,
+                IsBatchMode = false
+            };
+        }
+
+        private static StartupModeSelection ResolveBatch(string configPath)
+        {
+            Console.WriteLine("??? Batch Arena Mode Enabled");
+
+            return new StartupModeSelection
+            {
+                ConfigPath = configPath,
+                IsSelfAnalysis = false,
+                IsBatchMode = true
+            };
         }
     }
+}
+
+
+==========================================
+ARQUIVO: StartupModeSelection.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\StartupModeSelection.cs
+==========================================
+namespace RefactorScope.CLI;
+
+/// <summary>
+/// Represents the startup mode selection resolved before configuration loading.
+/// </summary>
+public sealed class StartupModeSelection
+{
+    public required string ConfigPath { get; init; }
+
+    public required bool IsSelfAnalysis { get; init; }
+
+    public required bool IsBatchMode { get; init; }
 }
 
 

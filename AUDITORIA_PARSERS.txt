@@ -348,6 +348,7 @@ namespace RefactorScope.Parsers.Common
                 || name.Equals(".vs", StringComparison.OrdinalIgnoreCase)
                 || name.Equals(".idea", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("node_modules", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("Batch", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("packages", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("TestResults", StringComparison.OrdinalIgnoreCase)
                 || name.Equals("Docs", StringComparison.OrdinalIgnoreCase)

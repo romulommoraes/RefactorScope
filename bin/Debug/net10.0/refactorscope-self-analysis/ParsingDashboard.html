@@ -9,9 +9,153 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -19,10 +163,20 @@
         <div class="brand-kicker">RefactorScope // Parsing Module</div>
         <h1>Parsing Dashboard</h1>
         <div class="subtitle">Parser: <b>HybridSelectiveParser</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
     </div>
 
-    <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-11 05:40 UTC</div>
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 12-03-2026 01:02 UTC</div>
         <div><b>Target:</b> RefactorScope</div>
         <div><b>Confidence:</b> 100%</div>
         <div><b>Confidence Band:</b> High</div>
@@ -43,19 +197,19 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Files</div>
-        <div class="value">173</div>
+        <div class="value">190</div>
         <div class="hint">Source files parsed into the structural model</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Types</div>
-        <div class="value">176</div>
+        <div class="value">191</div>
         <div class="hint">Distinct types extracted into the parsing model</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">References</div>
-        <div class="value">647</div>
+        <div class="value">696</div>
         <div class="hint">Structural references extracted between parsed types</div>
     </div>
 
@@ -73,31 +227,31 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Execution</div>
-        <div class="value">842 ms</div>
+        <div class="value">811 ms</div>
         <div class="hint">Total parsing execution time for the analyzed scope</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Type Density</div>
-        <div class="value">1,02</div>
+        <div class="value">1,01</div>
         <div class="hint">Average number of extracted types per parsed file</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Refs / Type</div>
-        <div class="value">3,68</div>
+        <div class="value">3,64</div>
         <div class="hint">Average extracted reference density per parsed type</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / File</div>
-        <div class="value">4,87</div>
+        <div class="value">4,27</div>
         <div class="hint">Average parsing cost per file</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / Type</div>
-        <div class="value">4,78</div>
+        <div class="value">4,24</div>
         <div class="hint">Average parsing cost per extracted type</div>
     </div>
 
@@ -116,17 +270,17 @@
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Telemetry Summary</h3>
     <ul class="clean">
-        <li><b>Files:</b> 173</li>
-        <li><b>Types:</b> 176</li>
-        <li><b>References:</b> 647</li>
-        <li><b>Execution Time:</b> 841,90 ms</li>
-        <li><b>Type Density:</b> 1,02</li>
-        <li><b>References per Type:</b> 3,68</li>
-        <li><b>Milliseconds per File:</b> 4,87</li>
-        <li><b>Milliseconds per Type:</b> 4,78</li>
+        <li><b>Files:</b> 190</li>
+        <li><b>Types:</b> 191</li>
+        <li><b>References:</b> 696</li>
+        <li><b>Execution Time:</b> 810,57 ms</li>
+        <li><b>Type Density:</b> 1,01</li>
+        <li><b>References per Type:</b> 3,64</li>
+        <li><b>Milliseconds per File:</b> 4,27</li>
+        <li><b>Milliseconds per Type:</b> 4,24</li>
         <li><b>Memory per File:</b> 0,00 KB</li>
         <li><b>Memory per Type:</b> 0,00 KB</li>
-        <li><b>Extraction Index:</b> 87,86</li>
+        <li><b>Extraction Index:</b> 87,92</li>
         <li><b>Anomaly Detected:</b> No</li>
     </ul>
 </div>
@@ -160,14 +314,18 @@
 <div id="p5-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const radarSketch = (p) => {
-    const data = [25.434, 100, 100, 90.433];
+    const data = [25.132, 100, 100, 91.512];
     const labels = ["Type Density", "Graph Rich", "Confidence", "Efficiency"];
-    
-    // Raio levemente menor para garantir que não encoste nas bordas
+    const rawValues = [
+        "1.005 types/file",
+        "3.644 refs/type",
+        "100% confidence",
+        "4.244 ms/type"
+    ];
     const maxRadius = 100;
+    let hovered = null;
 
     p.setup = () => {
-        // AQUI ESTÁ O SEGREDO: Canvas mais largo (440) para dar espaço lateral pros textos
         let canvas = p.createCanvas(440, 360);
         canvas.parent('p5-radar-container');
         p.angleMode(p.DEGREES);
@@ -176,11 +334,11 @@ const radarSketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hovered = null;
         p.translate(p.width / 2, p.height / 2);
 
         let pulse = p.sin(p.frameCount * 3) * 5 + 10;
 
-        // Grid
         p.stroke('#8fa8ff');
         p.noFill();
         p.strokeWeight(1);
@@ -208,7 +366,6 @@ const radarSketch = (p) => {
             p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
         }
 
-        // Dados
         p.drawingContext.shadowColor = '#ff9a3c';
         p.drawingContext.shadowBlur = pulse;
         p.stroke('#ff9a3c');
@@ -226,12 +383,32 @@ const radarSketch = (p) => {
         for (let i = 0; i < 4; i++) {
             let angle = (i * 90) - 90;
             let r = p.map(data[i], 0, 100, 0, maxRadius);
+            let px = p.cos(angle) * r;
+            let py = p.sin(angle) * r;
+
+            const mouseDx = p.mouseX - (p.width / 2 + px);
+            const mouseDy = p.mouseY - (p.height / 2 + py);
+            const isHover = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy) <= 9;
+
+            if (isHover) {
+                hovered = {
+                    label: labels[i],
+                    normalized: data[i],
+                    raw: rawValues[i],
+                    x: px,
+                    y: py
+                };
+            }
+
             p.fill('#0b1020');
-            p.strokeWeight(2);
-            p.ellipse(p.cos(angle) * r, p.sin(angle) * r, 8, 8);
+            p.stroke('#ff9a3c');
+            p.strokeWeight(isHover ? 2.8 : 2);
+            p.drawingContext.shadowBlur = isHover ? 18 : 10;
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.ellipse(px, py, isHover ? 10 : 8, isHover ? 10 : 8);
+            p.drawingContext.shadowBlur = 0;
         }
 
-        // Scanner
         p.drawingContext.shadowBlur = 0;
         let scanAngle = p.frameCount * 2;
         p.noStroke();
@@ -241,21 +418,49 @@ const radarSketch = (p) => {
         p.strokeWeight(1.5);
         p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
 
-        // Labels
         p.fill('#eef4ff');
         p.noStroke();
         p.textSize(12);
-        
+
         p.textAlign(p.CENTER, p.CENTER);
-        p.text(labels[0], 0, -maxRadius - 20); // Topo
-        p.text(labels[2], 0, maxRadius + 20);  // Base
-        
-        // Offset ajustado de 15 para 12 para ficar visualmente coeso
+        p.text(labels[0], 0, -maxRadius - 20);
+        p.text(labels[2], 0, maxRadius + 20);
+
         p.textAlign(p.LEFT, p.CENTER);
-        p.text(labels[1], maxRadius + 12, 0);  // Direita
-        
+        p.text(labels[1], maxRadius + 12, 0);
+
         p.textAlign(p.RIGHT, p.CENTER);
-        p.text(labels[3], -maxRadius - 12, 0); // Esquerda
+        p.text(labels[3], -maxRadius - 12, 0);
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 170;
+            const boxH = 72;
+            let tx = p.mouseX + 16;
+            let ty = p.mouseY - 12;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Normalized: ${hovered.normalized.toFixed(1)}%`, tx + 12, ty + 30);
+            p.text(`Raw: ${hovered.raw}`, tx + 12, ty + 46);
+        }
     };
 };
 new p5(radarSketch);
@@ -269,13 +474,14 @@ new p5(radarSketch);
 <script>
 const donutSketch = (p) => {
     const donutData = [
-        { label: "Safe", value: 107, color: "#7fd36b" },
-        { label: "Complex", value: 31, color: "#6ea8ff" },
-        { label: "AST/Pattern", value: 21, color: "#ffc15d" },
-        { label: "Recovery", value: 14, color: "#ff9a52" },
+        { label: "Safe", value: 118, color: "#7fd36b" },
+        { label: "Complex", value: 34, color: "#6ea8ff" },
+        { label: "AST/Pattern", value: 23, color: "#ffc15d" },
+        { label: "Recovery", value: 15, color: "#ff9a52" },
         { label: "Risk", value: 0, color: "#ff6a3d" }
     ];
-    const total = 173;
+    const total = 190;
+    let hovered = null;
 
     p.setup = () => {
         let canvas = p.createCanvas(360, 360);
@@ -286,6 +492,7 @@ const donutSketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hovered = null;
         p.translate(p.width / 2, p.height / 2 - 20);
 
         const outerRadius = 100;
@@ -316,10 +523,25 @@ const donutSketch = (p) => {
             let angleSpan = (item.value / total) * 360;
             let gap = item.value > 0 ? 3 : 0;
 
+            const midAngle = currentAngle + angleSpan / 2;
+            const mouseAngle = p.degrees(Math.atan2(p.mouseY - (p.height / 2 - 20), p.mouseX - p.width / 2));
+            let normalizedMouseAngle = mouseAngle;
+            if (normalizedMouseAngle < -90) normalizedMouseAngle += 360;
+
+            const distToCenter = p.dist(p.mouseX, p.mouseY, p.width / 2, p.height / 2 - 20);
+            const isHover =
+                item.value > 0 &&
+                distToCenter >= innerRadius - 10 &&
+                distToCenter <= outerRadius + 18 &&
+                normalizedMouseAngle >= currentAngle &&
+                normalizedMouseAngle <= currentAngle + angleSpan;
+
+            if (isHover) hovered = { ...item };
+
             p.drawingContext.shadowColor = item.color;
-            p.drawingContext.shadowBlur = 12;
+            p.drawingContext.shadowBlur = isHover ? 20 : 12;
             p.stroke(item.color);
-            p.strokeWeight(25);
+            p.strokeWeight(isHover ? 28 : 25);
 
             if (angleSpan > gap) {
                 p.arc(0, 0, outerRadius + innerRadius, outerRadius + innerRadius, currentAngle + gap / 2, currentAngle + angleSpan - gap / 2);
@@ -359,6 +581,36 @@ const donutSketch = (p) => {
             p.textSize(10);
             p.text(item.label, xOffset + 14, yOffset);
         });
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 150;
+            const boxH = 60;
+            let tx = p.mouseX + 16;
+            let ty = p.mouseY - 12;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Files: ${hovered.value}`, tx + 12, ty + 30);
+            p.text(`Share: ${(hovered.value / total * 100).toFixed(1)}%`, tx + 12, ty + 44);
+        }
     };
 };
 new p5(donutSketch);
@@ -389,31 +641,34 @@ new p5(donutSketch);
 <div id="p5-sankey-container"></div>
 <script>
 const sankeySketch = (p) => {
-    const maxFlow = 647;
+    const maxFlow = 696;
 
     const nodes = [
-        { id: 0, name: "Input Files",      x: 40,   y: 180, val: 173,         col: '#ff9a3c' },
-        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 107,          col: '#7fd36b' },
-        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 31,       col: '#6ea8ff' },
-        { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 21,    col: '#ffc15d' },
-        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 14,      col: '#ff9a52' },
-        { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 176,     col: '#7fd36b' },
-        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 647,col: '#6ea8ff' },
-        { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,          col: '#ff6a3d' }
+        { id: 0, name: "Input Files",      x: 40,   y: 180, val: 190,          col: '#ff9a3c' },
+        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 118,           col: '#7fd36b' },
+        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 34,        col: '#6ea8ff' },
+        { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 23,     col: '#ffc15d' },
+        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 15,       col: '#ff9a52' },
+        { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 191,      col: '#7fd36b' },
+        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 696, col: '#6ea8ff' },
+        { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,           col: '#ff6a3d' }
     ];
 
     const links = [
-        { src: 0, tgt: 1, val: 107,                                                   col: '#7fd36b',     offset: 0.1 },
-        { src: 0, tgt: 2, val: 31,                                                col: '#6ea8ff',  offset: 0.3 },
-        { src: 0, tgt: 3, val: 21,                                             col: '#ffc15d',  offset: 0.5 },
-        { src: 0, tgt: 4, val: 14,                                               col: '#ff9a52', offset: 0.7 },
-        { src: 1, tgt: 5, val: 128,      col: '#7fd36b',     offset: 0.2 },
-        { src: 2, tgt: 6, val: 45, col: '#6ea8ff',  offset: 0.4 },
-        { src: 3, tgt: 5, val: 21,                   col: '#ffc15d',  offset: 0.6 },
-        { src: 4, tgt: 7, val: 1,                                      col: '#ff9a52', offset: 0.8 },
-        { src: 5, tgt: 7, val: 1,       col: '#ff8a3d',        offset: 0.9 },
-        { src: 6, tgt: 7, val: 1, col: '#ff6a3d',     offset: 0.55 }
+        { src: 0, tgt: 1, val: 118,                                                   col: '#7fd36b',     offset: 0.1, label: "Input → Safe Route" },
+        { src: 0, tgt: 2, val: 34,                                                col: '#6ea8ff',  offset: 0.3, label: "Input → Complex Route" },
+        { src: 0, tgt: 3, val: 23,                                             col: '#ffc15d',  offset: 0.5, label: "Input → AST / Pattern" },
+        { src: 0, tgt: 4, val: 15,                                               col: '#ff9a52', offset: 0.7, label: "Input → Recovery" },
+        { src: 1, tgt: 5, val: 141,      col: '#7fd36b',     offset: 0.2, label: "Safe Route → Extracted Types" },
+        { src: 2, tgt: 6, val: 49, col: '#6ea8ff',  offset: 0.4, label: "Complex Route → Extracted Refs" },
+        { src: 3, tgt: 5, val: 23,                   col: '#ffc15d',  offset: 0.6, label: "AST / Pattern → Extracted Types" },
+        { src: 4, tgt: 7, val: 1,                                      col: '#ff9a52', offset: 0.8, label: "Recovery → Risk Bucket" },
+        { src: 5, tgt: 7, val: 1,       col: '#ff8a3d',        offset: 0.9, label: "Extracted Types → Risk Bucket" },
+        { src: 6, tgt: 7, val: 1, col: '#ff6a3d',     offset: 0.55, label: "Extracted Refs → Risk Bucket" }
     ];
+
+    let hoveredNode = null;
+    let hoveredLink = null;
 
     p.setup = () => {
         let canvas = p.createCanvas(1180, 440);
@@ -423,8 +678,11 @@ const sankeySketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hoveredNode = null;
+        hoveredLink = null;
 
         p.noFill();
+
         links.forEach(link => {
             let source = nodes[link.src];
             let target = nodes[link.tgt];
@@ -437,8 +695,15 @@ const sankeySketch = (p) => {
             let c1x = x1 + (x2 - x1) * 0.42;
             let c2x = x1 + (x2 - x1) * 0.68;
 
-            p.strokeWeight(thickness);
-            p.drawingContext.shadowBlur = 15;
+            let tMid = 0.5;
+            let mx = p.bezierPoint(x1, c1x, c2x, x2, tMid);
+            let my = p.bezierPoint(y1, y1, y2, y2, tMid);
+            let isHover = p.dist(p.mouseX, p.mouseY, mx, my) <= Math.max(12, thickness * 0.6);
+
+            if (isHover) hoveredLink = { ...link, mx, my };
+
+            p.strokeWeight(isHover ? thickness + 2 : thickness);
+            p.drawingContext.shadowBlur = isHover ? 22 : 15;
             p.drawingContext.shadowColor = link.col;
 
             let alpha = p.map(p.sin(p.frameCount * 2 + link.src * 20), -1, 1, 60, 160);
@@ -460,11 +725,19 @@ const sankeySketch = (p) => {
         });
 
         nodes.forEach(node => {
-            p.drawingContext.shadowBlur = 15;
+            const isHover =
+                p.mouseX >= node.x &&
+                p.mouseX <= node.x + 140 &&
+                p.mouseY >= node.y &&
+                p.mouseY <= node.y + 44;
+
+            if (isHover) hoveredNode = node;
+
+            p.drawingContext.shadowBlur = isHover ? 22 : 15;
             p.drawingContext.shadowColor = node.col;
             p.fill('rgba(6,12,24,0.92)');
             p.stroke(node.col);
-            p.strokeWeight(1.5);
+            p.strokeWeight(isHover ? 2.2 : 1.5);
             p.rect(node.x, node.y, 140, 44, 8);
 
             p.drawingContext.shadowBlur = 0;
@@ -479,6 +752,45 @@ const sankeySketch = (p) => {
             p.textStyle(p.NORMAL);
             p.text(node.val, node.x + 12, node.y + 25);
         });
+
+        const hovered = hoveredNode || hoveredLink;
+
+        if (hovered) {
+            const boxW = 190;
+            const boxH = 74;
+            let tx = p.mouseX + 18;
+            let ty = p.mouseY - 14;
+            const color = hovered.col;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 18;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+
+            if (hoveredNode) {
+                p.text(hoveredNode.name, tx + 12, ty + 10);
+                p.fill('#9fb3c8');
+                p.text(`Value: ${hoveredNode.val}`, tx + 12, ty + 30);
+                p.text(`Stage Node`, tx + 12, ty + 46);
+            } else {
+                p.text(hoveredLink.label, tx + 12, ty + 10);
+                p.fill('#9fb3c8');
+                p.text(`Flow: ${hoveredLink.val}`, tx + 12, ty + 30);
+                p.text(`Structural route`, tx + 12, ty + 46);
+            }
+        }
     };
 };
 new p5(sankeySketch);
@@ -497,32 +809,37 @@ new p5(sankeySketch);
 <div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Operational buckets showing reliability pressure.</div>
 <div id="p5-heat-container" style="width:100%; display:flex; justify-content:center;"></div>
 <div style='display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:20px;'>
-<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#7fd36b;box-shadow:0 0 10px #7fd36b;"></div><div style="color:#8fa8ff;font-size:12px;">Safe</div></div><div style="color:#f4e6d8;font-weight:700;">107</div></div>
-<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#6ea8ff;box-shadow:0 0 10px #6ea8ff;"></div><div style="color:#8fa8ff;font-size:12px;">Moderate</div></div><div style="color:#f4e6d8;font-weight:700;">15</div></div>
-<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ffc15d;box-shadow:0 0 10px #ffc15d;"></div><div style="color:#8fa8ff;font-size:12px;">Sparse</div></div><div style="color:#f4e6d8;font-weight:700;">8</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#7fd36b;box-shadow:0 0 10px #7fd36b;"></div><div style="color:#8fa8ff;font-size:12px;">Safe</div></div><div style="color:#f4e6d8;font-weight:700;">118</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#6ea8ff;box-shadow:0 0 10px #6ea8ff;"></div><div style="color:#8fa8ff;font-size:12px;">Moderate</div></div><div style="color:#f4e6d8;font-weight:700;">17</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ffc15d;box-shadow:0 0 10px #ffc15d;"></div><div style="color:#8fa8ff;font-size:12px;">Sparse</div></div><div style="color:#f4e6d8;font-weight:700;">9</div></div>
 <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff9a52;box-shadow:0 0 10px #ff9a52;"></div><div style="color:#8fa8ff;font-size:12px;">Anomaly</div></div><div style="color:#f4e6d8;font-weight:700;">0</div></div>
 <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff6a3d;box-shadow:0 0 10px #ff6a3d;"></div><div style="color:#8fa8ff;font-size:12px;">Recovery Dep.</div></div><div style="color:#f4e6d8;font-weight:700;">7</div></div>
 </div>
 <script>
 const heatSketch = (p) => {
     const buckets = [
-        { val: 107, col: '#7fd36b' },
-        { val: 15, col: '#6ea8ff' },
-        { val: 8, col: '#ffc15d' },
-        { val: 0, col: '#ff9a52' },
-        { val: 7, col: '#ff6a3d' }
+        { label: "Safe", val: 118, col: '#7fd36b' },
+        { label: "Moderate", val: 17, col: '#6ea8ff' },
+        { label: "Sparse", val: 9, col: '#ffc15d' },
+        { label: "Anomaly", val: 0, col: '#ff9a52' },
+        { label: "Recovery Dep.", val: 7, col: '#ff6a3d' }
     ];
-    const total = 137;
+    const total = 151;
+    let segments = [];
+    let hovered = null;
 
     p.setup = () => {
         let w = document.getElementById('p5-heat-container').offsetWidth || 1000;
-        let canvas = p.createCanvas(w, 36);
+        let canvas = p.createCanvas(w, 52);
         canvas.parent('p5-heat-container');
         p.textFont("monospace");
     };
 
     p.draw = () => {
         p.clear();
+        segments = [];
+        hovered = null;
+
         let currentX = 0;
 
         buckets.forEach(b => {
@@ -531,14 +848,26 @@ const heatSketch = (p) => {
             let w = (b.val / total) * p.width;
             if (w < 6) w = 6;
 
+            const seg = { ...b, x: currentX, w: w };
+            segments.push(seg);
+
+            const isHover =
+                p.mouseX >= currentX &&
+                p.mouseX <= currentX + w &&
+                p.mouseY >= 0 &&
+                p.mouseY <= p.height;
+
+            if (isHover) hovered = seg;
+
             p.drawingContext.shadowColor = b.col;
-            p.drawingContext.shadowBlur = 10;
+            p.drawingContext.shadowBlur = isHover ? 24 : 16;
             p.fill(b.col);
             p.noStroke();
-            p.rect(currentX, 0, w - 2, p.height, 4);
+            p.rect(currentX, 4, w - 2, p.height - 8, 6);
 
             p.drawingContext.shadowBlur = 0;
-            if (w > 25) {
+
+            if (w > 28) {
                 p.fill('#050814');
                 p.textAlign(p.CENTER, p.CENTER);
                 p.textStyle(p.BOLD);
@@ -550,11 +879,39 @@ const heatSketch = (p) => {
         });
 
         let scanX = (p.frameCount * 5) % p.width;
-        p.drawingContext.shadowColor = '#fff';
-        p.drawingContext.shadowBlur = 15;
-        p.fill('rgba(255,255,255,0.9)');
+        p.drawingContext.shadowColor = '#ffffff';
+        p.drawingContext.shadowBlur = 18;
+        p.fill('rgba(255,255,255,0.92)');
         p.noStroke();
-        p.rect(scanX, 0, 3, p.height, 2);
+        p.rect(scanX, 2, 3, p.height - 4, 2);
+        p.drawingContext.shadowBlur = 0;
+
+        if (hovered) {
+            const boxW = 160;
+            const boxH = 60;
+            let tx = p.mouseX + 14;
+            let ty = p.mouseY - 48;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 14;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.col;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.col);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Files: ${hovered.val}`, tx + 12, ty + 30);
+            p.text(`Share: ${(hovered.val / total * 100).toFixed(1)}%`, tx + 12, ty + 44);
+        }
     };
 };
 new p5(heatSketch);
@@ -656,7 +1013,7 @@ new p5(heatSketch);
     <td>ParserArenaCliRunner</td>
     <td>RefactorScope.CLI</td>
     <td>RefactorScope\CLI\ParserArenaCliRunner.cs</td>
-    <td>9</td>
+    <td>12</td>
 </tr>
 <tr>
     <td>ProjectRootResolver</td>
@@ -665,16 +1022,16 @@ new p5(heatSketch);
     <td>0</td>
 </tr>
 <tr>
-    <td>SelfAnalysisSelector</td>
+    <td>StartupExecutionPlan</td>
     <td>RefactorScope.CLI</td>
-    <td>RefactorScope\CLI\SelfAnalysisSelector.cs</td>
-    <td>1</td>
+    <td>RefactorScope\CLI\StartupExecutionPlan.cs</td>
+    <td>0</td>
 </tr>
 <tr>
-    <td>StartupModeSelection</td>
+    <td>StartupExecutionPlanSelector</td>
     <td>RefactorScope.CLI</td>
-    <td>RefactorScope\CLI\StartupModeSelection.cs</td>
-    <td>0</td>
+    <td>RefactorScope\CLI\StartupExecutionPlanSelector.cs</td>
+    <td>1</td>
 </tr>
 <tr>
     <td>FakeZombieService</td>
@@ -1256,13 +1613,7 @@ new p5(heatSketch);
     <td>ArchitecturalDashboardExporter</td>
     <td>RefactorScope.Exporters.Dashboards</td>
     <td>RefactorScope\Exporters\Dashboards\ArchitecturalDashboardExporter.cs</td>
-    <td>11</td>
-</tr>
-<tr>
-    <td>ArchitecturalStructureRendererP5</td>
-    <td>RefactorScope.Exporters.Dashboards</td>
-    <td>RefactorScope\Exporters\Dashboards\ArchitecturalStructureRendererP5.cs</td>
-    <td>7</td>
+    <td>18</td>
 </tr>
 <tr>
     <td>DashboardMetricsCalculator</td>
@@ -1299,6 +1650,18 @@ new p5(heatSketch);
     <td>RefactorScope.Exporters.Dashboards</td>
     <td>RefactorScope\Exporters\Dashboards\HubDashboardExporter.cs</td>
     <td>3</td>
+</tr>
+<tr>
+    <td>ParserArenaDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\ParserArenaDashboardExporter.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>StrategyAggregateMetric</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\ParserArenaDashboardExporter.cs</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>ParsingDashboardExporter</td>
@@ -1589,10 +1952,28 @@ new p5(heatSketch);
     <td>6</td>
 </tr>
 <tr>
+    <td>ArchitecturalStructureRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ArchitecturalStructureRendererP5.cs</td>
+    <td>7</td>
+</tr>
+<tr>
     <td>ChartsRendererP5</td>
     <td>RefactorScope.Exporters.Dashboards.Renderers</td>
     <td>RefactorScope\Exporters\Dashboards\Renderers\ChartsRendererP5.cs</td>
     <td>5</td>
+</tr>
+<tr>
+    <td>ParserArenaControlChartsRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ParserArenaControlChartsRendererP5.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>StrategyVisualMetric</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ParserArenaControlChartsRendererP5.cs</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>ParsingControlChartsRenderer</td>
@@ -1616,6 +1997,72 @@ new p5(heatSketch);
     <td>QualityControlChartsRendererP5</td>
     <td>RefactorScope.Exporters.Dashboards.Renderers</td>
     <td>RefactorScope\Exporters\Dashboards\Renderers\QualityControlChartsRendererP5.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ArchitectureVisualizationDecision</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ArchitectureVisualizationDecision.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ArchitectureVisualizationResolver</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ArchitectureVisualizationResolver.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ModuleRouteEdge</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteEdge.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapBuilder</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteMapBuilder.cs</td>
+    <td>9</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapModel</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteMapModel.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapRenderer</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteMapRenderer.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ModuleRouteNode</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteNode.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>SimpleStructureMapBuilder</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\SimpleStructureMapBuilder.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>SimpleStructureMapModel</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\SimpleStructureMapModel.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>SimpleStructureNode</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\SimpleStructureMapModel.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>SimpleStructureMapRenderer</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap\SimpleStructureMapRenderer.cs</td>
     <td>1</td>
 </tr>
 <tr>
@@ -1784,6 +2231,55 @@ function sortTable(n) {
 }
 </script>
 <div class='footer'>Generated by RefactorScope Parsing Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

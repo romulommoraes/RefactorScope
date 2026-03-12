@@ -1,5 +1,6 @@
 {
   "StructuralCandidates": [
+    "ScriptomeVisualizer",
     "DivergenceLogger",
     "DivergenceScore",
     "EstadoIdentidade",
@@ -16,6 +17,7 @@
     "CarregadorLimbic",
     "ConfiguradorLimbic",
     "InfoPalavra",
+    "VerificadorLimbic",
     "AdaptadorDiagnostico",
     "EspecialistaDinamica",
     "EspecialistaProducao",
@@ -34,6 +36,7 @@
     "MotorEtogramaHeuristico",
     "MotorIntencionalV1",
     "ExportadorBaselineJung",
+    "VerificadorLimbic",
     "ScriptomeDashboardPipeline",
     "ClassificadorHibrido",
     "ClassificadorLacaniano",
@@ -43,6 +46,7 @@
     "AbaEstrutura"
   ],
   "Unresolved": [
+    "ScriptomeVisualizer",
     "DivergenceScore",
     "EstadoIdentidade",
     "ModuloEtogramaV2",

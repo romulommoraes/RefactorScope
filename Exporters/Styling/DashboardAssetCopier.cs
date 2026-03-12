@@ -5,7 +5,7 @@ namespace RefactorScope.Exporters.Styling
     /// <summary>
     /// Copia os assets visuais dos dashboards para a pasta de saída.
     ///
-    /// Origem esperada no repositório:
+    /// Origem preferencial:
     ///
     /// RefactorScope/
     ///   Exporters/
@@ -13,23 +13,16 @@ namespace RefactorScope.Exporters.Styling
     ///       Css/
     ///       Vendor/
     ///
+    /// Fallback aceito:
+    ///
+    /// RefactorScope/
+    ///   Batch/
+    ///     Assets/
+    ///
     /// Destino na publicação:
     ///
     /// <output>/assets/css/
     /// <output>/assets/vendor/
-    ///
-    /// Estratégia de tema
-    /// ------------------
-    /// O sistema copia:
-    /// - dashboard-base.css
-    /// - dashboard-components.css
-    /// - o tema resolvido pelo DashboardThemeSelector
-    ///
-    /// O tema selecionado é copiado para a saída com o nome fixo:
-    /// - dashboard-theme.css
-    ///
-    /// Isso permite que o HTML referencie sempre o mesmo arquivo,
-    /// independentemente do tema escolhido em configuração.
     /// </summary>
     public static class DashboardAssetCopier
     {
@@ -49,11 +42,17 @@ namespace RefactorScope.Exporters.Styling
             var targetCssDir = Path.Combine(targetAssetsDir, "css");
             var targetVendorDir = Path.Combine(targetAssetsDir, "vendor");
 
+            Directory.CreateDirectory(outputPath);
             Directory.CreateDirectory(targetCssDir);
             Directory.CreateDirectory(targetVendorDir);
 
-            CopyVendorAssets(sourceVendorDir, targetVendorDir);
-            CopyBaseCssAssets(sourceCssDir, targetCssDir);
+            // Copia tudo de vendor
+            CopyDirectory(sourceVendorDir, targetVendorDir);
+
+            // Copia tudo de css, inclusive todos os temas e quaisquer arquivos extras
+            CopyDirectory(sourceCssDir, targetCssDir);
+
+            // Gera também o alias fixo usado pelo shell HTML
             CopyResolvedTheme(sourceCssDir, targetCssDir, themeFileName);
 
             EnsureRequiredCssExists(targetCssDir);
@@ -83,28 +82,36 @@ namespace RefactorScope.Exporters.Styling
                 if (Directory.Exists(candidate))
                     return candidate;
 
+                candidate = Path.Combine(
+                    dir.FullName,
+                    "RefactorScope",
+                    "Batch",
+                    "Assets");
+
+                if (Directory.Exists(candidate))
+                    return candidate;
+
+                candidate = Path.Combine(
+                    dir.FullName,
+                    "Batch",
+                    "Assets");
+
+                if (Directory.Exists(candidate))
+                    return candidate;
+
                 dir = dir.Parent;
             }
 
             throw new DirectoryNotFoundException(
-                "Não foi possível localizar a pasta Exporters/Assets no projeto.");
-        }
-
-        private static void CopyVendorAssets(string sourceVendorDir, string targetVendorDir)
-        {
-            CopyDirectory(sourceVendorDir, targetVendorDir);
-        }
-
-        private static void CopyBaseCssAssets(string sourceCssDir, string targetCssDir)
-        {
-            CopySingleFile(sourceCssDir, targetCssDir, "dashboard-base.css");
-            CopySingleFile(sourceCssDir, targetCssDir, "dashboard-components.css");
+                "Não foi possível localizar a pasta de assets. Caminhos testados: Exporters/Assets e Batch/Assets.");
         }
 
         private static void CopyResolvedTheme(string sourceCssDir, string targetCssDir, string themeFileName)
         {
             var sourceThemePath = Path.Combine(sourceCssDir, themeFileName);
             var targetThemePath = Path.Combine(targetCssDir, "dashboard-theme.css");
+
+   
 
             if (!File.Exists(sourceThemePath))
             {
@@ -114,21 +121,6 @@ namespace RefactorScope.Exporters.Styling
             }
 
             File.Copy(sourceThemePath, targetThemePath, overwrite: true);
-        }
-
-        private static void CopySingleFile(string sourceDir, string targetDir, string fileName)
-        {
-            var sourcePath = Path.Combine(sourceDir, fileName);
-            var targetPath = Path.Combine(targetDir, fileName);
-
-            if (!File.Exists(sourcePath))
-            {
-                throw new FileNotFoundException(
-                    $"Arquivo de asset não encontrado: {fileName}",
-                    sourcePath);
-            }
-
-            File.Copy(sourcePath, targetPath, overwrite: true);
         }
 
         private static void CopyDirectory(string sourceDir, string targetDir)

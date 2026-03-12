@@ -80,15 +80,23 @@ namespace RefactorScope.Exporters.Dashboards.Renderers
                 "Quality / Gates Dashboard",
                 themeFileName));
 
+            // INÍCIO DA ATUALIZAÇÃO DO CABEÇALHO (TOPBAR COM OPTIC MODE)
             sb.AppendLine($"""
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <div class="brand">
         <div class="brand-kicker">RefactorScope // Quality Module</div>
         <h1>Quality / Gates Dashboard</h1>
         <div class="subtitle">Target Project: <b>{Html(targetName)}</b></div>
+           {DashboardHtmlShell.RenderTacticalNav("Quality")}
+
     </div>
 
-    <div class="run-meta">
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
         <div><b>Generated:</b> {report.ExecutionTime:yyyy-MM-dd HH:mm} UTC</div>
         <div><b>Parser:</b> {Html(metrics.ParserName)}</div>
         <div><b>Readiness:</b> {Html(metrics.FitStatus)}</div>
@@ -96,6 +104,7 @@ namespace RefactorScope.Exporters.Dashboards.Renderers
     </div>
 </div>
 """);
+            // FIM DA ATUALIZAÇÃO DO CABEÇALHO
 
             sb.AppendLine($"""
 <div class="grid-kpis quality-kpis">

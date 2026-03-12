@@ -1,0 +1,1534 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Parser Arena Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
+</head>
+<body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Comparative Arena</div>
+        <h1>Parser Arena Dashboard</h1>
+        <div class="subtitle">Comparative parser analysis across one or more target projects</div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-12 00:27 UTC</div>
+        <div><b>Target:</b> Parser Arena // 3 project(s)</div>
+        <div><b>Projects:</b> 3</div>
+        <div><b>Avg Confidence:</b> 95%</div>
+        <div><b>Support Band:</b> High</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Arena Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis arena-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Projects</div>
+        <div class="value">3</div>
+        <div class="hint">Projects evaluated by the arena execution</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Runs</div>
+        <div class="value">12</div>
+        <div class="hint">Total parser executions across all projects</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Failures</div>
+        <div class="value">0</div>
+        <div class="hint">Runs that failed completely during arena execution</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Confidence</div>
+        <div class="value">95%</div>
+        <div class="hint">Average parser confidence across all comparative runs</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Score</div>
+        <div class="value">196,94</div>
+        <div class="hint">Average comparative score across all runs</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Execution</div>
+        <div class="value">117 ms</div>
+        <div class="hint">Average execution time per comparative run</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Best Overall Run</div>
+        <div class="value" style="font-size:22px;">AvaliaRoteiro</div>
+        <div class="hint">Adaptive // 200,09</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Best Strategy</div>
+        <div class="value" style="font-size:22px;">Incremental</div>
+        <div class="hint">Avg score 199,05 // Avg confidence 97%</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Success Runs</div>
+        <div class="value">12</div>
+        <div class="hint">Runs completed successfully without full parser failure</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Winner Coverage</div>
+        <div class="value">100%</div>
+        <div class="hint">Projects that produced at least one comparative winner</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Reading</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Batch Summary</h3>
+    <ul class="clean">
+        <li><b>Projects:</b> 3</li>
+        <li><b>Total Runs:</b> 12</li>
+        <li><b>Success Runs:</b> 12</li>
+        <li><b>Failures:</b> 0</li>
+        <li><b>Average Confidence:</b> 95%</li>
+        <li><b>Average Comparative Score:</b> 196,94</li>
+        <li><b>Average Execution:</b> 117,46 ms</li>
+        <li><b>Top Strategy:</b> Incremental</li>
+        <li><b>Best Overall Run:</b> AvaliaRoteiro</li>
+        <li><b>Best Overall Parser:</b> Adaptive</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Comparative Diagnosis</h3>
+    <ul class="clean">
+        <li>Comparative batch confidence is high. The average structural extraction signal looks strong across the evaluated projects.</li>
+        <li>No parser run failed completely. Comparative evidence is operationally clean.</li>
+        <li>Selective won the largest number of projects in this arena, suggesting stronger comparative consistency across the evaluated scopes.</li>
+        <li>Incremental currently leads the aggregate comparison with average score 199,05 and average confidence 97%.</li>
+        <li>Average comparative execution time remains operationally healthy for iterative benchmarking.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge green"><span class="badge-dot"></span> Avg Confidence: 95%</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Failures: 0</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Top Strategy: Incremental</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="arena-chart-grid">
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:linear-gradient(180deg, rgba(10,18,34,0.88), rgba(6,12,24,0.94));border-radius:18px;border:1px solid rgba(120,180,255,0.10);box-shadow:inset 0 0 30px rgba(80,140,255,0.05), 0 0 22px rgba(0,180,255,0.06);min-height:460px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Strategy Performance Scatter</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Confidence × score, with bubble size representing average extracted types.</div>
+<div id="arena-performance-scatter-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const arenaPerformanceScatterSketch = (p) => {
+    const points = [
+        {
+    name: "Regex",
+    color: "#ff9a3c",
+    confidence: 91.954,
+    score: 192.19,
+    types: 58
+},
+{
+    name: "Selective",
+    color: "#7fd36b",
+    confidence: 96.667,
+    score: 197.873,
+    types: 58
+},
+{
+    name: "Adaptive",
+    color: "#6ea8ff",
+    confidence: 96.667,
+    score: 198.667,
+    types: 58
+},
+{
+    name: "Incremental",
+    color: "#ffc15d",
+    confidence: 96.667,
+    score: 199.047,
+    types: 58
+}
+    ];
+
+    const chart = { x: 76, y: 40, w: 420, h: 250 };
+
+    function extent(values, fallbackMin, fallbackMax) {
+        if (!values.length) return [fallbackMin, fallbackMax];
+        let min = Math.min(...values);
+        let max = Math.max(...values);
+
+        if (min === max) {
+            min -= 5;
+            max += 5;
+        }
+
+        const pad = Math.max((max - min) * 0.18, 2);
+        return [min - pad, max + pad];
+    }
+
+    let [minX, maxX] = extent(points.map(p => p.confidence), 0, 100);
+    let [minY, maxY] = extent(points.map(p => p.score), 0, 100);
+
+    minX = Math.max(0, minX);
+    maxX = Math.min(100, maxX);
+
+    p.setup = () => {
+        let canvas = p.createCanvas(580, 360);
+        canvas.parent('arena-performance-scatter-container');
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+
+        // background zones
+        p.noStroke();
+        p.fill('rgba(50,120,255,0.06)');
+        p.rect(chart.x, chart.y + chart.h * 0.50, chart.w * 0.50, chart.h * 0.50, 10);
+
+        p.fill('rgba(255,160,60,0.05)');
+        p.rect(chart.x + chart.w * 0.50, chart.y, chart.w * 0.50, chart.h * 0.50, 10);
+
+        p.stroke('rgba(255,255,255,0.08)');
+        p.strokeWeight(1);
+
+        for (let i = 0; i <= 5; i++) {
+            let x = chart.x + (chart.w / 5) * i;
+            let y = chart.y + (chart.h / 5) * i;
+            p.line(x, chart.y, x, chart.y + chart.h);
+            p.line(chart.x, y, chart.x + chart.w, y);
+        }
+
+        p.stroke('rgba(180,210,255,0.18)');
+        p.line(chart.x, chart.y + chart.h, chart.x + chart.w, chart.y + chart.h);
+        p.line(chart.x, chart.y, chart.x, chart.y + chart.h);
+
+        p.noStroke();
+        p.fill('#d9e7ff');
+        p.textSize(11);
+
+        for (let i = 0; i <= 5; i++) {
+            let xv = minX + ((maxX - minX) / 5) * i;
+            let yv = maxY - ((maxY - minY) / 5) * i;
+
+            p.textAlign(p.CENTER, p.TOP);
+            p.text(xv.toFixed(0), chart.x + (chart.w / 5) * i, chart.y + chart.h + 8);
+
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text(yv.toFixed(1), chart.x - 10, chart.y + (chart.h / 5) * i);
+        }
+
+        p.push();
+        p.translate(18, chart.y + chart.h / 2);
+        p.rotate(-Math.PI / 2);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("Average Score", 0, 0);
+        p.pop();
+
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("Average Confidence", chart.x + chart.w / 2, chart.y + chart.h + 34);
+
+        let hovered = null;
+
+        for (let i = 0; i < points.length; i++) {
+            const pt = points[i];
+            const x = p.map(pt.confidence, minX, maxX, chart.x, chart.x + chart.w);
+            const y = p.map(pt.score, minY, maxY, chart.y + chart.h, chart.y);
+            const r = p.map(pt.types, 0, Math.max(...points.map(z => z.types), 1), 18, 34);
+
+            const d = p.dist(p.mouseX, p.mouseY, x, y);
+            if (d <= r * 0.5) hovered = { ...pt, x, y, r };
+
+            p.drawingContext.shadowColor = pt.color;
+            p.drawingContext.shadowBlur = hovered?.name === pt.name ? 24 : 14;
+
+            p.fill(pt.color + '55');
+            p.stroke(pt.color);
+            p.strokeWeight(hovered?.name === pt.name ? 2.8 : 1.6);
+            p.ellipse(x, y, r, r);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#eef4ff');
+            p.noStroke();
+            p.textSize(10);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text(pt.name, x, y - r * 0.75);
+        }
+
+        if (hovered) {
+            const boxW = 170;
+            const boxH = 74;
+            let tx = hovered.x + 18;
+            let ty = hovered.y - 14;
+
+            if (tx + boxW > p.width - 8) tx = hovered.x - boxW - 18;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.name, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Confidence: ${hovered.confidence.toFixed(1)}%`, tx + 12, ty + 28);
+            p.text(`Score: ${hovered.score.toFixed(2)}`, tx + 12, ty + 42);
+            p.text(`Avg Types: ${hovered.types.toFixed(1)}`, tx + 12, ty + 56);
+        }
+    };
+};
+new p5(arenaPerformanceScatterSketch);
+</script>
+</div>
+
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:460px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Winner Distribution</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">How often each strategy won across the batch projects.</div>
+<div id="arena-winner-donut-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const arenaWinnerDonutSketch = (p) => {
+    const data = [
+        { label: "Regex", value: 0, color: "#ff9a3c" },
+        { label: "Selective", value: 1, color: "#7fd36b" },
+        { label: "Adaptive", value: 1, color: "#6ea8ff" },
+        { label: "Incremental", value: 1, color: "#ffc15d" }
+    ];
+    const total = 3;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(390, 390);
+        canvas.parent('arena-winner-donut-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2 - 18);
+
+        const outerRadius = 105;
+        const innerRadius = 72;
+
+        p.noFill();
+        p.strokeWeight(1.5);
+        p.stroke('rgba(255,255,255,0.08)');
+
+        p.push();
+        p.rotate(p.frameCount * 0.25);
+        p.drawingContext.setLineDash([8, 10]);
+        p.ellipse(0, 0, outerRadius * 2 + 26);
+        p.pop();
+
+        p.push();
+        p.rotate(-p.frameCount * 0.45);
+        p.drawingContext.setLineDash([3, 7]);
+        p.ellipse(0, 0, innerRadius * 2 - 20);
+        p.pop();
+
+        p.drawingContext.setLineDash([]);
+
+        let currentAngle = -90;
+
+        data.forEach(item => {
+            if (item.value <= 0) return;
+
+            const angleSpan = (item.value / total) * 360;
+            const gap = 3;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 16;
+            p.stroke(item.color);
+            p.strokeWeight(28);
+
+            if (angleSpan > gap) {
+                p.arc(
+                    0, 0,
+                    outerRadius + innerRadius,
+                    outerRadius + innerRadius,
+                    currentAngle + gap / 2,
+                    currentAngle + angleSpan - gap / 2
+                );
+            }
+
+            currentAngle += angleSpan;
+        });
+
+        p.drawingContext.shadowBlur = 0;
+        p.noStroke();
+        p.fill('#eef4ff');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(38);
+        p.textStyle(p.BOLD);
+        p.text(total, 0, -4);
+
+        p.fill('#8fa8ff');
+        p.textSize(11);
+        p.textStyle(p.NORMAL);
+        p.text("Project Winners", 0, 22);
+
+        const legendStartX = -145;
+        const legendY = 160;
+        p.textAlign(p.LEFT, p.CENTER);
+
+        data.forEach((item, index) => {
+            const x = legendStartX + (index % 2) * 145;
+            const y = legendY + Math.floor(index / 2) * 24;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 8;
+            p.fill(item.color);
+            p.rect(x, y - 5, 9, 9, 2);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#eef4ff');
+            p.textSize(10);
+            p.text(`${item.label} (${item.value})`, x + 15, y);
+        });
+    };
+};
+new p5(arenaWinnerDonutSketch);
+</script>
+</div>
+
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:linear-gradient(180deg, rgba(10,18,34,0.88), rgba(6,12,24,0.94));border-radius:18px;border:1px solid rgba(120,180,255,0.10);box-shadow:inset 0 0 30px rgba(80,140,255,0.05), 0 0 22px rgba(0,180,255,0.06);min-height:460px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Efficiency Scatter</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Execution cost × confidence, with bubble size representing average extracted references.</div>
+<div id="arena-efficiency-scatter-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const arenaEfficiencyScatterSketch = (p) => {
+    const points = [
+        {
+    name: "Regex",
+    color: "#ff9a3c",
+    cost: 71.592,
+    confidence: 91.954,
+    refs: 142.667
+},
+{
+    name: "Selective",
+    color: "#7fd36b",
+    cost: 146.754,
+    confidence: 96.667,
+    refs: 190.333
+},
+{
+    name: "Adaptive",
+    color: "#6ea8ff",
+    cost: 123.902,
+    confidence: 96.667,
+    refs: 204
+},
+{
+    name: "Incremental",
+    color: "#ffc15d",
+    cost: 127.58,
+    confidence: 96.667,
+    refs: 204
+}
+    ];
+
+    const chart = { x: 76, y: 40, w: 420, h: 250 };
+
+    function extent(values, fallbackMin, fallbackMax) {
+        if (!values.length) return [fallbackMin, fallbackMax];
+        let min = Math.min(...values);
+        let max = Math.max(...values);
+
+        if (min === max) {
+            min -= 5;
+            max += 5;
+        }
+
+        const pad = Math.max((max - min) * 0.18, 2);
+        return [min - pad, max + pad];
+    }
+
+    let [minX, maxX] = extent(points.map(p => p.cost), 0, 100);
+    let [minY, maxY] = extent(points.map(p => p.confidence), 0, 100);
+
+    minX = Math.max(0, minX);
+    minY = Math.max(0, minY);
+    maxY = Math.min(100, maxY);
+
+    p.setup = () => {
+        let canvas = p.createCanvas(580, 360);
+        canvas.parent('arena-efficiency-scatter-container');
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+
+        p.noStroke();
+        p.fill('rgba(80,220,160,0.05)');
+        p.rect(chart.x, chart.y, chart.w * 0.45, chart.h * 0.45, 10);
+
+        p.fill('rgba(255,80,80,0.05)');
+        p.rect(chart.x + chart.w * 0.55, chart.y + chart.h * 0.55, chart.w * 0.45, chart.h * 0.45, 10);
+
+        p.stroke('rgba(255,255,255,0.08)');
+        p.strokeWeight(1);
+
+        for (let i = 0; i <= 5; i++) {
+            let x = chart.x + (chart.w / 5) * i;
+            let y = chart.y + (chart.h / 5) * i;
+            p.line(x, chart.y, x, chart.y + chart.h);
+            p.line(chart.x, y, chart.x + chart.w, y);
+        }
+
+        p.stroke('rgba(180,210,255,0.18)');
+        p.line(chart.x, chart.y + chart.h, chart.x + chart.w, chart.y + chart.h);
+        p.line(chart.x, chart.y, chart.x, chart.y + chart.h);
+
+        p.noStroke();
+        p.fill('#d9e7ff');
+        p.textSize(11);
+
+        for (let i = 0; i <= 5; i++) {
+            let xv = minX + ((maxX - minX) / 5) * i;
+            let yv = maxY - ((maxY - minY) / 5) * i;
+
+            p.textAlign(p.CENTER, p.TOP);
+            p.text(xv.toFixed(0), chart.x + (chart.w / 5) * i, chart.y + chart.h + 8);
+
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text(yv.toFixed(0), chart.x - 10, chart.y + (chart.h / 5) * i);
+        }
+
+        p.push();
+        p.translate(18, chart.y + chart.h / 2);
+        p.rotate(-Math.PI / 2);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("Average Confidence", 0, 0);
+        p.pop();
+
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("Relative Execution Cost", chart.x + chart.w / 2, chart.y + chart.h + 34);
+
+        let hovered = null;
+
+        for (let i = 0; i < points.length; i++) {
+            const pt = points[i];
+            const x = p.map(pt.cost, minX, maxX, chart.x, chart.x + chart.w);
+            const y = p.map(pt.confidence, minY, maxY, chart.y + chart.h, chart.y);
+            const r = p.map(pt.refs, 0, Math.max(...points.map(z => z.refs), 1), 18, 34);
+
+            const d = p.dist(p.mouseX, p.mouseY, x, y);
+            if (d <= r * 0.5) hovered = { ...pt, x, y, r };
+
+            p.drawingContext.shadowColor = pt.color;
+            p.drawingContext.shadowBlur = hovered?.name === pt.name ? 24 : 14;
+
+            p.fill(pt.color + '55');
+            p.stroke(pt.color);
+            p.strokeWeight(hovered?.name === pt.name ? 2.8 : 1.6);
+            p.ellipse(x, y, r, r);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#eef4ff');
+            p.noStroke();
+            p.textSize(10);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text(pt.name, x, y - r * 0.75);
+        }
+
+        if (hovered) {
+            const boxW = 176;
+            const boxH = 74;
+            let tx = hovered.x + 18;
+            let ty = hovered.y - 14;
+
+            if (tx + boxW > p.width - 8) tx = hovered.x - boxW - 18;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.name, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Exec Cost: ${hovered.cost.toFixed(1)} ms`, tx + 12, ty + 28);
+            p.text(`Confidence: ${hovered.confidence.toFixed(1)}%`, tx + 12, ty + 42);
+            p.text(`Avg Refs: ${hovered.refs.toFixed(1)}`, tx + 12, ty + 56);
+        }
+    };
+};
+new p5(arenaEfficiencyScatterSketch);
+</script>
+</div>
+
+<div class="chart-container"
+     style="display:flex;flex-direction:column;align-items:center;padding:24px;background:linear-gradient(180deg, rgba(8,16,34,0.96), rgba(5,10,20,0.98));border-radius:18px;border:1px solid rgba(120,180,255,0.12);box-shadow:inset 0 0 40px rgba(0,120,255,0.06), 0 0 24px rgba(0,180,255,0.08);min-height:460px;position:relative;overflow:hidden;"
+     augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<div style="position:absolute;inset:0;background:
+linear-gradient(90deg, rgba(0,160,255,0.03), transparent 25%, transparent 75%, rgba(255,40,80,0.03));
+pointer-events:none;"></div>
+<h3 style="margin:0 0 6px 0;text-align:center;position:relative;z-index:1;">Project × Strategy Heatmap</h3>
+<div class="chart-note" style="margin:0 0 18px 0;font-size:12px;color:#9fb3c8;text-align:center;position:relative;z-index:1;">
+Comparative score by project and strategy. Blue = low signal, red = peak signal.
+</div>
+<div id="arena-heatmap-container"
+     style="width:100%;display:flex;justify-content:center;align-items:center;position:relative;z-index:1;overflow:hidden;">
+</div>
+<script>
+const arenaHeatmapSketch = (p) => {
+    const projects = ["Boids", "Dio.Series", "AvaliaRoteiro"];
+    const strategies = ["Regex", "Selective", "Adaptive", "Incremental"];
+    const cells = [{
+    project: "Boids",
+    strategy: "Regex",
+    score: 184.65,
+    confidence: 1,
+    types: 8,
+    refs: 7
+},
+{
+    project: "Boids",
+    strategy: "Selective",
+    score: 200,
+    confidence: 1,
+    types: 8,
+    refs: 30
+},
+{
+    project: "Boids",
+    strategy: "Adaptive",
+    score: 196.41,
+    confidence: 1,
+    types: 8,
+    refs: 16
+},
+{
+    project: "Boids",
+    strategy: "Incremental",
+    score: 198.33,
+    confidence: 1,
+    types: 8,
+    refs: 16
+},
+{
+    project: "Dio.Series",
+    strategy: "Regex",
+    score: 192.22,
+    confidence: 0.833,
+    types: 5,
+    refs: 5
+},
+{
+    project: "Dio.Series",
+    strategy: "Selective",
+    score: 198,
+    confidence: 0.95,
+    types: 5,
+    refs: 9
+},
+{
+    project: "Dio.Series",
+    strategy: "Adaptive",
+    score: 199.5,
+    confidence: 0.95,
+    types: 5,
+    refs: 8
+},
+{
+    project: "Dio.Series",
+    strategy: "Incremental",
+    score: 199.5,
+    confidence: 0.95,
+    types: 5,
+    refs: 8
+},
+{
+    project: "AvaliaRoteiro",
+    strategy: "Regex",
+    score: 199.7,
+    confidence: 0.925,
+    types: 161,
+    refs: 416
+},
+{
+    project: "AvaliaRoteiro",
+    strategy: "Selective",
+    score: 195.62,
+    confidence: 0.95,
+    types: 161,
+    refs: 532
+},
+{
+    project: "AvaliaRoteiro",
+    strategy: "Adaptive",
+    score: 200.09,
+    confidence: 0.95,
+    types: 161,
+    refs: 588
+},
+{
+    project: "AvaliaRoteiro",
+    strategy: "Incremental",
+    score: 199.31,
+    confidence: 0.95,
+    types: 161,
+    refs: 588
+}];
+
+    const minScore = 184.65;
+    const maxScore = 200.09;
+
+    let hovered = null;
+
+    function normalize(v) {
+        return (v - minScore) / Math.max(0.0001, (maxScore - minScore));
+    }
+
+    function neonColor(t) {
+        t = Math.max(0, Math.min(1, t));
+
+        const stops = [
+            [0.00, [ 40, 120, 255]],
+            [0.25, [  0, 220, 255]],
+            [0.50, [180,  70, 255]],
+            [0.75, [255, 140,  40]],
+            [1.00, [255,  40,  60]]
+        ];
+
+        for (let i = 0; i < stops.length - 1; i++) {
+            const a = stops[i];
+            const b = stops[i + 1];
+
+            if (t >= a[0] && t <= b[0]) {
+                const local = (t - a[0]) / (b[0] - a[0]);
+                const r = a[1][0] + (b[1][0] - a[1][0]) * local;
+                const g = a[1][1] + (b[1][1] - a[1][1]) * local;
+                const bl = a[1][2] + (b[1][2] - a[1][2]) * local;
+                return [r, g, bl];
+            }
+        }
+
+        return [255, 40, 60];
+    }
+
+    p.setup = () => {
+        const container = document.getElementById('arena-heatmap-container');
+        const availableWidth = Math.max(620, container.offsetWidth || 760);
+
+        const leftPad = 92;
+        const rightPad = 20;
+        const topPad = 56;
+        const bottomPad = 20;
+
+        const cols = Math.max(1, strategies.length);
+        const rows = Math.max(1, projects.length);
+
+        const cellW = Math.min(112, Math.floor((availableWidth - leftPad - rightPad) / cols));
+        const cellH = 64;
+
+        const width = leftPad + cols * cellW + rightPad;
+        const height = topPad + rows * cellH + bottomPad;
+
+        let canvas = p.createCanvas(width, height);
+        canvas.parent('arena-heatmap-container');
+        p.textFont("monospace");
+
+        p._heatLeftPad = leftPad;
+        p._heatTopPad = topPad;
+        p._heatCellW = cellW;
+        p._heatCellH = cellH;
+    };
+
+    p.draw = () => {
+        p.clear();
+        hovered = null;
+
+        const leftPad = p._heatLeftPad;
+        const topPad = p._heatTopPad;
+        const cellW = p._heatCellW;
+        const cellH = p._heatCellH;
+
+        p.stroke('rgba(120,180,255,0.06)');
+        p.strokeWeight(1);
+
+        for (let x = leftPad; x <= leftPad + strategies.length * cellW; x += cellW) {
+            p.line(x, topPad - 10, x, topPad + projects.length * cellH);
+        }
+
+        for (let y = topPad; y <= topPad + projects.length * cellH; y += cellH) {
+            p.line(leftPad, y, leftPad + strategies.length * cellW, y);
+        }
+
+        p.noStroke();
+        p.fill('#cfe4ff');
+        p.textSize(11);
+        p.textAlign(p.CENTER, p.CENTER);
+
+        for (let c = 0; c < strategies.length; c++) {
+            let label = strategies[c];
+            if (label.length > 10)
+                label = label.substring(0, 8) + "..";
+
+            p.text(label, leftPad + c * cellW + cellW / 2, 24);
+        }
+
+        for (let r = 0; r < projects.length; r++) {
+            let projectLabel = projects[r];
+            if (projectLabel.length > 10)
+                projectLabel = projectLabel.substring(0, 8) + "..";
+
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.fill('#9fb3c8');
+            p.text(projectLabel, leftPad - 12, topPad + r * cellH + cellH / 2);
+        }
+
+        for (let i = 0; i < cells.length; i++) {
+            const cell = cells[i];
+            const col = strategies.indexOf(cell.strategy);
+            const row = projects.indexOf(cell.project);
+
+            if (col < 0 || row < 0) continue;
+
+            const x = leftPad + col * cellW;
+            const y = topPad + row * cellH;
+
+            const t = normalize(cell.score);
+            const rgb = neonColor(t);
+            const fillCol = p.color(rgb[0], rgb[1], rgb[2], 215);
+            const glowCol = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.95)`;
+
+            const isHover =
+                p.mouseX >= x + 4 && p.mouseX <= x + cellW - 4 &&
+                p.mouseY >= y + 4 && p.mouseY <= y + cellH - 4;
+
+            if (isHover) hovered = { ...cell, x, y, rgb };
+
+            p.drawingContext.shadowColor = glowCol;
+            p.drawingContext.shadowBlur = isHover ? 26 : 18;
+
+            p.fill(fillCol);
+            p.stroke(isHover ? 'rgba(255,255,255,0.88)' : `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.78)`);
+            p.strokeWeight(isHover ? 1.8 : 1.0);
+            p.rect(x + 4, y + 6, cellW - 8, cellH - 12, 10);
+
+            p.drawingContext.shadowBlur = 0;
+
+            p.noStroke();
+            p.fill('rgba(8,12,22,0.18)');
+            p.rect(x + 10, y + 12, cellW - 20, 10, 4);
+
+            p.fill('#f7fbff');
+            p.textAlign(p.CENTER, p.CENTER);
+            p.textSize(12);
+            p.text(cell.score.toFixed(1), x + cellW / 2, y + cellH / 2 + 4);
+        }
+
+        if (hovered) {
+            const tipW = 180;
+            const tipH = 92;
+            let tx = hovered.x + 16;
+            let ty = hovered.y - 8;
+
+            if (tx + tipW > p.width - 8) tx = hovered.x - tipW - 16;
+            if (ty + tipH > p.height - 8) ty = p.height - tipH - 8;
+            if (ty < 8) ty = 8;
+
+            const glowCol = `rgba(${hovered.rgb[0]},${hovered.rgb[1]},${hovered.rgb[2]},0.95)`;
+
+            p.drawingContext.shadowColor = glowCol;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,12,22,0.96)');
+            p.stroke(glowCol);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, tipW, tipH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f3f8ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(`${hovered.project} // ${hovered.strategy}`, tx + 12, ty + 10);
+
+            p.fill('#9fb3c8');
+            p.text(`Score: ${hovered.score.toFixed(2)}`, tx + 12, ty + 30);
+            p.text(`Confidence: ${(hovered.confidence * 100).toFixed(1)}%`, tx + 12, ty + 45);
+            p.text(`Types: ${hovered.types} | Refs: ${hovered.refs}`, tx + 12, ty + 60);
+        }
+    };
+};
+new p5(arenaHeatmapSketch);
+</script>
+</div>
+
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Strategy Aggregates</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="table-shell">
+<table class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th>Strategy</th>
+            <th>Runs</th>
+            <th>Avg Score</th>
+            <th>Avg Confidence</th>
+            <th>Avg Time</th>
+            <th>Avg Types</th>
+            <th>Avg Refs</th>
+            <th>Failures</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Regex</td>
+    <td>3</td>
+    <td>192,19</td>
+    <td>92%</td>
+    <td>71,59 ms</td>
+    <td>58,00</td>
+    <td>142,67</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>Selective</td>
+    <td>3</td>
+    <td>197,87</td>
+    <td>97%</td>
+    <td>146,75 ms</td>
+    <td>58,00</td>
+    <td>190,33</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>Adaptive</td>
+    <td>3</td>
+    <td>198,67</td>
+    <td>97%</td>
+    <td>123,90 ms</td>
+    <td>58,00</td>
+    <td>204,00</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>Incremental</td>
+    <td>3</td>
+    <td>199,05</td>
+    <td>97%</td>
+    <td>127,58 ms</td>
+    <td>58,00</td>
+    <td>204,00</td>
+    <td>0</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Project Comparative Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="searchProjects"
+           type="text"
+           onkeyup="searchArenaProjects()"
+           placeholder="Search project, parser, strategy..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
+</div>
+<div class="table-shell">
+<table id="arenaProjectTable" class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th onclick="sortArenaTable('arenaProjectTable', 0)">Project</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 1)">Strategy</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 2)">Parser</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 3)">Status</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 4)">Score</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 5)">Confidence</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 6)">Files</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 7)">Types</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 8)">Refs</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 9)">Time</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 10)">Fallback</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Boids</td>
+    <td>Regex</td>
+    <td>Regex</td>
+    <td>Success</td>
+    <td>184,65</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>7</td>
+    <td>39 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Boids</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>200,00</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>30</td>
+    <td>49 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Boids</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>196,41</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>16</td>
+    <td>27 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Boids</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>198,33</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>16</td>
+    <td>22 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Regex</td>
+    <td>Regex</td>
+    <td>Success</td>
+    <td>192,22</td>
+    <td>83%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>5</td>
+    <td>3 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>198,00</td>
+    <td>95%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>9</td>
+    <td>12 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>199,50</td>
+    <td>95%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>8</td>
+    <td>8 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>199,50</td>
+    <td>95%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>8</td>
+    <td>8 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Regex</td>
+    <td>Regex</td>
+    <td>Success</td>
+    <td>199,70</td>
+    <td>93%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>416</td>
+    <td>173 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>195,62</td>
+    <td>95%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>532</td>
+    <td>380 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>200,09</td>
+    <td>95%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>588</td>
+    <td>337 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>199,31</td>
+    <td>95%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>588</td>
+    <td>353 ms</td>
+    <td>No</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Best Parser Per Project</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="table-shell">
+<table class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Winner</th>
+            <th>Strategy</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Confidence</th>
+            <th>Types</th>
+            <th>Refs</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Boids</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>200,00</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>30</td>
+    <td>49 ms</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>199,50</td>
+    <td>95%</td>
+    <td>5</td>
+    <td>8</td>
+    <td>8 ms</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>200,09</td>
+    <td>95%</td>
+    <td>161</td>
+    <td>588</td>
+    <td>337 ms</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Interpretation</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard compares parser strategies executed over one or more target projects.</li>
+            <li>Comparative Score is contextual to each project and should be interpreted as a relative ranking signal, not as a universal benchmark.</li>
+            <li>Confidence is heuristic and should be read as structural usability, not formal parser correctness.</li>
+            <li>Winner distribution helps reveal which strategy most often dominates across the evaluated project set.</li>
+            <li>Strategy aggregates are useful for publication, comparative baselines and future CSV / JSON analytical exports.</li>
+            <li>Failures do not invalidate the whole arena, but they indicate strategies or projects deserving inspection.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.arena-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.arena-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.arena-chart-grid .chart-container {
+    min-width: 0;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.arena-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1180px) {
+    .arena-chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.arena-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.parsing-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+</style>
+
+<script>
+function searchArenaProjects() {
+  var input = document.getElementById('searchProjects');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('arenaProjectTable');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortArenaTable(tableId, n) {
+  var table = document.getElementById(tableId);
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      var xv = x.innerText.toLowerCase();
+      var yv = y.innerText.toLowerCase();
+
+      if (dir === 'asc' && xv > yv) shouldSwitch = true;
+      if (dir === 'desc' && xv < yv) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Parser Arena Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
+</div>
+</body>
+</html>
+

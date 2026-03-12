@@ -40,7 +40,14 @@ namespace RefactorScope.Exporters.Reports
             builder.AppendLine("# Project Structure");
             builder.AppendLine();
 
-            WriteDirectory(builder, root, "", true);
+            var ignoredNames = BuildIgnoredNames(context);
+
+            WriteDirectory(
+                builder,
+                root,
+                indent: "",
+                ignoredNames,
+                isRoot: true);
 
             var rootOutputPath = context.Config.OutputPath;
             var dumpsRootPath = Path.Combine(rootOutputPath, "dumps");
@@ -57,33 +64,77 @@ namespace RefactorScope.Exporters.Reports
             StringBuilder builder,
             string path,
             string indent,
+            HashSet<string> ignoredNames,
             bool isRoot = false)
         {
             var dir = new DirectoryInfo(path);
+
+            if (!dir.Exists)
+                return;
 
             if (!isRoot)
                 builder.AppendLine($"{indent}├── {dir.Name}");
 
             var subDirs = dir.GetDirectories()
-                .Where(d => !IsIgnored(d.Name))
-                .OrderBy(d => d.Name);
+                .Where(d => !IsIgnored(d.Name, ignoredNames))
+                .OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase);
 
             foreach (var sub in subDirs)
             {
-                WriteDirectory(builder, sub.FullName, indent + "│   ");
+                WriteDirectory(
+                    builder,
+                    sub.FullName,
+                    indent + "│   ",
+                    ignoredNames);
             }
         }
 
-        private bool IsIgnored(string name)
+        private static HashSet<string> BuildIgnoredNames(AnalysisContext context)
         {
-            return name switch
+            var ignored = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "bin" => true,
-                "obj" => true,
-                ".git" => true,
-                ".vs" => true,
-                _ => false
+                "bin",
+                "obj",
+                ".git",
+                ".vs",
+                "Batch",
+                "refactorscope-output",
+                "refactorscope-self-analysis"
             };
+
+            if (context?.Config?.Exclude != null)
+            {
+                foreach (var item in context.Config.Exclude)
+                {
+                    if (string.IsNullOrWhiteSpace(item))
+                        continue;
+
+                    var normalized = item
+                        .Replace('/', Path.DirectorySeparatorChar)
+                        .Replace('\\', Path.DirectorySeparatorChar)
+                        .Trim();
+
+                    if (string.IsNullOrWhiteSpace(normalized))
+                        continue;
+
+                    var fileName = Path.GetFileName(normalized.TrimEnd(
+                        Path.DirectorySeparatorChar,
+                        Path.AltDirectorySeparatorChar));
+
+                    if (!string.IsNullOrWhiteSpace(fileName))
+                        ignored.Add(fileName);
+                }
+            }
+
+            return ignored;
+        }
+
+        private static bool IsIgnored(string name, HashSet<string> ignoredNames)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return true;
+
+            return ignoredNames.Contains(name);
         }
     }
 }

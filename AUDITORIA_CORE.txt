@@ -2481,17 +2481,17 @@ using RefactorScope.Parsers.CsharpParsers.Hybrid;
 
 namespace RefactorScope.Core.Parsing
 {
-
     /// <summary>
-    /// Responsável por resolver qual parser será utilizado.
-    /// 
-    /// Pode operar em dois modos:
-    /// - Configuração direta
-    /// - Seleção interativa via CLI
+    /// Responsável por resolver qual estratégia de parsing será utilizada.
+    ///
+    /// Importante:
+    /// - Comparative é uma estratégia de execução, não um parser estrutural único.
+    /// - Por isso, ResolveStrategy() e ResolveParser() foram separados.
+    /// - Também suporta resolução em modo silencioso, útil para Arena / Batch.
     /// </summary>
     public static class ParserSelector
     {
-        public static IParserCodigo ResolveParser(
+        public static ParserStrategy ResolveStrategy(
             string? configParserName,
             bool interactive)
         {
@@ -2501,7 +2501,7 @@ namespace RefactorScope.Core.Parsing
             {
                 strategy = PromptStrategy();
             }
-            else if (!System.Enum.TryParse<ParserStrategy>(
+            else if (!System.Enum.TryParse(
                         configParserName,
                         true,
                         out strategy))
@@ -2512,7 +2512,48 @@ namespace RefactorScope.Core.Parsing
                 strategy = ParserStrategy.Selective;
             }
 
-            return Build(strategy);
+            return strategy;
+        }
+
+        /// <summary>
+        /// Resolve um parser concreto a partir de uma estratégia.
+        ///
+        /// silent = true:
+        /// desabilita logs internos de parsers híbridos, útil para execução
+        /// em lote no Arena sem poluir spinner ou saída consolidada.
+        /// </summary>
+        public static IParserCodigo ResolveParser(
+            ParserStrategy strategy,
+            bool silent = false)
+        {
+            return strategy switch
+            {
+                ParserStrategy.RegexFast => BuildRegex(),
+                ParserStrategy.Selective => BuildSelective(silent),
+                ParserStrategy.AdaptiveExperimental => BuildAdaptive(silent),
+                ParserStrategy.IncrementalExperimental => BuildIncremental(silent),
+
+                ParserStrategy.Comparative =>
+                    throw new InvalidOperationException(
+                        "Comparative não deve ser resolvido como IParserCodigo. Use o fluxo do Arena."),
+
+                _ => BuildSelective(silent)
+            };
+        }
+
+        /// <summary>
+        /// Resolve um parser a partir do nome configurado.
+        ///
+        /// silent = true:
+        /// desabilita logs internos de parsers híbridos.
+        /// </summary>
+        public static IParserCodigo ResolveParser(
+            string? configParserName,
+            bool interactive,
+            bool silent = false)
+        {
+            var strategy = ResolveStrategy(configParserName, interactive);
+            return ResolveParser(strategy, silent);
         }
 
         private static ParserStrategy PromptStrategy()
@@ -2524,9 +2565,10 @@ namespace RefactorScope.Core.Parsing
             Console.WriteLine("2) Accurate Scan (Selective)");
             Console.WriteLine("3) Adaptive (Experimental)");
             Console.WriteLine("4) Incremental (Experimental)");
+            Console.WriteLine("5) Comparative (Arena / Batch)");
             Console.WriteLine();
 
-            Console.Write("Select parser [1-4] (default 2): ");
+            Console.Write("Select parser [1-5] (default 2): ");
 
             var input = Console.ReadLine()?.Trim();
 
@@ -2535,19 +2577,8 @@ namespace RefactorScope.Core.Parsing
                 "1" => ParserStrategy.RegexFast,
                 "3" => ParserStrategy.AdaptiveExperimental,
                 "4" => ParserStrategy.IncrementalExperimental,
+                "5" => ParserStrategy.Comparative,
                 _ => ParserStrategy.Selective
-            };
-        }
-
-        private static IParserCodigo Build(ParserStrategy strategy)
-        {
-            return strategy switch
-            {
-                ParserStrategy.RegexFast => BuildRegex(),
-                ParserStrategy.Selective => BuildSelective(),
-                ParserStrategy.AdaptiveExperimental => BuildAdaptive(),
-                ParserStrategy.IncrementalExperimental => BuildIncremental(),
-                _ => BuildSelective()
             };
         }
 
@@ -2557,41 +2588,50 @@ namespace RefactorScope.Core.Parsing
             return new CSharpRegexParser(provider);
         }
 
-        private static IParserCodigo BuildTextual()
+        private static IParserCodigo BuildTextual(Action<string>? logger = null)
         {
             var provider = BuildSourceProvider();
 
             return new CSharpTextualParser(
                 provider,
-                msg => Console.WriteLine($"[WARN][Textual] {msg}")
-            );
+                logger);
         }
 
-        private static IParserCodigo BuildSelective()
+        private static IParserCodigo BuildSelective(bool silent)
         {
             return new HybridSelectiveParser(
                 BuildRegex(),
                 BuildTextual(),
-                msg => Console.WriteLine($"[Selective] {msg}")
+                CreateLogger("Selective", silent)
             );
         }
 
-        private static IParserCodigo BuildAdaptive()
+        private static IParserCodigo BuildAdaptive(bool silent)
         {
             return new HybridAdaptiveParser(
                 BuildRegex(),
                 BuildTextual(),
-                msg => Console.WriteLine($"[Adaptive] {msg}")
+                CreateLogger("Adaptive", silent)
             );
         }
 
-        private static IParserCodigo BuildIncremental()
+        private static IParserCodigo BuildIncremental(bool silent)
         {
             return new HybridIncrementalParser(
                 BuildRegex(),
                 BuildTextual(),
-                msg => Console.WriteLine($"[Incremental] {msg}")
+                CreateLogger("Incremental", silent)
             );
+        }
+
+        private static Action<string>? CreateLogger(
+            string channel,
+            bool silent)
+        {
+            if (silent)
+                return null;
+
+            return msg => Console.WriteLine($"[{channel}] {msg}");
         }
 
         private static SanitizedSourceProvider BuildSourceProvider()
@@ -2687,6 +2727,393 @@ namespace RefactorScope.Core.Parsing
 
 
 ==========================================
+ARQUIVO: ParserArenaOrchestrator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Arena\ParserArenaOrchestrator.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing.Enum;
+
+namespace RefactorScope.Core.Parsing.Arena;
+
+/// <summary>
+/// Executes Arena batch mode over multiple projects and multiple parser strategies.
+/// This first version keeps everything in memory and does not export files yet.
+/// </summary>
+public sealed class ParserArenaOrchestrator
+{
+    private static readonly ParserStrategy[] ComparativeStrategies =
+    {
+        ParserStrategy.RegexFast,
+        ParserStrategy.Selective,
+        ParserStrategy.AdaptiveExperimental,
+        ParserStrategy.IncrementalExperimental
+    };
+
+    public IReadOnlyList<ParserArenaProjectResult> ExecuteBatch(
+        string batchPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null,
+        Action<string>? log = null)
+    {
+        if (string.IsNullOrWhiteSpace(batchPath))
+            throw new ArgumentException("Batch path cannot be null or empty.", nameof(batchPath));
+
+        if (!Directory.Exists(batchPath))
+            throw new DirectoryNotFoundException($"Batch path not found: {batchPath}");
+
+        var projectDirectories = Directory
+            .GetDirectories(batchPath)
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var results = new List<ParserArenaProjectResult>();
+
+        foreach (var projectDirectory in projectDirectories)
+        {
+            var projectName = Path.GetFileName(projectDirectory);
+
+            log?.Invoke($"Project: {projectName}");
+
+            var projectResult = new ParserArenaProjectResult
+            {
+                ProjectName = projectName,
+                ProjectPath = projectDirectory
+            };
+
+            foreach (var strategy in ComparativeStrategies)
+            {
+                IParserCodigo parser;
+
+                try
+                {
+                    parser = ParserSelector.ResolveParser(strategy, silent: true);
+                }
+                catch (Exception ex)
+                {
+                    var failedResolution = ParserArenaRunResult.FromException(
+                        projectName,
+                        projectDirectory,
+                        strategy,
+                        strategy.ToString(),
+                        ex);
+
+                    projectResult.Runs.Add(failedResolution);
+                    log?.Invoke($"  - {strategy}: failed to resolve parser ({ex.Message})");
+                    continue;
+                }
+
+                try
+                {
+                    log?.Invoke($"  - Running {parser.Name}...");
+
+                    var parserResult = parser.Parse(
+                        projectDirectory,
+                        include,
+                        exclude);
+
+                    var arenaRun = ParserArenaRunResult.FromParserResult(
+                        projectName,
+                        projectDirectory,
+                        strategy,
+                        parserResult);
+
+                    projectResult.Runs.Add(arenaRun);
+
+                    log?.Invoke(
+                        $"    status={arenaRun.Status}, confidence={arenaRun.Confidence:0.00}, files={arenaRun.FileCount}, types={arenaRun.TypeCount}, refs={arenaRun.ReferenceCount}, time={arenaRun.ExecutionTime.TotalMilliseconds:0}ms");
+                }
+                catch (Exception ex)
+                {
+                    var failedRun = ParserArenaRunResult.FromException(
+                        projectName,
+                        projectDirectory,
+                        strategy,
+                        parser.Name,
+                        ex);
+
+                    projectResult.Runs.Add(failedRun);
+
+                    log?.Invoke($"    failed: {ex.Message}");
+                }
+            }
+
+            ParserArenaScoreCalculator.ApplyScores(projectResult);
+            results.Add(projectResult);
+        }
+
+        return results;
+    }
+}
+
+
+==========================================
+ARQUIVO: ParserArenaProjectResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Arena\ParserArenaProjectResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing.Enum;
+
+namespace RefactorScope.Core.Parsing.Arena;
+
+/// <summary>
+/// Aggregates all parser runs executed for a single project in Arena mode.
+/// </summary>
+public sealed class ParserArenaProjectResult
+{
+    private static readonly Dictionary<ParserStrategy, int> StrategyOrder = new()
+    {
+        [ParserStrategy.RegexFast] = 1,
+        [ParserStrategy.Selective] = 2,
+        [ParserStrategy.AdaptiveExperimental] = 3,
+        [ParserStrategy.IncrementalExperimental] = 4,
+        [ParserStrategy.Comparative] = 99
+    };
+
+    public required string ProjectName { get; init; }
+
+    public required string ProjectPath { get; init; }
+
+    public List<ParserArenaRunResult> Runs { get; } = new();
+
+    public bool HasFailures => Runs.Any(r => r.Status == ParseStatus.Failed);
+
+    public int TotalRuns => Runs.Count;
+
+    /// <summary>
+    /// Runs ordered in a deterministic presentation order by strategy.
+    /// </summary>
+    public IReadOnlyList<ParserArenaRunResult> OrderedRuns =>
+        Runs.OrderBy(r => StrategyOrder.GetValueOrDefault(r.Strategy, int.MaxValue))
+            .ThenBy(r => r.ParserName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+    /// <summary>
+    /// Best comparative run for the current project.
+    /// Returns null when no runs are available.
+    /// </summary>
+    public ParserArenaRunResult? BestRun =>
+        Runs.OrderByDescending(r => r.ComparativeScore)
+            .ThenByDescending(r => r.Confidence)
+            .ThenByDescending(r => r.TypeCount)
+            .ThenByDescending(r => r.ReferenceCount)
+            .ThenBy(r => r.ExecutionTime)
+            .FirstOrDefault();
+}
+
+
+==========================================
+ARQUIVO: ParserArenaRunResult.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Arena\ParserArenaRunResult.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing.Enum;
+
+namespace RefactorScope.Core.Parsing.Arena;
+
+/// <summary>
+/// Represents a single parser execution over a single project inside Arena mode.
+/// This is the atomic comparative unit used later for JSON, CSV and dashboards.
+/// </summary>
+public sealed class ParserArenaRunResult
+{
+    public required string ProjectName { get; init; }
+
+    public required string ProjectPath { get; init; }
+
+    public required ParserStrategy Strategy { get; init; }
+
+    public required string ParserName { get; init; }
+
+    public required ParseStatus Status { get; init; }
+
+    public required double Confidence { get; init; }
+
+    public required bool IsPlausible { get; init; }
+
+    public required bool UsedFallback { get; init; }
+
+    public required TimeSpan ExecutionTime { get; init; }
+
+    public required int FileCount { get; init; }
+
+    public required int TypeCount { get; init; }
+
+    public required int ReferenceCount { get; init; }
+
+    /// <summary>
+    /// Comparative score assigned inside the context of its own project.
+    /// Higher is better.
+    /// </summary>
+    public double ComparativeScore { get; set; }
+
+    public string? ErrorMessage { get; init; }
+
+    public static ParserArenaRunResult FromParserResult(
+        string projectName,
+        string projectPath,
+        ParserStrategy strategy,
+        IParserResult result)
+    {
+        return new ParserArenaRunResult
+        {
+            ProjectName = projectName,
+            ProjectPath = projectPath,
+            Strategy = strategy,
+            ParserName = result.ParserName,
+            Status = result.Status,
+            Confidence = result.Confidence,
+            IsPlausible = result.IsPlausible,
+            UsedFallback = result.UsedFallback,
+            ExecutionTime = result.Stats?.ExecutionTime ?? TimeSpan.Zero,
+            FileCount = result.Model?.Arquivos.Count ?? 0,
+            TypeCount = result.Model?.Tipos.Count ?? 0,
+            ReferenceCount = result.Model?.Referencias.Count ?? 0,
+            ComparativeScore = 0,
+            ErrorMessage = result.Error?.Message
+        };
+    }
+
+    public static ParserArenaRunResult FromException(
+        string projectName,
+        string projectPath,
+        ParserStrategy strategy,
+        string parserName,
+        Exception ex)
+    {
+        return new ParserArenaRunResult
+        {
+            ProjectName = projectName,
+            ProjectPath = projectPath,
+            Strategy = strategy,
+            ParserName = parserName,
+            Status = ParseStatus.Failed,
+            Confidence = 0,
+            IsPlausible = false,
+            UsedFallback = false,
+            ExecutionTime = TimeSpan.Zero,
+            FileCount = 0,
+            TypeCount = 0,
+            ReferenceCount = 0,
+            ComparativeScore = 0,
+            ErrorMessage = ex.Message
+        };
+    }
+}
+
+
+==========================================
+ARQUIVO: ParserArenaScoreCalculator.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Arena\ParserArenaScoreCalculator.cs
+==========================================
+using RefactorScope.Core.Abstractions;
+
+namespace RefactorScope.Core.Parsing.Arena;
+
+/// <summary>
+/// Computes comparative parser scores within the context of a single project.
+///
+/// Important:
+/// - scoring is relative to the runs of the same project
+/// - speed has lower weight than structural coverage and plausibility
+/// - failed runs are heavily penalized
+/// </summary>
+public static class ParserArenaScoreCalculator
+{
+    public static void ApplyScores(ParserArenaProjectResult projectResult)
+    {
+        if (projectResult == null)
+            throw new ArgumentNullException(nameof(projectResult));
+
+        if (projectResult.Runs.Count == 0)
+            return;
+
+        double maxTypes = Math.Max(1, projectResult.Runs.Max(r => r.TypeCount));
+        double maxReferences = Math.Max(1, projectResult.Runs.Max(r => r.ReferenceCount));
+        double minExecutionMs = Math.Max(1, projectResult.Runs.Min(r => Math.Max(1, r.ExecutionTime.TotalMilliseconds)));
+        double maxExecutionMs = Math.Max(minExecutionMs, projectResult.Runs.Max(r => Math.Max(1, r.ExecutionTime.TotalMilliseconds)));
+
+        foreach (var run in projectResult.Runs)
+        {
+            run.ComparativeScore = ComputeScore(
+                run,
+                maxTypes,
+                maxReferences,
+                minExecutionMs,
+                maxExecutionMs);
+        }
+    }
+
+    private static double ComputeScore(
+        ParserArenaRunResult run,
+        double maxTypes,
+        double maxReferences,
+        double minExecutionMs,
+        double maxExecutionMs)
+    {
+        if (run.Status == ParseStatus.Failed)
+            return 0;
+
+        double statusScore = run.Status switch
+        {
+            ParseStatus.Success => 100,
+            ParseStatus.PlausibilityWarning => 70,
+            ParseStatus.FallbackTriggered => 50,
+            ParseStatus.Failed => 0,
+            _ => 0
+        };
+
+        double confidenceScore = Clamp01(run.Confidence) * 40.0;
+        double plausibilityScore = run.IsPlausible ? 15.0 : 0.0;
+        double typeCoverageScore = Normalize(run.TypeCount, maxTypes) * 20.0;
+        double referenceCoverageScore = Normalize(run.ReferenceCount, maxReferences) * 25.0;
+
+        // Faster is better, but only as a softer tie-breaker.
+        double speedScore = NormalizeInverse(
+            Math.Max(1, run.ExecutionTime.TotalMilliseconds),
+            minExecutionMs,
+            maxExecutionMs) * 10.0;
+
+        double fallbackPenalty = run.UsedFallback ? 10.0 : 0.0;
+
+        var finalScore =
+            statusScore +
+            confidenceScore +
+            plausibilityScore +
+            typeCoverageScore +
+            referenceCoverageScore +
+            speedScore -
+            fallbackPenalty;
+
+        return Math.Round(Math.Max(0, finalScore), 2);
+    }
+
+    private static double Normalize(double value, double max)
+    {
+        if (max <= 0)
+            return 0;
+
+        return Clamp01(value / max);
+    }
+
+    private static double NormalizeInverse(double value, double min, double max)
+    {
+        if (max <= min)
+            return 1.0;
+
+        var normalized = (value - min) / (max - min);
+        return Clamp01(1.0 - normalized);
+    }
+
+    private static double Clamp01(double value)
+    {
+        if (value < 0) return 0;
+        if (value > 1) return 1;
+        return value;
+    }
+}
+
+
+==========================================
 ARQUIVO: ParserStrategy.cs
 CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Core\Parsing\Enum\ParserStrategy.cs
 ==========================================
@@ -2739,7 +3166,27 @@ public enum ParserStrategy
     /// Utilizado para parsing parcial de projetos grandes
     /// onde apenas arquivos alterados são reprocessados.
     /// </summary>
-    IncrementalExperimental
+    IncrementalExperimental,
+
+    /// <summary>
+    /// Estratégia comparativa do Arena.
+    ///
+    /// Em vez de executar apenas um parser sobre um único projeto,
+    /// o sistema percorre uma pasta de lote (BATCH), executa
+    /// múltiplos parsers sobre cada projeto encontrado e consolida
+    /// os resultados para comparação.
+    ///
+    /// Esse modo não executa o fluxo tradicional de dashboards.
+    /// Em vez disso, ativa o pipeline do Arena, gerando:
+    ///
+    /// - JSON por execução
+    /// - CSV consolidado por projeto
+    /// - dashboard HTML comparativo
+    ///
+    /// Objetivo:
+    /// apoiar a escolha do parser mais adequado para cada caso.
+    /// </summary>
+    Comparative
 }
 
 

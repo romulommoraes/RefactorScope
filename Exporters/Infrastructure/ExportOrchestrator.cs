@@ -11,12 +11,16 @@ public sealed class ExportOrchestrator
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _paths = paths ?? throw new ArgumentNullException(nameof(paths));
         _folders = new ExportFolderBootstrapper(_paths);
+
     }
 
     public void Prepare()
     {
+
         if (!_options.Enabled)
+        {
             return;
+        }
 
         _folders.EnsureStructure();
     }

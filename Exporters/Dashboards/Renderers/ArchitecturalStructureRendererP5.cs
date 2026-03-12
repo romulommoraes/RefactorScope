@@ -474,6 +474,7 @@ new p5(radialTreeSketch);
         // =====================================================
         // 2. INFORMATION FLOW PIPELINE
         // =====================================================
+
         public string RenderInformationFlowPipeline()
         {
             var sb = new StringBuilder();
@@ -510,18 +511,18 @@ const pipelineSketch = (p) => {
         p.angleMode(p.DEGREES);
 
         palette = {
-            bg: p.color("#0b1020"), 
-            grid: p.color(40, 90, 140, 30),
-            text: p.color("#eef4ff"),
-            muted: p.color("#8fa8ff"),
-            parser: p.color("#ff9a3c"),
-            parseBranch: p.color("#ffc15d"),
-            dto: p.color("#7fd36b"),
-            analyzer: p.color("#6ea8ff"),
-            derived: p.color("#d08cff"),
-            hub: p.color("#ff6a3d"),
-            output: p.color("#00e5ff"),
-            optional: p.color("#ff9ad5")
+            bg: p.color("#020617"), 
+            grid: p.color(0, 229, 255, 15), 
+            text: p.color("#00e5ff"), 
+            muted: p.color("#255b7a"), 
+            parser: p.color("#00e5ff"), 
+            parseBranch: p.color("#b500ff"), 
+            dto: p.color("#00ff88"), 
+            analyzer: p.color("#ffaa00"), 
+            derived: p.color("#ff0055"), 
+            hub: p.color("#ff0055"), 
+            output: p.color("#00e5ff"), 
+            optional: p.color("#7a00ff")
         };
 
         buildLayout();
@@ -529,53 +530,55 @@ const pipelineSketch = (p) => {
     };
 
     p.draw = () => {
-        p.clear();
+        p.background(palette.bg);
         drawBackground();
         drawDomainBands();
         drawLinks();
         drawParticles();
         drawNodes();
         drawLegend();
+        drawHUDOverlay();
     };
 
     function buildLayout() {
+        // Caixas aumentadas em média de 180x54 para 210x62
         nodes = [
-            p.makeNode("startup", "Startup / CLI", 60, 80, 180, 54, "entry"),
-            p.makeNode("config", "RunConfiguration", 300, 80, 180, 54, "entry"),
-            p.makeNode("scope", "RefactorScopeConfig", 540, 80, 200, 54, "entry"),
-            p.makeNode("selector", "ParserSelector", 780, 80, 180, 54, "parser"),
-            p.makeNode("strategy", "Parsing Strategy", 1040, 80, 180, 54, "parser"),
+            p.makeNode("startup", "Startup / CLI", 50, 80, 210, 62, "entry"),
+            p.makeNode("config", "RunConfiguration", 290, 80, 210, 62, "entry"),
+            p.makeNode("scope", "RefactorScopeConfig", 530, 80, 210, 62, "entry"),
+            p.makeNode("selector", "ParserSelector", 770, 80, 210, 62, "parser"),
+            p.makeNode("strategy", "Parsing Strategy", 1020, 80, 210, 62, "parser"),
 
-            p.makeNode("regex", "Regex Baseline", 1320, 80, 180, 52, "parseBranch"),
-            p.makeNode("complexity", "Complexity Scan", 1320, 180, 180, 52, "parseBranch"),
-            p.makeNode("textual", "Textual / Selective", 1320, 280, 180, 52, "parseBranch"),
+            p.makeNode("regex", "Regex Baseline", 1300, 80, 220, 62, "parseBranch"),
+            p.makeNode("complexity", "Complexity Scan", 1300, 180, 220, 62, "parseBranch"),
+            p.makeNode("textual", "Textual / Selective", 1300, 280, 220, 62, "parseBranch"),
 
-            p.makeNode("merge", "Parsing Merge", 1040, 280, 180, 54, "parser"),
-            p.makeNode("parserResult", "IParserResult", 780, 280, 180, 54, "dto"),
-            p.makeNode("model", "ModeloEstrutural", 540, 280, 180, 54, "dto"),
-            p.makeNode("context", "AnalysisContext", 300, 280, 180, 54, "dto"),
+            p.makeNode("merge", "Parsing Merge", 1020, 280, 210, 62, "parser"),
+            p.makeNode("parserResult", "IParserResult", 770, 280, 210, 62, "dto"),
+            p.makeNode("model", "ModeloEstrutural", 530, 280, 210, 62, "dto"),
+            p.makeNode("context", "AnalysisContext", 290, 280, 210, 62, "dto"),
 
-            p.makeNode("structure", "Project Structure", 60, 420, 180, 54, "analyzer"),
-            p.makeNode("candidates", "Structural Candidates", 300, 420, 190, 54, "analyzer"),
-            p.makeNode("architecture", "Architecture", 540, 420, 160, 54, "analyzer"),
-            p.makeNode("coupling", "Coupling", 840, 420, 140, 54, "analyzer"),
-            p.makeNode("implicit", "Implicit Coupling", 1080, 420, 180, 54, "analyzer"),
+            p.makeNode("structure", "Project Structure", 50, 420, 210, 62, "analyzer"),
+            p.makeNode("candidates", "Structural Candidates", 290, 420, 220, 62, "analyzer"),
+            p.makeNode("architecture", "Architecture", 540, 420, 200, 62, "analyzer"),
+            p.makeNode("coupling", "Coupling", 770, 420, 200, 62, "analyzer"),
+            p.makeNode("implicit", "Implicit Coupling", 1000, 420, 220, 62, "analyzer"),
 
-            p.makeNode("refinement", "Refinement", 220, 540, 160, 54, "derived"),
-            p.makeNode("fitness", "Fitness Gates", 460, 540, 160, 54, "derived"),
-            p.makeNode("hygiene", "Hygiene", 680, 540, 140, 54, "derived"),
-            p.makeNode("solid", "SOLID", 920, 540, 120, 54, "derived"),
+            p.makeNode("refinement", "Refinement", 200, 540, 190, 62, "derived"),
+            p.makeNode("fitness", "Fitness Gates", 430, 540, 190, 62, "derived"),
+            p.makeNode("hygiene", "Hygiene", 660, 540, 190, 62, "derived"),
+            p.makeNode("solid", "SOLID", 890, 540, 190, 62, "derived"),
 
-            p.makeNode("report", "ConsolidatedReport", 540, 680, 240, 64, "hub"),
-            p.makeNode("statistics", "Statistics", 1020, 680, 150, 54, "optional"),
-            p.makeNode("effort", "Effort", 1260, 680, 120, 54, "optional"),
+            p.makeNode("report", "ConsolidatedReport", 540, 680, 260, 72, "hub"),
+            p.makeNode("statistics", "Statistics", 1020, 680, 200, 62, "optional"),
+            p.makeNode("effort", "Effort", 1260, 680, 200, 62, "optional"),
 
-            p.makeNode("html", "HTML Outputs", 60, 840, 160, 54, "output"),
-            p.makeNode("markdown", "Markdown Outputs", 300, 840, 190, 54, "output"),
-            p.makeNode("csv", "CSV Outputs", 540, 840, 150, 54, "output"),
-            p.makeNode("analyzerOut", "Output Analyzers", 780, 840, 190, 54, "output"),
-            p.makeNode("statsOut", "Output Statistics", 1020, 840, 180, 54, "output"),
-            p.makeNode("effortOut", "Output Effort", 1260, 840, 170, 54, "output")
+            p.makeNode("html", "HTML Outputs", 50, 840, 200, 62, "output"),
+            p.makeNode("markdown", "Markdown Outputs", 290, 840, 210, 62, "output"),
+            p.makeNode("csv", "CSV Outputs", 530, 840, 200, 62, "output"),
+            p.makeNode("analyzerOut", "Output Analyzers", 770, 840, 210, 62, "output"),
+            p.makeNode("statsOut", "Output Statistics", 1020, 840, 200, 62, "output"),
+            p.makeNode("effortOut", "Output Effort", 1260, 840, 200, 62, "output")
         ];
 
         links = [
@@ -608,8 +611,8 @@ const pipelineSketch = (p) => {
             particles.push({
                 linkIndex: i,
                 t: p.random(),
-                speed: p.random(0.002, 0.005),
-                size: p.random(3, 6)
+                speed: p.random(0.002, 0.004),
+                size: p.random(3, 5)
             });
         }
     }
@@ -629,26 +632,34 @@ const pipelineSketch = (p) => {
     function drawBackground() {
         p.stroke(palette.grid);
         p.strokeWeight(1);
-        for (let x = 0; x < p.width; x += 40) p.line(x, 0, x, p.height);
-        for (let y = 0; y < p.height; y += 40) p.line(0, y, p.width, y);
+        for (let x = 0; x < p.width; x += 50) p.line(x, 0, x, p.height);
+        for (let y = 0; y < p.height; y += 50) p.line(0, y, p.width, y);
     }
 
     function drawDomainBands() {
         const bands = [
-            { x: 40, y: 45, w: 720, h: 120, title: "CONFIG", c: p.color(100, 140, 255, 12) },
-            { x: 760, y: 45, w: 760, h: 310, title: "PARSING", c: p.color(255, 154, 60, 10) },
-            { x: 40, y: 380, w: 1240, h: 240, title: "ANALYSIS", c: p.color(110, 168, 255, 10) }
+            { x: 30, y: 45, w: 730, h: 130, title: "SEC_ALPHA // CONFIG" },
+            { x: 750, y: 45, w: 790, h: 320, title: "SEC_BETA // PARSING" },
+            { x: 30, y: 380, w: 1210, h: 250, title: "SEC_GAMMA // ANALYSIS" }
         ];
 
         for (let b of bands) {
+            p.stroke(palette.muted); 
+            p.noFill(); 
+            p.strokeWeight(2);
+            let L = 20; 
+            
+            p.line(b.x, b.y + L, b.x, b.y); p.line(b.x, b.y, b.x + L, b.y);
+            p.line(b.x + b.w - L, b.y, b.x + b.w, b.y); p.line(b.x + b.w, b.y, b.x + b.w, b.y + L);
+            p.line(b.x, b.y + b.h - L, b.x, b.y + b.h); p.line(b.x, b.y + b.h, b.x + L, b.y + b.h);
+            p.line(b.x + b.w - L, b.y + b.h, b.x + b.w, b.y + b.h); p.line(b.x + b.w, b.y + b.h - L, b.x + b.w, b.y + b.h);
+
+            p.fill(palette.text); 
             p.noStroke();
-            p.fill(b.c);
-            p.rect(b.x, b.y, b.w, b.h, 16);
-            p.fill(255, 255, 255, 100);
             p.textAlign(p.LEFT, p.TOP);
-            p.textSize(11);
+            p.textSize(10);
             p.textStyle(p.BOLD);
-            p.text(b.title, b.x + 14, b.y + 10);
+            p.text(b.title, b.x + 10, b.y - 15);
         }
     }
 
@@ -670,10 +681,10 @@ const pipelineSketch = (p) => {
         
         let cp1x = x1, cp1y = y1, cp2x = x2, cp2y = y2;
         if (isHoriz) {
-            let bend = p.max(40, p.abs(x2 - x1) * 0.4);
+            let bend = p.max(50, p.abs(x2 - x1) * 0.4);
             cp1x = x1 + (dx > 0 ? bend : -bend); cp2x = x2 + (dx > 0 ? -bend : bend);
         } else {
-            let bend = p.max(40, p.abs(y2 - y1) * 0.4);
+            let bend = p.max(50, p.abs(y2 - y1) * 0.4);
             cp1y = y1 + (dy > 0 ? bend : -bend); cp2y = y2 + (dy > 0 ? -bend : bend);
         }
         
@@ -687,7 +698,7 @@ const pipelineSketch = (p) => {
             let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(a, b);
 
             let col = getLinkColor(link.kind);
-            let alpha = p.map(p.sin(p.frameCount * 2 + a.x * 0.01), -1, 1, 80, 180);
+            let alpha = p.map(p.sin(p.frameCount * 2 + a.x * 0.01), -1, 1, 100, 200);
             
             let c = p.color(col); c.setAlpha(alpha);
             p.stroke(c);
@@ -707,7 +718,7 @@ const pipelineSketch = (p) => {
             p.translate(x2, y2);
             p.rotate(p.atan2(ty, tx));
             p.noStroke(); p.fill(col);
-            p.triangle(0, 0, -10, 5, -10, -5);
+            p.triangle(0, 0, -12, 4, -12, -4);
             p.pop();
         }
     }
@@ -722,12 +733,20 @@ const pipelineSketch = (p) => {
 
             let px = p.bezierPoint(x1, cp1x, cp2x, x2, pt.t);
             let py = p.bezierPoint(y1, cp1y, cp2y, y2, pt.t);
+            let tx = p.bezierTangent(x1, cp1x, cp2x, x2, pt.t);
+            let ty = p.bezierTangent(y1, cp1y, cp2y, y2, pt.t);
 
             let col = getLinkColor(link.kind);
+            
+            p.push();
+            p.translate(px, py);
+            p.rotate(p.atan2(ty, tx));
             p.noStroke(); p.fill(255);
-            p.drawingContext.shadowBlur = 15;
+            p.drawingContext.shadowBlur = 12;
             p.drawingContext.shadowColor = col.toString();
-            p.ellipse(px, py, pt.size);
+            p.rect(-pt.size, -1.5, pt.size * 2, 3);
+            p.pop();
+            
             p.drawingContext.shadowBlur = 0;
         }
     }
@@ -738,13 +757,12 @@ const pipelineSketch = (p) => {
 
     function drawSciFiNode(node) {
         let col = getNodeColor(node.kind);
-        let pulse = p.map(p.sin(p.frameCount * 2 + node.x * 0.05), -1, 1, 5, 16);
+        let pulse = p.map(p.sin(p.frameCount * 3 + node.x * 0.05), -1, 1, 8, 20);
         let c = 12; 
 
-        p.noStroke(); p.fill(p.red(col), p.green(col), p.blue(col), 15);
-        p.rect(node.x - 5, node.y - 5, node.w + 10, node.h + 10, 16);
+        let isBlinking = (p.frameCount % 60 < 30);
 
-        p.fill(12, 18, 30, 240);
+        p.fill(3, 6, 10, 230); 
         p.stroke(col);
         p.strokeWeight(node.kind === "hub" ? 2.2 : 1.4);
         p.drawingContext.shadowBlur = pulse;
@@ -764,52 +782,75 @@ const pipelineSketch = (p) => {
         p.noStroke(); p.fill(col);
         p.rect(node.x + 8, node.y + 12, 4, node.h - 24, 2);
 
-        p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER);
-        p.textSize(node.kind === "hub" ? 15 : 12);
-        p.textStyle(p.BOLD);
-        p.text(node.label, node.x + 22, node.y + node.h / 2 - 4);
+        if (isBlinking || node.kind !== "hub") {
+            p.fill(node.kind === "hub" ? palette.hub : palette.text);
+            p.ellipse(node.x + node.w - 15, node.y + 15, 4, 4);
+        }
 
-        p.fill(255, 255, 255, 130);
-        p.textSize(10); p.textStyle(p.NORMAL);
-        p.text(getSubtitle(node.kind), node.x + 22, node.y + node.h / 2 + 12);
+        p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER);
+        
+        // Fontes maiores para dar mais legibilidade
+        p.textSize(node.kind === "hub" ? 16 : 13);
+        p.textStyle(p.BOLD);
+        p.text(node.label.toUpperCase(), node.x + 22, node.y + node.h / 2 - 8);
+
+        p.fill(palette.text);
+        p.textSize(11); // Subtítulo maior e sem o código HEX
+        p.textStyle(p.NORMAL);
+        p.text(getSubtitle(node.kind), node.x + 22, node.y + node.h / 2 + 10);
     }
 
     function getSubtitle(kind) {
-        if (kind === "entry") return "startup / config";
-        if (kind === "parser") return "flow control";
-        if (kind === "parseBranch") return "parser branch";
-        if (kind === "dto") return "data carrier";
-        if (kind === "analyzer") return "domain reader";
-        if (kind === "derived") return "derived signal";
-        if (kind === "hub") return "reconsolidation point";
-        if (kind === "optional") return "optional branch";
-        if (kind === "output") return "projection";
-        return "";
+        if (kind === "entry") return "SYS_BOOT";
+        if (kind === "parser") return "FLOW_CTRL";
+        if (kind === "parseBranch") return "SCAN_BRANCH";
+        if (kind === "dto") return "DATA_BUFFER";
+        if (kind === "analyzer") return "DEEP_SCAN";
+        if (kind === "derived") return "DERIVED_SIG";
+        if (kind === "hub") return "SYNC_HUB";
+        if (kind === "optional") return "OPT_BRANCH";
+        if (kind === "output") return "OUT_PORT";
+        return "UNKNOWN";
     }
 
     function getNodeColor(k) {
         return k==="entry"?palette.muted : k==="parser"?palette.parser : k==="parseBranch"?palette.parseBranch : k==="dto"?palette.dto : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="hub"?palette.hub : k==="optional"?palette.optional : palette.output;
     }
+    
     function getLinkColor(k) {
         return k==="main"?palette.parser : k==="branch"?palette.parseBranch : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="return"?palette.hub : k==="optional"?palette.optional : palette.output;
     }
+    
     function getLinkThickness(k) {
-        return k==="main"?3.5 : k==="return"?3.2 : k==="output"?3.0 : k==="branch"?2.2 : k==="analyzer"?2.1 : k==="derived"?1.8 : 1.9;
+        return k==="main"?2.5 : k==="return"?2.2 : k==="output"?2.0 : k==="branch"?1.8 : k==="analyzer"?1.5 : k==="derived"?1.2 : 1.5;
     }
 
     function drawLegend() {
         const items = [
-            ["Main Flow", palette.parser], ["Parser Branch", palette.parseBranch],
-            ["DTO / Context", palette.dto], ["Analyzer", palette.analyzer],
-            ["Derived Signal", palette.derived], ["Consolidation", palette.hub], ["Output", palette.output]
+            ["MAIN_FLOW", palette.parser], ["BRANCH_SCAN", palette.parseBranch],
+            ["DATA_CARRIER", palette.dto], ["DEEP_ANALYSIS", palette.analyzer],
+            ["DERIVED", palette.derived], ["CORE_SYNC", palette.hub], ["OUT_PORT", palette.output]
         ];
 
         let x = 40; let y = p.height - 30;
         for (let i = 0; i < items.length; i++) {
-            p.fill(items[i][1]); p.noStroke(); p.rect(x, y, 10, 10, 2);
-            p.fill(255, 255, 255, 180); p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
-            p.text(items[i][0], x + 16, y + 5);
-            x += p.textWidth(items[i][0]) + 50;
+            p.stroke(items[i][1]); p.strokeWeight(1.5); p.noFill(); 
+            p.rect(x, y, 10, 10);
+            p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
+            p.text(items[i][0], x + 18, y + 5);
+            x += p.textWidth(items[i][0]) + 60;
+        }
+    }
+
+    function drawHUDOverlay() {
+        let scanY = (p.frameCount * 2) % p.height;
+        p.stroke(0, 229, 255, 40); p.strokeWeight(4);
+        p.line(0, scanY, p.width, scanY);
+        
+        p.stroke(0, 0, 0, 30);
+        p.strokeWeight(1);
+        for (let y = 0; y < p.height; y += 4) {
+            p.line(0, y, p.width, y);
         }
     }
 };
@@ -820,5 +861,31 @@ new p5(pipelineSketch);
             sb.AppendLine("</div></div>");
             return sb.ToString();
         }
+ 
     }
 }
+
+// esse método pode servir pra trimmar a arvore de pastas se necessário, ignorando arquivos e pastas irrelevantes para o mapa estrutural
+//private static bool LooksLikeValidFolderOrFile(string text)
+//{
+//    if (string.IsNullOrWhiteSpace(text))
+//        return false;
+
+//    var trimmed = text.Trim();
+
+//    // Ignora linhas decorativas ou resíduos da árvore
+//    if (trimmed == "." || trimmed == "..")
+//        return false;
+
+//    // Aceita arquivos C#
+//    if (trimmed.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+//        return true;
+
+//    // Ignora arquivos não relevantes para esse mapa simples
+//    if (trimmed.Contains('.') &&
+//        !trimmed.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+//        return false;
+
+//    // Aceita nomes de pasta plausíveis
+//    return true;
+//}

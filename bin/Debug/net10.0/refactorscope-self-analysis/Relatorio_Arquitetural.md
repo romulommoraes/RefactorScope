@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-11 05:40 UTC  
+📅 **Execution Time:** 2026-03-12 01:02 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -45,7 +45,8 @@
 │   │   ├── Css
 │   │   └── Vendor
 │   ├── Dashboards
-│   │   └── Renderers
+│   │   ├── Renderers
+│   │   └── Routemap
 │   ├── Datasets
 │   ├── Dumps
 │   ├── Infrastructure
@@ -89,7 +90,7 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 2,00
+- **Coupling:** 2,75
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -137,7 +138,7 @@
 
 - **Score:** `100,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 3,62
+- **Coupling:** 2,89
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
@@ -170,7 +171,7 @@
 | StatisticsValidationAnalyzer | Analyzers | Core | 7 | 0 | 1,00 | 7 |
 | StructuralCandidateAnalyzer | Analyzers | Core | 5 | 0 | 1,00 | 5 |
 | StructuralCandidateRefinementAnalyzer | Analyzers | Core | 8 | 0 | 1,00 | 8 |
-| ParserArenaCliRunner | CLI | Core | 9 | 0 | 1,00 | 9 |
+| ParserArenaCliRunner | CLI | Core | 12 | 0 | 1,00 | 12 |
 | EffortEstimator | Estimation | Core | 4 | 1 | 0,80 | 4 |
 | SolidAnalyzer | Analyzers | Core | 12 | 0 | 1,00 | 12 |
 | AnalysisOrchestrator | Core | Estimation | 7 | 0 | 1,00 | 7 |
@@ -182,12 +183,12 @@
 | ParsingDashboardExporterAdapter | Exporters | Core | 8 | 0 | 1,00 | 8 |
 | QualityDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
 | StructuralDashboardExporterAdapter | Exporters | Core | 7 | 0 | 1,00 | 7 |
-| ArchitecturalDashboardExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
-| ArchitecturalStructureRendererP5 | Exporters | Core | 7 | 1 | 0,88 | 7 |
+| ArchitecturalDashboardExporter | Exporters | Core | 18 | 1 | 0,95 | 18 |
 | HubDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
 | ArchitecturalDashboardMetrics | Exporters | Core | 16 | 3 | 0,84 | 16 |
 | QualityDashboardMetrics | Exporters | Core | 16 | 4 | 0,80 | 16 |
 | HtmlDashboardExporter | Exporters | Core | 8 | 0 | 1,00 | 8 |
+| StrategyAggregateMetric | Exporters | Core | 5 | 1 | 0,83 | 5 |
 | ParsingDashboardExporter | Exporters | Core | 5 | 1 | 0,83 | 5 |
 | QualityDashboardExporter | Exporters | Core | 6 | 1 | 0,86 | 6 |
 | StructuralInventoryExporter | Exporters | Core | 11 | 1 | 0,92 | 11 |
@@ -203,7 +204,10 @@
 | TopFolderSegmentationResolver | Execution | Core | 4 | 1 | 0,80 | 4 |
 | GlobalDumpStrategy | Execution | Core | 5 | 1 | 0,83 | 5 |
 | SegmentedDumpStrategy | Execution | Core | 6 | 1 | 0,86 | 6 |
+| ArchitecturalStructureRendererP5 | Exporters | Core | 7 | 1 | 0,88 | 7 |
 | ChartsRendererP5 | Exporters | Core | 5 | 1 | 0,83 | 5 |
+| ArchitectureVisualizationResolver | Exporters | Core | 5 | 1 | 0,83 | 5 |
+| ModuleRouteMapBuilder | Exporters | Core | 9 | 2 | 0,82 | 9 |
 | HybridAdaptiveParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
 | HybridIncrementalParser | Parsers | Core | 4 | 1 | 0,80 | 4 |
 | HybridSelectiveParser | Parsers | Core | 8 | 1 | 0,89 | 8 |
@@ -218,13 +222,13 @@ Manual inspection is recommended.
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
 | Analyzers | 0,10 | 0,69 | 0,21 |
-| CLI | 0,00 | 0,80 | 0,20 |
+| CLI | 0,00 | 0,85 | 0,15 |
 | Debug | 0,00 | 0,00 | 1,00 |
 | Estimation | 0,00 | 0,38 | 0,63 |
 | Infrastructure | 0,00 | 0,50 | 0,50 |
 | Core | 0,10 | 0,02 | 0,88 |
 | Execution | 0,25 | 0,57 | 0,18 |
-| Exporters | 0,00 | 0,66 | 0,34 |
+| Exporters | 0,00 | 0,60 | 0,40 |
 | Parsers | 0,00 | 0,63 | 0,37 |
 | Statistics | 0,00 | 0,67 | 0,33 |
 

@@ -1,0 +1,14 @@
+================================================
+RefactorScope Crash Report
+Timestamp: 11/03/2026 12:36:21
+Phase: EXPORT
+
+System.IO.FileNotFoundException: Arquivo de asset não encontrado: dashboard-base.css
+File name: 'C:\Users\romul\source\repos\RefactorScope\RefactorScope\bin\Debug\net10.0\Exporters\Assets\Css\dashboard-base.css'
+   at RefactorScope.Exporters.Styling.DashboardAssetCopier.CopySingleFile(String sourceDir, String targetDir, String fileName) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exportersx\Styling\DashboardAssetCopier.cs:line 139
+   at RefactorScope.Exporters.Styling.DashboardAssetCopier.CopyBaseCssAssets(String sourceCssDir, String targetCssDir) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exportersx\Styling\DashboardAssetCopier.cs:line 111
+   at RefactorScope.Exporters.Styling.DashboardAssetCopier.CopyAll(String outputPath, String themeFileName) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exportersx\Styling\DashboardAssetCopier.cs:line 50
+   at RefactorScope.Exporters.Adapters.ArchitecturalDashboardExporterAdapter.ExportDirect(AnalysisContext context, ConsolidatedReport report, IParserResult parsingResult, String outputPath) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exportersx\Adapters\ArchitecturalDashboardExporterAdapter.cs:line 59
+   at Program.<<Main>$>g__RunExport|0_8(RefactorScopeConfig config, AnalysisContext context, ConsolidatedReport report, IParserResult parsingResult) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs:line 404
+
+================================================

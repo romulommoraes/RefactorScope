@@ -3,9 +3,9 @@
 > Executive textual companion for the current analysis snapshot.
 > This report consolidates parser telemetry, structural signals, architectural indicators and readiness interpretation.
 
-- **Generated at:** 2026-03-11 06:18 UTC
+- **Generated at:** 2026-03-11 22:38 UTC
 - **Target scope:** `C:\Users\romul\source\repos\Scriptome`
-- **Parser:** `HybridParser (Adaptive)`
+- **Parser:** `CSharpRegex`
 - **Confidence band:** `High`
 
 ---
@@ -17,17 +17,17 @@ It should be read as an architectural snapshot, not as a formal proof.
 
 | Signal | Value | Interpretation |
 |--------|-------|----------------|
-| Parser Confidence | `95%` | High confidence for structural extraction |
-| Structural Candidates | `28` | Initial dead-code hypothesis set |
-| Unresolved | `17` | Candidates still not explained after refinement |
-| Pattern Similarity | `11` | Candidates protected by architectural pattern similarity |
-| Implicit Coupling | `17` | Heuristic coupling hotspots |
+| Parser Confidence | `93%` | High confidence for structural extraction |
+| Structural Candidates | `30` | Initial dead-code hypothesis set |
+| Unresolved | `18` | Candidates still not explained after refinement |
+| Pattern Similarity | `12` | Candidates protected by architectural pattern similarity |
+| Implicit Coupling | `16` | Heuristic coupling hotspots |
 | Modules | `5` | Architectural groups detected in classification |
 | Fitness Status | `Ready` | Execution-level readiness gate summary |
 | Overall Readiness | `High` | Consolidated operational interpretation |
 
 > **Executive reading:**
-> Parsing posture is **High**, structural pressure remains at **17 unresolved**, and the run is currently interpreted as **High readiness**.
+> Parsing posture is **High**, structural pressure remains at **18 unresolved**, and the run is currently interpreted as **High readiness**.
 
 ---
 
@@ -37,21 +37,21 @@ This section describes how the parser behaved during the run and how much struct
 
 | Metric | Value |
 |--------|-------|
-| Parser Name | `HybridParser (Adaptive)` |
-| Confidence | `95%` |
+| Parser Name | `CSharpRegex` |
+| Confidence | `93%` |
 | Confidence Band | `High` |
 | Files | `174` |
 | Types | `161` |
-| References | `588` |
-| Execution Time | `538 ms` |
+| References | `416` |
+| Execution Time | `288 ms` |
 | Types / File | `0,93` |
-| References / Type | `3,65` |
-| ms / File | `3,09` |
-| ms / Type | `3,34` |
-| Estimated Memory | `0 bytes` |
+| References / Type | `2,58` |
+| ms / File | `1,65` |
+| ms / Type | `1,79` |
+| Estimated Memory | `585.568 bytes` |
 | Sparse Extraction | `No` |
 | Anomaly Detected | `No` |
-| Extraction Index | `85,30` |
+| Extraction Index | `80,91` |
 
 ### Context
 
@@ -71,11 +71,11 @@ This section reflects the canonical dead-code pipeline:
 
 | Metric | Value | Meaning |
 |--------|-------|---------|
-| Structural Candidates | `28` | Initial structurally weak types |
-| Pattern Similarity | `11` | Candidates explained by recognized architectural patterns |
-| Suspicious | `11` | Intermediate candidates still requiring caution |
-| Unresolved | `17` | Final unresolved hypothesis after refinement |
-| Reduction Rate | `39%` | How much of the initial set was softened by pattern recognition |
+| Structural Candidates | `30` | Initial structurally weak types |
+| Pattern Similarity | `12` | Candidates explained by recognized architectural patterns |
+| Suspicious | `12` | Intermediate candidates still requiring caution |
+| Unresolved | `18` | Final unresolved hypothesis after refinement |
+| Reduction Rate | `40%` | How much of the initial set was softened by pattern recognition |
 
 ### Interpretation
 
@@ -92,11 +92,11 @@ This section summarizes architectural tension signals derived from the consolida
 | Metric | Value | Reading |
 |--------|-------|---------|
 | Modules | `5` | Distinct architectural groups detected in the classification layer |
-| Average Score | `70,5` | Composite health score across modules |
+| Average Score | `79,7` | Composite health score across modules |
 | Average Abstractness | `0,11` | Mean abstraction level across modules |
-| Average Instability | `0,45` | Mean outward dependency pressure |
-| Average Distance | `0,43` | Distance from main sequence |
-| Implicit Coupling Suspicions | `17` | Concentrated dependency hotspots |
+| Average Instability | `0,46` | Mean outward dependency pressure |
+| Average Distance | `0,42` | Distance from main sequence |
+| Implicit Coupling Suspicions | `16` | Concentrated dependency hotspots |
 
 ### Context
 
@@ -114,9 +114,9 @@ This section transforms raw metrics into a more executive narrative.
 |-----------|---------------|
 | Parser Confidence | `High` |
 | Statistics Coverage | `High` (1,00) |
-| Overall Readiness | `High` (0,91) |
+| Overall Readiness | `High` (0,88) |
 | Fitness Status | `Ready` |
-| SOLID Alerts | `2` |
+| SOLID Alerts | `1` |
 
 ### Narrative
 
@@ -138,8 +138,8 @@ Below is a concise operational interpretation of the current run.
 ### Suggested interpretation
 
 - Parser output is strong enough for higher-level interpretation.
-- `17` unresolved candidate(s) still deserve manual inspection.
-- `17` implicit coupling hotspot(s) were detected and may deserve architectural review.
+- `18` unresolved candidate(s) still deserve manual inspection.
+- `16` implicit coupling hotspot(s) were detected and may deserve architectural review.
 - The current run presents a healthy enough structural baseline for forward interpretation.
 
 ---

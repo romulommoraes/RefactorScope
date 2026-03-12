@@ -9,9 +9,153 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -19,10 +163,21 @@
         <div class="brand-kicker">RefactorScope // Quality Module</div>
         <h1>Quality / Gates Dashboard</h1>
         <div class="subtitle">Target Project: <b>RefactorScope</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
+
     </div>
 
-    <div class="run-meta">
-        <div><b>Generated:</b> 2026-03-11 05:40 UTC</div>
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 2026-03-12 01:02 UTC</div>
         <div><b>Parser:</b> HybridSelectiveParser</div>
         <div><b>Readiness:</b> Ready</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
@@ -100,12 +255,12 @@
     </div>
 
     <ul class="clean">
-        <li><b>Execution Time:</b> 842 ms</li>
-        <li><b>Files:</b> 173</li>
-        <li><b>Types:</b> 176</li>
-        <li><b>References:</b> 647</li>
-        <li><b>Estimated Hours:</b> 16,0</li>
-        <li><b>RDI:</b> 40</li>
+        <li><b>Execution Time:</b> 811 ms</li>
+        <li><b>Files:</b> 190</li>
+        <li><b>Types:</b> 191</li>
+        <li><b>References:</b> 696</li>
+        <li><b>Estimated Hours:</b> 16,8</li>
+        <li><b>RDI:</b> 42</li>
         <li><b>Gate Readiness:</b> 1,00</li>
         <li><b>Statistics Support Score:</b> 1,00</li>
     </ul>
@@ -124,7 +279,7 @@
 <div id="p5-quality-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const qualityRadarSketch = (p) => {
-    const data = [100, 67.282, 100, 100, 97.727, 93.456];
+    const data = [100, 66.598, 100, 100, 97.906, 93.32];
     const labels = ["Parser", "Effort", "Statistics", "Gates", "Unresolved", "Overall"];
     const maxRadius = 100;
 
@@ -327,9 +482,9 @@ new p5(trustSankeySketch);
     <h3>Effort Estimation</h3>
     <ul class="clean">
         <li><b>Difficulty:</b> Moderate</li>
-        <li><b>Estimated Hours:</b> 16,0</li>
+        <li><b>Estimated Hours:</b> 16,8</li>
         <li><b>Confidence:</b> 0,67</li>
-        <li><b>RDI:</b> 40</li>
+        <li><b>RDI:</b> 42</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -338,13 +493,13 @@ new p5(trustSankeySketch);
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.2;">
-                        <span class="data">16,0h</span>
+                    <td style="--size: 0.21;">
+                        <span class="data">16,8h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.6728;">
+                    <td style="--size: 0.666;">
                         <span class="data">0,67</span>
                     </td>
                 </tr>
@@ -364,19 +519,19 @@ new p5(trustSankeySketch);
     <tbody>
 <tr>
     <td>Classes Per File</td>
-    <td>1.017</td>
+    <td>1.005</td>
 </tr>
 <tr>
     <td>References Per Class</td>
-    <td>3.676</td>
+    <td>3.644</td>
 </tr>
 <tr>
     <td>Mean Coupling</td>
-    <td>3.676</td>
+    <td>3.644</td>
 </tr>
 <tr>
     <td>Unresolved Candidate Ratio</td>
-    <td>0.006</td>
+    <td>0.005</td>
 </tr>
 <tr>
     <td>Namespace Drift Ratio</td>
@@ -481,6 +636,55 @@ new p5(trustSankeySketch);
 }
 </style>
 <div class='footer'>Generated by RefactorScope Quality / Gates Dashboard</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

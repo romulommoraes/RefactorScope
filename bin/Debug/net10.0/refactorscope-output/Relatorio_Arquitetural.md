@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-11 06:18 UTC  
+📅 **Execution Time:** 2026-03-11 22:38 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\Scriptome`  
 
 ---
@@ -73,9 +73,9 @@
 
 ## 🔎 Structural Candidate Analysis (ADR-EXP-007)
 
-- **Structural Candidates:** 28
-- **Pattern Similarity:** 11
-- **Unresolved:** 17
+- **Structural Candidates:** 30
+- **Pattern Similarity:** 12
+- **Unresolved:** 18
 
 ---
 
@@ -83,41 +83,41 @@
 
 ### 🟢 Program.cs
 
-- **Score:** `84,0`
+- **Score:** `93,0`
 - **Unresolved Candidates:** 🟢 0 (0%)
-- **Coupling:** 16,00
+- **Coupling:** 7,00
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
-### 🟡 Fingerprint
+### 🟢 Fingerprint
 
-- **Score:** `66,0`
+- **Score:** `72,6`
 - **Unresolved Candidates:** 🔴 3 (6%)
-- **Coupling:** 1,12
+- **Coupling:** 0,90
 - **Isolation:** 0,02
 - **Core Density:** 0,10
 
 ### 🟡 Infrastructure
 
-- **Score:** `48,1`
-- **Unresolved Candidates:** 🔴 2 (7%)
-- **Coupling:** 3,52
+- **Score:** `65,0`
+- **Unresolved Candidates:** 🔴 3 (11%)
+- **Coupling:** 2,15
 - **Isolation:** 0,00
 - **Core Density:** 0,00
 
 ### 🟢 Nucleo
 
-- **Score:** `86,4`
+- **Score:** `94,2`
 - **Unresolved Candidates:** 🔴 5 (11%)
-- **Coupling:** 0,74
+- **Coupling:** 0,48
 - **Isolation:** 0,15
 - **Core Density:** 0,96
 
-### 🟡 Limbic
+### 🟢 Limbic
 
-- **Score:** `68,0`
+- **Score:** `73,6`
 - **Unresolved Candidates:** 🔴 7 (19%)
-- **Coupling:** 0,97
+- **Coupling:** 0,78
 - **Isolation:** 0,03
 - **Core Density:** 0,16
 
@@ -127,22 +127,21 @@
 
 | Type | Module | Target Module | Fan-Out | Fan-In | Dominance | Volume |
 |------|--------|---------------|--------|--------|-----------|--------|
-| Program | Program.cs | Infrastructure | 16 | 0 | 1,00 | 16 |
-| MotorDeIdentidade | Fingerprint | Nucleo | 8 | 2 | 0,80 | 8 |
-| OrquestradorNucleo | Nucleo | Fingerprint | 11 | 2 | 0,85 | 11 |
+| Program | Program.cs | Infrastructure | 7 | 0 | 1,00 | 7 |
+| MotorDeIdentidade | Fingerprint | Nucleo | 4 | 1 | 0,80 | 4 |
+| OrquestradorNucleo | Nucleo | Fingerprint | 6 | 1 | 0,86 | 6 |
 | ModuloEtogramaV2 | Fingerprint | Nucleo | 5 | 0 | 1,00 | 5 |
-| MotorIdentidadeRNA | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
-| MotorEtogramaCartesiano3D | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
-| MotorEtogramaHeuristico | Fingerprint | Nucleo | 6 | 0 | 1,00 | 6 |
-| MotorEtogramaV2 | Fingerprint | Nucleo | 5 | 1 | 0,83 | 5 |
-| AnalisadorContextual | Limbic | Nucleo | 10 | 2 | 0,83 | 10 |
-| AnalisadorLexico | Limbic | Nucleo | 8 | 2 | 0,80 | 8 |
-| PipelineLimbic | Limbic | Nucleo | 13 | 2 | 0,87 | 13 |
-| VerificadorLimbic | Limbic | Nucleo | 23 | 2 | 0,92 | 23 |
-| AdaptadorLimbic | Nucleo | Limbic | 23 | 2 | 0,92 | 23 |
-| MotorFenotipoV2 | Nucleo | Fingerprint | 16 | 2 | 0,89 | 16 |
-| ClassificadorJungV2 | Fingerprint | Nucleo | 6 | 2 | 0,75 | 6 |
-| ClassificadorTermico | Fingerprint | Nucleo | 7 | 2 | 0,78 | 7 |
+| MotorIdentidadeRNA | Fingerprint | Nucleo | 6 | 1 | 0,86 | 6 |
+| MotorEtogramaCartesiano3D | Fingerprint | Nucleo | 5 | 1 | 0,83 | 5 |
+| AnalisadorContextual | Limbic | Nucleo | 7 | 1 | 0,88 | 7 |
+| AnalisadorLexico | Limbic | Nucleo | 6 | 1 | 0,86 | 6 |
+| ConstrutorDeCena | Limbic | Nucleo | 5 | 1 | 0,83 | 5 |
+| PipelineLimbic | Limbic | Nucleo | 10 | 1 | 0,91 | 10 |
+| VerificadorLimbic | Limbic | Nucleo | 14 | 0 | 1,00 | 14 |
+| AdaptadorLimbic | Nucleo | Limbic | 15 | 1 | 0,94 | 15 |
+| MotorFenotipoV2 | Nucleo | Fingerprint | 10 | 1 | 0,91 | 10 |
+| ClassificadorJungV2 | Fingerprint | Nucleo | 4 | 1 | 0,80 | 4 |
+| ClassificadorTermico | Fingerprint | Nucleo | 4 | 1 | 0,80 | 4 |
 | ClassificadorPsicodinamicoAvancado | Fingerprint | Nucleo | 4 | 1 | 0,80 | 4 |
 
 Possible architectural coupling detected based on structural heuristics.
@@ -155,10 +154,10 @@ Manual inspection is recommended.
 | Module | Abstractness (A) | Instability (I) | Distance (D) |
 |--------|------------------|-----------------|--------------|
 | Program.cs | 0,00 | 1,00 | 0,00 |
-| Fingerprint | 0,26 | 0,28 | 0,46 |
-| Infrastructure | 0,07 | 0,64 | 0,28 |
-| Nucleo | 0,07 | 0,11 | 0,82 |
-| Limbic | 0,16 | 0,23 | 0,60 |
+| Fingerprint | 0,26 | 0,31 | 0,43 |
+| Infrastructure | 0,07 | 0,64 | 0,29 |
+| Nucleo | 0,07 | 0,10 | 0,84 |
+| Limbic | 0,16 | 0,27 | 0,57 |
 
 ---
 

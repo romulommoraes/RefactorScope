@@ -9,9 +9,153 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -19,12 +163,21 @@
         <div class="brand-kicker">RefactorScope // Structural Module</div>
         <h1>Structural Dashboard</h1>
         <div class="subtitle">Target Project: <b>RefactorScope</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 11-03-2026 05:40 UTC</div>
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+        <div><b>Generated:</b> 12-03-2026 01:02 UTC</div>
         <div><b>Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
-        <div><b>Total Types:</b> 176</div>
+        <div><b>Total Types:</b> 191</div>
         <div><b>Hygiene:</b> 🟢 Healthy</div>
     </div>
 </div>
@@ -37,15 +190,15 @@
 <div class="grid-kpis structural-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Total Classes</div>
-        <div class="value">176</div>
+        <div class="value">191</div>
         <div class="hint">Total number of structurally classified types</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
-    <div class="label">Namespaces</div>
-    <div class="value">41</div>
-    <div class="hint">Distinct namespaces represented in the scope</div>
-</div>
+        <div class="label">Namespaces</div>
+        <div class="value">42</div>
+        <div class="hint">Distinct namespaces represented in the scope</div>
+    </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Dead Code Candidates</div>
@@ -67,7 +220,7 @@
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Namespace Drift</div>
-        <div class="value">2</div>
+        <div class="value">13</div>
         <div class="hint">Types whose namespace remains incompatible with folder structure</div>
     </div>
 
@@ -85,13 +238,13 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Code Smell Index</div>
-        <div class="value">12,4</div>
+        <div class="value">12,5</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Implicit Coupling</div>
-        <div class="value">44</div>
+        <div class="value">47</div>
         <div class="hint">Types suggesting concentrated dependency flow toward specific modules</div>
     </div>
 
@@ -103,7 +256,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">A / I / D</div>
-        <div class="value" style="font-size:22px;">0,05 / 0,49 / 0,46</div>
+        <div class="value" style="font-size:22px;">0,05 / 0,49 / 0,47</div>
         <div class="hint">Average abstractness, instability and distance from main sequence</div>
     </div>
 </div>
@@ -117,7 +270,7 @@
     <h3>Structural Interpretation</h3>
     <ul class="clean">
         <li>Core isolation detected. Architectural boundaries appear preserved.</li>
-        <li>Namespace hierarchy aligned with project structure.</li>
+        <li>Moderate namespace drift detected. Minor structural inconsistencies present.</li>
         <li>No global namespace usage detected.</li>
         <li>Potential dead or orphaned code detected through structural analysis.</li>
         <li>No SOLID design alerts detected.</li>
@@ -126,9 +279,9 @@
 
     <div style="margin-top:16px;">
         <div class="badge red"><span class="badge-dot"></span> Unresolved: 1</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 2</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 13</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 0</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 44</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 47</div>
     </div>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -155,9 +308,11 @@
 <div id="p5-arch-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const archRadarSketch = (p) => {
-    const data = [27.273, 26.705, 0.568, 1.136, 0, 15.909, 25, 0];
+    const data = [25.131, 24.607, 0.524, 6.806, 0, 14.66, 24.607, 0];
     const labels = ["Dead Code", "Pattern", "Unresolved", "Drift", "Global", "Core", "Coupling", "SOLID"];
+    const rawValues = [48, 47, 1, 13, 0, 28, 47, 0];
     const maxRadius = 110;
+    let hovered = null;
 
     p.setup = () => {
         let canvas = p.createCanvas(460, 360);
@@ -168,28 +323,43 @@ const archRadarSketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hovered = null;
         p.translate(p.width / 2, p.height / 2);
         let pulse = p.sin(p.frameCount * 3) * 5 + 10;
         let numAxes = labels.length;
 
         // Grid
-        p.stroke('#8fa8ff'); p.noFill(); p.strokeWeight(1); p.drawingContext.shadowBlur = 0;
+        p.stroke('#8fa8ff');
+        p.noFill();
+        p.strokeWeight(1);
+        p.drawingContext.shadowBlur = 0;
+
         for (let i = 1; i <= 5; i++) {
             let r = (maxRadius / 5) * i;
             p.beginShape();
-            for (let a = 0; a < 360; a += (360 / numAxes)) p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            for (let a = 0; a < 360; a += (360 / numAxes))
+                p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
             p.endShape(p.CLOSE);
-            if(i < 5) {
-                p.fill('#8fa8ff'); p.noStroke(); p.textSize(9);
+
+            if (i < 5) {
+                p.fill('#8fa8ff');
+                p.noStroke();
+                p.textSize(9);
                 p.text(`${i * 20}%`, 5, -r);
-                p.noFill(); p.stroke('#8fa8ff');
+                p.noFill();
+                p.stroke('#8fa8ff');
             }
         }
-        for (let a = 0; a < 360; a += (360 / numAxes)) p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+
+        for (let a = 0; a < 360; a += (360 / numAxes))
+            p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
 
         // Polígono Neon
-        p.drawingContext.shadowColor = '#ff9a3c'; p.drawingContext.shadowBlur = pulse;
-        p.stroke('#ff9a3c'); p.strokeWeight(2.5); p.fill('rgba(255, 154, 60, 0.2)');
+        p.drawingContext.shadowColor = '#ff9a3c';
+        p.drawingContext.shadowBlur = pulse;
+        p.stroke('#ff9a3c');
+        p.strokeWeight(2.5);
+        p.fill('rgba(255, 154, 60, 0.2)');
         p.beginShape();
         for (let i = 0; i < numAxes; i++) {
             let angle = (i * (360 / numAxes)) - 90;
@@ -198,16 +368,50 @@ const archRadarSketch = (p) => {
         }
         p.endShape(p.CLOSE);
 
+        // Pontos com hover
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            let px = p.cos(angle) * r;
+            let py = p.sin(angle) * r;
+
+            const worldX = (p.width / 2) + px;
+            const worldY = (p.height / 2) + py;
+            const isHover = p.dist(p.mouseX, p.mouseY, worldX, worldY) <= 9;
+
+            if (isHover) {
+                hovered = {
+                    label: labels[i],
+                    normalized: data[i],
+                    raw: rawValues[i],
+                    x: worldX,
+                    y: worldY
+                };
+            }
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = isHover ? 18 : 10;
+            p.fill('#0b1020');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(isHover ? 2.8 : 2.0);
+            p.ellipse(px, py, isHover ? 10 : 8, isHover ? 10 : 8);
+            p.drawingContext.shadowBlur = 0;
+        }
+
         // Scanner Line
         p.drawingContext.shadowBlur = 0;
         let scanAngle = p.frameCount * 2;
-        p.noStroke(); p.fill('rgba(255, 154, 60, 0.15)');
+        p.noStroke();
+        p.fill('rgba(255, 154, 60, 0.15)');
         p.arc(0, 0, maxRadius * 2, maxRadius * 2, scanAngle - 45, scanAngle);
-        p.stroke('#ff9a3c'); p.strokeWeight(1.5);
+        p.stroke('#ff9a3c');
+        p.strokeWeight(1.5);
         p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
 
         // Labels
-        p.fill('#eef4ff'); p.noStroke(); p.textSize(11);
+        p.fill('#eef4ff');
+        p.noStroke();
+        p.textSize(11);
         for (let i = 0; i < numAxes; i++) {
             let angle = (i * (360 / numAxes)) - 90;
             let lx = p.cos(angle) * (maxRadius + 25);
@@ -216,6 +420,36 @@ const archRadarSketch = (p) => {
             if (p.cos(angle) > 0.35) p.textAlign(p.LEFT, p.CENTER);
             else if (p.cos(angle) < -0.35) p.textAlign(p.RIGHT, p.CENTER);
             p.text(labels[i], lx, ly);
+        }
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 170;
+            const boxH = 72;
+            let tx = hovered.x + 16;
+            let ty = hovered.y - 12;
+
+            if (tx + boxW > p.width - 8) tx = hovered.x - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Normalized: ${hovered.normalized.toFixed(1)}%`, tx + 12, ty + 30);
+            p.text(`Raw Signal: ${hovered.raw}`, tx + 12, ty + 46);
         }
     };
 };
@@ -229,7 +463,8 @@ new p5(archRadarSketch);
 <div id="p5-galaxy-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const galaxySketch = (p) => {
-    const points = [{ name: 'Exporters', inst: 0.662, abs: 0, fan: 141, col: '#ff8a3d', hl: true },{ name: 'Analyzers', inst: 0.692, abs: 0.1, fan: 72, col: '#ff8a3d', hl: true },{ name: 'Parsers', inst: 0.627, abs: 0, fan: 42, col: '#ff8a3d', hl: true },{ name: 'Execution', inst: 0.571, abs: 0.25, fan: 20, col: '#ffc15d', hl: true },{ name: 'Core', inst: 0.018, abs: 0.101, fan: 9, col: '#ffb14d', hl: false },{ name: 'CLI', inst: 0.8, abs: 0, fan: 8, col: '#ffb14d', hl: false },{ name: 'Estimation', inst: 0.375, abs: 0, fan: 6, col: '#ffb14d', hl: false },{ name: 'Infrastructure', inst: 0.5, abs: 0, fan: 6, col: '#ffb14d', hl: false },{ name: 'Statistics', inst: 0.667, abs: 0, fan: 4, col: '#ffb14d', hl: false },{ name: 'Debug', inst: 0, abs: 0, fan: 0, col: '#ffb14d', hl: false },];
+    const points = [{ name: 'Exporters', inst: 0.595, abs: 0, fan: 156, dist: 0.405, col: '#ff8a3d', hl: true },{ name: 'Analyzers', inst: 0.686, abs: 0.1, fan: 72, dist: 0.214, col: '#ff8a3d', hl: true },{ name: 'Parsers', inst: 0.627, abs: 0, fan: 42, dist: 0.373, col: '#ff8a3d', hl: true },{ name: 'Execution', inst: 0.571, abs: 0.25, fan: 20, dist: 0.179, col: '#ffc15d', hl: true },{ name: 'CLI', inst: 0.846, abs: 0, fan: 11, dist: 0.154, col: '#ffc15d', hl: false },{ name: 'Core', inst: 0.018, abs: 0.101, fan: 9, dist: 0.881, col: '#ffb14d', hl: false },{ name: 'Estimation', inst: 0.375, abs: 0, fan: 6, dist: 0.625, col: '#ffb14d', hl: false },{ name: 'Infrastructure', inst: 0.5, abs: 0, fan: 6, dist: 0.5, col: '#ffb14d', hl: false },{ name: 'Statistics', inst: 0.667, abs: 0, fan: 4, dist: 0.333, col: '#ffb14d', hl: false },{ name: 'Debug', inst: 0, abs: 0, fan: 0, dist: 1, col: '#ffb14d', hl: false },];
+    let hovered = null;
     
     p.setup = () => {
         let canvas = p.createCanvas(420, 420);
@@ -239,58 +474,118 @@ const galaxySketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hovered = null;
+
         let margin = 40;
         let plotW = p.width - (margin * 2);
         let plotH = p.height - (margin * 2);
 
         // Zone Fills
         p.noStroke();
-        p.fill('rgba(255,140,40,0.020)'); p.rect(margin, margin, plotW, plotH);
-        p.fill('rgba(255,180,90,0.030)'); p.triangle(margin, margin, p.width - margin, p.height - margin, margin, p.height - margin);
-        p.fill('rgba(255,120,40,0.020)'); p.triangle(margin, margin, p.width - margin, margin, p.width - margin, p.height - margin);
+        p.fill('rgba(255,140,40,0.020)');
+        p.rect(margin, margin, plotW, plotH);
+        p.fill('rgba(255,180,90,0.030)');
+        p.triangle(margin, margin, p.width - margin, p.height - margin, margin, p.height - margin);
+        p.fill('rgba(255,120,40,0.020)');
+        p.triangle(margin, margin, p.width - margin, margin, p.width - margin, p.height - margin);
 
         // Grid & Ticks
-        p.stroke('rgba(210,125,48,0.16)'); p.strokeWeight(1);
-        p.fill('rgba(235,214,194,0.52)'); p.noStroke(); p.textSize(9);
+        p.stroke('rgba(210,125,48,0.16)');
+        p.strokeWeight(1);
+        p.fill('rgba(235,214,194,0.52)');
+        p.noStroke();
+        p.textSize(9);
+
         [0, 0.25, 0.5, 0.75, 1].forEach(tick => {
-            let x = margin + plotW * tick; let y = margin + plotH * (1 - tick);
-            p.stroke('rgba(210,125,48,0.16)'); p.line(x, margin, x, p.height - margin); p.line(margin, y, p.width - margin, y);
-            p.noStroke(); p.textAlign(p.CENTER, p.TOP); p.text(tick, x, p.height - margin + 8);
-            p.textAlign(p.RIGHT, p.CENTER); p.text(tick, margin - 6, y);
+            let x = margin + plotW * tick;
+            let y = margin + plotH * (1 - tick);
+            p.stroke('rgba(210,125,48,0.16)');
+            p.line(x, margin, x, p.height - margin);
+            p.line(margin, y, p.width - margin, y);
+            p.noStroke();
+            p.textAlign(p.CENTER, p.TOP);
+            p.text(tick, x, p.height - margin + 8);
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text(tick, margin - 6, y);
         });
 
         // Main Axes
-        p.stroke('rgba(235,150,70,0.38)'); p.strokeWeight(1.5);
+        p.stroke('rgba(235,150,70,0.38)');
+        p.strokeWeight(1.5);
         p.line(margin, p.height - margin, p.width - margin, p.height - margin);
         p.line(margin, p.height - margin, margin, margin);
 
         // Main Sequence
-        p.stroke('rgba(255,190,100,0.40)'); p.drawingContext.setLineDash([5, 5]);
+        p.stroke('rgba(255,190,100,0.40)');
+        p.drawingContext.setLineDash([5, 5]);
         p.line(margin, margin, p.width - margin, p.height - margin);
         p.drawingContext.setLineDash([]);
         
-        p.noStroke(); p.fill('#f2e1d2'); p.textSize(11);
-        p.textAlign(p.RIGHT, p.TOP); p.text("Instability", p.width - margin, p.height - margin + 25);
-        p.textAlign(p.LEFT, p.BOTTOM); p.text("Abstractness", 0, margin - 15);
+        p.noStroke();
+        p.fill('#f2e1d2');
+        p.textSize(11);
+        p.textAlign(p.RIGHT, p.TOP);
+        p.text("Instability", p.width - margin, p.height - margin + 25);
+        p.textAlign(p.LEFT, p.BOTTOM);
+        p.text("Abstractness", 0, margin - 15);
 
         // Bubbles
         points.forEach(pt => {
             let x = margin + plotW * pt.inst;
             let y = (p.height - margin) - (plotH * pt.abs);
             let baseSize = 5 + Math.min(12, pt.fan / 2.8);
-            // Efeito pulsante de "estrela"
             let size = baseSize + p.sin(p.frameCount * 0.05 + pt.fan) * 2;
 
-            p.drawingContext.shadowColor = pt.col; p.drawingContext.shadowBlur = 12;
-            p.fill(pt.col); p.stroke('#fff0d6'); p.strokeWeight(1.5);
+            const isHover = p.dist(p.mouseX, p.mouseY, x, y) <= size + 4;
+            if (isHover) hovered = { ...pt, x, y, size };
+
+            p.drawingContext.shadowColor = pt.col;
+            p.drawingContext.shadowBlur = isHover ? 20 : 12;
+            p.fill(pt.col);
+            p.stroke('#fff0d6');
+            p.strokeWeight(isHover ? 2.2 : 1.5);
             p.ellipse(x, y, size * 2);
 
             p.drawingContext.shadowBlur = 0;
-            if(pt.hl) {
-                p.fill('#f4e6d8'); p.noStroke(); p.textSize(10); p.textAlign(p.LEFT, p.BOTTOM);
+
+            if (pt.hl) {
+                p.fill('#f4e6d8');
+                p.noStroke();
+                p.textSize(10);
+                p.textAlign(p.LEFT, p.BOTTOM);
                 p.text(pt.name, x + size + 4, y - size - 2);
             }
         });
+
+        if (hovered) {
+            const boxW = 185;
+            const boxH = 88;
+            let tx = hovered.x + 16;
+            let ty = hovered.y - 12;
+
+            if (tx + boxW > p.width - 8) tx = hovered.x - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.col;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.col);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.name, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Abstractness: ${hovered.abs.toFixed(2)}`, tx + 12, ty + 30);
+            p.text(`Instability: ${hovered.inst.toFixed(2)}`, tx + 12, ty + 44);
+            p.text(`Distance: ${hovered.dist.toFixed(2)}`, tx + 12, ty + 58);
+            p.text(`Fan-Out: ${hovered.fan}`, tx + 12, ty + 72);
+        }
     };
 };
 new p5(galaxySketch);
@@ -300,7 +595,7 @@ new p5(galaxySketch);
 <div style='flex:1; min-width:280px;'>
 <ul class='clean'>
 <li>Core isolation detected. Architectural boundaries appear preserved.</li>
-<li>Namespace hierarchy aligned with project structure.</li>
+<li>Moderate namespace drift detected. Minor structural inconsistencies present.</li>
 <li>No global namespace usage detected.</li>
 <li>Potential dead or orphaned code detected through structural analysis.</li>
 <li>No SOLID design alerts detected.</li>
@@ -596,15 +891,15 @@ new p5(galaxySketch);
     <td>Review Required</td>
 </tr>
 <tr class='row-warning'>
-    <td>SelfAnalysisSelector.cs</td>
-    <td>RefactorScope\CLI</td>
+    <td>SolidAnalyzer.cs</td>
+    <td>RefactorScope\Analyzers\Solid</td>
     <td>0</td>
     <td>Unreferenced</td>
     <td>Review Required</td>
 </tr>
 <tr class='row-warning'>
-    <td>SolidAnalyzer.cs</td>
-    <td>RefactorScope\Analyzers\Solid</td>
+    <td>StartupExecutionPlanSelector.cs</td>
+    <td>RefactorScope\CLI</td>
     <td>0</td>
     <td>Unreferenced</td>
     <td>Review Required</td>
@@ -689,7 +984,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ArchitecturalClassificationResult.cs</td>
     <td>RefactorScope\Core\Results</td>
-    <td>19</td>
+    <td>20</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -724,7 +1019,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ConsolidatedReport.cs</td>
     <td>RefactorScope\Core\Results</td>
-    <td>46</td>
+    <td>48</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -759,7 +1054,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>CouplingResult.cs</td>
     <td>RefactorScope\Core\Results</td>
-    <td>17</td>
+    <td>18</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -808,7 +1103,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>EntryPointHeuristicResult.cs</td>
     <td>RefactorScope\Core\Results</td>
-    <td>7</td>
+    <td>8</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -885,7 +1180,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ImplicitCouplingResult.cs</td>
     <td>RefactorScope\Core\Results</td>
-    <td>9</td>
+    <td>10</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -948,14 +1243,14 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ParserArenaProjectResult.cs</td>
     <td>RefactorScope\Core\Parsing\Arena</td>
-    <td>3</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ParserArenaRunResult.cs</td>
     <td>RefactorScope\Core\Parsing\Arena</td>
-    <td>4</td>
+    <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -983,7 +1278,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ProjectStructureResult.cs</td>
     <td>RefactorScope\Core\Results</td>
-    <td>4</td>
+    <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1032,7 +1327,7 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>SolidResult.cs</td>
     <td>RefactorScope\Analyzers\Solid</td>
-    <td>7</td>
+    <td>8</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1129,7 +1424,21 @@ new p5(galaxySketch);
 </tr>
 <tr >
     <td>ArchitecturalStructureRendererP5.cs</td>
-    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ArchitectureVisualizationDecision.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ArchitectureVisualizationResolver.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1193,14 +1502,14 @@ new p5(galaxySketch);
 <tr >
     <td>DashboardAssetCopier.cs</td>
     <td>RefactorScope\Exporters\Styling</td>
-    <td>5</td>
+    <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>DashboardHtmlShell.cs</td>
     <td>RefactorScope\Exporters\Styling</td>
-    <td>5</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1214,7 +1523,7 @@ new p5(galaxySketch);
 <tr >
     <td>DashboardThemeSelector.cs</td>
     <td>RefactorScope\Exporters\Styling</td>
-    <td>8</td>
+    <td>9</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1401,6 +1710,55 @@ new p5(galaxySketch);
     <td>N/A</td>
 </tr>
 <tr >
+    <td>ModuleRouteEdge.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ModuleRouteMapBuilder.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ModuleRouteMapModel.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ModuleRouteMapRenderer.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ModuleRouteNode.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ParserArenaControlChartsRendererP5.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ParserArenaDashboardExporter.cs</td>
+    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
     <td>ParsingControlChartsRendererP5.cs</td>
     <td>RefactorScope\Exporters\Dashboards\Renderers</td>
     <td>1</td>
@@ -1506,6 +1864,34 @@ new p5(galaxySketch);
     <td>N/A</td>
 </tr>
 <tr >
+    <td>SimpleStructureMapBuilder.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>SimpleStructureMapModel.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>SimpleStructureMapRenderer.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>SimpleStructureMapModel.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
     <td>SizePressureModel.cs</td>
     <td>RefactorScope\Estimation\Scoring</td>
     <td>2</td>
@@ -1513,8 +1899,22 @@ new p5(galaxySketch);
     <td>N/A</td>
 </tr>
 <tr >
-    <td>StartupModeSelection.cs</td>
+    <td>StartupExecutionPlan.cs</td>
     <td>RefactorScope\CLI</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ParserArenaDashboardExporter.cs</td>
+    <td>RefactorScope\Exporters\Dashboards</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ParserArenaControlChartsRendererP5.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers</td>
     <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
@@ -1599,6 +1999,72 @@ new p5(galaxySketch);
     <td>RefactorScope\Exporters\Dashboards\Renderers</td>
     <td>RefactorScope.Exporters.Dashboards</td>
     <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+</tr>
+<tr class="row-warning">
+    <td>ArchitectureVisualizationDecision.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>ArchitectureVisualizationResolver.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>ModuleRouteEdge.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>ModuleRouteMapBuilder.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>ModuleRouteMapModel.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>ModuleRouteMapRenderer.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>ModuleRouteNode.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>SimpleStructureMapBuilder.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>SimpleStructureMapModel.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>SimpleStructureMapRenderer.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
+</tr>
+<tr class="row-warning">
+    <td>SimpleStructureMapModel.cs</td>
+    <td>RefactorScope\Exporters\Dashboards\Routemap</td>
+    <td>RefactorScope.Exporters.Dashboards.RouteMap</td>
+    <td>RefactorScope.Exporters.Dashboards.Routemap</td>
 </tr>
             </tbody>
         </table>
@@ -1690,10 +2156,10 @@ new p5(galaxySketch);
     <td>ParserArenaCliRunner</td>
     <td>CLI</td>
     <td>Core</td>
-    <td>9</td>
+    <td>12</td>
     <td>0</td>
     <td>1,00</td>
-    <td>9</td>
+    <td>12</td>
 </tr>
 <tr>
     <td>EffortEstimator</td>
@@ -1798,19 +2264,10 @@ new p5(galaxySketch);
     <td>ArchitecturalDashboardExporter</td>
     <td>Exporters</td>
     <td>Core</td>
-    <td>11</td>
+    <td>18</td>
     <td>1</td>
-    <td>0,92</td>
-    <td>11</td>
-</tr>
-<tr>
-    <td>ArchitecturalStructureRendererP5</td>
-    <td>Exporters</td>
-    <td>Core</td>
-    <td>7</td>
-    <td>1</td>
-    <td>0,88</td>
-    <td>7</td>
+    <td>0,95</td>
+    <td>18</td>
 </tr>
 <tr>
     <td>HubDashboardMetrics</td>
@@ -1847,6 +2304,15 @@ new p5(galaxySketch);
     <td>0</td>
     <td>1,00</td>
     <td>8</td>
+</tr>
+<tr>
+    <td>StrategyAggregateMetric</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>5</td>
+    <td>1</td>
+    <td>0,83</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>ParsingDashboardExporter</td>
@@ -1984,6 +2450,15 @@ new p5(galaxySketch);
     <td>6</td>
 </tr>
 <tr>
+    <td>ArchitecturalStructureRendererP5</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>7</td>
+    <td>1</td>
+    <td>0,88</td>
+    <td>7</td>
+</tr>
+<tr>
     <td>ChartsRendererP5</td>
     <td>Exporters</td>
     <td>Core</td>
@@ -1991,6 +2466,24 @@ new p5(galaxySketch);
     <td>1</td>
     <td>0,83</td>
     <td>5</td>
+</tr>
+<tr>
+    <td>ArchitectureVisualizationResolver</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>5</td>
+    <td>1</td>
+    <td>0,83</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapBuilder</td>
+    <td>Exporters</td>
+    <td>Core</td>
+    <td>9</td>
+    <td>2</td>
+    <td>0,82</td>
+    <td>9</td>
 </tr>
 <tr>
     <td>HybridAdaptiveParser</td>
@@ -2162,6 +2655,55 @@ function sortTable(n) {
 }
 </script>
 <div class='footer'>Generated by RefactorScope Structural Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

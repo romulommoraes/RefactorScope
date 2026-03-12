@@ -9,9 +9,153 @@
 <link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
 <link rel='stylesheet' href='assets/css/dashboard-base.css' />
 <link rel='stylesheet' href='assets/css/dashboard-components.css' />
-<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
 </head>
 <body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
 <div class='wrapper'>
 
 <div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -19,10 +163,15 @@
         <div class="brand-kicker">RefactorScope // Structural Module</div>
         <h1>Structural Dashboard</h1>
         <div class="subtitle">Target Project: <b>Scriptome</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
     </div>
 
     <div class="run-meta">
-        <div><b>Generated:</b> 11-03-2026 06:18 UTC</div>
+        <div><b>Generated:</b> 11-03-2026 22:38 UTC</div>
         <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
         <div><b>Total Types:</b> 161</div>
         <div><b>Hygiene:</b> 🟢 Healthy</div>
@@ -49,19 +198,19 @@
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Dead Code Candidates</div>
-        <div class="value">28</div>
+        <div class="value">30</div>
         <div class="hint">Possible dead code types</div>
     </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Pattern Similarity</div>
-        <div class="value">11</div>
+        <div class="value">12</div>
         <div class="hint">Candidates compatible with known architectural patterns</div>
     </div>
 
     <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
         <div class="label">Unresolved</div>
-        <div class="value">17</div>
+        <div class="value">18</div>
         <div class="hint">Candidates who could not be refuted as dead code</div>
     </div>
 
@@ -85,25 +234,25 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Code Smell Index</div>
-        <div class="value">12,7</div>
+        <div class="value">13,2</div>
         <div class="hint">Composite structural hygiene score. Lower is better</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Implicit Coupling</div>
-        <div class="value">17</div>
+        <div class="value">16</div>
         <div class="hint">Types suggesting concentrated dependency flow toward specific modules</div>
     </div>
 
     <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">SOLID Alerts</div>
-        <div class="value">2</div>
+        <div class="value">1</div>
         <div class="hint">Heuristic object-oriented design signals that deserve review</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">A / I / D</div>
-        <div class="value" style="font-size:22px;">0,11 / 0,45 / 0,43</div>
+        <div class="value" style="font-size:22px;">0,11 / 0,46 / 0,42</div>
         <div class="hint">Average abstractness, instability and distance from main sequence</div>
     </div>
 </div>
@@ -121,14 +270,14 @@
         <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
         <li>Potential dead or orphaned code detected through structural analysis.</li>
         <li>Minor SOLID design alerts detected.</li>
-        <li>Significant implicit coupling detected. Hidden dependencies may reduce modularity.</li>
+        <li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge red"><span class="badge-dot"></span> Unresolved: 17</div>
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 18</div>
         <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 35</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 2</div>
-        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 17</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 1</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 16</div>
     </div>
 </div>
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
@@ -155,7 +304,7 @@
 <div id="p5-arch-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const archRadarSketch = (p) => {
-    const data = [17.391, 6.832, 10.559, 21.739, 3.727, 5.59, 10.559, 6.211];
+    const data = [18.634, 7.453, 11.18, 21.739, 3.727, 5.59, 9.938, 3.106];
     const labels = ["Dead Code", "Pattern", "Unresolved", "Drift", "Global", "Core", "Coupling", "SOLID"];
     const maxRadius = 110;
 
@@ -229,7 +378,7 @@ new p5(archRadarSketch);
 <div id="p5-galaxy-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const galaxySketch = (p) => {
-    const points = [{ name: 'Infrastructure', inst: 0.642, abs: 0.074, fan: 95, col: '#ff8a3d', hl: true },{ name: 'Fingerprint', inst: 0.28, abs: 0.26, fan: 56, col: '#ff8a3d', hl: true },{ name: 'Limbic', inst: 0.234, abs: 0.162, fan: 36, col: '#ff8a3d', hl: true },{ name: 'Nucleo', inst: 0.111, abs: 0.065, fan: 34, col: '#ff8a3d', hl: true },{ name: 'Program.cs', inst: 1, abs: 0, fan: 16, col: '#ffc15d', hl: false },];
+    const points = [{ name: 'Infrastructure', inst: 0.637, abs: 0.074, fan: 58, col: '#ff8a3d', hl: true },{ name: 'Fingerprint', inst: 0.315, abs: 0.26, fan: 45, col: '#ff8a3d', hl: true },{ name: 'Limbic', inst: 0.269, abs: 0.162, fan: 29, col: '#ff8a3d', hl: true },{ name: 'Nucleo', inst: 0.096, abs: 0.065, fan: 22, col: '#ff8a3d', hl: true },{ name: 'Program.cs', inst: 1, abs: 0, fan: 7, col: '#ffb14d', hl: false },];
     
     p.setup = () => {
         let canvas = p.createCanvas(420, 420);
@@ -304,7 +453,7 @@ new p5(galaxySketch);
 <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
 <li>Potential dead or orphaned code detected through structural analysis.</li>
 <li>Minor SOLID design alerts detected.</li>
-<li>Significant implicit coupling detected. Hidden dependencies may reduce modularity.</li>
+<li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
 </ul>
 </div>
 </div>
@@ -455,6 +604,13 @@ new p5(galaxySketch);
     <td>Unreferenced</td>
     <td>Review Required</td>
 </tr>
+<tr class='row-alert'>
+    <td>ScriptomeVisualizer.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
 <tr class='row-warning'>
     <td>AbaEstrutura.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
@@ -532,87 +688,94 @@ new p5(galaxySketch);
     <td>Unreferenced</td>
     <td>Review Required</td>
 </tr>
+<tr class='row-warning'>
+    <td>VerificadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
 <tr class='row-core'>
     <td>Elementos.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>11</td>
+    <td>9</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>AdaptadorBasico.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>AdaptadorBeats.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>AdaptadorDinamica.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>AdaptadorDuracao.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>AdaptadorInteracao.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>AdaptadorLimbic.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>BaseImutavel.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>8</td>
+    <td>5</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>Cena.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>7</td>
+    <td>5</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ConversorFenotipo.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>Elementos.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>17</td>
+    <td>13</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>Elementos.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>5</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -626,70 +789,70 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>EspecialistaBeats.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EspecialistaDuracao.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EspecialistaInteracao.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EspecialistaVocabulario.cs</td>
     <td>Scriptome\Nucleo\Especialistas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EstatisticasCena.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>7</td>
+    <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>EstatisticasRoteiro.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>29</td>
+    <td>28</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>Etograma.cs</td>
     <td>Scriptome\Fingerprint\Modelos</td>
-    <td>32</td>
+    <td>18</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ExtratorEtogramaAdapter.cs</td>
     <td>Scriptome\Nucleo\Adaptadores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>GeneDiscursivo.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>8</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>IModuloAnalise.cs</td>
     <td>Scriptome\Nucleo\Interfaces</td>
-    <td>12</td>
+    <td>10</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -710,49 +873,49 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>LeitorFountain.cs</td>
     <td>Scriptome\Nucleo\Leitores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>MotorDeTranscricao.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>7</td>
+    <td>5</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>MotorFenotipoV2.cs</td>
     <td>Scriptome\Nucleo\Motores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>MotorSplicing.cs</td>
     <td>Scriptome\Nucleo\Motores</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>MotorVetorial_V2.cs</td>
     <td>Scriptome\Fingerprint\MotoresEtograma</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>OrquestradorNucleo.cs</td>
     <td>Scriptome\Nucleo</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>PerfilPersonagem.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>42</td>
+    <td>35</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -766,28 +929,28 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ResultadoDeriva.cs</td>
     <td>Scriptome\Limbic\Modelos</td>
-    <td>9</td>
+    <td>8</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ResultadoDinamica.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ResultadoInteracao.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ResultadoJung.cs</td>
     <td>Scriptome\Fingerprint\Modelos</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -801,49 +964,49 @@ new p5(galaxySketch);
 <tr class='row-core'>
     <td>ResultadoSplice.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>RnaBruto.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>29</td>
+    <td>20</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>RnaLimbic.cs</td>
     <td>Scriptome\Nucleo\Modelos\Genoma</td>
-    <td>5</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>Roteiro.cs</td>
     <td>Scriptome\Nucleo\Modelos\Script</td>
-    <td>17</td>
+    <td>16</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>ResultadoAnalise.cs</td>
     <td>Scriptome\Nucleo\Modelos\Analise</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>TermoLexical.cs</td>
     <td>Scriptome\Limbic\Modelos</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr class='row-core'>
     <td>TokenPontuado.cs</td>
     <td>Scriptome\Limbic\Modelos</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -864,154 +1027,154 @@ new p5(galaxySketch);
 <tr >
     <td>AbaAnaliseDeCenas.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaBeatSheet.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaDashboard.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaElenco.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaMatrizSocial.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AbaTaxonomia.cs</td>
     <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ContextoLimbic.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>4</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AnalisadorContextual.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>AnalisadorLexico.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>BancoDeDadosLexico.cs</td>
     <td>Scriptome\Limbic\Dados</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>BibliotecaArquetipos.cs</td>
     <td>Scriptome\Fingerprint\Dados</td>
-    <td>5</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>BibliotecaCentroidesEtograma.cs</td>
     <td>Scriptome\Fingerprint\Modelos</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ZumbiScanner.cs</td>
     <td>Scriptome\Infrastructure</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorEnergia_V2.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Energia</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorEtogramaCartesiano.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Cartesianos</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorIntensidade.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Energia</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorJung.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Arquetipos</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorJungV2.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Arquetipos</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorLacanianoV2.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Psique</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorMBTIV2.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Psique</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorNarrativaUnificado.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorPsicodinamico.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Psique</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1025,28 +1188,28 @@ new p5(galaxySketch);
 <tr >
     <td>ClassificadorScriptome.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ClassificadorTermico.cs</td>
     <td>Scriptome\Fingerprint\Classificadores\Energia</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>MotorTaxonomia.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ComparacaoJung.cs</td>
     <td>Scriptome\Infrastructure\Validador</td>
-    <td>7</td>
+    <td>4</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1067,63 +1230,63 @@ new p5(galaxySketch);
 <tr >
     <td>ConstrutorDeCena.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ContextoLimbic.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>8</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>EstatisticaForense.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ExportadorBaselineElencoLegacyJson.cs</td>
     <td>Scriptome\Infrastructure\Baseline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ExportadorBaselineEtograma.cs</td>
     <td>Scriptome\Infrastructure\Baseline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ExportadorExcelModular.cs</td>
     <td>Scriptome\Infrastructure\Exportacao</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ExtratorEtogramaDeriva6.cs</td>
     <td>Scriptome\Fingerprint\MotoresEtograma</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>HeuristicaContextual.cs</td>
     <td>Scriptome\Limbic\Algoritimos</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>IAbaExcel.cs</td>
     <td>Scriptome\Infrastructure\Interfaces</td>
-    <td>9</td>
+    <td>8</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1144,14 +1307,14 @@ new p5(galaxySketch);
 <tr >
     <td>IClassificadorEtogramaV2.cs</td>
     <td>Scriptome\Fingerprint\Interfaces</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>IClassificadorIndividual.cs</td>
     <td>Scriptome\Fingerprint\Interfaces</td>
-    <td>13</td>
+    <td>11</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1256,14 +1419,14 @@ new p5(galaxySketch);
 <tr >
     <td>ContextoLimbic.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>4</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>BibliotecaArquetipos.cs</td>
     <td>Scriptome\Fingerprint\Dados</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1284,7 +1447,7 @@ new p5(galaxySketch);
 <tr >
     <td>LematizadorHibrido.cs</td>
     <td>Scriptome\Limbic\Linguistica</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1298,28 +1461,28 @@ new p5(galaxySketch);
 <tr >
     <td>MotorDeFusao.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>MotorDeIdentidade.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>MotorDeriva6.cs</td>
     <td>Scriptome\Limbic\Algoritimos</td>
-    <td>4</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>MotorEtogramaCartesiano3D.cs</td>
     <td>Scriptome\Fingerprint\MotoresEtograma</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1333,28 +1496,28 @@ new p5(galaxySketch);
 <tr >
     <td>MotorDeIdentidadeRNA.cs</td>
     <td>Scriptome\Fingerprint\Motores</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>MotorLimbic.cs</td>
     <td>Scriptome\Limbic\Motor</td>
-    <td>8</td>
+    <td>6</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>MotorTaxonomia.cs</td>
     <td>Scriptome\Fingerprint</td>
-    <td>3</td>
+    <td>2</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ParametrosVader.cs</td>
     <td>Scriptome\Limbic\Dados</td>
-    <td>10</td>
+    <td>5</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1368,21 +1531,21 @@ new p5(galaxySketch);
 <tr >
     <td>PerfilPersonagemConsolidado.cs</td>
     <td>Scriptome\Nucleo\Modelos\Fenotipo</td>
-    <td>12</td>
+    <td>7</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>PipelineLimbic.cs</td>
     <td>Scriptome\Limbic\Pipeline</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ProcessadorLinguistico.cs</td>
     <td>Scriptome\Limbic\Linguistica</td>
-    <td>6</td>
+    <td>3</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1396,26 +1559,19 @@ new p5(galaxySketch);
 <tr >
     <td>RaizComposicao.cs</td>
     <td>Scriptome\Infrastructure</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>RepositorioLexicoUnificado.cs</td>
     <td>Scriptome\Limbic\Dados</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ScriptomeJsonExporter.cs</td>
-    <td>Scriptome\Infrastructure</td>
-    <td>2</td>
-    <td>Referenced</td>
-    <td>N/A</td>
-</tr>
-<tr >
-    <td>ScriptomeVisualizer.cs</td>
     <td>Scriptome\Infrastructure</td>
     <td>1</td>
     <td>Referenced</td>
@@ -1424,7 +1580,7 @@ new p5(galaxySketch);
 <tr >
     <td>DefinicoesLingusticas.cs</td>
     <td>Scriptome\Limbic\Linguistica</td>
-    <td>16</td>
+    <td>8</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1438,28 +1594,21 @@ new p5(galaxySketch);
 <tr >
     <td>VerificadorLimbicCompleto.cs</td>
     <td>Scriptome\Limbic\Testes</td>
-    <td>2</td>
-    <td>Referenced</td>
-    <td>N/A</td>
-</tr>
-<tr >
-    <td>VerificadorLimbic.cs</td>
-    <td>Scriptome\Limbic\Testes</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>VisualizadorEtograma.cs</td>
     <td>Scriptome\Infrastructure\Exportacao</td>
-    <td>2</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
 <tr >
     <td>ZumbiScanner.cs</td>
     <td>Scriptome\Infrastructure</td>
-    <td>3</td>
+    <td>1</td>
     <td>Referenced</td>
     <td>N/A</td>
 </tr>
@@ -1714,28 +1863,28 @@ new p5(galaxySketch);
     <td>Program</td>
     <td>Program.cs</td>
     <td>Infrastructure</td>
-    <td>16</td>
+    <td>7</td>
     <td>0</td>
     <td>1,00</td>
-    <td>16</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>MotorDeIdentidade</td>
     <td>Fingerprint</td>
     <td>Nucleo</td>
-    <td>8</td>
-    <td>2</td>
+    <td>4</td>
+    <td>1</td>
     <td>0,80</td>
-    <td>8</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>OrquestradorNucleo</td>
     <td>Nucleo</td>
     <td>Fingerprint</td>
-    <td>11</td>
-    <td>2</td>
-    <td>0,85</td>
-    <td>11</td>
+    <td>6</td>
+    <td>1</td>
+    <td>0,86</td>
+    <td>6</td>
 </tr>
 <tr>
     <td>ModuloEtogramaV2</td>
@@ -1751,30 +1900,12 @@ new p5(galaxySketch);
     <td>Fingerprint</td>
     <td>Nucleo</td>
     <td>6</td>
-    <td>2</td>
-    <td>0,75</td>
+    <td>1</td>
+    <td>0,86</td>
     <td>6</td>
 </tr>
 <tr>
     <td>MotorEtogramaCartesiano3D</td>
-    <td>Fingerprint</td>
-    <td>Nucleo</td>
-    <td>7</td>
-    <td>2</td>
-    <td>0,78</td>
-    <td>7</td>
-</tr>
-<tr>
-    <td>MotorEtogramaHeuristico</td>
-    <td>Fingerprint</td>
-    <td>Nucleo</td>
-    <td>6</td>
-    <td>0</td>
-    <td>1,00</td>
-    <td>6</td>
-</tr>
-<tr>
-    <td>MotorEtogramaV2</td>
     <td>Fingerprint</td>
     <td>Nucleo</td>
     <td>5</td>
@@ -1786,73 +1917,82 @@ new p5(galaxySketch);
     <td>AnalisadorContextual</td>
     <td>Limbic</td>
     <td>Nucleo</td>
-    <td>10</td>
-    <td>2</td>
-    <td>0,83</td>
-    <td>10</td>
+    <td>7</td>
+    <td>1</td>
+    <td>0,88</td>
+    <td>7</td>
 </tr>
 <tr>
     <td>AnalisadorLexico</td>
     <td>Limbic</td>
     <td>Nucleo</td>
-    <td>8</td>
-    <td>2</td>
-    <td>0,80</td>
-    <td>8</td>
+    <td>6</td>
+    <td>1</td>
+    <td>0,86</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>ConstrutorDeCena</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>5</td>
+    <td>1</td>
+    <td>0,83</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>PipelineLimbic</td>
     <td>Limbic</td>
     <td>Nucleo</td>
-    <td>13</td>
-    <td>2</td>
-    <td>0,87</td>
-    <td>13</td>
+    <td>10</td>
+    <td>1</td>
+    <td>0,91</td>
+    <td>10</td>
 </tr>
 <tr>
     <td>VerificadorLimbic</td>
     <td>Limbic</td>
     <td>Nucleo</td>
-    <td>23</td>
-    <td>2</td>
-    <td>0,92</td>
-    <td>23</td>
+    <td>14</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>14</td>
 </tr>
 <tr>
     <td>AdaptadorLimbic</td>
     <td>Nucleo</td>
     <td>Limbic</td>
-    <td>23</td>
-    <td>2</td>
-    <td>0,92</td>
-    <td>23</td>
+    <td>15</td>
+    <td>1</td>
+    <td>0,94</td>
+    <td>15</td>
 </tr>
 <tr>
     <td>MotorFenotipoV2</td>
     <td>Nucleo</td>
     <td>Fingerprint</td>
-    <td>16</td>
-    <td>2</td>
-    <td>0,89</td>
-    <td>16</td>
+    <td>10</td>
+    <td>1</td>
+    <td>0,91</td>
+    <td>10</td>
 </tr>
 <tr>
     <td>ClassificadorJungV2</td>
     <td>Fingerprint</td>
     <td>Nucleo</td>
-    <td>6</td>
-    <td>2</td>
-    <td>0,75</td>
-    <td>6</td>
+    <td>4</td>
+    <td>1</td>
+    <td>0,80</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorTermico</td>
     <td>Fingerprint</td>
     <td>Nucleo</td>
-    <td>7</td>
-    <td>2</td>
-    <td>0,78</td>
-    <td>7</td>
+    <td>4</td>
+    <td>1</td>
+    <td>0,80</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorPsicodinamicoAvancado</td>
@@ -1890,12 +2030,6 @@ new p5(galaxySketch);
                 </tr>
             </thead>
             <tbody>
-<tr>
-    <td>SRP</td>
-    <td>Program</td>
-    <td>Program.cs</td>
-    <td>FanOut &gt; 15</td>
-</tr>
 <tr>
     <td>SRP</td>
     <td>RaizComposicao</td>
@@ -2038,6 +2172,55 @@ function sortTable(n) {
 }
 </script>
 <div class='footer'>Generated by RefactorScope Structural Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
 </div>
 </body>
 </html>

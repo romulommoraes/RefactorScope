@@ -7,8 +7,6 @@ using RefactorScope.Core.Configuration;
 using RefactorScope.Core.Context;
 using RefactorScope.Core.Results;
 using RefactorScope.Core.Reporting;
-using RefactorScope.Core.Parsing;
-
 using RefactorScope.Exporters.Dashboards;
 using RefactorScope.Exporters.Reports;
 using RefactorScope.Exporters.Styling;
@@ -22,40 +20,28 @@ namespace RefactorScope.Exporters.Adapters
     /// --------
     /// Integrar os artefatos arquiteturais ao pipeline padronizado de IExporter
     /// mantendo compatibilidade com o novo shell visual compartilhado da suíte HTML.
-    ///
-    /// Estratégia atual
-    /// ----------------
-    /// Este adapter publica três artefatos complementares:
-    ///
-    /// 1. Relatorio_Arquitetural.md
-    ///    - leitura textual arquitetural legada
-    ///    - exportação documental portátil
-    ///    - útil fora do navegador
-    ///
-    /// 2. Relatorio_Executivo.md
-    ///    - leitura executiva consolidada
-    ///    - baseada em ReportSnapshot
-    ///    - preparada para convergir com batch / analytics
-    ///
-    /// 3. ArchitecturalDashboard.html
-    ///    - visão executiva visual
-    ///    - compatível com tema compartilhado
-    ///    - integrado ao hub HTML
-    ///
-    /// Observação
-    /// ----------
-    /// Este adapter não duplica regra de negócio.
-    /// Ele apenas orquestra os exporters arquiteturais
-    /// e garante a infraestrutura visual necessária.
     /// </summary>
     public sealed class ArchitecturalDashboardExporterAdapter : IExporter
     {
         public string Name => "architectural-dashboard";
 
         public void Export(
-     AnalysisContext context,
-     ConsolidatedReport report,
-     string outputPath)
+            AnalysisContext context,
+            ConsolidatedReport report,
+            string outputPath)
+        {
+            ExportDirect(
+                context,
+                report,
+                parsingResult: null,
+                outputPath);
+        }
+
+        public static void ExportDirect(
+            AnalysisContext context,
+            ConsolidatedReport report,
+            IParserResult? parsingResult,
+            string outputPath)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
@@ -83,14 +69,9 @@ namespace RefactorScope.Exporters.Adapters
             legacyMarkdownExporter.Export(report, legacyMarkdownPath);
 
             // --------------------------------------------
-            // 2. Novo relatório executivo
+            // 2. Relatório executivo com telemetria do parser
             // --------------------------------------------
-            // Neste estágio, o ReportSnapshot deve ser a fonte canônica do relatório executivo.
-            // Como o ParserResult não faz parte do contrato padrão de Results do AnalysisContext,
-            // evitamos acoplamento frágil aqui e construímos o snapshot a partir do ConsolidatedReport.
-            // Quando a telemetria do parser estiver formalmente disponível no pipeline,
-            // este ponto pode ser enriquecido sem alterar o exporter.
-            var snapshot = ReportSnapshotBuilder.Build(report, null);
+            var snapshot = ReportSnapshotBuilder.Build(report, parsingResult);
 
             var executiveMarkdownExporter = new ExecutiveMarkdownReportExporter();
             executiveMarkdownExporter.Export(snapshot, executiveMarkdownPath);
@@ -100,16 +81,6 @@ namespace RefactorScope.Exporters.Adapters
             // --------------------------------------------
             var htmlExporter = new ArchitecturalDashboardExporter();
             htmlExporter.Export(report, htmlPath, themeFileName);
-        }
-
-        private static ParserResult? TryGetParserResult(AnalysisContext context)
-        {
-            if (context?.Results == null)
-                return null;
-
-            return context.Results
-                .OfType<ParserResult>()
-                .FirstOrDefault();
         }
 
         private static string ResolveThemeFileName(AnalysisContext context)
@@ -427,6 +398,7 @@ using RefactorScope.Core.Model;
 using RefactorScope.Core.Results;
 using RefactorScope.Exporters.Styling;
 using System.Text;
+using RefactorScope.Exporters.Dashboards.Renderers;
 
 namespace RefactorScope.Exporters.Dashboards
 {
@@ -675,836 +647,6 @@ namespace RefactorScope.Exporters.Dashboards
                 .Replace(">", "&gt;")
                 .Replace("\"", "&quot;")
                 .Replace("'", "&#39;");
-        }
-    }
-}
-
-
-==========================================
-ARQUIVO: ArchitecturalStructureRendererP5.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ArchitecturalStructureRendererP5.cs
-==========================================
-using RefactorScope.Core.Results;
-using System.Text;
-
-namespace RefactorScope.Exporters.Dashboards
-{
-    public sealed class ArchitecturalStructureRendererP5
-    {
-        public string RenderRadialTree(ProjectStructureResult? structure, string fallbackRootName = "Project")
-        {
-            var resolvedRootName = ResolveRootNameFromStructure(structure, fallbackRootName);
-            var folderPaths = BuildFolderPaths(structure, resolvedRootName);
-
-            var sb = new StringBuilder();
-
-            var jsArray = string.Join(",\n  ",
-                folderPaths.Select(p => $"\"{p.Replace("\\", "/").Replace("\"", "\\\"")}\""));
-
-            sb.AppendLine("""
-<div class="chart-container"
-     style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 12px 12px 12px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:980px;"
-     augmented-ui="tl-clip tr-clip bl-clip br-clip border">
-""");
-
-            sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;font-size:18px;">Architectural Structure</h3>""");
-            sb.AppendLine($"""<div class="chart-note" style="margin:0 0 10px 0;font-size:13px;color:#9fb3c8;text-align:center;">Root: <b>{Html(resolvedRootName)}</b> // domains and hierarchical layout.</div>""");
-            sb.AppendLine("""<style>#p5-radial-tree-container canvas { width: 100% !important; max-width: 1400px; height: auto !important; display:block; }</style>""");
-            sb.AppendLine("""<div id="p5-radial-tree-container" style="width:100%; display:flex; justify-content:center; align-items:center; flex:1;"></div>""");
-
-            sb.AppendLine($$"""
-<script>
-const radialTreeSketch = (p) => {
-  let folderPaths = [
-  {{jsArray}}
-  ];
-
-  const BG = "#050814";
-  const LABEL_STROKE = "rgba(0,0,0,0.92)";
-
-  const DOMAIN_COLORS = [
-    "#00f0ff", "#ff9a3c", "#39ff14", "#6c63ff",
-    "#ff003c", "#ffea00", "#d100ff", "#00aeff"
-  ];
-
-  let rootNode;
-  let allNodes = [];
-  let links = [];
-  let maxDepth = 0;
-  let domains = [];
-
-  p.setup = () => {
-    let canvas = p.createCanvas(1400, 1160);
-    canvas.parent("p5-radial-tree-container");
-    p.angleMode(p.DEGREES);
-    p.textFont("monospace");
-
-    buildTree();
-    calculateLeafCounts(rootNode);
-
-    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
-    calculatePositions(rootNode, 0, 360, 0, radiusStep);
-  };
-
-  p.draw = () => {
-    p.background(BG);
-    p.translate(p.width / 2, p.height / 2);
-
-    drawRadarBackground();
-    drawDomainShading();
-    drawLinks();
-    drawNodes();
-  };
-
-  function buildTree() {
-    rootNode = { name: "{{resolvedRootName}}", children: [], depth: 0, leafCount: 0 };
-    allNodes.push(rootNode);
-
-    folderPaths.forEach(path => {
-      let normalized = path.replaceAll("\\\\", "/");
-      let prefix = "{{resolvedRootName}}/";
-      let parts = normalized.startsWith(prefix)
-        ? normalized.replace(prefix, "").split("/").filter(Boolean)
-        : normalized.split("/").filter(Boolean);
-
-      let currentNode = rootNode;
-
-      parts.forEach((part, index) => {
-        let existingChild = currentNode.children.find(c => c.name === part);
-        if (!existingChild) {
-          let newNode = {
-            name: part,
-            children: [],
-            depth: index + 1,
-            parent: currentNode
-          };
-          currentNode.children.push(newNode);
-          allNodes.push(newNode);
-          currentNode = newNode;
-          if (newNode.depth > maxDepth) maxDepth = newNode.depth;
-        } else {
-          currentNode = existingChild;
-        }
-      });
-    });
-  }
-
-  function calculateLeafCounts(node) {
-    if (node.children.length === 0) {
-      node.leafCount = 1;
-    } else {
-      node.leafCount = 0;
-      node.children.forEach(c => {
-        node.leafCount += calculateLeafCounts(c);
-      });
-    }
-    return node.leafCount;
-  }
-
-  function calculatePositions(node, angleStart, angleEnd, depth, radiusStep) {
-    let r = depth * radiusStep;
-    let angle = (angleStart + angleEnd) / 2;
-
-    if (depth === 0) {
-      node.x = 0;
-      node.y = 0;
-      node.angle = 0;
-    } else {
-      node.x = p.cos(angle) * r;
-      node.y = p.sin(angle) * r;
-      node.angle = angle;
-
-      if (depth === 1) {
-        let colorIndex = rootNode.children.indexOf(node) % DOMAIN_COLORS.length;
-        node.color = DOMAIN_COLORS[colorIndex];
-        domains.push({
-          name: node.name,
-          angleStart: angleStart,
-          angleEnd: angleEnd,
-          color: node.color,
-          radius: maxDepth * radiusStep + 42
-        });
-      } else {
-        node.color = node.parent.color;
-      }
-
-      links.push({ source: node.parent, target: node, color: node.color });
-    }
-
-    let currentAngle = angleStart;
-    node.children.forEach(child => {
-      let angleSpan = (child.leafCount / Math.max(1, node.leafCount)) * (angleEnd - angleStart);
-      calculatePositions(child, currentAngle, currentAngle + angleSpan, depth + 1, radiusStep);
-      currentAngle += angleSpan;
-    });
-  }
-
-  function drawRadarBackground() {
-    p.noFill();
-    p.stroke(255, 255, 255, 10);
-    p.strokeWeight(1);
-
-    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
-
-    for (let i = 1; i <= maxDepth + 1; i++) {
-      p.ellipse(0, 0, i * radiusStep * 2);
-    }
-  }
-
-  function drawDomainShading() {
-    p.noStroke();
-
-    domains.forEach(d => {
-      let c = p.color(d.color);
-      c.setAlpha(16);
-      p.fill(c);
-
-      p.beginShape();
-      p.vertex(0, 0);
-      for (let a = d.angleStart; a <= d.angleEnd; a += 1) {
-        p.vertex(p.cos(a) * d.radius, p.sin(a) * d.radius);
-      }
-      p.endShape(p.CLOSE);
-
-      let edge = p.color(d.color);
-      edge.setAlpha(120);
-      p.stroke(edge);
-      p.strokeWeight(1.6);
-      p.line(0, 0, p.cos(d.angleStart) * d.radius, p.sin(d.angleStart) * d.radius);
-      p.noStroke();
-    });
-  }
-
-  function drawLinks() {
-    p.noFill();
-
-    links.forEach((link, i) => {
-      p.stroke(link.color);
-      p.drawingContext.shadowBlur = 10;
-      p.drawingContext.shadowColor = link.color;
-      p.strokeWeight(p.map(link.target.depth, 1, Math.max(1, maxDepth), 2.2, 0.6));
-
-      p.line(link.source.x, link.source.y, link.target.x, link.target.y);
-
-      let t = (p.frameCount * 0.002 + (i * 0.1)) % 1;
-
-      let px = p.lerp(link.target.x, link.source.x, t);
-      let py = p.lerp(link.target.y, link.source.y, t);
-
-      p.drawingContext.shadowColor = "#ffffff";
-      p.drawingContext.shadowBlur = 14;
-      p.fill(255);
-      p.noStroke();
-      p.ellipse(px, py, 3.8, 3.8);
-    });
-
-    p.drawingContext.shadowBlur = 0;
-  }
-
-  function drawNodes() {
-    p.drawingContext.shadowBlur = 0;
-
-    allNodes.forEach(node => {
-      let nColor = node.depth === 0 ? "#ffffff" : node.color;
-
-      p.drawingContext.shadowBlur = 15;
-      p.drawingContext.shadowColor = nColor;
-      p.fill(BG);
-      p.stroke(nColor);
-      p.strokeWeight(2);
-
-      let nodeSize = node.depth === 0 ? 16 : p.map(node.depth, 1, Math.max(1, maxDepth), 12, 6);
-      p.ellipse(node.x, node.y, nodeSize, nodeSize);
-
-      p.noStroke();
-      p.fill(nColor);
-      p.ellipse(node.x, node.y, nodeSize * 0.4);
-
-      p.drawingContext.shadowBlur = 0;
-
-      p.push();
-      p.translate(node.x, node.y);
-
-      if (node.depth === 0) {
-        drawRootLabel(node);
-      } else {
-        drawRadialLabel(node);
-      }
-
-      p.pop();
-    });
-  }
-
-  function drawRootLabel(node) {
-    let label = node.name;
-
-    p.textAlign(p.CENTER, p.BOTTOM);
-    p.textSize(20);
-    p.textStyle(p.BOLD);
-
-    p.drawingContext.shadowBlur = 0;
-    p.drawingContext.shadowColor = "transparent";
-
-    p.stroke(0, 0, 0, 180);
-    p.strokeWeight(2.4);
-    p.strokeJoin(p.ROUND);
-    p.fill(255);
-    p.text(label, 0, -18);
-
-    p.noStroke();
-  }
-
-  function drawRadialLabel(node) {
-    let isLeftSide = node.angle > 90 && node.angle < 270;
-    let textAngle = isLeftSide ? node.angle + 180 : node.angle;
-    p.rotate(textAngle);
-
-    let label = node.name;
-    let fontSize = p.map(node.depth, 1, Math.max(1, maxDepth), 14, 11.5);
-    p.textSize(fontSize);
-    p.textStyle(p.BOLD);
-
-    let radialOffset = p.map(node.depth, 1, Math.max(1, maxDepth), 18, 13);
-    let perpendicularOffset =
-      ((node.depth % 2 === 0) ? 1 : -1) * p.map(node.depth, 1, Math.max(1, maxDepth), 6, 2.5);
-
-    let xOffset = isLeftSide ? -radialOffset : radialOffset;
-    let yOffset = perpendicularOffset;
-
-    p.textAlign(isLeftSide ? p.RIGHT : p.LEFT, p.CENTER);
-
-    let isLeaf = node.children.length === 0;
-
-    p.drawingContext.shadowBlur = isLeaf ? 14 : 10;
-    p.drawingContext.shadowColor = node.color;
-
-    p.stroke(LABEL_STROKE);
-    p.strokeWeight(isLeaf ? 3 : 3.4);
-    p.strokeJoin(p.ROUND);
-
-    if (isLeaf) {
-      p.fill(255);
-    } else {
-      p.fill(255, 255, 255, 220);
-    }
-
-    p.text(label, xOffset, yOffset);
-
-    p.drawingContext.shadowBlur = 0;
-    p.noStroke();
-  }
-};
-new p5(radialTreeSketch);
-</script>
-""");
-
-            sb.AppendLine("</div>");
-            return sb.ToString();
-        }
-
-        private static string ResolveRootNameFromStructure(ProjectStructureResult? structure, string fallbackRootName)
-        {
-            if (structure?.Lines == null || !structure.Lines.Any())
-                return fallbackRootName;
-
-            foreach (var rawLine in structure.Lines)
-            {
-                if (string.IsNullOrWhiteSpace(rawLine))
-                    continue;
-
-                var label = ExtractTreeLabel(rawLine);
-                if (!string.IsNullOrWhiteSpace(label))
-                    return label;
-            }
-
-            return fallbackRootName;
-        }
-
-        private static List<string> BuildFolderPaths(ProjectStructureResult? structure, string rootName)
-        {
-            var results = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (structure?.Lines == null || structure.Lines.Count == 0)
-                return results.ToList();
-
-            var rootLine = structure.Lines.FirstOrDefault(l => !string.IsNullOrWhiteSpace(l));
-            if (string.IsNullOrWhiteSpace(rootLine))
-                return results.ToList();
-
-            var parsedRoot = ExtractTreeLabel(rootLine);
-            if (string.IsNullOrWhiteSpace(parsedRoot))
-                parsedRoot = rootName;
-
-            var stack = new List<string> { parsedRoot };
-
-            bool firstLineConsumed = false;
-
-            foreach (var rawLine in structure.Lines)
-            {
-                if (string.IsNullOrWhiteSpace(rawLine))
-                    continue;
-
-                var line = rawLine.Replace('\t', ' ');
-
-                if (!line.Contains("+--") && !line.Contains("+--"))
-                    continue;
-
-                var label = ExtractTreeLabel(line);
-                if (string.IsNullOrWhiteSpace(label))
-                    continue;
-
-                if (!firstLineConsumed)
-                {
-                    firstLineConsumed = true;
-                    continue; // raiz já está no stack
-                }
-
-                if (LooksLikeFile(label))
-                    continue;
-
-                var rawDepth = GetTreeDepth(line);
-                var effectiveDepth = rawDepth + 1; // filhos imediatos da raiz entram no nível 1
-
-                while (stack.Count > effectiveDepth)
-                    stack.RemoveAt(stack.Count - 1);
-
-                if (stack.Count == effectiveDepth)
-                {
-                    stack.Add(label);
-                }
-                else if (stack.Count > effectiveDepth)
-                {
-                    stack[effectiveDepth] = label;
-                }
-                else
-                {
-                    while (stack.Count < effectiveDepth)
-                        stack.Add("?");
-                    stack.Add(label);
-                }
-
-                if (stack.Count > 1)
-                    results.Add(string.Join("/", stack));
-            }
-
-            return results
-                .Where(p => p.StartsWith(parsedRoot + "/", StringComparison.OrdinalIgnoreCase))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-        }
-
-        private static int GetTreeDepth(string line)
-        {
-            int depth = 0;
-            int index = 0;
-
-            while (index + 4 <= line.Length)
-            {
-                var chunk = line.Substring(index, 4);
-
-                if (chunk == "¦   " || chunk == "    ")
-                {
-                    depth++;
-                    index += 4;
-                    continue;
-                }
-
-                break;
-            }
-
-            return depth;
-        }
-
-        private static string ExtractTreeLabel(string line)
-        {
-            var branchIndex = line.IndexOf("+-- ", StringComparison.Ordinal);
-            if (branchIndex >= 0)
-                return line[(branchIndex + 4)..].Trim();
-
-            branchIndex = line.IndexOf("+-- ", StringComparison.Ordinal);
-            if (branchIndex >= 0)
-                return line[(branchIndex + 4)..].Trim();
-
-            return string.Empty;
-        }
-
-        private static bool LooksLikeFile(string label)
-        {
-            var normalized = label.Trim();
-
-            return normalized.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".props", StringComparison.OrdinalIgnoreCase)
-                || normalized.EndsWith(".targets", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string Html(string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return string.Empty;
-
-            return text
-                .Replace("&", "&amp;")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-                .Replace("\"", "&quot;")
-                .Replace("'", "&#39;");
-        }
-
-        // =====================================================
-        // 2. INFORMATION FLOW PIPELINE
-        // =====================================================
-        public string RenderInformationFlowPipeline()
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendLine("""
-<div class="section">
-    <div class="section-title">
-        <h2>Control Room // Deep Structure</h2>
-        <div class="line"></div>
-    </div>
-""");
-
-            sb.AppendLine("""<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);width:100%;" augmented-ui="tl-clip tr-clip bl-clip br-clip border">""");
-            sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;">Information Flow Pipeline</h3>""");
-            sb.AppendLine("""<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Parsing &rarr; structural model &rarr; analyzers &rarr; reconsolidation &rarr; outputs.</div>""");
-
-            sb.AppendLine("""<style>#p5-pipeline-container canvas { width: 100% !important; max-width: 1600px; height: auto !important; }</style>""");
-            sb.AppendLine("""<div id="p5-pipeline-container" style="width:100%; display:flex; justify-content:center; align-items:center;"></div>""");
-
-            sb.AppendLine("""
-<script>
-const pipelineSketch = (p) => {
-    let nodes = [];
-    let links = [];
-    let particles = [];
-    let palette;
-
-    p.setup = () => {
-        let canvas = p.createCanvas(1600, 980);
-        canvas.parent('p5-pipeline-container');
-        p.pixelDensity(2);
-        p.textFont("monospace");
-        p.rectMode(p.CORNER);
-        p.angleMode(p.DEGREES);
-
-        palette = {
-            bg: p.color("#0b1020"), 
-            grid: p.color(40, 90, 140, 30),
-            text: p.color("#eef4ff"),
-            muted: p.color("#8fa8ff"),
-            parser: p.color("#ff9a3c"),
-            parseBranch: p.color("#ffc15d"),
-            dto: p.color("#7fd36b"),
-            analyzer: p.color("#6ea8ff"),
-            derived: p.color("#d08cff"),
-            hub: p.color("#ff6a3d"),
-            output: p.color("#00e5ff"),
-            optional: p.color("#ff9ad5")
-        };
-
-        buildLayout();
-        buildParticles();
-    };
-
-    p.draw = () => {
-        p.clear();
-        drawBackground();
-        drawDomainBands();
-        drawLinks();
-        drawParticles();
-        drawNodes();
-        drawLegend();
-    };
-
-    function buildLayout() {
-        nodes = [
-            p.makeNode("startup", "Startup / CLI", 60, 80, 180, 54, "entry"),
-            p.makeNode("config", "RunConfiguration", 300, 80, 180, 54, "entry"),
-            p.makeNode("scope", "RefactorScopeConfig", 540, 80, 200, 54, "entry"),
-            p.makeNode("selector", "ParserSelector", 780, 80, 180, 54, "parser"),
-            p.makeNode("strategy", "Parsing Strategy", 1040, 80, 180, 54, "parser"),
-
-            p.makeNode("regex", "Regex Baseline", 1320, 80, 180, 52, "parseBranch"),
-            p.makeNode("complexity", "Complexity Scan", 1320, 180, 180, 52, "parseBranch"),
-            p.makeNode("textual", "Textual / Selective", 1320, 280, 180, 52, "parseBranch"),
-
-            p.makeNode("merge", "Parsing Merge", 1040, 280, 180, 54, "parser"),
-            p.makeNode("parserResult", "IParserResult", 780, 280, 180, 54, "dto"),
-            p.makeNode("model", "ModeloEstrutural", 540, 280, 180, 54, "dto"),
-            p.makeNode("context", "AnalysisContext", 300, 280, 180, 54, "dto"),
-
-            p.makeNode("structure", "Project Structure", 60, 420, 180, 54, "analyzer"),
-            p.makeNode("candidates", "Structural Candidates", 300, 420, 190, 54, "analyzer"),
-            p.makeNode("architecture", "Architecture", 540, 420, 160, 54, "analyzer"),
-            p.makeNode("coupling", "Coupling", 840, 420, 140, 54, "analyzer"),
-            p.makeNode("implicit", "Implicit Coupling", 1080, 420, 180, 54, "analyzer"),
-
-            p.makeNode("refinement", "Refinement", 220, 540, 160, 54, "derived"),
-            p.makeNode("fitness", "Fitness Gates", 460, 540, 160, 54, "derived"),
-            p.makeNode("hygiene", "Hygiene", 680, 540, 140, 54, "derived"),
-            p.makeNode("solid", "SOLID", 920, 540, 120, 54, "derived"),
-
-            p.makeNode("report", "ConsolidatedReport", 540, 680, 240, 64, "hub"),
-            p.makeNode("statistics", "Statistics", 1020, 680, 150, 54, "optional"),
-            p.makeNode("effort", "Effort", 1260, 680, 120, 54, "optional"),
-
-            p.makeNode("html", "HTML Outputs", 60, 840, 160, 54, "output"),
-            p.makeNode("markdown", "Markdown Outputs", 300, 840, 190, 54, "output"),
-            p.makeNode("csv", "CSV Outputs", 540, 840, 150, 54, "output"),
-            p.makeNode("analyzerOut", "Output Analyzers", 780, 840, 190, 54, "output"),
-            p.makeNode("statsOut", "Output Statistics", 1020, 840, 180, 54, "output"),
-            p.makeNode("effortOut", "Output Effort", 1260, 840, 170, 54, "output")
-        ];
-
-        links = [
-            p.makeLink("startup", "config", "main"), p.makeLink("config", "scope", "main"),
-            p.makeLink("scope", "selector", "main"), p.makeLink("selector", "strategy", "main"),
-            p.makeLink("strategy", "regex", "branch"), p.makeLink("strategy", "complexity", "branch"),
-            p.makeLink("strategy", "textual", "branch"), p.makeLink("regex", "merge", "branch"),
-            p.makeLink("complexity", "merge", "branch"), p.makeLink("textual", "merge", "branch"),
-            p.makeLink("merge", "parserResult", "main"), p.makeLink("parserResult", "model", "main"),
-            p.makeLink("model", "context", "main"), p.makeLink("context", "structure", "analyzer"),
-            p.makeLink("context", "candidates", "analyzer"), p.makeLink("context", "architecture", "analyzer"),
-            p.makeLink("context", "coupling", "analyzer"), p.makeLink("context", "implicit", "analyzer"),
-            p.makeLink("candidates", "refinement", "derived"), p.makeLink("coupling", "solid", "derived"),
-            p.makeLink("architecture", "fitness", "derived"), p.makeLink("architecture", "hygiene", "derived"),
-            p.makeLink("implicit", "hygiene", "derived"), p.makeLink("structure", "report", "return"),
-            p.makeLink("refinement", "report", "return"), p.makeLink("fitness", "report", "return"),
-            p.makeLink("hygiene", "report", "return"), p.makeLink("solid", "report", "return"),
-            p.makeLink("candidates", "report", "return"), p.makeLink("architecture", "report", "return"),
-            p.makeLink("coupling", "report", "return"), p.makeLink("implicit", "report", "return"),
-            p.makeLink("report", "statistics", "optional"), p.makeLink("report", "effort", "optional"),
-            p.makeLink("report", "html", "output"), p.makeLink("report", "markdown", "output"),
-            p.makeLink("report", "csv", "output"), p.makeLink("report", "analyzerOut", "output"),
-            p.makeLink("statistics", "statsOut", "output"), p.makeLink("effort", "effortOut", "output")
-        ];
-    }
-
-    function buildParticles() {
-        particles = [];
-        for (let i = 0; i < links.length; i++) {
-            particles.push({
-                linkIndex: i,
-                t: p.random(),
-                speed: p.random(0.002, 0.005),
-                size: p.random(3, 6)
-            });
-        }
-    }
-
-    p.makeNode = (id, label, x, y, w, h, kind) => {
-        return { id, label, x, y, w, h, kind };
-    };
-
-    p.makeLink = (from, to, kind) => {
-        return { from, to, kind };
-    };
-
-    function getNode(id) {
-        return nodes.find(n => n.id === id);
-    }
-
-    function drawBackground() {
-        p.stroke(palette.grid);
-        p.strokeWeight(1);
-        for (let x = 0; x < p.width; x += 40) p.line(x, 0, x, p.height);
-        for (let y = 0; y < p.height; y += 40) p.line(0, y, p.width, y);
-    }
-
-    function drawDomainBands() {
-        const bands = [
-            { x: 40, y: 45, w: 720, h: 120, title: "CONFIG", c: p.color(100, 140, 255, 12) },
-            { x: 760, y: 45, w: 760, h: 310, title: "PARSING", c: p.color(255, 154, 60, 10) },
-            { x: 40, y: 380, w: 1240, h: 240, title: "ANALYSIS", c: p.color(110, 168, 255, 10) }
-        ];
-
-        for (let b of bands) {
-            p.noStroke();
-            p.fill(b.c);
-            p.rect(b.x, b.y, b.w, b.h, 16);
-            p.fill(255, 255, 255, 100);
-            p.textAlign(p.LEFT, p.TOP);
-            p.textSize(11);
-            p.textStyle(p.BOLD);
-            p.text(b.title, b.x + 14, b.y + 10);
-        }
-    }
-
-    function getEdgePoints(a, b) {
-        let cx1 = a.x + a.w / 2; let cy1 = a.y + a.h / 2;
-        let cx2 = b.x + b.w / 2; let cy2 = b.y + b.h / 2;
-        let dx = cx2 - cx1; let dy = cy2 - cy1;
-        let isHoriz = p.abs(dx) > p.abs(dy) * 0.8;
-        
-        let x1 = cx1, y1 = cy1, x2 = cx2, y2 = cy2;
-        
-        if (isHoriz) {
-            x1 = dx > 0 ? a.x + a.w : a.x;
-            x2 = dx > 0 ? b.x : b.x + b.w;
-        } else {
-            y1 = dy > 0 ? a.y + a.h : a.y;
-            y2 = dy > 0 ? b.y : b.y + b.h;
-        }
-        
-        let cp1x = x1, cp1y = y1, cp2x = x2, cp2y = y2;
-        if (isHoriz) {
-            let bend = p.max(40, p.abs(x2 - x1) * 0.4);
-            cp1x = x1 + (dx > 0 ? bend : -bend); cp2x = x2 + (dx > 0 ? -bend : bend);
-        } else {
-            let bend = p.max(40, p.abs(y2 - y1) * 0.4);
-            cp1y = y1 + (dy > 0 ? bend : -bend); cp2y = y2 + (dy > 0 ? -bend : bend);
-        }
-        
-        return { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 };
-    }
-
-    function drawLinks() {
-        for (let link of links) {
-            let a = getNode(link.from);
-            let b = getNode(link.to);
-            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(a, b);
-
-            let col = getLinkColor(link.kind);
-            let alpha = p.map(p.sin(p.frameCount * 2 + a.x * 0.01), -1, 1, 80, 180);
-            
-            let c = p.color(col); c.setAlpha(alpha);
-            p.stroke(c);
-            p.strokeWeight(getLinkThickness(link.kind));
-            p.noFill();
-            p.drawingContext.shadowBlur = 10;
-            p.drawingContext.shadowColor = col.toString();
-            
-            p.bezier(x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2);
-            p.drawingContext.shadowBlur = 0;
-
-            let t = 1.0;
-            let tx = p.bezierTangent(x1, cp1x, cp2x, x2, t);
-            let ty = p.bezierTangent(y1, cp1y, cp2y, y2, t);
-            
-            p.push();
-            p.translate(x2, y2);
-            p.rotate(p.atan2(ty, tx));
-            p.noStroke(); p.fill(col);
-            p.triangle(0, 0, -10, 5, -10, -5);
-            p.pop();
-        }
-    }
-
-    function drawParticles() {
-        for (let pt of particles) {
-            let link = links[pt.linkIndex];
-            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(getNode(link.from), getNode(link.to));
-
-            pt.t += pt.speed;
-            if (pt.t > 1) pt.t = 0;
-
-            let px = p.bezierPoint(x1, cp1x, cp2x, x2, pt.t);
-            let py = p.bezierPoint(y1, cp1y, cp2y, y2, pt.t);
-
-            let col = getLinkColor(link.kind);
-            p.noStroke(); p.fill(255);
-            p.drawingContext.shadowBlur = 15;
-            p.drawingContext.shadowColor = col.toString();
-            p.ellipse(px, py, pt.size);
-            p.drawingContext.shadowBlur = 0;
-        }
-    }
-
-    function drawNodes() {
-        for (let node of nodes) drawSciFiNode(node);
-    }
-
-    function drawSciFiNode(node) {
-        let col = getNodeColor(node.kind);
-        let pulse = p.map(p.sin(p.frameCount * 2 + node.x * 0.05), -1, 1, 5, 16);
-        let c = 12; 
-
-        p.noStroke(); p.fill(p.red(col), p.green(col), p.blue(col), 15);
-        p.rect(node.x - 5, node.y - 5, node.w + 10, node.h + 10, 16);
-
-        p.fill(12, 18, 30, 240);
-        p.stroke(col);
-        p.strokeWeight(node.kind === "hub" ? 2.2 : 1.4);
-        p.drawingContext.shadowBlur = pulse;
-        p.drawingContext.shadowColor = col.toString();
-
-        p.beginShape();
-        p.vertex(node.x + c, node.y);
-        p.vertex(node.x + node.w, node.y);
-        p.vertex(node.x + node.w, node.y + node.h - c);
-        p.vertex(node.x + node.w - c, node.y + node.h);
-        p.vertex(node.x, node.y + node.h);
-        p.vertex(node.x, node.y + c);
-        p.endShape(p.CLOSE);
-
-        p.drawingContext.shadowBlur = 0;
-
-        p.noStroke(); p.fill(col);
-        p.rect(node.x + 8, node.y + 12, 4, node.h - 24, 2);
-
-        p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER);
-        p.textSize(node.kind === "hub" ? 15 : 12);
-        p.textStyle(p.BOLD);
-        p.text(node.label, node.x + 22, node.y + node.h / 2 - 4);
-
-        p.fill(255, 255, 255, 130);
-        p.textSize(10); p.textStyle(p.NORMAL);
-        p.text(getSubtitle(node.kind), node.x + 22, node.y + node.h / 2 + 12);
-    }
-
-    function getSubtitle(kind) {
-        if (kind === "entry") return "startup / config";
-        if (kind === "parser") return "flow control";
-        if (kind === "parseBranch") return "parser branch";
-        if (kind === "dto") return "data carrier";
-        if (kind === "analyzer") return "domain reader";
-        if (kind === "derived") return "derived signal";
-        if (kind === "hub") return "reconsolidation point";
-        if (kind === "optional") return "optional branch";
-        if (kind === "output") return "projection";
-        return "";
-    }
-
-    function getNodeColor(k) {
-        return k==="entry"?palette.muted : k==="parser"?palette.parser : k==="parseBranch"?palette.parseBranch : k==="dto"?palette.dto : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="hub"?palette.hub : k==="optional"?palette.optional : palette.output;
-    }
-    function getLinkColor(k) {
-        return k==="main"?palette.parser : k==="branch"?palette.parseBranch : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="return"?palette.hub : k==="optional"?palette.optional : palette.output;
-    }
-    function getLinkThickness(k) {
-        return k==="main"?3.5 : k==="return"?3.2 : k==="output"?3.0 : k==="branch"?2.2 : k==="analyzer"?2.1 : k==="derived"?1.8 : 1.9;
-    }
-
-    function drawLegend() {
-        const items = [
-            ["Main Flow", palette.parser], ["Parser Branch", palette.parseBranch],
-            ["DTO / Context", palette.dto], ["Analyzer", palette.analyzer],
-            ["Derived Signal", palette.derived], ["Consolidation", palette.hub], ["Output", palette.output]
-        ];
-
-        let x = 40; let y = p.height - 30;
-        for (let i = 0; i < items.length; i++) {
-            p.fill(items[i][1]); p.noStroke(); p.rect(x, y, 10, 10, 2);
-            p.fill(255, 255, 255, 180); p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
-            p.text(items[i][0], x + 16, y + 5);
-            x += p.textWidth(items[i][0]) + 50;
-        }
-    }
-};
-new p5(pipelineSketch);
-</script>
-""");
-
-            sb.AppendLine("</div></div>");
-            return sb.ToString();
         }
     }
 }
@@ -3302,250 +2444,999 @@ namespace RefactorScope.Exporters.Dashboards
 
 
 ==========================================
-ARQUIVO: ParsingChartsRenderer.cs
-CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ParsingChartsRenderer.cs
+ARQUIVO: ParserArenaDashboardExporter.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ParserArenaDashboardExporter.cs
 ==========================================
+using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Parsing.Arena;
+using RefactorScope.Core.Parsing.Enum;
+using RefactorScope.Exporters.Styling;
 using System.Globalization;
 using System.Text;
 
-namespace RefactorScope.Exporters.Dashboards
+namespace RefactorScope.Exporters.Dashboards;
+
+/// <summary>
+/// Arena Dashboard
+///
+/// Responsabilidade
+/// ----------------
+/// Renderizar o dashboard HTML comparativo do Batch Mode / Arena,
+/// consolidando:
+///
+/// - comparação entre estratégias de parser
+/// - vencedores por projeto
+/// - médias globais por estratégia
+/// - telemetria executiva do batch
+/// - tabelas comparativas detalhadas
+///
+/// Diretriz visual
+/// ---------------
+/// Inspirado no Parsing Dashboard:
+/// - topbar executiva
+/// - KPI grid
+/// - dois gráficos iniciais
+/// - painéis full width
+/// - leitura de control room comparativa
+/// </summary>
+public sealed class ParserArenaDashboardExporter
 {
-    /// <summary>
-    /// Renderer responsável pelos gráficos do Parsing Dashboard.
-    ///
-    /// Objetivo:
-    /// Visualizar qualidade e eficiência do parser estrutural.
-    ///
-    /// Gráficos disponíveis:
-    ///
-    /// 1. Structure Density
-    ///    - Files
-    ///    - Types
-    ///    - References
-    ///
-    /// 2. Parsing Quality Radar
-    ///    - Classes per File
-    ///    - References per Class
-    ///    - Confidence
-    ///    - Time per Class (eficiência do parser)
-    ///
-    /// Os gráficos são renderizados como SVG inline
-    /// para máxima portabilidade e zero dependência JS.
-    /// </summary>
-    public class ParsingChartsRenderer
+    public void Export(
+        IReadOnlyList<ParserArenaProjectResult> results,
+        string htmlPath,
+        string themeFileName)
     {
-        /// <summary>
-        /// Tamanho base dos gráficos.
-        /// Mantido consistente com o Structural Dashboard.
-        /// </summary>
-        const int ChartSize = 320;
+        var html = GenerateHtml(results, themeFileName);
+        File.WriteAllText(htmlPath, html, Encoding.UTF8);
+    }
 
+    private string GenerateHtml(
+        IReadOnlyList<ParserArenaProjectResult> results,
+        string themeFileName)
+    {
+        results ??= Array.Empty<ParserArenaProjectResult>();
 
-        /// <summary>
-        /// Renderiza gráfico de densidade estrutural.
-        ///
-        /// Mostra:
-        /// - quantidade de arquivos analisados
-        /// - número de tipos detectados
-        /// - total de referências estruturais
-        ///
-        /// Valores absolutos são exibidos acima das barras.
-        /// Altura das barras é normalizada pelo maior valor.
-        /// </summary>
-        public string RenderStructureDensity(
-            int files,
-            int types,
-            int refs)
+        var allRuns = results
+            .SelectMany(r => r.Runs)
+            .ToList();
+
+        var totalProjects = results.Count;
+        var totalRuns = allRuns.Count;
+        var totalFailures = allRuns.Count(r => r.Status == ParseStatus.Failed);
+        var successRuns = allRuns.Count(r => r.Status == ParseStatus.Success);
+        var avgConfidence = allRuns.Count == 0 ? 0 : Clamp01(allRuns.Average(r => r.Confidence));
+        var avgScore = allRuns.Count == 0 ? 0 : allRuns.Average(r => r.ComparativeScore);
+        var avgExecutionMs = allRuns.Count == 0 ? 0 : allRuns.Average(r => r.ExecutionTime.TotalMilliseconds);
+
+        var winners = results
+            .Select(r => r.BestRun)
+            .Where(r => r != null)
+            .Cast<ParserArenaRunResult>()
+            .ToList();
+
+        var winnerGroups = winners
+            .GroupBy(w => ShortenStrategyName(w.Strategy))
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.OrdinalIgnoreCase);
+
+        var strategyMetrics = BuildStrategyMetrics(allRuns);
+
+        var bestOverallRun = allRuns
+            .OrderByDescending(r => r.ComparativeScore)
+            .ThenByDescending(r => r.Confidence)
+            .ThenBy(r => r.ExecutionTime)
+            .FirstOrDefault();
+
+        var healthiestStrategy = strategyMetrics
+            .OrderByDescending(m => m.AverageScore)
+            .ThenByDescending(m => m.AverageConfidence)
+            .ThenBy(m => m.AverageExecutionMs)
+            .FirstOrDefault();
+
+        var supportBand = GetSupportBand(avgConfidence);
+        var targetName = $"Batch Arena // {totalProjects} project(s)";
+
+        var sb = new StringBuilder();
+
+        sb.AppendLine(DashboardHtmlShell.RenderDocumentStart(
+            "Parser Arena Dashboard",
+            themeFileName));
+
+        // =====================================================
+        // TOPBAR
+        // =====================================================
+
+        sb.AppendLine($"""
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Comparative Arena</div>
+        <h1>Parser Arena Dashboard</h1>
+        <div class="subtitle">Comparative batch mode across multiple projects and parser strategies</div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC</div>
+        <div><b>Target:</b> {Html(targetName)}</div>
+        <div><b>Projects:</b> {totalProjects}</div>
+        <div><b>Avg Confidence:</b> {avgConfidence:P0}</div>
+        <div><b>Support Band:</b> {Html(supportBand)}</div>
+    </div>
+</div>
+""");
+
+        // =====================================================
+        // KPI GRID
+        // =====================================================
+
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Arena Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+""");
+
+        sb.AppendLine($"""
+<div class="grid-kpis arena-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Projects</div>
+        <div class="value">{totalProjects}</div>
+        <div class="hint">Projects evaluated inside comparative batch mode</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Runs</div>
+        <div class="value">{totalRuns}</div>
+        <div class="hint">Total parser executions across all projects</div>
+    </div>
+
+    <div class="kpi {(totalFailures == 0 ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Failures</div>
+        <div class="value">{totalFailures}</div>
+        <div class="hint">Runs that failed completely during comparative execution</div>
+    </div>
+
+    <div class="kpi {(avgConfidence >= 0.85 ? "good" : avgConfidence >= 0.65 ? "warning" : "alert")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Confidence</div>
+        <div class="value">{avgConfidence:P0}</div>
+        <div class="hint">Average parser confidence across all comparative runs</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Score</div>
+        <div class="value">{avgScore:0.00}</div>
+        <div class="hint">Average comparative score across all runs</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Execution</div>
+        <div class="value">{avgExecutionMs:0} ms</div>
+        <div class="hint">Average execution time per comparative run</div>
+    </div>
+
+    <div class="kpi {(bestOverallRun != null ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Best Overall Run</div>
+        <div class="value" style="font-size:22px;">{Html(bestOverallRun?.ProjectName ?? "N/A")}</div>
+        <div class="hint">{Html(bestOverallRun == null ? "No successful run available." : $"{ShortenStrategyName(bestOverallRun.Strategy)} // {bestOverallRun.ComparativeScore:0.00}")}</div>
+    </div>
+
+    <div class="kpi {(healthiestStrategy != null ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Best Strategy</div>
+        <div class="value" style="font-size:22px;">{Html(healthiestStrategy?.StrategyName ?? "N/A")}</div>
+        <div class="hint">{Html(healthiestStrategy == null ? "No strategy aggregate available." : $"Avg score {healthiestStrategy.AverageScore:0.00} // Avg confidence {Clamp01(healthiestStrategy.AverageConfidence):P0}")}</div>
+    </div>
+
+    <div class="kpi {(successRuns == totalRuns ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Success Runs</div>
+        <div class="value">{successRuns}</div>
+        <div class="hint">Runs completed successfully without full parser failure</div>
+    </div>
+
+    <div class="kpi {(winners.Count == totalProjects && totalProjects > 0 ? "good" : "warning")}" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Winner Coverage</div>
+        <div class="value">{(totalProjects == 0 ? 0 : (winners.Count / (double)totalProjects)):P0}</div>
+        <div class="hint">Projects that produced at least one comparative winner</div>
+    </div>
+</div>
+""");
+
+        // =====================================================
+        // EXTENDED READING
+        // =====================================================
+
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Reading</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+""");
+
+        sb.AppendLine($"""
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Batch Summary</h3>
+    <ul class="clean">
+        <li><b>Projects:</b> {totalProjects}</li>
+        <li><b>Total Runs:</b> {totalRuns}</li>
+        <li><b>Success Runs:</b> {successRuns}</li>
+        <li><b>Failures:</b> {totalFailures}</li>
+        <li><b>Average Confidence:</b> {avgConfidence:P0}</li>
+        <li><b>Average Comparative Score:</b> {avgScore:0.00}</li>
+        <li><b>Average Execution:</b> {avgExecutionMs:0.00} ms</li>
+        <li><b>Top Strategy:</b> {Html(healthiestStrategy?.StrategyName ?? "Unknown")}</li>
+        <li><b>Best Overall Run:</b> {Html(bestOverallRun?.ProjectName ?? "Unknown")}</li>
+        <li><b>Best Overall Parser:</b> {Html(bestOverallRun == null ? "Unknown" : ShortenParserName(bestOverallRun.ParserName))}</li>
+    </ul>
+</div>
+""");
+
+        sb.AppendLine($"""
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Comparative Diagnosis</h3>
+    <ul class="clean">
+        <li>{Html(GetBatchConfidenceDiagnosis(avgConfidence))}</li>
+        <li>{Html(GetFailureDiagnosis(totalFailures, totalRuns))}</li>
+        <li>{Html(GetWinnerDiagnosis(winnerGroups))}</li>
+        <li>{Html(GetStrategyDiagnosis(healthiestStrategy))}</li>
+        <li>{Html(GetExecutionDiagnosis(avgExecutionMs))}</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge {(avgConfidence >= 0.85 ? "green" : avgConfidence >= 0.65 ? "amber" : "red")}"><span class="badge-dot"></span> Avg Confidence: {avgConfidence:P0}</div>
+        <div class="badge {(totalFailures == 0 ? "green" : totalFailures <= Math.Max(1, totalRuns / 5) ? "amber" : "red")}" style="margin-top:8px;"><span class="badge-dot"></span> Failures: {totalFailures}</div>
+        <div class="badge {(healthiestStrategy != null ? "green" : "amber")}" style="margin-top:8px;"><span class="badge-dot"></span> Top Strategy: {Html(healthiestStrategy?.StrategyName ?? "N/A")}</div>
+    </div>
+</div>
+""");
+
+        sb.AppendLine("</div></div>");
+
+        // =====================================================
+        // INITIAL CHARTS
+        // =====================================================
+
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+""");
+
+        sb.AppendLine("<div style='display:grid; grid-template-columns: auto auto; gap:24px; align-items:stretch; justify-content:center; width:100%;'>");
+
+        sb.AppendLine(RenderStrategyRadar(strategyMetrics));
+        sb.AppendLine(RenderWinnerDonut(winnerGroups));
+
+        sb.AppendLine("</div>");
+        sb.AppendLine("</div></div>");
+
+        // =====================================================
+        // STRATEGY COMPARISON TABLE
+        // =====================================================
+
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Strategy Aggregates</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+""");
+
+        sb.AppendLine("""
+<div class="table-shell">
+<table class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th>Strategy</th>
+            <th>Runs</th>
+            <th>Avg Score</th>
+            <th>Avg Confidence</th>
+            <th>Avg Time</th>
+            <th>Avg Types</th>
+            <th>Avg Refs</th>
+            <th>Failures</th>
+        </tr>
+    </thead>
+    <tbody>
+""");
+
+        foreach (var metric in strategyMetrics)
         {
-            string Fmt(double v) => v.ToString(CultureInfo.InvariantCulture);
-
-            int width = ChartSize;
-            int height = ChartSize;
-            int margin = 40;
-
-            int max = Math.Max(files, Math.Max(types, refs));
-
-            double Normalize(int v) =>
-                max == 0 ? 0 : v / (double)max;
-
-            double barMaxHeight = height - margin * 2;
-
-            double barFiles = barMaxHeight * Normalize(files);
-            double barTypes = barMaxHeight * Normalize(types);
-            double barRefs = barMaxHeight * Normalize(refs);
-
-            double spacing = 70;
-
-            double x1 = margin + spacing;
-            double x2 = x1 + spacing;
-            double x3 = x2 + spacing;
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div class='chart-container'>");
-            sb.AppendLine("<h3>Structure Density</h3>");
-
-            sb.AppendLine(
-                $"<svg width='{width}' height='{height}' style='background:#161b22;border-radius:12px'>");
-
-            // eixo
-            sb.AppendLine(
-                $"<line x1='{margin}' y1='{height - margin}' x2='{width - margin}' y2='{height - margin}' stroke='#30363d'/>");
-
-            // barras
-            sb.AppendLine(
-                $"<rect x='{Fmt(x1)}' y='{Fmt(height - margin - barFiles)}' width='30' height='{Fmt(barFiles)}' fill='#4f8cff'/>");
-
-            sb.AppendLine(
-                $"<rect x='{Fmt(x2)}' y='{Fmt(height - margin - barTypes)}' width='30' height='{Fmt(barTypes)}' fill='#1dd1a1'/>");
-
-            sb.AppendLine(
-                $"<rect x='{Fmt(x3)}' y='{Fmt(height - margin - barRefs)}' width='30' height='{Fmt(barRefs)}' fill='#ffd166'/>");
-
-            // valores numéricos
-            sb.AppendLine(
-                $"<text x='{Fmt(x1 + 15)}' y='{Fmt(height - margin - barFiles - 6)}' text-anchor='middle' fill='#e6edf3' font-size='11'>{files}</text>");
-
-            sb.AppendLine(
-                $"<text x='{Fmt(x2 + 15)}' y='{Fmt(height - margin - barTypes - 6)}' text-anchor='middle' fill='#e6edf3' font-size='11'>{types}</text>");
-
-            sb.AppendLine(
-                $"<text x='{Fmt(x3 + 15)}' y='{Fmt(height - margin - barRefs - 6)}' text-anchor='middle' fill='#e6edf3' font-size='11'>{refs}</text>");
-
-            // labels
-            sb.AppendLine(
-                $"<text x='{Fmt(x1 + 15)}' y='{height - 10}' text-anchor='middle' fill='#e6edf3' font-size='11'>Files</text>");
-
-            sb.AppendLine(
-                $"<text x='{Fmt(x2 + 15)}' y='{height - 10}' text-anchor='middle' fill='#e6edf3' font-size='11'>Types</text>");
-
-            sb.AppendLine(
-                $"<text x='{Fmt(x3 + 15)}' y='{height - 10}' text-anchor='middle' fill='#e6edf3' font-size='11'>Refs</text>");
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
+            sb.AppendLine($"""
+<tr>
+    <td>{Html(metric.StrategyName)}</td>
+    <td>{metric.RunCount}</td>
+    <td>{metric.AverageScore:0.00}</td>
+    <td>{Clamp01(metric.AverageConfidence):P0}</td>
+    <td>{metric.AverageExecutionMs:0.00} ms</td>
+    <td>{metric.AverageTypes:0.00}</td>
+    <td>{metric.AverageReferences:0.00}</td>
+    <td>{metric.Failures}</td>
+</tr>
+""");
         }
 
+        sb.AppendLine("""
+    </tbody>
+</table>
+</div>
+</div></div>
+""");
 
+        // =====================================================
+        // DETAILED PROJECT TABLE
+        // =====================================================
 
-        /// <summary>
-        /// Renderiza radar de qualidade do parsing.
-        ///
-        /// Métricas utilizadas:
-        ///
-        /// Classes/File
-        /// densidade estrutural média.
-        ///
-        /// Refs/Class
-        /// riqueza do grafo estrutural.
-        ///
-        /// Confidence
-        /// plausibilidade heurística do parser.
-        ///
-        /// Time/Class
-        /// eficiência do parser independente do tamanho do projeto.
-        ///
-        /// Todas as métricas são normalizadas para intervalo [0,1].
-        /// </summary>
-        public string RenderParsingRadar(
-            double classesPerFile,
-            double refsPerClass,
-            double confidence,
-            double timePerClassMs)
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Project Comparative Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+""");
+
+        sb.AppendLine("""
+<div style="margin-bottom:16px;">
+    <input id="searchProjects"
+           type="text"
+           onkeyup="searchArenaProjects()"
+           placeholder="Search project, parser, strategy..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
+</div>
+""");
+
+        sb.AppendLine("""
+<div class="table-shell">
+<table id="arenaProjectTable" class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th onclick="sortArenaTable('arenaProjectTable', 0)">Project</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 1)">Strategy</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 2)">Parser</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 3)">Status</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 4)">Score</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 5)">Confidence</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 6)">Files</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 7)">Types</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 8)">Refs</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 9)">Time</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 10)">Fallback</th>
+        </tr>
+    </thead>
+    <tbody>
+""");
+
+        foreach (var project in results)
         {
-            string Fmt(double v) => v.ToString(CultureInfo.InvariantCulture);
-
-            int size = ChartSize;
-            int center = size / 2;
-            int radius = 110;
-            int levels = 4;
-
-            // normalizações empíricas
-            double normClasses = Math.Min(1, classesPerFile / 2.0);
-            double normRefs = Math.Min(1, refsPerClass / 10.0);
-            double normConfidence = Math.Min(1, confidence);
-
-            // 50ms/class considerado limite alto
-            double normTime = Math.Min(1, timePerClassMs / 50.0);
-
-            var values = new[]
+            foreach (var run in project.OrderedRuns)
             {
-                normClasses,
-                normRefs,
-                normConfidence,
-                normTime
-            };
-
-            var labels = new[]
-            {
-                "Classes/File",
-                "Refs/Class",
-                "Confidence",
-                "Time/Class"
-            };
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine("<div class='chart-container'>");
-            sb.AppendLine("<h3>Parsing Quality Radar</h3>");
-
-            sb.AppendLine(
-                $"<svg width='{size}' height='{size}' style='background:#161b22;border-radius:12px'>");
-
-            // círculos
-            for (int l = 1; l <= levels; l++)
-            {
-                double rr = radius * (l / (double)levels);
-
-                sb.AppendLine(
-                    $"<circle cx='{center}' cy='{center}' r='{Fmt(rr)}' fill='none' stroke='#30363d' stroke-width='1' />");
+                sb.AppendLine($"""
+<tr>
+    <td>{Html(project.ProjectName)}</td>
+    <td>{Html(ShortenStrategyName(run.Strategy))}</td>
+    <td>{Html(ShortenParserName(run.ParserName))}</td>
+    <td>{Html(run.Status.ToString())}</td>
+    <td>{run.ComparativeScore:0.00}</td>
+    <td>{Clamp01(run.Confidence):P0}</td>
+    <td>{run.FileCount}</td>
+    <td>{run.TypeCount}</td>
+    <td>{run.ReferenceCount}</td>
+    <td>{run.ExecutionTime.TotalMilliseconds:0} ms</td>
+    <td>{(run.UsedFallback ? "Yes" : "No")}</td>
+</tr>
+""");
             }
-
-            // eixos
-            for (int i = 0; i < values.Length; i++)
-            {
-                double angle =
-                    (Math.PI * 2 / values.Length) * i - Math.PI / 2;
-
-                double x = center + radius * Math.Cos(angle);
-                double y = center + radius * Math.Sin(angle);
-
-                sb.AppendLine(
-                    $"<line x1='{center}' y1='{center}' x2='{Fmt(x)}' y2='{Fmt(y)}' stroke='#30363d' />");
-
-                double lx = center + (radius + 22) * Math.Cos(angle);
-                double ly = center + (radius + 22) * Math.Sin(angle);
-
-                sb.AppendLine(
-                    $"<text x='{Fmt(lx)}' y='{Fmt(ly)}' fill='#e6edf3' font-size='11' text-anchor='middle'>{labels[i]}</text>");
-            }
-
-            // pontos do polígono
-            var points = new List<string>();
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                double angle =
-                    (Math.PI * 2 / values.Length) * i - Math.PI / 2;
-
-                double rVal = radius * values[i];
-
-                double x = center + rVal * Math.Cos(angle);
-                double y = center + rVal * Math.Sin(angle);
-
-                points.Add($"{Fmt(x)},{Fmt(y)}");
-            }
-
-            sb.AppendLine(
-                $"<polygon points='{string.Join(" ", points)}' fill='rgba(88,166,255,0.35)' stroke='#58a6ff' stroke-width='2'/>");
-
-            sb.AppendLine("</svg>");
-            sb.AppendLine("</div>");
-
-            return sb.ToString();
         }
+
+        sb.AppendLine("""
+    </tbody>
+</table>
+</div>
+</div></div>
+""");
+
+        // =====================================================
+        // WINNERS TABLE
+        // =====================================================
+
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Best Parser Per Project</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+""");
+
+        sb.AppendLine("""
+<div class="table-shell">
+<table class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Winner</th>
+            <th>Strategy</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Confidence</th>
+            <th>Types</th>
+            <th>Refs</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+""");
+
+        foreach (var project in results)
+        {
+            var best = project.BestRun;
+
+            if (best == null)
+            {
+                sb.AppendLine($"""
+<tr>
+    <td>{Html(project.ProjectName)}</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>N/A</td>
+    <td>0.00</td>
+    <td>0%</td>
+    <td>0</td>
+    <td>0</td>
+    <td>0 ms</td>
+</tr>
+""");
+                continue;
+            }
+
+            sb.AppendLine($"""
+<tr>
+    <td>{Html(project.ProjectName)}</td>
+    <td>{Html(ShortenParserName(best.ParserName))}</td>
+    <td>{Html(ShortenStrategyName(best.Strategy))}</td>
+    <td>{Html(best.Status.ToString())}</td>
+    <td>{best.ComparativeScore:0.00}</td>
+    <td>{Clamp01(best.Confidence):P0}</td>
+    <td>{best.TypeCount}</td>
+    <td>{best.ReferenceCount}</td>
+    <td>{best.ExecutionTime.TotalMilliseconds:0} ms</td>
+</tr>
+""");
+        }
+
+        sb.AppendLine("""
+    </tbody>
+</table>
+</div>
+</div></div>
+""");
+
+        // =====================================================
+        // METHODOLOGY
+        // =====================================================
+
+        sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Interpretation</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard compares parser strategies across multiple projects executed in Batch Arena mode.</li>
+            <li>Comparative Score is contextual to each project and should be interpreted as a relative ranking signal, not as a universal benchmark.</li>
+            <li>Confidence is heuristic and should be read as structural usability, not formal parser correctness.</li>
+            <li>Winner distribution helps reveal which strategy most often dominates across heterogeneous codebases.</li>
+            <li>Strategy aggregates are useful for publication, comparative baselines and future CSV / JSON analytical exports.</li>
+            <li>Failures do not invalidate the whole batch, but they indicate strategies or projects deserving inspection.</li>
+        </ul>
+    </div>
+</div>
+""");
+
+        // =====================================================
+        // STYLES + SCRIPT
+        // =====================================================
+
+        sb.AppendLine("""
+<style>
+.grid-kpis.arena-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.arena-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.arena-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.parsing-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+</style>
+
+<script>
+function searchArenaProjects() {
+  var input = document.getElementById('searchProjects');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('arenaProjectTable');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortArenaTable(tableId, n) {
+  var table = document.getElementById(tableId);
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      var xv = x.innerText.toLowerCase();
+      var yv = y.innerText.toLowerCase();
+
+      if (dir === 'asc' && xv > yv) shouldSwitch = true;
+      if (dir === 'desc' && xv < yv) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+""");
+
+        sb.AppendLine(DashboardHtmlShell.RenderDocumentEnd(
+            "Generated by RefactorScope Parser Arena Dashboard // Shared Hub Layout"));
+
+        return sb.ToString();
+    }
+
+    // =====================================================
+    // CHARTS
+    // =====================================================
+
+    private static string RenderStrategyRadar(IReadOnlyList<StrategyAggregateMetric> metrics)
+    {
+        var regex = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.RegexFast);
+        var selective = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.Selective);
+        var adaptive = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.AdaptiveExperimental);
+        var incremental = metrics.FirstOrDefault(m => m.Strategy == ParserStrategy.IncrementalExperimental);
+
+        string JsScore(StrategyAggregateMetric? m) => F(NormalizeScore(m?.AverageScore ?? 0));
+        string JsConfidence(StrategyAggregateMetric? m) => F(Clamp01(m?.AverageConfidence ?? 0) * 100);
+        string JsSpeed(StrategyAggregateMetric? m)
+        {
+            var ms = m?.AverageExecutionMs ?? 0;
+            if (ms <= 0) return "100";
+            var normalized = Math.Max(0, 100 - Math.Min(100, ms / 10.0));
+            return F(normalized);
+        }
+
+        var sb = new StringBuilder();
+
+        sb.AppendLine("""<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">""");
+        sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;">Strategy Comparison Radar</h3>""");
+        sb.AppendLine("""<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Relative comparison of score, confidence and speed per parser strategy.</div>""");
+        sb.AppendLine("""<div id="arena-radar-container" style="display:flex;justify-content:center;width:100%;"></div>""");
+
+        sb.AppendLine($$"""
+<script>
+const arenaRadarSketch = (p) => {
+    const series = [
+        { name: "Regex",       color: "#ff9a3c", values: [{{JsScore(regex)}}, {{JsConfidence(regex)}}, {{JsSpeed(regex)}}] },
+        { name: "Selective",   color: "#7fd36b", values: [{{JsScore(selective)}}, {{JsConfidence(selective)}}, {{JsSpeed(selective)}}] },
+        { name: "Adaptive",    color: "#6ea8ff", values: [{{JsScore(adaptive)}}, {{JsConfidence(adaptive)}}, {{JsSpeed(adaptive)}}] },
+        { name: "Incremental", color: "#ffc15d", values: [{{JsScore(incremental)}}, {{JsConfidence(incremental)}}, {{JsSpeed(incremental)}}] }
+    ];
+    const labels = ["Score", "Confidence", "Speed"];
+    const maxRadius = 100;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(440, 360);
+        canvas.parent('arena-radar-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2);
+
+        p.stroke('rgba(255,255,255,0.10)');
+        p.noFill();
+
+        for (let i = 1; i <= 5; i++) {
+            let r = (maxRadius / 5) * i;
+            p.beginShape();
+            for (let a = 0; a < 360; a += 120) {
+                p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            }
+            p.endShape(p.CLOSE);
+        }
+
+        for (let a = 0; a < 360; a += 120) {
+            p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+        }
+
+        series.forEach((s, idx) => {
+            p.drawingContext.shadowColor = s.color;
+            p.drawingContext.shadowBlur = 8;
+            p.stroke(s.color);
+            p.strokeWeight(2);
+            p.fill(p.color(s.color + '22'));
+
+            p.beginShape();
+            for (let i = 0; i < s.values.length; i++) {
+                let angle = (i * 120) - 90;
+                let r = p.map(s.values[i], 0, 100, 0, maxRadius);
+                p.vertex(p.cos(angle) * r, p.sin(angle) * r);
+            }
+            p.endShape(p.CLOSE);
+        });
+
+        p.drawingContext.shadowBlur = 0;
+        p.noStroke();
+        p.fill('#eef4ff');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(12);
+        p.text(labels[0], 0, -maxRadius - 20);
+        p.textAlign(p.LEFT, p.CENTER);
+        p.text(labels[1], maxRadius + 12, 0);
+        p.textAlign(p.RIGHT, p.CENTER);
+        p.text(labels[2], -maxRadius - 12, 0);
+
+        let legendX = -150;
+        let legendY = 130;
+
+        series.forEach((s, i) => {
+            let x = legendX + ((i % 2) * 150);
+            let y = legendY + (Math.floor(i / 2) * 22);
+
+            p.drawingContext.shadowColor = s.color;
+            p.drawingContext.shadowBlur = 8;
+            p.fill(s.color);
+            p.rect(x, y - 7, 10, 10, 2);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#d9e4ff');
+            p.textAlign(p.LEFT, p.CENTER);
+            p.textSize(10);
+            p.text(s.name, x + 16, y);
+        });
+    };
+};
+new p5(arenaRadarSketch);
+</script>
+""");
+
+        sb.AppendLine("</div>");
+        return sb.ToString();
+    }
+
+    private static string RenderWinnerDonut(
+        IReadOnlyDictionary<string, int> winnerGroups)
+    {
+        var regex = winnerGroups.TryGetValue("Regex", out var r) ? r : 0;
+        var selective = winnerGroups.TryGetValue("Selective", out var s) ? s : 0;
+        var adaptive = winnerGroups.TryGetValue("Adaptive", out var a) ? a : 0;
+        var incremental = winnerGroups.TryGetValue("Incremental", out var i) ? i : 0;
+        var total = Math.Max(1, regex + selective + adaptive + incremental);
+
+        var sb = new StringBuilder();
+
+        sb.AppendLine("""<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">""");
+        sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;">Winner Distribution</h3>""");
+        sb.AppendLine("""<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">How often each strategy won across the batch projects.</div>""");
+        sb.AppendLine("""<div id="arena-donut-container" style="display:flex;justify-content:center;width:100%;"></div>""");
+
+        sb.AppendLine($$"""
+<script>
+const arenaDonutSketch = (p) => {
+    const data = [
+        { label: "Regex", value: {{regex}}, color: "#ff9a3c" },
+        { label: "Selective", value: {{selective}}, color: "#7fd36b" },
+        { label: "Adaptive", value: {{adaptive}}, color: "#6ea8ff" },
+        { label: "Incremental", value: {{incremental}}, color: "#ffc15d" }
+    ];
+    const total = {{total}};
+
+    p.setup = () => {
+        let canvas = p.createCanvas(360, 360);
+        canvas.parent('arena-donut-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2 - 20);
+
+        const outerRadius = 100;
+        const innerRadius = 75;
+
+        let currentAngle = -90;
+        p.strokeCap(p.SQUARE);
+
+        p.noFill();
+        p.strokeWeight(1.5);
+        p.stroke('rgba(255,255,255,0.10)');
+        p.ellipse(0, 0, outerRadius * 2 + 30);
+
+        data.forEach(item => {
+            if (item.value <= 0) return;
+
+            let angleSpan = (item.value / total) * 360;
+            let gap = 3;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 12;
+            p.stroke(item.color);
+            p.strokeWeight(25);
+
+            if (angleSpan > gap) {
+                p.arc(0, 0, outerRadius + innerRadius, outerRadius + innerRadius, currentAngle + gap / 2, currentAngle + angleSpan - gap / 2);
+            }
+
+            currentAngle += angleSpan;
+        });
+
+        p.drawingContext.shadowBlur = 0;
+        p.noStroke();
+        p.fill('#eef4ff');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(36);
+        p.textStyle(p.BOLD);
+        p.text(total, 0, -5);
+
+        p.textSize(11);
+        p.textStyle(p.NORMAL);
+        p.fill('#8fa8ff');
+        p.text("Project Winners", 0, 22);
+
+        let startX = -140;
+        let legendY = 160;
+        p.textAlign(p.LEFT, p.CENTER);
+
+        data.forEach((item, index) => {
+            let xOffset = startX + (index % 2) * 140;
+            let yOffset = legendY + Math.floor(index / 2) * 24;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 8;
+            p.fill(item.color);
+            p.rect(xOffset, yOffset - 4, 8, 8, 2);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#eef4ff');
+            p.textSize(10);
+            p.text(`${item.label} (${item.value})`, xOffset + 14, yOffset);
+        });
+    };
+};
+new p5(arenaDonutSketch);
+</script>
+""");
+
+        sb.AppendLine("</div>");
+        return sb.ToString();
+    }
+
+    // =====================================================
+    // METRICS
+    // =====================================================
+
+    private static List<StrategyAggregateMetric> BuildStrategyMetrics(
+        IReadOnlyList<ParserArenaRunResult> runs)
+    {
+        return runs
+            .GroupBy(r => r.Strategy)
+            .OrderBy(g => StrategyOrder(g.Key))
+            .Select(g => new StrategyAggregateMetric
+            {
+                Strategy = g.Key,
+                StrategyName = ShortenStrategyName(g.Key),
+                RunCount = g.Count(),
+                AverageScore = g.Average(x => x.ComparativeScore),
+                AverageConfidence = g.Average(x => Clamp01(x.Confidence)),
+                AverageExecutionMs = g.Average(x => x.ExecutionTime.TotalMilliseconds),
+                AverageFiles = g.Average(x => x.FileCount),
+                AverageTypes = g.Average(x => x.TypeCount),
+                AverageReferences = g.Average(x => x.ReferenceCount),
+                Failures = g.Count(x => x.Status == ParseStatus.Failed)
+            })
+            .ToList();
+    }
+
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    private static int StrategyOrder(ParserStrategy strategy)
+    {
+        return strategy switch
+        {
+            ParserStrategy.RegexFast => 1,
+            ParserStrategy.Selective => 2,
+            ParserStrategy.AdaptiveExperimental => 3,
+            ParserStrategy.IncrementalExperimental => 4,
+            ParserStrategy.Comparative => 99,
+            _ => 100
+        };
+    }
+
+    private static string ShortenStrategyName(ParserStrategy strategy)
+    {
+        return strategy switch
+        {
+            ParserStrategy.RegexFast => "Regex",
+            ParserStrategy.Selective => "Selective",
+            ParserStrategy.AdaptiveExperimental => "Adaptive",
+            ParserStrategy.IncrementalExperimental => "Incremental",
+            ParserStrategy.Comparative => "Comparative",
+            _ => strategy.ToString()
+        };
+    }
+
+    private static string ShortenParserName(string parserName)
+    {
+        return parserName switch
+        {
+            "CSharpRegex" => "Regex",
+            "CSharpTextual" => "Textual",
+            "HybridSelectiveParser" => "Selective",
+            "HybridParser (Adaptive)" => "Adaptive",
+            "HybridParser (Incremental)" => "Incremental",
+            _ => parserName
+        };
+    }
+
+    private static string GetSupportBand(double confidence)
+    {
+        var safe = Clamp01(confidence);
+        if (safe >= 0.85) return "High";
+        if (safe >= 0.65) return "Medium";
+        return "Low";
+    }
+
+    private static string GetBatchConfidenceDiagnosis(double confidence)
+    {
+        var safe = Clamp01(confidence);
+
+        if (safe >= 0.85)
+            return "Comparative batch confidence is high. The average structural extraction signal looks strong across the evaluated projects.";
+
+        if (safe >= 0.65)
+            return "Comparative batch confidence is moderate. The arena is usable, but some runs may still deserve manual inspection.";
+
+        return "Comparative batch confidence is low. Read rankings carefully before treating them as stable comparative evidence.";
+    }
+
+    private static string GetFailureDiagnosis(int failures, int totalRuns)
+    {
+        if (totalRuns <= 0)
+            return "No comparative runs were produced for this batch.";
+
+        if (failures == 0)
+            return "No parser run failed completely. Comparative evidence is operationally clean.";
+
+        if (failures <= Math.Max(1, totalRuns / 5))
+            return "A small portion of comparative runs failed. The batch remains usable, but specific projects or strategies deserve review.";
+
+        return "Failure volume is elevated. Batch conclusions should be interpreted with caution until the failing runs are inspected.";
+    }
+
+    private static string GetWinnerDiagnosis(IReadOnlyDictionary<string, int> winnerGroups)
+    {
+        if (winnerGroups.Count == 0)
+            return "No winner distribution could be established for this batch.";
+
+        var top = winnerGroups
+            .OrderByDescending(x => x.Value)
+            .First();
+
+        return $"{top.Key} won the largest number of projects in this batch, suggesting stronger comparative consistency across heterogeneous scopes.";
+    }
+
+    private static string GetStrategyDiagnosis(StrategyAggregateMetric? metric)
+    {
+        if (metric == null)
+            return "No aggregate strategy leader was identified in the current batch.";
+
+        return $"{metric.StrategyName} currently leads the aggregate comparison with average score {metric.AverageScore:0.00} and average confidence {Clamp01(metric.AverageConfidence):P0}.";
+    }
+
+    private static string GetExecutionDiagnosis(double avgExecutionMs)
+    {
+        if (avgExecutionMs <= 25)
+            return "Average comparative execution time is very lean, which favors repeated benchmarking.";
+
+        if (avgExecutionMs <= 250)
+            return "Average comparative execution time remains operationally healthy for iterative benchmarking.";
+
+        return "Average comparative execution time is elevated. For repeated arena usage, performance optimization may become relevant.";
+    }
+
+    private static double Clamp01(double value)
+        => Math.Max(0, Math.Min(1, value));
+
+    private static double NormalizeScore(double score)
+    {
+        if (score <= 0) return 0;
+        return Math.Max(0, Math.Min(100, score / 2.2));
+    }
+
+    private static string Html(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return text
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&#39;");
+    }
+
+    private static string F(double value)
+        => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private sealed class StrategyAggregateMetric
+    {
+        public ParserStrategy Strategy { get; init; }
+        public string StrategyName { get; init; } = "Unknown";
+        public int RunCount { get; init; }
+        public double AverageScore { get; init; }
+        public double AverageConfidence { get; init; }
+        public double AverageExecutionMs { get; init; }
+        public double AverageFiles { get; init; }
+        public double AverageTypes { get; init; }
+        public double AverageReferences { get; init; }
+        public int Failures { get; init; }
     }
 }
 
@@ -5817,6 +5708,836 @@ function sortTable(n) {
                 .Where(ns => !string.IsNullOrWhiteSpace(ns))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Count();
+        }
+    }
+}
+
+
+==========================================
+ARQUIVO: ArchitecturalStructureRendererP5.cs
+CAMINHO: C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\Renderers\ArchitecturalStructureRendererP5.cs
+==========================================
+using RefactorScope.Core.Results;
+using System.Text;
+
+namespace RefactorScope.Exporters.Dashboards.Renderers
+{
+    public sealed class ArchitecturalStructureRendererP5
+    {
+        public string RenderRadialTree(ProjectStructureResult? structure, string fallbackRootName = "Project")
+        {
+            var resolvedRootName = ResolveRootNameFromStructure(structure, fallbackRootName);
+            var folderPaths = BuildFolderPaths(structure, resolvedRootName);
+
+            var sb = new StringBuilder();
+
+            var jsArray = string.Join(",\n  ",
+                folderPaths.Select(p => $"\"{p.Replace("\\", "/").Replace("\"", "\\\"")}\""));
+
+            sb.AppendLine("""
+<div class="chart-container"
+     style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 12px 12px 12px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:980px;"
+     augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+""");
+
+            sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;font-size:18px;">Architectural Structure</h3>""");
+            sb.AppendLine($"""<div class="chart-note" style="margin:0 0 10px 0;font-size:13px;color:#9fb3c8;text-align:center;">Root: <b>{Html(resolvedRootName)}</b> // domains and hierarchical layout.</div>""");
+            sb.AppendLine("""<style>#p5-radial-tree-container canvas { width: 100% !important; max-width: 1400px; height: auto !important; display:block; }</style>""");
+            sb.AppendLine("""<div id="p5-radial-tree-container" style="width:100%; display:flex; justify-content:center; align-items:center; flex:1;"></div>""");
+
+            sb.AppendLine($$"""
+<script>
+const radialTreeSketch = (p) => {
+  let folderPaths = [
+  {{jsArray}}
+  ];
+
+  const BG = "#050814";
+  const LABEL_STROKE = "rgba(0,0,0,0.92)";
+
+  const DOMAIN_COLORS = [
+    "#00f0ff", "#ff9a3c", "#39ff14", "#6c63ff",
+    "#ff003c", "#ffea00", "#d100ff", "#00aeff"
+  ];
+
+  let rootNode;
+  let allNodes = [];
+  let links = [];
+  let maxDepth = 0;
+  let domains = [];
+
+  p.setup = () => {
+    let canvas = p.createCanvas(1400, 1160);
+    canvas.parent("p5-radial-tree-container");
+    p.angleMode(p.DEGREES);
+    p.textFont("monospace");
+
+    buildTree();
+    calculateLeafCounts(rootNode);
+
+    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
+    calculatePositions(rootNode, 0, 360, 0, radiusStep);
+  };
+
+  p.draw = () => {
+    p.background(BG);
+    p.translate(p.width / 2, p.height / 2);
+
+    drawRadarBackground();
+    drawDomainShading();
+    drawLinks();
+    drawNodes();
+  };
+
+  function buildTree() {
+    rootNode = { name: "{{resolvedRootName}}", children: [], depth: 0, leafCount: 0 };
+    allNodes.push(rootNode);
+
+    folderPaths.forEach(path => {
+      let normalized = path.replaceAll("\\\\", "/");
+      let prefix = "{{resolvedRootName}}/";
+      let parts = normalized.startsWith(prefix)
+        ? normalized.replace(prefix, "").split("/").filter(Boolean)
+        : normalized.split("/").filter(Boolean);
+
+      let currentNode = rootNode;
+
+      parts.forEach((part, index) => {
+        let existingChild = currentNode.children.find(c => c.name === part);
+        if (!existingChild) {
+          let newNode = {
+            name: part,
+            children: [],
+            depth: index + 1,
+            parent: currentNode
+          };
+          currentNode.children.push(newNode);
+          allNodes.push(newNode);
+          currentNode = newNode;
+          if (newNode.depth > maxDepth) maxDepth = newNode.depth;
+        } else {
+          currentNode = existingChild;
+        }
+      });
+    });
+  }
+
+  function calculateLeafCounts(node) {
+    if (node.children.length === 0) {
+      node.leafCount = 1;
+    } else {
+      node.leafCount = 0;
+      node.children.forEach(c => {
+        node.leafCount += calculateLeafCounts(c);
+      });
+    }
+    return node.leafCount;
+  }
+
+  function calculatePositions(node, angleStart, angleEnd, depth, radiusStep) {
+    let r = depth * radiusStep;
+    let angle = (angleStart + angleEnd) / 2;
+
+    if (depth === 0) {
+      node.x = 0;
+      node.y = 0;
+      node.angle = 0;
+    } else {
+      node.x = p.cos(angle) * r;
+      node.y = p.sin(angle) * r;
+      node.angle = angle;
+
+      if (depth === 1) {
+        let colorIndex = rootNode.children.indexOf(node) % DOMAIN_COLORS.length;
+        node.color = DOMAIN_COLORS[colorIndex];
+        domains.push({
+          name: node.name,
+          angleStart: angleStart,
+          angleEnd: angleEnd,
+          color: node.color,
+          radius: maxDepth * radiusStep + 42
+        });
+      } else {
+        node.color = node.parent.color;
+      }
+
+      links.push({ source: node.parent, target: node, color: node.color });
+    }
+
+    let currentAngle = angleStart;
+    node.children.forEach(child => {
+      let angleSpan = (child.leafCount / Math.max(1, node.leafCount)) * (angleEnd - angleStart);
+      calculatePositions(child, currentAngle, currentAngle + angleSpan, depth + 1, radiusStep);
+      currentAngle += angleSpan;
+    });
+  }
+
+  function drawRadarBackground() {
+    p.noFill();
+    p.stroke(255, 255, 255, 10);
+    p.strokeWeight(1);
+
+    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
+
+    for (let i = 1; i <= maxDepth + 1; i++) {
+      p.ellipse(0, 0, i * radiusStep * 2);
+    }
+  }
+
+  function drawDomainShading() {
+    p.noStroke();
+
+    domains.forEach(d => {
+      let c = p.color(d.color);
+      c.setAlpha(16);
+      p.fill(c);
+
+      p.beginShape();
+      p.vertex(0, 0);
+      for (let a = d.angleStart; a <= d.angleEnd; a += 1) {
+        p.vertex(p.cos(a) * d.radius, p.sin(a) * d.radius);
+      }
+      p.endShape(p.CLOSE);
+
+      let edge = p.color(d.color);
+      edge.setAlpha(120);
+      p.stroke(edge);
+      p.strokeWeight(1.6);
+      p.line(0, 0, p.cos(d.angleStart) * d.radius, p.sin(d.angleStart) * d.radius);
+      p.noStroke();
+    });
+  }
+
+  function drawLinks() {
+    p.noFill();
+
+    links.forEach((link, i) => {
+      p.stroke(link.color);
+      p.drawingContext.shadowBlur = 10;
+      p.drawingContext.shadowColor = link.color;
+      p.strokeWeight(p.map(link.target.depth, 1, Math.max(1, maxDepth), 2.2, 0.6));
+
+      p.line(link.source.x, link.source.y, link.target.x, link.target.y);
+
+      let t = (p.frameCount * 0.002 + (i * 0.1)) % 1;
+
+      let px = p.lerp(link.target.x, link.source.x, t);
+      let py = p.lerp(link.target.y, link.source.y, t);
+
+      p.drawingContext.shadowColor = "#ffffff";
+      p.drawingContext.shadowBlur = 14;
+      p.fill(255);
+      p.noStroke();
+      p.ellipse(px, py, 3.8, 3.8);
+    });
+
+    p.drawingContext.shadowBlur = 0;
+  }
+
+  function drawNodes() {
+    p.drawingContext.shadowBlur = 0;
+
+    allNodes.forEach(node => {
+      let nColor = node.depth === 0 ? "#ffffff" : node.color;
+
+      p.drawingContext.shadowBlur = 15;
+      p.drawingContext.shadowColor = nColor;
+      p.fill(BG);
+      p.stroke(nColor);
+      p.strokeWeight(2);
+
+      let nodeSize = node.depth === 0 ? 16 : p.map(node.depth, 1, Math.max(1, maxDepth), 12, 6);
+      p.ellipse(node.x, node.y, nodeSize, nodeSize);
+
+      p.noStroke();
+      p.fill(nColor);
+      p.ellipse(node.x, node.y, nodeSize * 0.4);
+
+      p.drawingContext.shadowBlur = 0;
+
+      p.push();
+      p.translate(node.x, node.y);
+
+      if (node.depth === 0) {
+        drawRootLabel(node);
+      } else {
+        drawRadialLabel(node);
+      }
+
+      p.pop();
+    });
+  }
+
+  function drawRootLabel(node) {
+    let label = node.name;
+
+    p.textAlign(p.CENTER, p.BOTTOM);
+    p.textSize(20);
+    p.textStyle(p.BOLD);
+
+    p.drawingContext.shadowBlur = 0;
+    p.drawingContext.shadowColor = "transparent";
+
+    p.stroke(0, 0, 0, 180);
+    p.strokeWeight(2.4);
+    p.strokeJoin(p.ROUND);
+    p.fill(255);
+    p.text(label, 0, -18);
+
+    p.noStroke();
+  }
+
+  function drawRadialLabel(node) {
+    let isLeftSide = node.angle > 90 && node.angle < 270;
+    let textAngle = isLeftSide ? node.angle + 180 : node.angle;
+    p.rotate(textAngle);
+
+    let label = node.name;
+    let fontSize = p.map(node.depth, 1, Math.max(1, maxDepth), 14, 11.5);
+    p.textSize(fontSize);
+    p.textStyle(p.BOLD);
+
+    let radialOffset = p.map(node.depth, 1, Math.max(1, maxDepth), 18, 13);
+    let perpendicularOffset =
+      ((node.depth % 2 === 0) ? 1 : -1) * p.map(node.depth, 1, Math.max(1, maxDepth), 6, 2.5);
+
+    let xOffset = isLeftSide ? -radialOffset : radialOffset;
+    let yOffset = perpendicularOffset;
+
+    p.textAlign(isLeftSide ? p.RIGHT : p.LEFT, p.CENTER);
+
+    let isLeaf = node.children.length === 0;
+
+    p.drawingContext.shadowBlur = isLeaf ? 14 : 10;
+    p.drawingContext.shadowColor = node.color;
+
+    p.stroke(LABEL_STROKE);
+    p.strokeWeight(isLeaf ? 3 : 3.4);
+    p.strokeJoin(p.ROUND);
+
+    if (isLeaf) {
+      p.fill(255);
+    } else {
+      p.fill(255, 255, 255, 220);
+    }
+
+    p.text(label, xOffset, yOffset);
+
+    p.drawingContext.shadowBlur = 0;
+    p.noStroke();
+  }
+};
+new p5(radialTreeSketch);
+</script>
+""");
+
+            sb.AppendLine("</div>");
+            return sb.ToString();
+        }
+
+        private static string ResolveRootNameFromStructure(ProjectStructureResult? structure, string fallbackRootName)
+        {
+            if (structure?.Lines == null || !structure.Lines.Any())
+                return fallbackRootName;
+
+            foreach (var rawLine in structure.Lines)
+            {
+                if (string.IsNullOrWhiteSpace(rawLine))
+                    continue;
+
+                var label = ExtractTreeLabel(rawLine);
+                if (!string.IsNullOrWhiteSpace(label))
+                    return label;
+            }
+
+            return fallbackRootName;
+        }
+
+        private static List<string> BuildFolderPaths(ProjectStructureResult? structure, string rootName)
+        {
+            var results = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (structure?.Lines == null || structure.Lines.Count == 0)
+                return results.ToList();
+
+            var rootLine = structure.Lines.FirstOrDefault(l => !string.IsNullOrWhiteSpace(l));
+            if (string.IsNullOrWhiteSpace(rootLine))
+                return results.ToList();
+
+            var parsedRoot = ExtractTreeLabel(rootLine);
+            if (string.IsNullOrWhiteSpace(parsedRoot))
+                parsedRoot = rootName;
+
+            var stack = new List<string> { parsedRoot };
+
+            bool firstLineConsumed = false;
+
+            foreach (var rawLine in structure.Lines)
+            {
+                if (string.IsNullOrWhiteSpace(rawLine))
+                    continue;
+
+                var line = rawLine.Replace('\t', ' ');
+
+                if (!line.Contains("+--") && !line.Contains("+--"))
+                    continue;
+
+                var label = ExtractTreeLabel(line);
+                if (string.IsNullOrWhiteSpace(label))
+                    continue;
+
+                if (!firstLineConsumed)
+                {
+                    firstLineConsumed = true;
+                    continue; // raiz já está no stack
+                }
+
+                if (LooksLikeFile(label))
+                    continue;
+
+                var rawDepth = GetTreeDepth(line);
+                var effectiveDepth = rawDepth + 1; // filhos imediatos da raiz entram no nível 1
+
+                while (stack.Count > effectiveDepth)
+                    stack.RemoveAt(stack.Count - 1);
+
+                if (stack.Count == effectiveDepth)
+                {
+                    stack.Add(label);
+                }
+                else if (stack.Count > effectiveDepth)
+                {
+                    stack[effectiveDepth] = label;
+                }
+                else
+                {
+                    while (stack.Count < effectiveDepth)
+                        stack.Add("?");
+                    stack.Add(label);
+                }
+
+                if (stack.Count > 1)
+                    results.Add(string.Join("/", stack));
+            }
+
+            return results
+                .Where(p => p.StartsWith(parsedRoot + "/", StringComparison.OrdinalIgnoreCase))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static int GetTreeDepth(string line)
+        {
+            int depth = 0;
+            int index = 0;
+
+            while (index + 4 <= line.Length)
+            {
+                var chunk = line.Substring(index, 4);
+
+                if (chunk == "¦   " || chunk == "    ")
+                {
+                    depth++;
+                    index += 4;
+                    continue;
+                }
+
+                break;
+            }
+
+            return depth;
+        }
+
+        private static string ExtractTreeLabel(string line)
+        {
+            var branchIndex = line.IndexOf("+-- ", StringComparison.Ordinal);
+            if (branchIndex >= 0)
+                return line[(branchIndex + 4)..].Trim();
+
+            branchIndex = line.IndexOf("+-- ", StringComparison.Ordinal);
+            if (branchIndex >= 0)
+                return line[(branchIndex + 4)..].Trim();
+
+            return string.Empty;
+        }
+
+        private static bool LooksLikeFile(string label)
+        {
+            var normalized = label.Trim();
+
+            return normalized.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".props", StringComparison.OrdinalIgnoreCase)
+                || normalized.EndsWith(".targets", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string Html(string? text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            return text
+                .Replace("&", "&amp;")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&#39;");
+        }
+
+        // =====================================================
+        // 2. INFORMATION FLOW PIPELINE
+        // =====================================================
+        public string RenderInformationFlowPipeline()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("""
+<div class="section">
+    <div class="section-title">
+        <h2>Control Room // Deep Structure</h2>
+        <div class="line"></div>
+    </div>
+""");
+
+            sb.AppendLine("""<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);width:100%;" augmented-ui="tl-clip tr-clip bl-clip br-clip border">""");
+            sb.AppendLine("""<h3 style="margin:0 0 6px 0;text-align:center;">Information Flow Pipeline</h3>""");
+            sb.AppendLine("""<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Parsing &rarr; structural model &rarr; analyzers &rarr; reconsolidation &rarr; outputs.</div>""");
+
+            sb.AppendLine("""<style>#p5-pipeline-container canvas { width: 100% !important; max-width: 1600px; height: auto !important; }</style>""");
+            sb.AppendLine("""<div id="p5-pipeline-container" style="width:100%; display:flex; justify-content:center; align-items:center;"></div>""");
+
+            sb.AppendLine("""
+<script>
+const pipelineSketch = (p) => {
+    let nodes = [];
+    let links = [];
+    let particles = [];
+    let palette;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(1600, 980);
+        canvas.parent('p5-pipeline-container');
+        p.pixelDensity(2);
+        p.textFont("monospace");
+        p.rectMode(p.CORNER);
+        p.angleMode(p.DEGREES);
+
+        palette = {
+            bg: p.color("#0b1020"), 
+            grid: p.color(40, 90, 140, 30),
+            text: p.color("#eef4ff"),
+            muted: p.color("#8fa8ff"),
+            parser: p.color("#ff9a3c"),
+            parseBranch: p.color("#ffc15d"),
+            dto: p.color("#7fd36b"),
+            analyzer: p.color("#6ea8ff"),
+            derived: p.color("#d08cff"),
+            hub: p.color("#ff6a3d"),
+            output: p.color("#00e5ff"),
+            optional: p.color("#ff9ad5")
+        };
+
+        buildLayout();
+        buildParticles();
+    };
+
+    p.draw = () => {
+        p.clear();
+        drawBackground();
+        drawDomainBands();
+        drawLinks();
+        drawParticles();
+        drawNodes();
+        drawLegend();
+    };
+
+    function buildLayout() {
+        nodes = [
+            p.makeNode("startup", "Startup / CLI", 60, 80, 180, 54, "entry"),
+            p.makeNode("config", "RunConfiguration", 300, 80, 180, 54, "entry"),
+            p.makeNode("scope", "RefactorScopeConfig", 540, 80, 200, 54, "entry"),
+            p.makeNode("selector", "ParserSelector", 780, 80, 180, 54, "parser"),
+            p.makeNode("strategy", "Parsing Strategy", 1040, 80, 180, 54, "parser"),
+
+            p.makeNode("regex", "Regex Baseline", 1320, 80, 180, 52, "parseBranch"),
+            p.makeNode("complexity", "Complexity Scan", 1320, 180, 180, 52, "parseBranch"),
+            p.makeNode("textual", "Textual / Selective", 1320, 280, 180, 52, "parseBranch"),
+
+            p.makeNode("merge", "Parsing Merge", 1040, 280, 180, 54, "parser"),
+            p.makeNode("parserResult", "IParserResult", 780, 280, 180, 54, "dto"),
+            p.makeNode("model", "ModeloEstrutural", 540, 280, 180, 54, "dto"),
+            p.makeNode("context", "AnalysisContext", 300, 280, 180, 54, "dto"),
+
+            p.makeNode("structure", "Project Structure", 60, 420, 180, 54, "analyzer"),
+            p.makeNode("candidates", "Structural Candidates", 300, 420, 190, 54, "analyzer"),
+            p.makeNode("architecture", "Architecture", 540, 420, 160, 54, "analyzer"),
+            p.makeNode("coupling", "Coupling", 840, 420, 140, 54, "analyzer"),
+            p.makeNode("implicit", "Implicit Coupling", 1080, 420, 180, 54, "analyzer"),
+
+            p.makeNode("refinement", "Refinement", 220, 540, 160, 54, "derived"),
+            p.makeNode("fitness", "Fitness Gates", 460, 540, 160, 54, "derived"),
+            p.makeNode("hygiene", "Hygiene", 680, 540, 140, 54, "derived"),
+            p.makeNode("solid", "SOLID", 920, 540, 120, 54, "derived"),
+
+            p.makeNode("report", "ConsolidatedReport", 540, 680, 240, 64, "hub"),
+            p.makeNode("statistics", "Statistics", 1020, 680, 150, 54, "optional"),
+            p.makeNode("effort", "Effort", 1260, 680, 120, 54, "optional"),
+
+            p.makeNode("html", "HTML Outputs", 60, 840, 160, 54, "output"),
+            p.makeNode("markdown", "Markdown Outputs", 300, 840, 190, 54, "output"),
+            p.makeNode("csv", "CSV Outputs", 540, 840, 150, 54, "output"),
+            p.makeNode("analyzerOut", "Output Analyzers", 780, 840, 190, 54, "output"),
+            p.makeNode("statsOut", "Output Statistics", 1020, 840, 180, 54, "output"),
+            p.makeNode("effortOut", "Output Effort", 1260, 840, 170, 54, "output")
+        ];
+
+        links = [
+            p.makeLink("startup", "config", "main"), p.makeLink("config", "scope", "main"),
+            p.makeLink("scope", "selector", "main"), p.makeLink("selector", "strategy", "main"),
+            p.makeLink("strategy", "regex", "branch"), p.makeLink("strategy", "complexity", "branch"),
+            p.makeLink("strategy", "textual", "branch"), p.makeLink("regex", "merge", "branch"),
+            p.makeLink("complexity", "merge", "branch"), p.makeLink("textual", "merge", "branch"),
+            p.makeLink("merge", "parserResult", "main"), p.makeLink("parserResult", "model", "main"),
+            p.makeLink("model", "context", "main"), p.makeLink("context", "structure", "analyzer"),
+            p.makeLink("context", "candidates", "analyzer"), p.makeLink("context", "architecture", "analyzer"),
+            p.makeLink("context", "coupling", "analyzer"), p.makeLink("context", "implicit", "analyzer"),
+            p.makeLink("candidates", "refinement", "derived"), p.makeLink("coupling", "solid", "derived"),
+            p.makeLink("architecture", "fitness", "derived"), p.makeLink("architecture", "hygiene", "derived"),
+            p.makeLink("implicit", "hygiene", "derived"), p.makeLink("structure", "report", "return"),
+            p.makeLink("refinement", "report", "return"), p.makeLink("fitness", "report", "return"),
+            p.makeLink("hygiene", "report", "return"), p.makeLink("solid", "report", "return"),
+            p.makeLink("candidates", "report", "return"), p.makeLink("architecture", "report", "return"),
+            p.makeLink("coupling", "report", "return"), p.makeLink("implicit", "report", "return"),
+            p.makeLink("report", "statistics", "optional"), p.makeLink("report", "effort", "optional"),
+            p.makeLink("report", "html", "output"), p.makeLink("report", "markdown", "output"),
+            p.makeLink("report", "csv", "output"), p.makeLink("report", "analyzerOut", "output"),
+            p.makeLink("statistics", "statsOut", "output"), p.makeLink("effort", "effortOut", "output")
+        ];
+    }
+
+    function buildParticles() {
+        particles = [];
+        for (let i = 0; i < links.length; i++) {
+            particles.push({
+                linkIndex: i,
+                t: p.random(),
+                speed: p.random(0.002, 0.005),
+                size: p.random(3, 6)
+            });
+        }
+    }
+
+    p.makeNode = (id, label, x, y, w, h, kind) => {
+        return { id, label, x, y, w, h, kind };
+    };
+
+    p.makeLink = (from, to, kind) => {
+        return { from, to, kind };
+    };
+
+    function getNode(id) {
+        return nodes.find(n => n.id === id);
+    }
+
+    function drawBackground() {
+        p.stroke(palette.grid);
+        p.strokeWeight(1);
+        for (let x = 0; x < p.width; x += 40) p.line(x, 0, x, p.height);
+        for (let y = 0; y < p.height; y += 40) p.line(0, y, p.width, y);
+    }
+
+    function drawDomainBands() {
+        const bands = [
+            { x: 40, y: 45, w: 720, h: 120, title: "CONFIG", c: p.color(100, 140, 255, 12) },
+            { x: 760, y: 45, w: 760, h: 310, title: "PARSING", c: p.color(255, 154, 60, 10) },
+            { x: 40, y: 380, w: 1240, h: 240, title: "ANALYSIS", c: p.color(110, 168, 255, 10) }
+        ];
+
+        for (let b of bands) {
+            p.noStroke();
+            p.fill(b.c);
+            p.rect(b.x, b.y, b.w, b.h, 16);
+            p.fill(255, 255, 255, 100);
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.textStyle(p.BOLD);
+            p.text(b.title, b.x + 14, b.y + 10);
+        }
+    }
+
+    function getEdgePoints(a, b) {
+        let cx1 = a.x + a.w / 2; let cy1 = a.y + a.h / 2;
+        let cx2 = b.x + b.w / 2; let cy2 = b.y + b.h / 2;
+        let dx = cx2 - cx1; let dy = cy2 - cy1;
+        let isHoriz = p.abs(dx) > p.abs(dy) * 0.8;
+        
+        let x1 = cx1, y1 = cy1, x2 = cx2, y2 = cy2;
+        
+        if (isHoriz) {
+            x1 = dx > 0 ? a.x + a.w : a.x;
+            x2 = dx > 0 ? b.x : b.x + b.w;
+        } else {
+            y1 = dy > 0 ? a.y + a.h : a.y;
+            y2 = dy > 0 ? b.y : b.y + b.h;
+        }
+        
+        let cp1x = x1, cp1y = y1, cp2x = x2, cp2y = y2;
+        if (isHoriz) {
+            let bend = p.max(40, p.abs(x2 - x1) * 0.4);
+            cp1x = x1 + (dx > 0 ? bend : -bend); cp2x = x2 + (dx > 0 ? -bend : bend);
+        } else {
+            let bend = p.max(40, p.abs(y2 - y1) * 0.4);
+            cp1y = y1 + (dy > 0 ? bend : -bend); cp2y = y2 + (dy > 0 ? -bend : bend);
+        }
+        
+        return { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 };
+    }
+
+    function drawLinks() {
+        for (let link of links) {
+            let a = getNode(link.from);
+            let b = getNode(link.to);
+            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(a, b);
+
+            let col = getLinkColor(link.kind);
+            let alpha = p.map(p.sin(p.frameCount * 2 + a.x * 0.01), -1, 1, 80, 180);
+            
+            let c = p.color(col); c.setAlpha(alpha);
+            p.stroke(c);
+            p.strokeWeight(getLinkThickness(link.kind));
+            p.noFill();
+            p.drawingContext.shadowBlur = 10;
+            p.drawingContext.shadowColor = col.toString();
+            
+            p.bezier(x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2);
+            p.drawingContext.shadowBlur = 0;
+
+            let t = 1.0;
+            let tx = p.bezierTangent(x1, cp1x, cp2x, x2, t);
+            let ty = p.bezierTangent(y1, cp1y, cp2y, y2, t);
+            
+            p.push();
+            p.translate(x2, y2);
+            p.rotate(p.atan2(ty, tx));
+            p.noStroke(); p.fill(col);
+            p.triangle(0, 0, -10, 5, -10, -5);
+            p.pop();
+        }
+    }
+
+    function drawParticles() {
+        for (let pt of particles) {
+            let link = links[pt.linkIndex];
+            let { x1, y1, cp1x, cp1y, cp2x, cp2y, x2, y2 } = getEdgePoints(getNode(link.from), getNode(link.to));
+
+            pt.t += pt.speed;
+            if (pt.t > 1) pt.t = 0;
+
+            let px = p.bezierPoint(x1, cp1x, cp2x, x2, pt.t);
+            let py = p.bezierPoint(y1, cp1y, cp2y, y2, pt.t);
+
+            let col = getLinkColor(link.kind);
+            p.noStroke(); p.fill(255);
+            p.drawingContext.shadowBlur = 15;
+            p.drawingContext.shadowColor = col.toString();
+            p.ellipse(px, py, pt.size);
+            p.drawingContext.shadowBlur = 0;
+        }
+    }
+
+    function drawNodes() {
+        for (let node of nodes) drawSciFiNode(node);
+    }
+
+    function drawSciFiNode(node) {
+        let col = getNodeColor(node.kind);
+        let pulse = p.map(p.sin(p.frameCount * 2 + node.x * 0.05), -1, 1, 5, 16);
+        let c = 12; 
+
+        p.noStroke(); p.fill(p.red(col), p.green(col), p.blue(col), 15);
+        p.rect(node.x - 5, node.y - 5, node.w + 10, node.h + 10, 16);
+
+        p.fill(12, 18, 30, 240);
+        p.stroke(col);
+        p.strokeWeight(node.kind === "hub" ? 2.2 : 1.4);
+        p.drawingContext.shadowBlur = pulse;
+        p.drawingContext.shadowColor = col.toString();
+
+        p.beginShape();
+        p.vertex(node.x + c, node.y);
+        p.vertex(node.x + node.w, node.y);
+        p.vertex(node.x + node.w, node.y + node.h - c);
+        p.vertex(node.x + node.w - c, node.y + node.h);
+        p.vertex(node.x, node.y + node.h);
+        p.vertex(node.x, node.y + c);
+        p.endShape(p.CLOSE);
+
+        p.drawingContext.shadowBlur = 0;
+
+        p.noStroke(); p.fill(col);
+        p.rect(node.x + 8, node.y + 12, 4, node.h - 24, 2);
+
+        p.fill(255); p.noStroke(); p.textAlign(p.LEFT, p.CENTER);
+        p.textSize(node.kind === "hub" ? 15 : 12);
+        p.textStyle(p.BOLD);
+        p.text(node.label, node.x + 22, node.y + node.h / 2 - 4);
+
+        p.fill(255, 255, 255, 130);
+        p.textSize(10); p.textStyle(p.NORMAL);
+        p.text(getSubtitle(node.kind), node.x + 22, node.y + node.h / 2 + 12);
+    }
+
+    function getSubtitle(kind) {
+        if (kind === "entry") return "startup / config";
+        if (kind === "parser") return "flow control";
+        if (kind === "parseBranch") return "parser branch";
+        if (kind === "dto") return "data carrier";
+        if (kind === "analyzer") return "domain reader";
+        if (kind === "derived") return "derived signal";
+        if (kind === "hub") return "reconsolidation point";
+        if (kind === "optional") return "optional branch";
+        if (kind === "output") return "projection";
+        return "";
+    }
+
+    function getNodeColor(k) {
+        return k==="entry"?palette.muted : k==="parser"?palette.parser : k==="parseBranch"?palette.parseBranch : k==="dto"?palette.dto : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="hub"?palette.hub : k==="optional"?palette.optional : palette.output;
+    }
+    function getLinkColor(k) {
+        return k==="main"?palette.parser : k==="branch"?palette.parseBranch : k==="analyzer"?palette.analyzer : k==="derived"?palette.derived : k==="return"?palette.hub : k==="optional"?palette.optional : palette.output;
+    }
+    function getLinkThickness(k) {
+        return k==="main"?3.5 : k==="return"?3.2 : k==="output"?3.0 : k==="branch"?2.2 : k==="analyzer"?2.1 : k==="derived"?1.8 : 1.9;
+    }
+
+    function drawLegend() {
+        const items = [
+            ["Main Flow", palette.parser], ["Parser Branch", palette.parseBranch],
+            ["DTO / Context", palette.dto], ["Analyzer", palette.analyzer],
+            ["Derived Signal", palette.derived], ["Consolidation", palette.hub], ["Output", palette.output]
+        ];
+
+        let x = 40; let y = p.height - 30;
+        for (let i = 0; i < items.length; i++) {
+            p.fill(items[i][1]); p.noStroke(); p.rect(x, y, 10, 10, 2);
+            p.fill(255, 255, 255, 180); p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
+            p.text(items[i][0], x + 16, y + 5);
+            x += p.textWidth(items[i][0]) + 50;
+        }
+    }
+};
+new p5(pipelineSketch);
+</script>
+""");
+
+            sb.AppendLine("</div></div>");
+            return sb.ToString();
         }
     }
 }
@@ -8483,6 +9204,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static void RenderExecutiveOverview(StringBuilder sb, ReportSnapshot snapshot)
         {
+            var parserConfidence = Clamp01(snapshot.Parsing.ParserConfidence);
+
             sb.AppendLine("## Executive Overview");
             sb.AppendLine();
             sb.AppendLine("This section summarizes the overall state of the run in a compact, management-friendly format.");
@@ -8491,7 +9214,7 @@ namespace RefactorScope.Exporters.Reports
 
             sb.AppendLine("| Signal | Value | Interpretation |");
             sb.AppendLine("|--------|-------|----------------|");
-            sb.AppendLine($"| Parser Confidence | `{snapshot.Parsing.ParserConfidence:P0}` | {snapshot.Parsing.ConfidenceBand} confidence for structural extraction |");
+            sb.AppendLine($"| Parser Confidence | `{parserConfidence:P0}` | {snapshot.Parsing.ConfidenceBand} confidence for structural extraction |");
             sb.AppendLine($"| Structural Candidates | `{snapshot.Structural.StructuralCandidates}` | Initial dead-code hypothesis set |");
             sb.AppendLine($"| Unresolved | `{snapshot.Structural.Unresolved}` | Candidates still not explained after refinement |");
             sb.AppendLine($"| Pattern Similarity | `{snapshot.Structural.PatternSimilarity}` | Candidates protected by architectural pattern similarity |");
@@ -8510,6 +9233,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static void RenderParserTelemetry(StringBuilder sb, ReportSnapshot snapshot)
         {
+            var parserConfidence = Clamp01(snapshot.Parsing.ParserConfidence);
+
             sb.AppendLine("## Parser Telemetry");
             sb.AppendLine();
             sb.AppendLine("This section describes how the parser behaved during the run and how much structural evidence was extracted.");
@@ -8518,7 +9243,7 @@ namespace RefactorScope.Exporters.Reports
             sb.AppendLine("| Metric | Value |");
             sb.AppendLine("|--------|-------|");
             sb.AppendLine($"| Parser Name | `{snapshot.Parsing.ParserName}` |");
-            sb.AppendLine($"| Confidence | `{snapshot.Parsing.ParserConfidence:P0}` |");
+            sb.AppendLine($"| Confidence | `{parserConfidence:P0}` |");
             sb.AppendLine($"| Confidence Band | `{snapshot.Parsing.ConfidenceBand}` |");
             sb.AppendLine($"| Files | `{snapshot.Parsing.Files}` |");
             sb.AppendLine($"| Types | `{snapshot.Parsing.Types}` |");
@@ -8635,6 +9360,8 @@ namespace RefactorScope.Exporters.Reports
 
         private static void RenderOperationalGuidance(StringBuilder sb, ReportSnapshot snapshot)
         {
+            var parserConfidence = Clamp01(snapshot.Parsing.ParserConfidence);
+
             sb.AppendLine("## Operational Guidance");
             sb.AppendLine();
             sb.AppendLine("Below is a concise operational interpretation of the current run.");
@@ -8642,7 +9369,7 @@ namespace RefactorScope.Exporters.Reports
             sb.AppendLine("### Suggested interpretation");
             sb.AppendLine();
 
-            if (snapshot.Parsing.ParserConfidence < 0.65)
+            if (parserConfidence < 0.65)
             {
                 sb.AppendLine("- Parser output should be treated with caution because extraction confidence is low.");
             }
@@ -8719,6 +9446,9 @@ namespace RefactorScope.Exporters.Reports
 
         private static string YesNo(bool value)
             => value ? "Yes" : "No";
+
+        private static double Clamp01(double value)
+            => Math.Max(0, Math.Min(1, value));
     }
 }
 
@@ -9189,7 +9919,7 @@ namespace RefactorScope.Exporters.Styling
     /// <summary>
     /// Copia os assets visuais dos dashboards para a pasta de saída.
     ///
-    /// Origem esperada no repositório:
+    /// Origem preferencial:
     ///
     /// RefactorScope/
     ///   Exporters/
@@ -9197,23 +9927,16 @@ namespace RefactorScope.Exporters.Styling
     ///       Css/
     ///       Vendor/
     ///
+    /// Fallback aceito:
+    ///
+    /// RefactorScope/
+    ///   Batch/
+    ///     Assets/
+    ///
     /// Destino na publicação:
     ///
     /// <output>/assets/css/
     /// <output>/assets/vendor/
-    ///
-    /// Estratégia de tema
-    /// ------------------
-    /// O sistema copia:
-    /// - dashboard-base.css
-    /// - dashboard-components.css
-    /// - o tema resolvido pelo DashboardThemeSelector
-    ///
-    /// O tema selecionado é copiado para a saída com o nome fixo:
-    /// - dashboard-theme.css
-    ///
-    /// Isso permite que o HTML referencie sempre o mesmo arquivo,
-    /// independentemente do tema escolhido em configuração.
     /// </summary>
     public static class DashboardAssetCopier
     {
@@ -9233,6 +9956,7 @@ namespace RefactorScope.Exporters.Styling
             var targetCssDir = Path.Combine(targetAssetsDir, "css");
             var targetVendorDir = Path.Combine(targetAssetsDir, "vendor");
 
+            Directory.CreateDirectory(outputPath);
             Directory.CreateDirectory(targetCssDir);
             Directory.CreateDirectory(targetVendorDir);
 
@@ -9267,11 +9991,28 @@ namespace RefactorScope.Exporters.Styling
                 if (Directory.Exists(candidate))
                     return candidate;
 
+                candidate = Path.Combine(
+                    dir.FullName,
+                    "RefactorScope",
+                    "Batch",
+                    "Assets");
+
+                if (Directory.Exists(candidate))
+                    return candidate;
+
+                candidate = Path.Combine(
+                    dir.FullName,
+                    "Batch",
+                    "Assets");
+
+                if (Directory.Exists(candidate))
+                    return candidate;
+
                 dir = dir.Parent;
             }
 
             throw new DirectoryNotFoundException(
-                "Não foi possível localizar a pasta Exporters/Assets no projeto.");
+                "Não foi possível localizar a pasta de assets. Caminhos testados: Exporters/Assets e Batch/Assets.");
         }
 
         private static void CopyVendorAssets(string sourceVendorDir, string targetVendorDir)
@@ -9289,6 +10030,8 @@ namespace RefactorScope.Exporters.Styling
         {
             var sourceThemePath = Path.Combine(sourceCssDir, themeFileName);
             var targetThemePath = Path.Combine(targetCssDir, "dashboard-theme.css");
+
+            Console.WriteLine($"Copiando tema do dashboard: {themeFileName} -> {targetThemePath}");
 
             if (!File.Exists(sourceThemePath))
             {

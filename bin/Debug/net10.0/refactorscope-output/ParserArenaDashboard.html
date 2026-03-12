@@ -1,0 +1,748 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Parser Arena Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link rel='stylesheet' href='assets/css/dashboard-theme.css' />
+</head>
+<body>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Comparative Arena</div>
+        <h1>Parser Arena Dashboard</h1>
+        <div class="subtitle">Comparative batch mode across multiple projects and parser strategies</div>
+    </div>
+
+    <div class="run-meta">
+        <div><b>Generated:</b> 2026-03-11 12:56 UTC</div>
+        <div><b>Target:</b> Batch Arena // 3 project(s)</div>
+        <div><b>Projects:</b> 3</div>
+        <div><b>Avg Confidence:</b> 95%</div>
+        <div><b>Support Band:</b> High</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Arena Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis arena-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Projects</div>
+        <div class="value">3</div>
+        <div class="hint">Projects evaluated inside comparative batch mode</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Runs</div>
+        <div class="value">12</div>
+        <div class="hint">Total parser executions across all projects</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Failures</div>
+        <div class="value">0</div>
+        <div class="hint">Runs that failed completely during comparative execution</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Confidence</div>
+        <div class="value">95%</div>
+        <div class="hint">Average parser confidence across all comparative runs</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Score</div>
+        <div class="value">196,61</div>
+        <div class="hint">Average comparative score across all runs</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Avg Execution</div>
+        <div class="value">104 ms</div>
+        <div class="hint">Average execution time per comparative run</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Best Overall Run</div>
+        <div class="value" style="font-size:22px;">AvaliaRoteiro</div>
+        <div class="hint">Incremental // 202,18</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Best Strategy</div>
+        <div class="value" style="font-size:22px;">Adaptive</div>
+        <div class="hint">Avg score 199,31 // Avg confidence 97%</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Success Runs</div>
+        <div class="value">12</div>
+        <div class="hint">Runs completed successfully without full parser failure</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Winner Coverage</div>
+        <div class="value">100%</div>
+        <div class="hint">Projects that produced at least one comparative winner</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Reading</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Batch Summary</h3>
+    <ul class="clean">
+        <li><b>Projects:</b> 3</li>
+        <li><b>Total Runs:</b> 12</li>
+        <li><b>Success Runs:</b> 12</li>
+        <li><b>Failures:</b> 0</li>
+        <li><b>Average Confidence:</b> 95%</li>
+        <li><b>Average Comparative Score:</b> 196,61</li>
+        <li><b>Average Execution:</b> 104,43 ms</li>
+        <li><b>Top Strategy:</b> Adaptive</li>
+        <li><b>Best Overall Run:</b> AvaliaRoteiro</li>
+        <li><b>Best Overall Parser:</b> Incremental</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Comparative Diagnosis</h3>
+    <ul class="clean">
+        <li>Comparative batch confidence is high. The average structural extraction signal looks strong across the evaluated projects.</li>
+        <li>No parser run failed completely. Comparative evidence is operationally clean.</li>
+        <li>Incremental won the largest number of projects in this batch, suggesting stronger comparative consistency across heterogeneous scopes.</li>
+        <li>Adaptive currently leads the aggregate comparison with average score 199,31 and average confidence 97%.</li>
+        <li>Average comparative execution time remains operationally healthy for iterative benchmarking.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge green"><span class="badge-dot"></span> Avg Confidence: 95%</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Failures: 0</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Top Strategy: Adaptive</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style='display:grid; grid-template-columns: auto auto; gap:24px; align-items:stretch; justify-content:center; width:100%;'>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Strategy Comparison Radar</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Relative comparison of score, confidence and speed per parser strategy.</div>
+<div id="arena-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const arenaRadarSketch = (p) => {
+    const series = [
+        { name: "Regex",       color: "#ff9a3c", values: [87.37, 91.954, 92.093] },
+        { name: "Selective",   color: "#7fd36b", values: [89.942, 96.667, 87.235] },
+        { name: "Adaptive",    color: "#6ea8ff", values: [90.597, 96.667, 89.676] },
+        { name: "Incremental", color: "#ffc15d", values: [89.565, 96.667, 89.224] }
+    ];
+    const labels = ["Score", "Confidence", "Speed"];
+    const maxRadius = 100;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(440, 360);
+        canvas.parent('arena-radar-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2);
+
+        p.stroke('rgba(255,255,255,0.10)');
+        p.noFill();
+
+        for (let i = 1; i <= 5; i++) {
+            let r = (maxRadius / 5) * i;
+            p.beginShape();
+            for (let a = 0; a < 360; a += 120) {
+                p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            }
+            p.endShape(p.CLOSE);
+        }
+
+        for (let a = 0; a < 360; a += 120) {
+            p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+        }
+
+        series.forEach((s, idx) => {
+            p.drawingContext.shadowColor = s.color;
+            p.drawingContext.shadowBlur = 8;
+            p.stroke(s.color);
+            p.strokeWeight(2);
+            p.fill(p.color(s.color + '22'));
+
+            p.beginShape();
+            for (let i = 0; i < s.values.length; i++) {
+                let angle = (i * 120) - 90;
+                let r = p.map(s.values[i], 0, 100, 0, maxRadius);
+                p.vertex(p.cos(angle) * r, p.sin(angle) * r);
+            }
+            p.endShape(p.CLOSE);
+        });
+
+        p.drawingContext.shadowBlur = 0;
+        p.noStroke();
+        p.fill('#eef4ff');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(12);
+        p.text(labels[0], 0, -maxRadius - 20);
+        p.textAlign(p.LEFT, p.CENTER);
+        p.text(labels[1], maxRadius + 12, 0);
+        p.textAlign(p.RIGHT, p.CENTER);
+        p.text(labels[2], -maxRadius - 12, 0);
+
+        let legendX = -150;
+        let legendY = 130;
+
+        series.forEach((s, i) => {
+            let x = legendX + ((i % 2) * 150);
+            let y = legendY + (Math.floor(i / 2) * 22);
+
+            p.drawingContext.shadowColor = s.color;
+            p.drawingContext.shadowBlur = 8;
+            p.fill(s.color);
+            p.rect(x, y - 7, 10, 10, 2);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#d9e4ff');
+            p.textAlign(p.LEFT, p.CENTER);
+            p.textSize(10);
+            p.text(s.name, x + 16, y);
+        });
+    };
+};
+new p5(arenaRadarSketch);
+</script>
+</div>
+
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Winner Distribution</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">How often each strategy won across the batch projects.</div>
+<div id="arena-donut-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const arenaDonutSketch = (p) => {
+    const data = [
+        { label: "Regex", value: 0, color: "#ff9a3c" },
+        { label: "Selective", value: 1, color: "#7fd36b" },
+        { label: "Adaptive", value: 0, color: "#6ea8ff" },
+        { label: "Incremental", value: 2, color: "#ffc15d" }
+    ];
+    const total = 3;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(360, 360);
+        canvas.parent('arena-donut-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        p.translate(p.width / 2, p.height / 2 - 20);
+
+        const outerRadius = 100;
+        const innerRadius = 75;
+
+        let currentAngle = -90;
+        p.strokeCap(p.SQUARE);
+
+        p.noFill();
+        p.strokeWeight(1.5);
+        p.stroke('rgba(255,255,255,0.10)');
+        p.ellipse(0, 0, outerRadius * 2 + 30);
+
+        data.forEach(item => {
+            if (item.value <= 0) return;
+
+            let angleSpan = (item.value / total) * 360;
+            let gap = 3;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 12;
+            p.stroke(item.color);
+            p.strokeWeight(25);
+
+            if (angleSpan > gap) {
+                p.arc(0, 0, outerRadius + innerRadius, outerRadius + innerRadius, currentAngle + gap / 2, currentAngle + angleSpan - gap / 2);
+            }
+
+            currentAngle += angleSpan;
+        });
+
+        p.drawingContext.shadowBlur = 0;
+        p.noStroke();
+        p.fill('#eef4ff');
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(36);
+        p.textStyle(p.BOLD);
+        p.text(total, 0, -5);
+
+        p.textSize(11);
+        p.textStyle(p.NORMAL);
+        p.fill('#8fa8ff');
+        p.text("Project Winners", 0, 22);
+
+        let startX = -140;
+        let legendY = 160;
+        p.textAlign(p.LEFT, p.CENTER);
+
+        data.forEach((item, index) => {
+            let xOffset = startX + (index % 2) * 140;
+            let yOffset = legendY + Math.floor(index / 2) * 24;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 8;
+            p.fill(item.color);
+            p.rect(xOffset, yOffset - 4, 8, 8, 2);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#eef4ff');
+            p.textSize(10);
+            p.text(`${item.label} (${item.value})`, xOffset + 14, yOffset);
+        });
+    };
+};
+new p5(arenaDonutSketch);
+</script>
+</div>
+
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Strategy Aggregates</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="table-shell">
+<table class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th>Strategy</th>
+            <th>Runs</th>
+            <th>Avg Score</th>
+            <th>Avg Confidence</th>
+            <th>Avg Time</th>
+            <th>Avg Types</th>
+            <th>Avg Refs</th>
+            <th>Failures</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Regex</td>
+    <td>3</td>
+    <td>192,21</td>
+    <td>92%</td>
+    <td>79,07 ms</td>
+    <td>58,00</td>
+    <td>142,67</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>Selective</td>
+    <td>3</td>
+    <td>197,87</td>
+    <td>97%</td>
+    <td>127,65 ms</td>
+    <td>58,00</td>
+    <td>190,33</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>Adaptive</td>
+    <td>3</td>
+    <td>199,31</td>
+    <td>97%</td>
+    <td>103,24 ms</td>
+    <td>58,00</td>
+    <td>204,00</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>Incremental</td>
+    <td>3</td>
+    <td>197,04</td>
+    <td>97%</td>
+    <td>107,76 ms</td>
+    <td>58,00</td>
+    <td>204,00</td>
+    <td>0</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Project Comparative Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="searchProjects"
+           type="text"
+           onkeyup="searchArenaProjects()"
+           placeholder="Search project, parser, strategy..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
+</div>
+<div class="table-shell">
+<table id="arenaProjectTable" class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th onclick="sortArenaTable('arenaProjectTable', 0)">Project</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 1)">Strategy</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 2)">Parser</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 3)">Status</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 4)">Score</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 5)">Confidence</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 6)">Files</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 7)">Types</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 8)">Refs</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 9)">Time</th>
+            <th onclick="sortArenaTable('arenaProjectTable', 10)">Fallback</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Boids</td>
+    <td>Regex</td>
+    <td>Regex</td>
+    <td>Success</td>
+    <td>184,72</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>7</td>
+    <td>37 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Boids</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>200,00</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>30</td>
+    <td>47 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Boids</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>198,33</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>16</td>
+    <td>20 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Boids</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>189,48</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>8</td>
+    <td>16</td>
+    <td>44 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Regex</td>
+    <td>Regex</td>
+    <td>Success</td>
+    <td>192,22</td>
+    <td>83%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>5</td>
+    <td>3 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>198,00</td>
+    <td>95%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>9</td>
+    <td>11 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>198,18</td>
+    <td>95%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>8</td>
+    <td>9 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>199,47</td>
+    <td>95%</td>
+    <td>6</td>
+    <td>5</td>
+    <td>8</td>
+    <td>8 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Regex</td>
+    <td>Regex</td>
+    <td>Success</td>
+    <td>199,70</td>
+    <td>93%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>416</td>
+    <td>198 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>195,62</td>
+    <td>95%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>532</td>
+    <td>324 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Adaptive</td>
+    <td>Adaptive</td>
+    <td>Success</td>
+    <td>201,43</td>
+    <td>95%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>588</td>
+    <td>281 ms</td>
+    <td>No</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>202,18</td>
+    <td>95%</td>
+    <td>174</td>
+    <td>161</td>
+    <td>588</td>
+    <td>271 ms</td>
+    <td>No</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Best Parser Per Project</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="table-shell">
+<table class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Winner</th>
+            <th>Strategy</th>
+            <th>Status</th>
+            <th>Score</th>
+            <th>Confidence</th>
+            <th>Types</th>
+            <th>Refs</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>Boids</td>
+    <td>Selective</td>
+    <td>Selective</td>
+    <td>Success</td>
+    <td>200,00</td>
+    <td>100%</td>
+    <td>8</td>
+    <td>30</td>
+    <td>47 ms</td>
+</tr>
+<tr>
+    <td>Dio.Series</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>199,47</td>
+    <td>95%</td>
+    <td>5</td>
+    <td>8</td>
+    <td>8 ms</td>
+</tr>
+<tr>
+    <td>AvaliaRoteiro</td>
+    <td>Incremental</td>
+    <td>Incremental</td>
+    <td>Success</td>
+    <td>202,18</td>
+    <td>95%</td>
+    <td>161</td>
+    <td>588</td>
+    <td>271 ms</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Interpretation</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard compares parser strategies across multiple projects executed in Batch Arena mode.</li>
+            <li>Comparative Score is contextual to each project and should be interpreted as a relative ranking signal, not as a universal benchmark.</li>
+            <li>Confidence is heuristic and should be read as structural usability, not formal parser correctness.</li>
+            <li>Winner distribution helps reveal which strategy most often dominates across heterogeneous codebases.</li>
+            <li>Strategy aggregates are useful for publication, comparative baselines and future CSV / JSON analytical exports.</li>
+            <li>Failures do not invalidate the whole batch, but they indicate strategies or projects deserving inspection.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.arena-kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.arena-kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.arena-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.parsing-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+</style>
+
+<script>
+function searchArenaProjects() {
+  var input = document.getElementById('searchProjects');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('arenaProjectTable');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortArenaTable(tableId, n) {
+  var table = document.getElementById(tableId);
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      var xv = x.innerText.toLowerCase();
+      var yv = y.innerText.toLowerCase();
+
+      if (dir === 'asc' && xv > yv) shouldSwitch = true;
+      if (dir === 'desc' && xv < yv) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Parser Arena Dashboard // Shared Hub Layout</div>
+</div>
+</body>
+</html>
+
