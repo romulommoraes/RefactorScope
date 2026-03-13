@@ -1,4 +1,5 @@
 ﻿using RefactorScope.Core.Abstractions;
+using RefactorScope.Core.Model;
 
 namespace RefactorScope.Core.Results
 {
@@ -13,15 +14,5 @@ namespace RefactorScope.Core.Results
         {
             Items = items;
         }
-    }
-
-    public class ArchitecturalClassificationItem
-    {
-        public string TypeName { get; init; } = string.Empty;
-        public string Namespace { get; init; } = string.Empty;
-        public string Layer { get; init; } = string.Empty;
-        public string Status { get; init; } = string.Empty;
-        public string RemovalCandidate { get; init; } = string.Empty;
-        public int UsageCount { get; init; }
     }
 }

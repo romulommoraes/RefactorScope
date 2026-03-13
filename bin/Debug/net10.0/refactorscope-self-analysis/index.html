@@ -1,0 +1,653 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>RefactorScope Hub</title>
+<script src='assets/vendor/p5.js'></script>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
+</head>
+<body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
+<div class='wrapper'>
+
+<div class="topbar hub-topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Analysis Hub</div>
+        <h1>Structural Command Nexus</h1>
+        <div class="subtitle">Target Project: <b>RefactorScope</b></div>
+    </div>
+
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 2026-03-12 17:59 UTC</div>
+        <div><b>Parser:</b> HybridSelectiveParser</div>
+        <div><b>Target Scope:</b> C:\Users\romul\source\repos\RefactorScope</div>
+        <div><b>Readiness:</b> Ready</div>
+    </div>
+</div>
+<div class="nav-grid">
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="StructuralDashboard.html">
+    <div class="tag">Module // 01</div>
+    <div class="title">Structural</div>
+    <div class="desc">Dead code candidates, namespace drift, unresolved review and structural classification.</div>
+    <div class="accent"></div>
+</a>
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="ArchitecturalDashboard.html">
+    <div class="tag">Module // 02</div>
+    <div class="title">Architectural</div>
+    <div class="desc">Health by module, balance metrics, coupling and isolation analysis.</div>
+    <div class="accent"></div>
+</a>
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="ParsingDashboard.html">
+    <div class="tag">Module // 03</div>
+    <div class="title">Parsing</div>
+    <div class="desc">Parser confidence, extraction density, throughput and parsed type coverage.</div>
+    <div class="accent"></div>
+</a>
+<a class="nav-card" augmented-ui="tr-clip bl-clip border" href="QualityDashboard.html">
+    <div class="tag">Module // 04</div>
+    <div class="title">Quality / Gates</div>
+    <div class="desc">Fitness gates, warnings, quality signals and execution stability.</div>
+    <div class="accent"></div>
+</a>
+</div>
+<div class="grid-kpis hub-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Total Classes</div>
+        <div class="value">190</div>
+        <div class="hint">Structurally classified types in the analyzed scope</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Dead Code Candidates</div>
+        <div class="value">47</div>
+        <div class="hint">Types still compatible with the dead code hypothesis</div>
+    </div>
+
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Unresolved</div>
+        <div class="value">0</div>
+        <div class="hint">Candidates whose dead code hypothesis could not be refuted</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Code Smell Index</div>
+        <div class="value">11,1</div>
+        <div class="hint">Composite structural hygiene score. Lower is better</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Statistical Support</div>
+        <div class="value" style="font-size:24px;">High</div>
+        <div class="hint">Overall heuristic support level for the current analysis snapshot</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Statistical Support</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Support Matrix</h3>
+    <table class="link-table compact-table">
+        <thead>
+            <tr>
+                <th>Signal</th>
+                <th>Support</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Parser</td>
+                <td><span class="badge green"><span class="badge-dot"></span> High</span></td>
+            </tr>
+            <tr>
+                <td>Structural</td>
+                <td><span class="badge green"><span class="badge-dot"></span> High</span></td>
+            </tr>
+            <tr>
+                <td>Coupling</td>
+                <td><span class="badge green"><span class="badge-dot"></span> High</span></td>
+            </tr>
+            <tr>
+                <td>Effort</td>
+                <td><span class="badge amber"><span class="badge-dot"></span> Moderate</span></td>
+            </tr>
+            <tr>
+                <td><b>Overall</b></td>
+                <td><span class="badge green"><span class="badge-dot"></span> <b>High</b></span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Interpretation</h3>
+    <p style="margin-top:0;">
+        The current analysis has high overall heuristic support. Parsing confidence is high, structural classification is high, coupling interpretation is high, and effort estimates should be read with moderate support.
+    </p>
+
+    <ul class="clean" style="margin-top:16px;">
+        <li>Support levels are heuristic and should be read as evidence strength, not absolute certainty.</li>
+        <li>Parser support reflects extraction confidence and structural usability.</li>
+        <li>Structural support reflects how much of the dead code hypothesis could be refined or narrowed.</li>
+        <li>Effort support should be interpreted cautiously when confidence is limited.</li>
+    </ul>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Run Overview</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Pipeline Telemetry</h3>
+
+    <div class="status-row" style="margin-bottom:14px;">
+        <div class="badge green"><span class="badge-dot"></span> Parser: HybridSelectiveParser</div>
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 100%</div>
+        <div class="badge green"><span class="badge-dot"></span> Gates: Ready</div>
+    </div>
+
+    <div class="chart-wrap">
+        <table class="charts-css">
+            <caption>Parsing / Scope / Quality Signals</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Files</th>
+                    <td style="--size: 0.2716;">
+                        <span class="data">189</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Types</th>
+                    <td style="--size: 0.273;">
+                        <span class="data">190</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Refs</th>
+                    <td style="--size: 1;">
+                        <span class="data">696</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: 1;">
+                        <span class="data">100%</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <ul class="clean" style="margin-top:14px;">
+        <li><b>Execution:</b> 860 ms</li>
+        <li><b>Files:</b> 189 / <b>Types:</b> 190 / <b>References:</b> 696</li>
+        <li><b>Average Abstractness:</b> 0,05</li>
+        <li><b>Average Instability:</b> 0,54</li>
+        <li><b>Average Distance:</b> 0,41</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Analysis</h3>
+    <ul class="clean">
+        <li>Core isolation signals are present and architectural boundaries appear reasonably preserved.</li>
+        <li>Namespace hierarchy appears aligned with the physical project structure.</li>
+        <li>No unresolved dead code candidates remain after refinement.</li>
+        <li>Code smell index remains in a healthy range.</li>
+        <li>No SOLID alerts were detected.</li>
+        <li>Implicit coupling hotspots were detected: 47.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge green"><span class="badge-dot"></span> Unresolved: 0</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 0</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 0</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 47</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Hub Navigation Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <h3>Available Dashboards</h3>
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Dashboard</th>
+                    <th>Primary Focus</th>
+                    <th>Target Signals</th>
+                    <th>Open</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr>
+    <td>Structural</td>
+    <td>Dead code review / structural risk</td>
+    <td>Dead Code Candidates, Pattern Similarity, Unresolved, Namespace Drift</td>
+    <td><a href="StructuralDashboard.html">Open Structural Dashboard</a></td>
+</tr>
+<tr>
+    <td>Architectural</td>
+    <td>Health by module / A-I-D balance</td>
+    <td>Score, Coupling, Isolation, Abstractness, Instability, Distance</td>
+    <td><a href="ArchitecturalDashboard.html">Open Architectural Dashboard</a></td>
+</tr>
+<tr>
+    <td>Architectural Markdown</td>
+    <td>Portable textual companion report</td>
+    <td>Project structure, architectural explanation, metrics narrative</td>
+    <td><a href="Relatorio_Arquitetural.md">Open Markdown Report</a></td>
+</tr>
+<tr>
+    <td>Parsing</td>
+    <td>Parser quality / structural extraction</td>
+    <td>Confidence, Files, Types, References, Throughput</td>
+    <td><a href="ParsingDashboard.html">Open Parsing Dashboard</a></td>
+</tr>
+<tr>
+    <td>Quality / Gates</td>
+    <td>Validation / execution quality</td>
+    <td>Fitness Gates, Warnings, Stability, Crash Reports</td>
+    <td><a href="QualityDashboard.html">Open Quality Dashboard</a></td>
+</tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Refactor Command Summary</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Code Hygiene Summary</h3>
+    <ul class="clean">
+        <li><b>Code Smell Index:</b> 11,1</li>
+        <li><b>Hygiene Level:</b> 🟢 Healthy</li>
+        <li><b>Dead Code Candidates:</b> 47</li>
+        <li><b>Unresolved:</b> 0</li>
+        <li><b>Namespace Drift:</b> 0</li>
+        <li><b>Isolated Core:</b> 28</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Refactor Effort Estimation</h3>
+    <ul class="clean">
+        <li><b>RDI:</b> 42</li>
+        <li><b>Difficulty:</b> Moderate</li>
+        <li><b>Estimated Hours:</b> 16,8</li>
+        <li><b>Confidence:</b> 0,67</li>
+    </ul>
+
+    <div class="chart-wrap" style="margin-top:16px;">
+        <table class="charts-css">
+            <caption>Estimated Refactor Load</caption>
+            <tbody>
+                <tr>
+                    <th scope="row">Hours</th>
+                    <td style="--size: 0.21;">
+                        <span class="data">16,8h</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Confidence</th>
+                    <td style="--size: 0.6679;">
+                        <span class="data">0,67</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div></div>
+<style>
+.hub-topbar {
+    align-items: start;
+}
+
+.run-meta--with-theme {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:flex-start;
+}
+
+/* NOVO: Wrapper invisível só para empurrar o botão e o texto pra direita */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+/* Botão Tático Vermelho Físico */
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+</style>
+
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    if (!themeLink || !cyclerBtn) {
+        console.error('[ThemeSwitcher] Elementos de HUD não encontrados.');
+        return;
+    }
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    function detectInitialTheme() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const idx = themeSequence.findIndex(t => t.id === saved);
+                if (idx !== -1) return idx;
+            }
+        } catch { }
+
+        const initialKey = 'ember-ops';
+        const idx = themeSequence.findIndex(t => t.id === initialKey);
+        return idx !== -1 ? idx : 0;
+    }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+
+        themeLink.setAttribute('href', t.css);
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    currentIndex = detectInitialTheme();
+    applyTheme(currentIndex);
+
+    cyclerBtn.addEventListener('click', function () {
+        currentIndex = (currentIndex + 1) % themeSequence.length;
+        applyTheme(currentIndex);
+    });
+})();
+</script>
+<div class='footer'>Generated by RefactorScope Hub // Cyberpunk Publication Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
+</div>
+</body>
+</html>
+

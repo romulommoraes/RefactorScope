@@ -1,0 +1,67 @@
+/* =====================================================
+   RefactorScope Theme - CyberBlue
+   Apenas tokens de cor, glow e superfícies
+   ===================================================== */
+
+:root {
+    --font-family: "Segoe UI", "Inter", Arial, sans-serif;
+    --content-max-width: 1500px;
+    --bg: radial-gradient(circle at top left, rgba(47, 136, 255, 0.10), transparent 28%), radial-gradient(circle at top right, rgba(255, 59, 107, 0.08), transparent 24%), linear-gradient(180deg, #030510 0%, #050816 40%, #040612 100%);
+    --bg-2: #090d1f;
+    --panel-bg: linear-gradient(180deg, rgba(11, 18, 37, 0.92), rgba(8, 13, 28, 0.90));
+    --panel-bg-strong: linear-gradient(180deg, rgba(11, 18, 37, 0.95), rgba(7, 12, 26, 0.90));
+    --header-bg: linear-gradient(180deg, rgba(12, 20, 40, 0.88), rgba(8, 13, 28, 0.82));
+    --heading: #cfe8ff;
+    --text: #e8f3ff;
+    --muted: #8ea9c7;
+    --primary: #39d5ff;
+    --primary-soft: #7cecff;
+    --secondary: #ff3b6b;
+    --secondary-soft: #ff6b8f;
+    --accent: #ffc857;
+    --good: #49f2b8;
+    --warning: #ffc857;
+    --danger: #ff6b8f;
+    --link: #39d5ff;
+    --link-hover: #ff6b8f;
+    --border-soft: rgba(57, 213, 255, 0.16);
+    --border-hover: rgba(255, 59, 107, 0.36);
+    --divider: rgba(57, 213, 255, 0.10);
+    --table-bg: rgba(10, 16, 34, 0.55);
+    --table-border: rgba(57, 213, 255, 0.10);
+    --table-head-bg: rgba(22, 30, 52, 0.95);
+    --table-head-text: #7cecff;
+    --tree-bg: rgba(4, 10, 24, 0.85);
+    --tree-border: rgba(57, 213, 255, 0.12);
+    --tree-text: #cfe8ff;
+    --badge-bg: rgba(12, 18, 36, 0.80);
+    --badge-border: rgba(57, 213, 255, 0.18);
+    --badge-dot-shadow: 0 0 12px rgba(57, 213, 255, 0.45);
+    --tooltip-bg: #111827;
+    --tooltip-text: #ffffff;
+    --tooltip-border: rgba(57, 213, 255, 0.16);
+    --tooltip-shadow: 0 0 0 1px rgba(57, 213, 255, 0.08), 0 0 24px rgba(47, 136, 255, 0.10);
+    --accent-ring-border: rgba(57, 213, 255, 0.32);
+    --accent-ring-shadow: inset 0 0 18px rgba(57, 213, 255, 0.08), 0 0 12px rgba(57, 213, 255, 0.12);
+    --glow-primary: 0 0 10px rgba(57, 213, 255, 0.35), 0 0 24px rgba(57, 213, 255, 0.12);
+    --glow-secondary: 0 0 10px rgba(255, 59, 107, 0.30), 0 0 24px rgba(255, 59, 107, 0.10);
+    --glow-panel: 0 0 0 1px rgba(57, 213, 255, 0.10), 0 0 24px rgba(47, 136, 255, 0.08);
+    --glow-heading: 0 0 18px rgba(57, 213, 255, 0.12);
+    --section-line-primary: rgba(57, 213, 255, 0.45);
+    --section-line-secondary: rgba(255, 59, 107, 0.18);
+    --panel-heading: #7cecff;
+    --grid-line: rgba(57, 213, 255, 0.05);
+    --grid-line-2: rgba(57, 213, 255, 0.04);
+    --grid-size: 40px;
+    --grid-opacity: 0.18;
+    --scan-opacity: 0.08;
+    --chart-primary-1: rgba(57, 213, 255, 0.95);
+    --chart-primary-2: rgba(47, 136, 255, 0.55);
+    --chart-secondary-1: rgba(255, 200, 87, 0.95);
+    --chart-secondary-2: rgba(255, 59, 107, 0.55);
+    --chart-tertiary-1: rgba(73, 242, 184, 0.95);
+    --chart-tertiary-2: rgba(57, 213, 255, 0.45);
+    --empty-bg: rgba(7, 12, 26, 0.45);
+    --panel-radius: 16px;
+    --card-radius: 14px;
+}

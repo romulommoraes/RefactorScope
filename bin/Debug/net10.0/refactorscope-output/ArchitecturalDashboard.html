@@ -1,0 +1,1365 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Architectural Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
+</head>
+<body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Architectural Layer</div>
+        <h1>Architectural Dashboard</h1>
+        <div class="subtitle">Target Scope: <b>C:\Users\romul\source\repos\Scriptome</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
+    </div>
+
+    <div class="run-meta">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 12-03-2026 21:31 UTC</div>
+        <div><b>View:</b> Executive architectural summary</div>
+        <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
+    </div>
+</div>
+<div class='grid-kpis' style='display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:32px;'>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Modules</div>
+<div class='value'>5</div>
+<div class='hint'>Detected architectural folders</div>
+</div>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Average Score</div>
+<div class='value'>71,8</div>
+<div class='hint'>Composite health by module</div>
+</div>
+<div class='kpi alert' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Unresolved</div>
+<div class='value'>18</div>
+<div class='hint'>Final unresolved structural candidates</div>
+</div>
+<div class='kpi warning' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Implicit Coupling</div>
+<div class='value'>14</div>
+<div class='hint'>Potential dependency hotspots</div>
+</div>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Abstractness (A)</div>
+<div class='value'>0,11</div>
+<div class='hint'>Average architectural abstraction</div>
+</div>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Instability (I)</div>
+<div class='value'>0,46</div>
+<div class='hint'>Average outgoing dependency pressure</div>
+</div>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Distance (D)</div>
+<div class='value'>0,42</div>
+<div class='hint'>Average distance from main sequence</div>
+</div>
+<div class='kpi' augmented-ui='tr-clip bl-clip border' style='height:100%; box-sizing:border-box;'>
+<div class='label'>Core Density</div>
+<div class='value'>Check Table</div>
+<div class='hint'>Amount of inner core objects</div>
+</div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Architecture & Structure</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border' style='margin-bottom:24px; display:flex; flex-direction:column; min-width:0;'>
+<h3>Architectural Health by Module</h3>
+<div class='table-wrap' style='flex:1;'>
+<table>
+<tr><th>Module</th><th>Score</th><th>Unresolved</th><th>Coupling</th><th>Isolation</th><th>Core Density</th></tr>
+<tr>
+<td>Fingerprint</td>
+<td><span class='metric-warn'>69,6</span></td>
+<td>3 (6%)</td>
+<td>1,00</td>
+<td>0,02</td>
+<td>0,10</td>
+</tr>
+<tr>
+<td>Infrastructure</td>
+<td><span class='metric-warn'>47,8</span></td>
+<td>3 (11%)</td>
+<td>3,30</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+<tr>
+<td>Limbic</td>
+<td><span class='metric-warn'>68,0</span></td>
+<td>7 (19%)</td>
+<td>0,97</td>
+<td>0,03</td>
+<td>0,16</td>
+</tr>
+<tr>
+<td>Nucleo</td>
+<td><span class='metric-good'>89,7</span></td>
+<td>5 (11%)</td>
+<td>0,63</td>
+<td>0,15</td>
+<td>0,96</td>
+</tr>
+<tr>
+<td>Program.cs</td>
+<td><span class='metric-good'>84,0</span></td>
+<td>0 (0%)</td>
+<td>16,00</td>
+<td>0,00</td>
+<td>0,00</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="chart-container"
+     style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px 12px 12px 12px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);height:100%;min-height:980px;"
+     augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;font-size:18px;">Architectural Structure</h3>
+<div class="chart-note" style="margin:0 0 10px 0;font-size:13px;color:#9fb3c8;text-align:center;">Root: <b>AvaliaRoteiro</b> // domains and hierarchical layout.</div>
+<style>#p5-radial-tree-container canvas { width: 100% !important; max-width: 1400px; height: auto !important; display:block; }</style>
+<div id="p5-radial-tree-container" style="width:100%; display:flex; justify-content:center; align-items:center; flex:1;"></div>
+<script>
+const radialTreeSketch = (p) => {
+  let folderPaths = [
+  "AvaliaRoteiro/Baselines",
+  "AvaliaRoteiro/Baselines/etograma",
+  "AvaliaRoteiro/Baselines/etograma/3-BANHO",
+  "AvaliaRoteiro/Baselines/etograma/3-BANHO v0",
+  "AvaliaRoteiro/Baselines/etograma/3-BANHO v1",
+  "AvaliaRoteiro/Baselines/legacy",
+  "AvaliaRoteiro/Baselines/legacy/3-BANHO",
+  "AvaliaRoteiro/Data",
+  "AvaliaRoteiro/Data/Config",
+  "AvaliaRoteiro/Data/Output",
+  "AvaliaRoteiro/Data/Output/bs",
+  "AvaliaRoteiro/Data/Sandbox",
+  "AvaliaRoteiro/Data/Sandbox/old",
+  "AvaliaRoteiro/Data/Scripts",
+  "AvaliaRoteiro/Fingerprint",
+  "AvaliaRoteiro/Fingerprint/Classificadores",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Arquetipos",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Cartesianos",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Energia",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Narrativa",
+  "AvaliaRoteiro/Fingerprint/Classificadores/Psique",
+  "AvaliaRoteiro/Fingerprint/Dados",
+  "AvaliaRoteiro/Fingerprint/Forense",
+  "AvaliaRoteiro/Fingerprint/Interfaces",
+  "AvaliaRoteiro/Fingerprint/Modelos",
+  "AvaliaRoteiro/Fingerprint/Modulos",
+  "AvaliaRoteiro/Fingerprint/Motores",
+  "AvaliaRoteiro/Fingerprint/MotoresEtograma",
+  "AvaliaRoteiro/Fingerprint/MotoresInterpretativos",
+  "AvaliaRoteiro/Infrastructure",
+  "AvaliaRoteiro/Infrastructure/Baseline",
+  "AvaliaRoteiro/Infrastructure/Exportacao",
+  "AvaliaRoteiro/Infrastructure/Exportacao/Excel",
+  "AvaliaRoteiro/Infrastructure/Exportacao/Excel/Abas",
+  "AvaliaRoteiro/Infrastructure/Interfaces",
+  "AvaliaRoteiro/Infrastructure/Validador",
+  "AvaliaRoteiro/Limbic",
+  "AvaliaRoteiro/Limbic/Algoritimos",
+  "AvaliaRoteiro/Limbic/Dados",
+  "AvaliaRoteiro/Limbic/Interfaces",
+  "AvaliaRoteiro/Limbic/Linguistica",
+  "AvaliaRoteiro/Limbic/Modelos",
+  "AvaliaRoteiro/Limbic/Motor",
+  "AvaliaRoteiro/Limbic/Pipeline",
+  "AvaliaRoteiro/Limbic/Testes",
+  "AvaliaRoteiro/Nucleo",
+  "AvaliaRoteiro/Nucleo/Adaptadores",
+  "AvaliaRoteiro/Nucleo/Especialistas",
+  "AvaliaRoteiro/Nucleo/Interfaces",
+  "AvaliaRoteiro/Nucleo/Leitores",
+  "AvaliaRoteiro/Nucleo/Modelos",
+  "AvaliaRoteiro/Nucleo/Modelos/Analise",
+  "AvaliaRoteiro/Nucleo/Modelos/Enums",
+  "AvaliaRoteiro/Nucleo/Modelos/Fenotipo",
+  "AvaliaRoteiro/Nucleo/Modelos/Genoma",
+  "AvaliaRoteiro/Nucleo/Modelos/Resultados",
+  "AvaliaRoteiro/Nucleo/Modelos/Script",
+  "AvaliaRoteiro/Nucleo/Motores"
+  ];
+
+  const BG = "#050814";
+  const LABEL_STROKE = "rgba(0,0,0,0.92)";
+
+  const DOMAIN_COLORS = [
+    "#00f0ff", "#ff9a3c", "#39ff14", "#6c63ff",
+    "#ff003c", "#ffea00", "#d100ff", "#00aeff"
+  ];
+
+  let rootNode;
+  let allNodes = [];
+  let links = [];
+  let maxDepth = 0;
+  let domains = [];
+
+  p.setup = () => {
+    let canvas = p.createCanvas(1400, 1160);
+    canvas.parent("p5-radial-tree-container");
+    p.angleMode(p.DEGREES);
+    p.textFont("monospace");
+
+    buildTree();
+    calculateLeafCounts(rootNode);
+
+    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
+    calculatePositions(rootNode, 0, 360, 0, radiusStep);
+  };
+
+  p.draw = () => {
+    p.background(BG);
+    p.translate(p.width / 2, p.height / 2);
+
+    drawRadarBackground();
+    drawDomainShading();
+    drawLinks();
+    drawNodes();
+  };
+
+  function buildTree() {
+    rootNode = { name: "AvaliaRoteiro", children: [], depth: 0, leafCount: 0 };
+    allNodes.push(rootNode);
+
+    folderPaths.forEach(path => {
+      let normalized = path.replaceAll("\\\\", "/");
+      let prefix = "AvaliaRoteiro/";
+      let parts = normalized.startsWith(prefix)
+        ? normalized.replace(prefix, "").split("/").filter(Boolean)
+        : normalized.split("/").filter(Boolean);
+
+      let currentNode = rootNode;
+
+      parts.forEach((part, index) => {
+        let existingChild = currentNode.children.find(c => c.name === part);
+        if (!existingChild) {
+          let newNode = {
+            name: part,
+            children: [],
+            depth: index + 1,
+            parent: currentNode
+          };
+          currentNode.children.push(newNode);
+          allNodes.push(newNode);
+          currentNode = newNode;
+          if (newNode.depth > maxDepth) maxDepth = newNode.depth;
+        } else {
+          currentNode = existingChild;
+        }
+      });
+    });
+  }
+
+  function calculateLeafCounts(node) {
+    if (node.children.length === 0) {
+      node.leafCount = 1;
+    } else {
+      node.leafCount = 0;
+      node.children.forEach(c => {
+        node.leafCount += calculateLeafCounts(c);
+      });
+    }
+    return node.leafCount;
+  }
+
+  function calculatePositions(node, angleStart, angleEnd, depth, radiusStep) {
+    let r = depth * radiusStep;
+    let angle = (angleStart + angleEnd) / 2;
+
+    if (depth === 0) {
+      node.x = 0;
+      node.y = 0;
+      node.angle = 0;
+    } else {
+      node.x = p.cos(angle) * r;
+      node.y = p.sin(angle) * r;
+      node.angle = angle;
+
+      if (depth === 1) {
+        let colorIndex = rootNode.children.indexOf(node) % DOMAIN_COLORS.length;
+        node.color = DOMAIN_COLORS[colorIndex];
+        domains.push({
+          name: node.name,
+          angleStart: angleStart,
+          angleEnd: angleEnd,
+          color: node.color,
+          radius: maxDepth * radiusStep + 42
+        });
+      } else {
+        node.color = node.parent.color;
+      }
+
+      links.push({ source: node.parent, target: node, color: node.color });
+    }
+
+    let currentAngle = angleStart;
+    node.children.forEach(child => {
+      let angleSpan = (child.leafCount / Math.max(1, node.leafCount)) * (angleEnd - angleStart);
+      calculatePositions(child, currentAngle, currentAngle + angleSpan, depth + 1, radiusStep);
+      currentAngle += angleSpan;
+    });
+  }
+
+  function drawRadarBackground() {
+    p.noFill();
+    p.stroke(255, 255, 255, 10);
+    p.strokeWeight(1);
+
+    let radiusStep = (p.min(p.width, p.height) / 2 - 95) / Math.max(1, maxDepth);
+
+    for (let i = 1; i <= maxDepth + 1; i++) {
+      p.ellipse(0, 0, i * radiusStep * 2);
+    }
+  }
+
+  function drawDomainShading() {
+    p.noStroke();
+
+    domains.forEach(d => {
+      let c = p.color(d.color);
+      c.setAlpha(16);
+      p.fill(c);
+
+      p.beginShape();
+      p.vertex(0, 0);
+      for (let a = d.angleStart; a <= d.angleEnd; a += 1) {
+        p.vertex(p.cos(a) * d.radius, p.sin(a) * d.radius);
+      }
+      p.endShape(p.CLOSE);
+
+      let edge = p.color(d.color);
+      edge.setAlpha(120);
+      p.stroke(edge);
+      p.strokeWeight(1.6);
+      p.line(0, 0, p.cos(d.angleStart) * d.radius, p.sin(d.angleStart) * d.radius);
+      p.noStroke();
+    });
+  }
+
+  function drawLinks() {
+    p.noFill();
+
+    links.forEach((link, i) => {
+      p.stroke(link.color);
+      p.drawingContext.shadowBlur = 10;
+      p.drawingContext.shadowColor = link.color;
+      p.strokeWeight(p.map(link.target.depth, 1, Math.max(1, maxDepth), 2.2, 0.6));
+
+      p.line(link.source.x, link.source.y, link.target.x, link.target.y);
+
+      let t = (p.frameCount * 0.002 + (i * 0.1)) % 1;
+
+      let px = p.lerp(link.target.x, link.source.x, t);
+      let py = p.lerp(link.target.y, link.source.y, t);
+
+      p.drawingContext.shadowColor = "#ffffff";
+      p.drawingContext.shadowBlur = 14;
+      p.fill(255);
+      p.noStroke();
+      p.ellipse(px, py, 3.8, 3.8);
+    });
+
+    p.drawingContext.shadowBlur = 0;
+  }
+
+  function drawNodes() {
+    p.drawingContext.shadowBlur = 0;
+
+    allNodes.forEach(node => {
+      let nColor = node.depth === 0 ? "#ffffff" : node.color;
+
+      p.drawingContext.shadowBlur = 15;
+      p.drawingContext.shadowColor = nColor;
+      p.fill(BG);
+      p.stroke(nColor);
+      p.strokeWeight(2);
+
+      let nodeSize = node.depth === 0 ? 16 : p.map(node.depth, 1, Math.max(1, maxDepth), 12, 6);
+      p.ellipse(node.x, node.y, nodeSize, nodeSize);
+
+      p.noStroke();
+      p.fill(nColor);
+      p.ellipse(node.x, node.y, nodeSize * 0.4);
+
+      p.drawingContext.shadowBlur = 0;
+
+      p.push();
+      p.translate(node.x, node.y);
+
+      if (node.depth === 0) {
+        drawRootLabel(node);
+      } else {
+        drawRadialLabel(node);
+      }
+
+      p.pop();
+    });
+  }
+
+  function drawRootLabel(node) {
+    let label = node.name;
+
+    p.textAlign(p.CENTER, p.BOTTOM);
+    p.textSize(20);
+    p.textStyle(p.BOLD);
+
+    p.drawingContext.shadowBlur = 0;
+    p.drawingContext.shadowColor = "transparent";
+
+    p.stroke(0, 0, 0, 180);
+    p.strokeWeight(2.4);
+    p.strokeJoin(p.ROUND);
+    p.fill(255);
+    p.text(label, 0, -18);
+
+    p.noStroke();
+  }
+
+  function drawRadialLabel(node) {
+    let isLeftSide = node.angle > 90 && node.angle < 270;
+    let textAngle = isLeftSide ? node.angle + 180 : node.angle;
+    p.rotate(textAngle);
+
+    let label = node.name;
+    let fontSize = p.map(node.depth, 1, Math.max(1, maxDepth), 14, 11.5);
+    p.textSize(fontSize);
+    p.textStyle(p.BOLD);
+
+    let radialOffset = p.map(node.depth, 1, Math.max(1, maxDepth), 18, 13);
+    let perpendicularOffset =
+      ((node.depth % 2 === 0) ? 1 : -1) * p.map(node.depth, 1, Math.max(1, maxDepth), 6, 2.5);
+
+    let xOffset = isLeftSide ? -radialOffset : radialOffset;
+    let yOffset = perpendicularOffset;
+
+    p.textAlign(isLeftSide ? p.RIGHT : p.LEFT, p.CENTER);
+
+    let isLeaf = node.children.length === 0;
+
+    p.drawingContext.shadowBlur = isLeaf ? 14 : 10;
+    p.drawingContext.shadowColor = node.color;
+
+    p.stroke(LABEL_STROKE);
+    p.strokeWeight(isLeaf ? 3 : 3.4);
+    p.strokeJoin(p.ROUND);
+
+    if (isLeaf) {
+      p.fill(255);
+    } else {
+      p.fill(255, 255, 255, 220);
+    }
+
+    p.text(label, xOffset, yOffset);
+
+    p.drawingContext.shadowBlur = 0;
+    p.noStroke();
+  }
+};
+new p5(radialTreeSketch);
+</script>
+</div>
+
+<div class="section">
+    <div class="section-title">
+        <h2>Control Room // Simple Structure Map</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);width:100%;" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Simple Structure Map 2.0</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">
+Refined structural projection using optional visual heuristics for exporter and central candidate highlighting.
+</div>
+<style>
+#p5-simple-structure-scroll {
+    width: 100%;
+    max-height: 980px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 6px;
+}
+
+#p5-simple-structure-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#p5-simple-structure-container canvas {
+    display: block;
+    max-width: 100%;
+    height: auto !important;
+}
+</style>
+<div id="p5-simple-structure-scroll">
+    <div id="p5-simple-structure-container"></div>
+</div>
+<script>
+const simpleStructureNodes = [{"id":"node_16","label":"Fingerprint","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_17","label":"Classificadores","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"central","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":true},{"id":"node_18","label":"Arquetipos","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_19","label":"Cartesianos","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_20","label":"Energia","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_21","label":"Narrativa","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_22","label":"Psique","parentId":"node_17","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_23","label":"Dados","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_24","label":"Forense","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_25","label":"Interfaces","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_26","label":"Modelos","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_27","label":"Modulos","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_28","label":"Motores","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_29","label":"MotoresEtograma","parentId":"node_16","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_31","label":"Infrastructure","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_32","label":"Baseline","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_33","label":"Exportacao","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"centralExporter","zoneLabel":"DEEP","isExporter":true,"isCentralCandidate":true},{"id":"node_34","label":"Excel","parentId":"node_33","depth":4,"csFileCount":0,"visualKind":"centralExporter","zoneLabel":"LEAF","isExporter":true,"isCentralCandidate":true},{"id":"node_35","label":"Abas","parentId":"node_34","depth":6,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_36","label":"Interfaces","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_37","label":"Validador","parentId":"node_31","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_38","label":"Limbic","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_40","label":"Dados","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_41","label":"Interfaces","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_42","label":"Linguistica","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_43","label":"Modelos","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_44","label":"Motor","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_45","label":"Pipeline","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_46","label":"Testes","parentId":"node_38","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_47","label":"Nucleo","parentId":"","depth":0,"csFileCount":0,"visualKind":"root","zoneLabel":"SURFACE","isExporter":false,"isCentralCandidate":false},{"id":"node_48","label":"Adaptadores","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_49","label":"Especialistas","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_50","label":"Interfaces","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_51","label":"Leitores","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false},{"id":"node_52","label":"Modelos","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"central","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":true},{"id":"node_53","label":"Analise","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_55","label":"Fenotipo","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_56","label":"Genoma","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_57","label":"Resultados","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_58","label":"Script","parentId":"node_52","depth":4,"csFileCount":0,"visualKind":"deep","zoneLabel":"LEAF","isExporter":false,"isCentralCandidate":false},{"id":"node_59","label":"Motores","parentId":"node_47","depth":2,"csFileCount":0,"visualKind":"folder","zoneLabel":"DEEP","isExporter":false,"isCentralCandidate":false}];
+const useSimple2 = true;
+
+const simpleStructureSketch = (p) => {
+    let nodes = [];
+    let links = [];
+    let palette;
+    let selectedNode = null;
+    let layoutMetrics = null;
+
+    function estimateLayoutMetrics() {
+        const grouped = {};
+        let maxDepth = 0;
+        let maxColumnCount = 0;
+
+        for (const raw of simpleStructureNodes) {
+            if (!grouped[raw.depth]) grouped[raw.depth] = [];
+            grouped[raw.depth].push(raw);
+            if (raw.depth > maxDepth) maxDepth = raw.depth;
+        }
+
+        for (const key of Object.keys(grouped)) {
+            maxColumnCount = Math.max(maxColumnCount, grouped[key].length);
+        }
+
+        const topMargin = 130;
+        const bottomMargin = 180;
+        const usableHeight = Math.max(760, maxColumnCount * 78);
+        const canvasHeight = topMargin + usableHeight + bottomMargin;
+
+        return {
+            maxDepth,
+            maxColumnCount,
+            topMargin,
+            bottomMargin,
+            usableHeight,
+            canvasHeight
+        };
+    }
+
+    p.setup = () => {
+        layoutMetrics = estimateLayoutMetrics();
+
+        p.createCanvas(1360, layoutMetrics.canvasHeight).parent('p5-simple-structure-container');
+        p.pixelDensity(2);
+        p.textFont("monospace");
+        p.rectMode(p.CORNER);
+
+        palette = {
+            bg: p.color("#03060a"),
+            grid: p.color(0, 229, 255, 14),
+            text: p.color("#00e5ff"),
+            muted: p.color("#255b7a"),
+            whiteSoft: p.color(230, 245, 255, 180),
+
+            root: p.color("#ff0055"),
+            folder: p.color("#00e5ff"),
+            file: p.color("#00ff88"),
+            deep: p.color("#ffaa00"),
+
+            central: p.color("#ff9a00"),
+            exporter: p.color("#00ffcc"),
+            centralExporter: p.color("#fff275"),
+
+            link: p.color("#0088ff"),
+            fileLink: p.color("#00ffcc")
+        };
+
+        buildLayout();
+    };
+
+    p.draw = () => {
+        p.background(palette.bg);
+        drawGrid();
+        drawZones();
+        drawLinks();
+        drawNodes();
+        drawLegend();
+        drawTitle();
+        drawStatsPanel();
+        drawHUDOverlay();
+    };
+
+    p.mousePressed = () => {
+        selectedNode = null;
+        for (let node of nodes) {
+            if (p.mouseX >= node.x && p.mouseX <= node.x + node.w &&
+                p.mouseY >= node.y && p.mouseY <= node.y + node.h) {
+                selectedNode = node;
+                break;
+            }
+        }
+    };
+
+    function buildLayout() {
+        const grouped = {};
+        let maxDepth = 0;
+
+        for (const raw of simpleStructureNodes) {
+            if (!grouped[raw.depth]) grouped[raw.depth] = [];
+            grouped[raw.depth].push(raw);
+            if (raw.depth > maxDepth) maxDepth = raw.depth;
+        }
+
+        const zoneLeft = 30;
+        const zoneRight = 30;
+        const zoneGap = 12;
+        const zoneTop = 95;
+        const zoneInsetX = 12;
+        const zoneInsetY = 24;
+
+        const zoneCount = Math.max(1, maxDepth + 1);
+        const totalZoneWidth = p.width - zoneLeft - zoneRight;
+        const zoneWidth = (totalZoneWidth - ((zoneCount - 1) * zoneGap)) / zoneCount;
+        const zoneInnerWidth = zoneWidth - (zoneInsetX * 2);
+
+        nodes = [];
+        links = [];
+
+        for (let depth = 0; depth <= maxDepth; depth++) {
+            const column = grouped[depth] || [];
+            const zoneX = zoneLeft + depth * (zoneWidth + zoneGap);
+            const nodeX = zoneX + zoneInsetX;
+
+            const availableColumnHeight = layoutMetrics.usableHeight - (zoneInsetY * 2);
+            const spacing = column.length <= 1
+                ? availableColumnHeight
+                : Math.max(58, availableColumnHeight / column.length);
+
+            for (let i = 0; i < column.length; i++) {
+                const raw = column[i];
+                const size = getNodeSize(raw, zoneInnerWidth);
+
+                const node = {
+                    ...raw,
+                    x: nodeX,
+                    y: zoneTop + zoneInsetY + i * spacing,
+                    w: size.w,
+                    h: size.h
+                };
+
+                nodes.push(node);
+            }
+        }
+
+        for (const node of nodes) {
+            if (node.parentId) {
+                const parent = nodes.find(n => n.id === node.parentId);
+                if (parent) {
+                    links.push({
+                        from: parent.id,
+                        to: node.id,
+                        type: node.visualKind === "file" ? "file" : "folder"
+                    });
+                }
+            }
+        }
+    }
+
+    function getNodeSize(raw, zoneInnerWidth) {
+        const label = raw.label || "";
+        const hardMax = Math.max(140, zoneInnerWidth);
+        const preferred = 90 + label.length * 5.2;
+        const baseWidth = Math.max(138, Math.min(hardMax, preferred));
+
+        if (raw.visualKind === "root")
+            return { w: Math.min(hardMax, Math.max(150, baseWidth)), h: 54 };
+
+        if (raw.visualKind === "file")
+            return { w: Math.min(hardMax, Math.max(142, baseWidth - 8)), h: 40 };
+
+        if (raw.visualKind === "deep")
+            return { w: Math.min(hardMax, Math.max(140, baseWidth - 4)), h: 44 };
+
+        if (raw.visualKind === "central" || raw.visualKind === "exporter" || raw.visualKind === "centralExporter")
+            return { w: Math.min(hardMax, Math.max(150, baseWidth)), h: 50 };
+
+        return { w: Math.min(hardMax, Math.max(142, baseWidth)), h: 46 };
+    }
+
+    function getNode(id) {
+        return nodes.find(n => n.id === id);
+    }
+
+    function drawGrid() {
+        p.stroke(palette.grid);
+        p.strokeWeight(1);
+
+        for (let x = 0; x < p.width; x += 40) p.line(x, 0, x, p.height);
+        for (let y = 0; y < p.height; y += 40) p.line(0, y, p.width, y);
+
+        p.stroke(0, 229, 255, 22);
+        p.line(p.width / 2 - 35, p.height / 2, p.width / 2 + 35, p.height / 2);
+        p.line(p.width / 2, p.height / 2 - 35, p.width / 2, p.height / 2 + 35);
+        p.noFill();
+        p.ellipse(p.width / 2, p.height / 2, 48, 48);
+    }
+
+    function drawZones() {
+        const maxDepth = nodes.length === 0 ? 0 : Math.max(...nodes.map(n => n.depth));
+
+        const zoneLeft = 30;
+        const zoneRight = 30;
+        const zoneGap = 12;
+        const zoneTop = 95;
+        const zoneHeight = layoutMetrics.usableHeight + 56;
+
+        const zoneCount = Math.max(1, maxDepth + 1);
+        const totalZoneWidth = p.width - zoneLeft - zoneRight;
+        const zoneWidth = (totalZoneWidth - ((zoneCount - 1) * zoneGap)) / zoneCount;
+
+        for (let d = 0; d <= maxDepth; d++) {
+            const x = zoneLeft + d * (zoneWidth + zoneGap);
+            const sample = nodes.find(n => n.depth === d);
+            const label = sample ? sample.zoneLabel : resolveZoneLabelFallback(d);
+
+            drawZoneBrackets({
+                x: x,
+                y: zoneTop,
+                w: zoneWidth,
+                h: zoneHeight
+            });
+
+            p.fill(palette.text);
+            p.noStroke();
+            p.textAlign(p.LEFT, p.TOP);
+            p.textStyle(p.BOLD);
+            p.textSize(9.5);
+            p.text("SEC_" + d + " // " + label, x + 8, zoneTop - 15);
+        }
+    }
+
+    function resolveZoneLabelFallback(d) {
+        if (!useSimple2) {
+            return d === 0 ? "ROOT" :
+                   d === 1 ? "MODULE / FOLDER" :
+                   d === 2 ? "SUBTREE" :
+                   "DEEP STRUCTURE";
+        }
+
+        return d === 0 ? "SURFACE" :
+               d === 1 ? "INTERNAL" :
+               d === 2 ? "DEEP" :
+               d === 3 ? "CORE-DEEP" :
+               "LEAF";
+    }
+
+    function drawZoneBrackets(z) {
+        p.stroke(palette.muted);
+        p.noFill();
+        p.strokeWeight(2);
+        let L = 16;
+
+        p.line(z.x, z.y + L, z.x, z.y);
+        p.line(z.x, z.y, z.x + L, z.y);
+
+        p.line(z.x + z.w - L, z.y, z.x + z.w, z.y);
+        p.line(z.x + z.w, z.y, z.x + z.w, z.y + L);
+
+        p.line(z.x, z.y + z.h - L, z.x, z.y + z.h);
+        p.line(z.x, z.y + z.h, z.x + L, z.y + z.h);
+
+        p.line(z.x + z.w - L, z.y + z.h, z.x + z.w, z.y + z.h);
+        p.line(z.x + z.w, z.y + z.h - L, z.x + z.w, z.y + z.h);
+    }
+
+    function drawTitle() {
+        p.fill(palette.text);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(22);
+        p.text(useSimple2 ? "SIMPLE STRUCTURE MAP 2.0" : "SIMPLE STRUCTURE MAP", 40, 24);
+
+        p.fill(palette.folder);
+        p.textStyle(p.NORMAL);
+        p.textSize(11);
+        p.text(
+            useSimple2
+                ? "Baseline structural view with optional visual heuristics for exporters and central candidates."
+                : "Structural projection of folders and visible structural branches.",
+            40, 52);
+
+        p.fill(palette.whiteSoft);
+        p.textSize(9.5);
+        p.text(
+            useSimple2
+                ? "Experimental refinement layer over the baseline renderer."
+                : "Honest fallback view for projects without a reliable inferred flow topology.",
+            40, 68);
+    }
+
+    function drawLinks() {
+        for (const link of links) {
+            const from = getNode(link.from);
+            const to = getNode(link.to);
+
+            if (!from || !to) continue;
+
+            const c = link.type === "file" ? palette.fileLink : palette.link;
+            const alpha = link.type === "file" ? 110 : 85;
+
+            const cc = p.color(c);
+            cc.setAlpha(alpha);
+
+            const x1 = from.x + from.w;
+            const y1 = from.y + from.h / 2;
+            const x2 = to.x;
+            const y2 = to.y + to.h / 2;
+
+            const bend = Math.max(20, Math.abs(x2 - x1) * 0.32);
+
+            p.noFill();
+            p.stroke(cc);
+            p.strokeWeight(link.type === "file" ? 1.2 : 1.5);
+            p.drawingContext.shadowBlur = link.type === "file" ? 4 : 8;
+            p.drawingContext.shadowColor = c.toString();
+
+            p.bezier(
+                x1, y1,
+                x1 + bend, y1,
+                x2 - bend, y2,
+                x2, y2);
+
+            p.drawingContext.shadowBlur = 0;
+            drawArrow(x1, y1, x2, y2, bend, c);
+        }
+    }
+
+    function drawArrow(x1, y1, x2, y2, bend, c) {
+        const t = 0.97;
+        const px = p.bezierPoint(x1, x1 + bend, x2 - bend, x2, t);
+        const py = p.bezierPoint(y1, y1, y2, y2, t);
+        const tx = p.bezierTangent(x1, x1 + bend, x2 - bend, x2, t);
+        const ty = p.bezierTangent(y1, y1, y2, y2, t);
+
+        p.push();
+        p.translate(px, py);
+        p.rotate(p.atan2(ty, tx));
+        p.noStroke();
+        p.fill(c);
+        p.triangle(0, 0, -8, 3.5, -8, -3.5);
+        p.pop();
+    }
+
+    function drawNodes() {
+        for (const node of nodes) {
+            drawNode(node);
+        }
+    }
+
+    function drawNode(node) {
+        const c = getNodeColor(node);
+        const cut = 10;
+        const selected = selectedNode && selectedNode.id === node.id;
+
+        p.drawingContext.shadowBlur = selected ? 18 : 12;
+        p.drawingContext.shadowColor = c.toString();
+
+        p.fill(3, 6, 10, 228);
+        p.stroke(c);
+        p.strokeWeight(selected ? 2.2 : (node.visualKind === "root" ? 1.8 : 1.1));
+
+        p.beginShape();
+        p.vertex(node.x + cut, node.y);
+        p.vertex(node.x + node.w, node.y);
+        p.vertex(node.x + node.w, node.y + node.h - cut);
+        p.vertex(node.x + node.w - cut, node.y + node.h);
+        p.vertex(node.x, node.y + node.h);
+        p.vertex(node.x, node.y + cut);
+        p.endShape(p.CLOSE);
+
+        p.drawingContext.shadowBlur = 0;
+
+        p.noStroke();
+        p.fill(c);
+        p.rect(node.x + cut + 4, node.y, 14, 3);
+        p.rect(node.x + cut + 22, node.y, 5, 3);
+
+        drawNodeBadge(node, c);
+
+        p.fill(255);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.CENTER);
+        p.textStyle(p.BOLD);
+        p.textSize(node.visualKind === "root" ? 11 : 9.5);
+
+        const displayLabel = shorten(node.label, 18);
+        p.text(displayLabel.toUpperCase(), node.x + 28, node.y + node.h / 2 - 5);
+
+        p.fill(palette.text);
+        p.textStyle(p.NORMAL);
+        p.textSize(7.5);
+        p.text(getSubtitle(node), node.x + 28, node.y + node.h / 2 + 8);
+
+        if (selected)
+            drawSelectedPanel(node);
+    }
+
+    function drawNodeBadge(node, c) {
+        const cx = node.x + 14;
+        const cy = node.y + node.h / 2 - 1;
+
+        p.push();
+        p.translate(cx, cy);
+        p.noFill();
+        p.stroke(c);
+        p.strokeWeight(1.2);
+
+        if (node.visualKind === "root") {
+            p.ellipse(0, 0, 12, 12);
+            p.line(-8, 0, 8, 0);
+            p.line(0, -8, 0, 8);
+        } else if (node.visualKind === "folder") {
+            p.rect(-5, -4, 10, 8);
+        } else if (node.visualKind === "deep") {
+            p.polygon = undefined;
+            polygon(0, 0, 5, 6);
+        } else if (node.visualKind === "file") {
+            p.rect(-4, -5, 8, 10);
+            p.line(-2, -1, 2, -1);
+            p.line(-2, 2, 2, 2);
+        } else if (node.visualKind === "central") {
+            p.ellipse(0, 0, 10, 10);
+            p.line(-6, 0, 6, 0);
+            p.line(0, -6, 0, 6);
+        } else if (node.visualKind === "exporter") {
+            p.triangle(5, 0, -5, -5, -5, 5);
+            p.line(6, -5, 6, 5);
+        } else if (node.visualKind === "centralExporter") {
+            p.ellipse(0, 0, 10, 10);
+            p.triangle(8, 0, -1, -5, -1, 5);
+        }
+
+        p.pop();
+    }
+
+    function polygon(x, y, radius, npoints) {
+        const angle = p.TWO_PI / npoints;
+        p.beginShape();
+        for (let a = 0; a < p.TWO_PI; a += angle) {
+            p.vertex(x + p.cos(a) * radius, y + p.sin(a) * radius);
+        }
+        p.endShape(p.CLOSE);
+    }
+
+    function getNodeColor(node) {
+        if (node.visualKind === "centralExporter") return palette.centralExporter;
+        if (node.visualKind === "exporter") return palette.exporter;
+        if (node.visualKind === "central") return palette.central;
+        if (node.visualKind === "root") return palette.root;
+        if (node.visualKind === "folder") return palette.folder;
+        if (node.visualKind === "deep") return palette.deep;
+        return palette.file;
+    }
+
+    function getSubtitle(node) {
+        if (node.visualKind === "root")
+            return "ROOT_SCOPE";
+
+        if (node.visualKind === "file")
+            return "CS_FILE";
+
+        if (node.visualKind === "centralExporter")
+            return "CENTRAL_EXPORT";
+
+        if (node.visualKind === "exporter")
+            return "EXPORT_NODE";
+
+        if (node.visualKind === "central")
+            return "CENTRAL_CANDIDATE";
+
+        if (node.visualKind === "deep")
+            return "DEEP // D:" + node.depth;
+
+        return "FOLDER // D:" + node.depth;
+    }
+
+    function shorten(text, maxLen) {
+        if (!text) return "";
+        if (text.length <= maxLen) return text;
+        return text.substring(0, maxLen - 3) + "...";
+    }
+
+    function drawSelectedPanel(node) {
+        let px = Math.min(node.x + node.w + 12, p.width - 210);
+        let py = Math.max(100, node.y - 4);
+        let pw = 180;
+        let ph = 94;
+
+        p.noStroke();
+        p.fill(4, 10, 16, 235);
+        p.rect(px, py, pw, ph, 5);
+
+        p.stroke(getNodeColor(node));
+        p.strokeWeight(1.1);
+        p.noFill();
+        p.rect(px, py, pw, ph, 5);
+
+        p.fill(255);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(9.5);
+        p.text("NODE TELEMETRY", px + 10, py + 8);
+
+        p.textStyle(p.NORMAL);
+        p.textSize(8.5);
+        p.text("TYPE: " + node.visualKind.toUpperCase(), px + 10, py + 24);
+        p.text("DEPTH: " + node.depth, px + 10, py + 38);
+        p.text("EXPORTER: " + (node.isExporter ? "YES" : "NO"), px + 10, py + 52);
+        p.text("CENTRAL: " + (node.isCentralCandidate ? "YES" : "NO"), px + 10, py + 66);
+        p.text("LABEL: " + shorten(node.label, 18), px + 10, py + 80);
+    }
+
+    function drawStatsPanel() {
+        const x = p.width - 250;
+        const y = p.height - 172;
+        const w = 210;
+        const h = 130;
+
+        p.noStroke();
+        p.fill(4, 10, 16, 220);
+        p.rect(x, y, w, h, 5);
+
+        p.stroke(palette.muted);
+        p.strokeWeight(1);
+        p.noFill();
+        p.rect(x, y, w, h, 5);
+
+        const rootCount = nodes.filter(n => n.visualKind === "root").length;
+        const folderCount = nodes.filter(n => n.visualKind === "folder").length;
+        const deepCount = nodes.filter(n => n.visualKind === "deep").length;
+        const centralCount = nodes.filter(n => n.visualKind === "central" || n.visualKind === "centralExporter").length;
+        const exporterCount = nodes.filter(n => n.visualKind === "exporter" || n.visualKind === "centralExporter").length;
+        const maxDepth = nodes.length === 0 ? 0 : Math.max(...nodes.map(n => n.depth));
+
+        p.fill(palette.text);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(10);
+        p.text(useSimple2 ? "STRUCTURE SUMMARY 2.0" : "STRUCTURE SUMMARY", x + 10, y + 10);
+
+        p.fill(255);
+        p.textStyle(p.NORMAL);
+        p.textSize(8.8);
+        p.text("ROOTS: " + rootCount, x + 10, y + 32);
+        p.text("FOLDERS: " + folderCount, x + 10, y + 48);
+        p.text("DEEP: " + deepCount, x + 10, y + 64);
+        p.text("EXPORTERS: " + exporterCount, x + 10, y + 80);
+        p.text("CENTRAL: " + centralCount, x + 10, y + 96);
+        p.text("MAX DEPTH: " + maxDepth + " // LINKS: " + links.length, x + 10, y + 112);
+    }
+
+    function drawLegend() {
+        let x = 40;
+        let y = p.height - 90;
+
+        p.fill(palette.text);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textStyle(p.BOLD);
+        p.textSize(10);
+        p.text(useSimple2 ? "STRUCTURE LEGEND 2.0" : "STRUCTURE LEGEND", x, y - 18);
+
+        const items = useSimple2
+            ? [
+                ["ROOT", palette.root],
+                ["FOLDER", palette.folder],
+                ["DEEP", palette.deep],
+                ["CENTRAL", palette.central],
+                ["EXPORTER", palette.exporter],
+                ["CENTRAL+EXPORT", palette.centralExporter]
+            ]
+            : [
+                ["ROOT", palette.root],
+                ["FOLDER", palette.folder],
+                ["DEEP", palette.deep],
+                ["CS FILE", palette.file]
+            ];
+
+        for (let i = 0; i < items.length; i++) {
+            p.stroke(items[i][1]);
+            p.strokeWeight(1.2);
+            p.noFill();
+            p.rect(x, y, 9, 9);
+
+            p.fill(255);
+            p.noStroke();
+            p.textStyle(p.NORMAL);
+            p.textSize(8.5);
+            p.text(items[i][0], x + 14, y - 1);
+
+            x += p.textWidth(items[i][0]) + 48;
+        }
+
+        let y2 = p.height - 52;
+
+        p.fill(palette.text);
+        p.textStyle(p.BOLD);
+        p.textSize(10);
+        p.text("LINK TYPES", 40, y2 - 16);
+
+        p.stroke(palette.link);
+        p.strokeWeight(1.8);
+        p.line(40, y2, 76, y2);
+        p.noStroke();
+        p.fill(palette.link);
+        p.triangle(76, y2, 68, y2 - 3.5, 68, y2 + 3.5);
+        p.fill(255);
+        p.textStyle(p.NORMAL);
+        p.textSize(8.5);
+        p.text("FOLDER TREE", 84, y2 - 5);
+
+        p.stroke(palette.fileLink);
+        p.strokeWeight(1.8);
+        p.line(176, y2, 212, y2);
+        p.noStroke();
+        p.fill(palette.fileLink);
+        p.triangle(212, y2, 204, y2 - 3.5, 204, y2 + 3.5);
+        p.fill(255);
+        p.text("FILE LEAF", 220, y2 - 5);
+    }
+
+    function drawHUDOverlay() {
+        let scanY = (p.frameCount * 2) % p.height;
+        p.stroke(0, 229, 255, 20);
+        p.strokeWeight(3);
+        p.line(0, scanY, p.width, scanY);
+
+        p.stroke(0, 0, 0, 32);
+        p.strokeWeight(1);
+        for (let y = 0; y < p.height; y += 4) {
+            p.line(0, y, p.width, y);
+        }
+    }
+};
+
+new p5(simpleStructureSketch);
+</script>
+</div>
+
+<div class='footer'>Generated by RefactorScope Architectural Dashboard</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
+</div>
+</body>
+</html>
+

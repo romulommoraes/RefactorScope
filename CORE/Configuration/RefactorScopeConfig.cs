@@ -1,10 +1,12 @@
-﻿using RefactorScope.CORE.Context;
+﻿using RefactorScope.Core.Context;
+using RefactorScope.Statistics.Models;
+using RefactorScope.Statistics.Engines;
 
 namespace RefactorScope.Core.Configuration
 {
     /// <summary>
     /// Representa a configuração de execução do RefactorScope.
-    /// Define escopo de análise, analisadores ativos e exportações.
+    /// Define escopo de análise, analisadores ativos, estratégias e exportações.
     /// </summary>
     public class RefactorScopeConfig
     {
@@ -40,11 +42,43 @@ namespace RefactorScope.Core.Configuration
         public List<string> Exporters { get; set; } = new();
 
         /// <summary>
-        /// Camadas / Modulos do sistema e suas regras de dependência.
+        /// Camadas / módulos do sistema e suas regras de dependência.
         /// </summary>
-
         public Dictionary<string, LayerRuleConfig>? LayerRules { get; set; }
 
+        /// <summary>
+        /// Diretório de saída dos relatórios e dashboards.
+        /// </summary>
         public string OutputPath { get; set; } = "refactorscope-output";
+
+        /// <summary>
+        /// Config do strategy para exportação do dump otimizado para IA.
+        /// </summary>
+        public DumpStrategyConfig DumpStrategy { get; set; } = new();
+
+        /// <summary>
+        /// Configuração dos fitness gates.
+        /// </summary>
+        public FitnessGateConfig FitnessGates { get; set; } = new();
+
+        /// <summary>
+        /// Configuração da detecção de candidatos estruturais.
+        /// </summary>
+        public StructuralCandidateDetectionOptions StructuralCandidateDetection { get; set; } = new();
+
+        /// <summary>
+        /// Configuração da camada estatística.
+        /// </summary>
+        public StatisticsConfig Statistics { get; set; } = new();
+
+        /// <summary>
+        /// Configuração do estimador de esforço.
+        /// </summary>
+        public EstimatorConfig? Estimator { get; set; }
+
+        /// <summary>
+        /// Configuração visual dos dashboards HTML.
+        /// </summary>
+        public DashboardOptions Dashboard { get; set; } = new();
     }
 }

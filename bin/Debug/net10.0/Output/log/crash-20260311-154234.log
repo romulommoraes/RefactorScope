@@ -1,0 +1,18 @@
+================================================
+RefactorScope Crash Report
+Timestamp: 11/03/2026 15:42:34
+Phase: EXPORT
+
+System.Collections.Generic.KeyNotFoundException: The given key 'RaizComposicao' was not present in the dictionary.
+   at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at RefactorScope.Exporters.Dashboards.RouteMap.ModuleRouteMapBuilder.EnsureAtLeastOneExit(List`1 nodes, IReadOnlyList`1 edges) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteMapBuilder.cs:line 425
+   at RefactorScope.Exporters.Dashboards.RouteMap.ModuleRouteMapBuilder.BuildNodes(IReadOnlyList`1 knownModules, IReadOnlyList`1 edges, EntryPointHeuristicResult entryPoints, ImplicitCouplingResult implicitCoupling, SolidResult solid) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteMapBuilder.cs:line 208
+   at RefactorScope.Exporters.Dashboards.RouteMap.ModuleRouteMapBuilder.Build(ConsolidatedReport report) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\Routemap\ModuleRouteMapBuilder.cs:line 41
+   at RefactorScope.Exporters.Dashboards.ArchitecturalDashboardExporter.RenderGenericRouteMap(ConsolidatedReport report) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ArchitecturalDashboardExporter.cs:line 179
+   at RefactorScope.Exporters.Dashboards.ArchitecturalDashboardExporter.RenderFlowMap(ConsolidatedReport report, ArchitecturalStructureRendererP5 p5Renderer) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ArchitecturalDashboardExporter.cs:line 171
+   at RefactorScope.Exporters.Dashboards.ArchitecturalDashboardExporter.GenerateHtml(ConsolidatedReport report, String themeFileName) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ArchitecturalDashboardExporter.cs:line 156
+   at RefactorScope.Exporters.Dashboards.ArchitecturalDashboardExporter.Export(ConsolidatedReport report, String outputPath, String themeFileName) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Dashboards\ArchitecturalDashboardExporter.cs:line 23
+   at RefactorScope.Exporters.Adapters.ArchitecturalDashboardExporterAdapter.ExportDirect(AnalysisContext context, ConsolidatedReport report, IParserResult parsingResult, String outputPath) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\Exporters\Adapters\ArchitecturalDashboardExporterAdapter.cs:line 79
+   at Program.<<Main>$>g__RunExport|0_8(RefactorScopeConfig config, AnalysisContext context, ConsolidatedReport report, IParserResult parsingResult) in C:\Users\romul\source\repos\RefactorScope\RefactorScope\CLI\Program.cs:line 400
+
+================================================

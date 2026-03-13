@@ -1,23 +1,24 @@
-﻿using RefactorScope.Core.Model;
+﻿using System.Collections.Generic;
 
-namespace RefactorScope.Core.Abstractions
+namespace RefactorScope.Core.Abstractions;
+
+/// <summary>
+/// Contrato base para todos os parsers de código do sistema.
+/// </summary>
+public interface IParserCodigo
 {
-    /// <summary>
-    /// Define o contrato para parsers de código.
-    /// Converte código fonte em Modelo Estrutural agnóstico.
-    /// </summary>
-    public interface IParserCodigo
-    {
-        /// <summary>
-        /// Nome do parser (ex: CSharpRegex, Roslyn).
-        /// </summary>
-        string Name { get; }
+    /// <summary>Nome identificador do parser.</summary>
+    string Name { get; }
 
-        /// <summary>
-        /// Constrói o modelo estrutural a partir do caminho alvo.
-        /// </summary>
-        /// <param name="rootPath">Raiz do escopo de análise.</param>
-        /// <returns>Modelo estrutural gerado.</returns>
-        ModeloEstrutural Parse(string rootPath);
-    }
+    /// <summary>
+    /// Executa a análise do código e retorna um envelope observável contendo o modelo e as métricas.
+    /// </summary>
+    /// <param name="rootPath">Caminho raiz do projeto a ser analisado.</param>
+    /// <param name="include">Filtros de inclusão de arquivos (opcional).</param>
+    /// <param name="exclude">Filtros de exclusão de arquivos (opcional).</param>
+    /// <returns>Um IParserResult contendo o estado, métricas e o modelo gerado.</returns>
+    IParserResult Parse(
+        string rootPath,
+        IEnumerable<string>? include = null,
+        IEnumerable<string>? exclude = null);
 }

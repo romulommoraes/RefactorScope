@@ -1,0 +1,2280 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Parsing Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
+</head>
+<body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Parsing Module</div>
+        <h1>Parsing Dashboard</h1>
+        <div class="subtitle">Parser: <b>HybridSelectiveParser</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
+    </div>
+
+    <div class="run-meta run-meta--with-theme">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+
+        <div><b>Generated:</b> 12-03-2026 17:59 UTC</div>
+        <div><b>Target:</b> RefactorScope</div>
+        <div><b>Confidence:</b> 100%</div>
+        <div><b>Confidence Band:</b> High</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Parsing Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis parsing-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Parser</div>
+        <div class="value" style="font-size:22px;">HybridSelectiveParser</div>
+        <div class="hint">Parsing strategy used to extract structural data from the codebase</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Files</div>
+        <div class="value">189</div>
+        <div class="hint">Source files parsed into the structural model</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Types</div>
+        <div class="value">190</div>
+        <div class="hint">Distinct types extracted into the parsing model</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">References</div>
+        <div class="value">696</div>
+        <div class="hint">Structural references extracted between parsed types</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Confidence</div>
+        <div class="value">100%</div>
+        <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Confidence Band</div>
+        <div class="value" style="font-size:24px;">High</div>
+        <div class="hint">High, Medium or Low confidence band derived from parser confidence</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Execution</div>
+        <div class="value">860 ms</div>
+        <div class="hint">Total parsing execution time for the analyzed scope</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Type Density</div>
+        <div class="value">1,01</div>
+        <div class="hint">Average number of extracted types per parsed file</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Refs / Type</div>
+        <div class="value">3,66</div>
+        <div class="hint">Average extracted reference density per parsed type</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">ms / File</div>
+        <div class="value">4,55</div>
+        <div class="hint">Average parsing cost per file</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">ms / Type</div>
+        <div class="value">4,53</div>
+        <div class="hint">Average parsing cost per extracted type</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Sparse Extraction</div>
+        <div class="value" style="font-size:24px;">No</div>
+        <div class="hint">Indicates extraction density lower than expected for a structurally healthy parse</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Extended Parsing Statistics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Telemetry Summary</h3>
+    <ul class="clean">
+        <li><b>Files:</b> 189</li>
+        <li><b>Types:</b> 190</li>
+        <li><b>References:</b> 696</li>
+        <li><b>Execution Time:</b> 859,93 ms</li>
+        <li><b>Type Density:</b> 1,01</li>
+        <li><b>References per Type:</b> 3,66</li>
+        <li><b>Milliseconds per File:</b> 4,55</li>
+        <li><b>Milliseconds per Type:</b> 4,53</li>
+        <li><b>Memory per File:</b> 0,00 KB</li>
+        <li><b>Memory per Type:</b> 0,00 KB</li>
+        <li><b>Extraction Index:</b> 87,86</li>
+        <li><b>Anomaly Detected:</b> No</li>
+    </ul>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Executive Reading</h3>
+    <ul class="clean">
+        <li>Parser confidence is high. The extracted structural model appears reliable for downstream analysis.</li>
+        <li>Structural density appears healthy. Parsed types and references show consistent extraction volume.</li>
+        <li>Parsing cost remains in an acceptable range for the extracted structural volume.</li>
+        <li>No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.</li>
+        <li>No anomaly flag was raised during parsing telemetry.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 100%</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Sparse Extraction: No</div>
+        <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Anomaly Detected: No</div>
+    </div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style='display:grid; grid-template-columns: auto auto 1fr; gap:24px; align-items:stretch; width:100%;'>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Parsing Control Radar</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Dynamic extraction quality scan.</div>
+<div id="p5-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const radarSketch = (p) => {
+    const data = [25.132, 100, 100, 90.948];
+    const labels = ["Type Density", "Graph Rich", "Confidence", "Efficiency"];
+    const rawValues = [
+        "1.005 types/file",
+        "3.663 refs/type",
+        "100% confidence",
+        "4.526 ms/type"
+    ];
+    const maxRadius = 100;
+    let hovered = null;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(440, 360);
+        canvas.parent('p5-radar-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        hovered = null;
+        p.translate(p.width / 2, p.height / 2);
+
+        let pulse = p.sin(p.frameCount * 3) * 5 + 10;
+
+        p.stroke('#8fa8ff');
+        p.noFill();
+        p.strokeWeight(1);
+        p.drawingContext.shadowBlur = 0;
+
+        for (let i = 1; i <= 5; i++) {
+            let r = (maxRadius / 5) * i;
+            p.beginShape();
+            for (let a = 0; a < 360; a += 90) {
+                p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            }
+            p.endShape(p.CLOSE);
+
+            if (i < 5) {
+                p.fill('#8fa8ff');
+                p.noStroke();
+                p.textSize(9);
+                p.text(`${i * 20}%`, 5, -r);
+                p.noFill();
+                p.stroke('#8fa8ff');
+            }
+        }
+
+        for (let a = 0; a < 360; a += 90) {
+            p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+        }
+
+        p.drawingContext.shadowColor = '#ff9a3c';
+        p.drawingContext.shadowBlur = pulse;
+        p.stroke('#ff9a3c');
+        p.strokeWeight(2.5);
+        p.fill('rgba(255, 154, 60, 0.2)');
+
+        p.beginShape();
+        for (let i = 0; i < 4; i++) {
+            let angle = (i * 90) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            p.vertex(p.cos(angle) * r, p.sin(angle) * r);
+        }
+        p.endShape(p.CLOSE);
+
+        for (let i = 0; i < 4; i++) {
+            let angle = (i * 90) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            let px = p.cos(angle) * r;
+            let py = p.sin(angle) * r;
+
+            const mouseDx = p.mouseX - (p.width / 2 + px);
+            const mouseDy = p.mouseY - (p.height / 2 + py);
+            const isHover = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy) <= 9;
+
+            if (isHover) {
+                hovered = {
+                    label: labels[i],
+                    normalized: data[i],
+                    raw: rawValues[i],
+                    x: px,
+                    y: py
+                };
+            }
+
+            p.fill('#0b1020');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(isHover ? 2.8 : 2);
+            p.drawingContext.shadowBlur = isHover ? 18 : 10;
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.ellipse(px, py, isHover ? 10 : 8, isHover ? 10 : 8);
+            p.drawingContext.shadowBlur = 0;
+        }
+
+        p.drawingContext.shadowBlur = 0;
+        let scanAngle = p.frameCount * 2;
+        p.noStroke();
+        p.fill('rgba(255, 154, 60, 0.15)');
+        p.arc(0, 0, maxRadius * 2, maxRadius * 2, scanAngle - 45, scanAngle);
+        p.stroke('#ff9a3c');
+        p.strokeWeight(1.5);
+        p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
+
+        p.fill('#eef4ff');
+        p.noStroke();
+        p.textSize(12);
+
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text(labels[0], 0, -maxRadius - 20);
+        p.text(labels[2], 0, maxRadius + 20);
+
+        p.textAlign(p.LEFT, p.CENTER);
+        p.text(labels[1], maxRadius + 12, 0);
+
+        p.textAlign(p.RIGHT, p.CENTER);
+        p.text(labels[3], -maxRadius - 12, 0);
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 170;
+            const boxH = 72;
+            let tx = p.mouseX + 16;
+            let ty = p.mouseY - 12;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Normalized: ${hovered.normalized.toFixed(1)}%`, tx + 12, ty + 30);
+            p.text(`Raw: ${hovered.raw}`, tx + 12, ty + 46);
+        }
+    };
+};
+new p5(radarSketch);
+</script>
+</div>
+
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);min-height:450px;" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Route Distribution</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Parsing workload across execution routes.</div>
+<div id="p5-donut-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const donutSketch = (p) => {
+    const donutData = [
+        { label: "Safe", value: 117, color: "#7fd36b" },
+        { label: "Complex", value: 34, color: "#6ea8ff" },
+        { label: "AST/Pattern", value: 23, color: "#ffc15d" },
+        { label: "Recovery", value: 15, color: "#ff9a52" },
+        { label: "Risk", value: 0, color: "#ff6a3d" }
+    ];
+    const total = 189;
+    let hovered = null;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(360, 360);
+        canvas.parent('p5-donut-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        hovered = null;
+        p.translate(p.width / 2, p.height / 2 - 20);
+
+        const outerRadius = 100;
+        const innerRadius = 75;
+
+        p.noFill();
+        p.strokeWeight(1.5);
+        p.stroke('rgba(255,255,255,0.1)');
+
+        p.push();
+        p.rotate(p.frameCount * 0.4);
+        p.drawingContext.setLineDash([8, 12, 25, 12]);
+        p.ellipse(0, 0, outerRadius * 2 + 30);
+        p.pop();
+
+        p.push();
+        p.rotate(-p.frameCount * 0.6);
+        p.drawingContext.setLineDash([4, 4]);
+        p.ellipse(0, 0, innerRadius * 2 - 15);
+        p.pop();
+
+        p.drawingContext.setLineDash([]);
+
+        let currentAngle = -90;
+        p.strokeCap(p.SQUARE);
+
+        donutData.forEach(item => {
+            let angleSpan = (item.value / total) * 360;
+            let gap = item.value > 0 ? 3 : 0;
+
+            const midAngle = currentAngle + angleSpan / 2;
+            const mouseAngle = p.degrees(Math.atan2(p.mouseY - (p.height / 2 - 20), p.mouseX - p.width / 2));
+            let normalizedMouseAngle = mouseAngle;
+            if (normalizedMouseAngle < -90) normalizedMouseAngle += 360;
+
+            const distToCenter = p.dist(p.mouseX, p.mouseY, p.width / 2, p.height / 2 - 20);
+            const isHover =
+                item.value > 0 &&
+                distToCenter >= innerRadius - 10 &&
+                distToCenter <= outerRadius + 18 &&
+                normalizedMouseAngle >= currentAngle &&
+                normalizedMouseAngle <= currentAngle + angleSpan;
+
+            if (isHover) hovered = { ...item };
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = isHover ? 20 : 12;
+            p.stroke(item.color);
+            p.strokeWeight(isHover ? 28 : 25);
+
+            if (angleSpan > gap) {
+                p.arc(0, 0, outerRadius + innerRadius, outerRadius + innerRadius, currentAngle + gap / 2, currentAngle + angleSpan - gap / 2);
+            }
+
+            currentAngle += angleSpan;
+        });
+
+        p.drawingContext.shadowBlur = 0;
+        p.fill('#eef4ff');
+        p.noStroke();
+        p.textAlign(p.CENTER, p.CENTER);
+        p.textSize(36);
+        p.textStyle(p.BOLD);
+        p.text(total, 0, -5);
+
+        p.textSize(11);
+        p.textStyle(p.NORMAL);
+        p.fill('#8fa8ff');
+        p.text("Total Routed", 0, 22);
+
+        let startX = -140;
+        let legendY = 160;
+        p.textAlign(p.LEFT, p.CENTER);
+
+        donutData.forEach((item, index) => {
+            let xOffset = startX + (index % 3) * 105;
+            let yOffset = legendY + Math.floor(index / 3) * 25;
+
+            p.drawingContext.shadowColor = item.color;
+            p.drawingContext.shadowBlur = 8;
+            p.fill(item.color);
+            p.rect(xOffset, yOffset - 4, 8, 8, 2);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#eef4ff');
+            p.textSize(10);
+            p.text(item.label, xOffset + 14, yOffset);
+        });
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 150;
+            const boxH = 60;
+            let tx = p.mouseX + 16;
+            let ty = p.mouseY - 12;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Files: ${hovered.value}`, tx + 12, ty + 30);
+            p.text(`Share: ${(hovered.value / total * 100).toFixed(1)}%`, tx + 12, ty + 44);
+        }
+    };
+};
+new p5(donutSketch);
+</script>
+</div>
+
+<div class='panel' augmented-ui='tl-clip tr-clip bl-clip br-clip border' style='margin:0; background:rgba(255,255,255,0.02); min-width:320px; display:flex; flex-direction:column; justify-content:center;'>
+<ul class='clean' style='font-size:12px; line-height:1.6;'>
+<li><b>Safe:</b> Files likely handled in the most stable parsing route.</li>
+<li><b>Complex:</b> Files requiring more structural interpretation effort.</li>
+<li><b>AST / Pattern:</b> Files dependent on structural pattern handling.</li>
+<li><b>Recovery:</b> Files requiring fallback or recovery behavior.</li>
+<li><b>Risk:</b> Concentration in highest reliability-pressure bucket.</li>
+<li style='margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); color:#ff9a3c;'>Route distribution looks operationally healthy. Most files remained in stable parsing paths.</li>
+</ul>
+</div>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Control Room // Parsing Flow</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05); overflow-x: auto;" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Parsing Flow Sankey</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Flow of structural extraction from input scope to output graph and risk buckets.</div>
+<div id="p5-sankey-container"></div>
+<script>
+const sankeySketch = (p) => {
+    const maxFlow = 696;
+
+    const nodes = [
+        { id: 0, name: "Input Files",      x: 40,   y: 180, val: 189,          col: '#ff9a3c' },
+        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 117,           col: '#7fd36b' },
+        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 34,        col: '#6ea8ff' },
+        { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 23,     col: '#ffc15d' },
+        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 15,       col: '#ff9a52' },
+        { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 190,      col: '#7fd36b' },
+        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 696, col: '#6ea8ff' },
+        { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,           col: '#ff6a3d' }
+    ];
+
+    const links = [
+        { src: 0, tgt: 1, val: 117,                                                   col: '#7fd36b',     offset: 0.1, label: "Input → Safe Route" },
+        { src: 0, tgt: 2, val: 34,                                                col: '#6ea8ff',  offset: 0.3, label: "Input → Complex Route" },
+        { src: 0, tgt: 3, val: 23,                                             col: '#ffc15d',  offset: 0.5, label: "Input → AST / Pattern" },
+        { src: 0, tgt: 4, val: 15,                                               col: '#ff9a52', offset: 0.7, label: "Input → Recovery" },
+        { src: 1, tgt: 5, val: 140,      col: '#7fd36b',     offset: 0.2, label: "Safe Route → Extracted Types" },
+        { src: 2, tgt: 6, val: 49, col: '#6ea8ff',  offset: 0.4, label: "Complex Route → Extracted Refs" },
+        { src: 3, tgt: 5, val: 23,                   col: '#ffc15d',  offset: 0.6, label: "AST / Pattern → Extracted Types" },
+        { src: 4, tgt: 7, val: 1,                                      col: '#ff9a52', offset: 0.8, label: "Recovery → Risk Bucket" },
+        { src: 5, tgt: 7, val: 1,       col: '#ff8a3d',        offset: 0.9, label: "Extracted Types → Risk Bucket" },
+        { src: 6, tgt: 7, val: 1, col: '#ff6a3d',     offset: 0.55, label: "Extracted Refs → Risk Bucket" }
+    ];
+
+    let hoveredNode = null;
+    let hoveredLink = null;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(1180, 440);
+        canvas.parent('p5-sankey-container');
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        hoveredNode = null;
+        hoveredLink = null;
+
+        p.noFill();
+
+        links.forEach(link => {
+            let source = nodes[link.src];
+            let target = nodes[link.tgt];
+            let thickness = p.map(link.val, 0, maxFlow, 6, 32);
+
+            let x1 = source.x + 140;
+            let y1 = source.y + 22;
+            let x2 = target.x;
+            let y2 = target.y + 22;
+            let c1x = x1 + (x2 - x1) * 0.42;
+            let c2x = x1 + (x2 - x1) * 0.68;
+
+            let tMid = 0.5;
+            let mx = p.bezierPoint(x1, c1x, c2x, x2, tMid);
+            let my = p.bezierPoint(y1, y1, y2, y2, tMid);
+            let isHover = p.dist(p.mouseX, p.mouseY, mx, my) <= Math.max(12, thickness * 0.6);
+
+            if (isHover) hoveredLink = { ...link, mx, my };
+
+            p.strokeWeight(isHover ? thickness + 2 : thickness);
+            p.drawingContext.shadowBlur = isHover ? 22 : 15;
+            p.drawingContext.shadowColor = link.col;
+
+            let alpha = p.map(p.sin(p.frameCount * 2 + link.src * 20), -1, 1, 60, 160);
+            let col = p.color(link.col);
+            col.setAlpha(alpha);
+            p.stroke(col);
+            p.bezier(x1, y1, c1x, y1, c2x, y2, x2, y2);
+
+            let t = (p.frameCount * 0.006 + link.offset) % 1;
+            let px = p.bezierPoint(x1, c1x, c2x, x2, t);
+            let py = p.bezierPoint(y1, y1, y2, y2, t);
+
+            p.drawingContext.shadowColor = '#fff';
+            p.drawingContext.shadowBlur = 20;
+            p.fill(255);
+            p.noStroke();
+            p.ellipse(px, py, thickness * 0.5);
+            p.noFill();
+        });
+
+        nodes.forEach(node => {
+            const isHover =
+                p.mouseX >= node.x &&
+                p.mouseX <= node.x + 140 &&
+                p.mouseY >= node.y &&
+                p.mouseY <= node.y + 44;
+
+            if (isHover) hoveredNode = node;
+
+            p.drawingContext.shadowBlur = isHover ? 22 : 15;
+            p.drawingContext.shadowColor = node.col;
+            p.fill('rgba(6,12,24,0.92)');
+            p.stroke(node.col);
+            p.strokeWeight(isHover ? 2.2 : 1.5);
+            p.rect(node.x, node.y, 140, 44, 8);
+
+            p.drawingContext.shadowBlur = 0;
+            p.fill('#f4e6d8');
+            p.noStroke();
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.textStyle(p.BOLD);
+            p.text(node.name, node.x + 12, node.y + 10);
+
+            p.fill('#8fa8ff');
+            p.textStyle(p.NORMAL);
+            p.text(node.val, node.x + 12, node.y + 25);
+        });
+
+        const hovered = hoveredNode || hoveredLink;
+
+        if (hovered) {
+            const boxW = 190;
+            const boxH = 74;
+            let tx = p.mouseX + 18;
+            let ty = p.mouseY - 14;
+            const color = hovered.col;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 18;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+
+            if (hoveredNode) {
+                p.text(hoveredNode.name, tx + 12, ty + 10);
+                p.fill('#9fb3c8');
+                p.text(`Value: ${hoveredNode.val}`, tx + 12, ty + 30);
+                p.text(`Stage Node`, tx + 12, ty + 46);
+            } else {
+                p.text(hoveredLink.label, tx + 12, ty + 10);
+                p.fill('#9fb3c8');
+                p.text(`Flow: ${hoveredLink.val}`, tx + 12, ty + 30);
+                p.text(`Structural route`, tx + 12, ty + 46);
+            }
+        }
+    };
+};
+new p5(sankeySketch);
+</script>
+</div>
+
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Control Room // Risk Heat</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel wide-panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div class="chart-container" style="display:flex;flex-direction:column;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);" augmented-ui="tr-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Parsing Risk Heat Strip</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Operational buckets showing reliability pressure.</div>
+<div id="p5-heat-container" style="width:100%; display:flex; justify-content:center;"></div>
+<div style='display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:20px;'>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#7fd36b;box-shadow:0 0 10px #7fd36b;"></div><div style="color:#8fa8ff;font-size:12px;">Safe</div></div><div style="color:#f4e6d8;font-weight:700;">117</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#6ea8ff;box-shadow:0 0 10px #6ea8ff;"></div><div style="color:#8fa8ff;font-size:12px;">Moderate</div></div><div style="color:#f4e6d8;font-weight:700;">17</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ffc15d;box-shadow:0 0 10px #ffc15d;"></div><div style="color:#8fa8ff;font-size:12px;">Sparse</div></div><div style="color:#f4e6d8;font-weight:700;">9</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff9a52;box-shadow:0 0 10px #ff9a52;"></div><div style="color:#8fa8ff;font-size:12px;">Anomaly</div></div><div style="color:#f4e6d8;font-weight:700;">0</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff6a3d;box-shadow:0 0 10px #ff6a3d;"></div><div style="color:#8fa8ff;font-size:12px;">Recovery Dep.</div></div><div style="color:#f4e6d8;font-weight:700;">7</div></div>
+</div>
+<script>
+const heatSketch = (p) => {
+    const buckets = [
+        { label: "Safe", val: 117, col: '#7fd36b' },
+        { label: "Moderate", val: 17, col: '#6ea8ff' },
+        { label: "Sparse", val: 9, col: '#ffc15d' },
+        { label: "Anomaly", val: 0, col: '#ff9a52' },
+        { label: "Recovery Dep.", val: 7, col: '#ff6a3d' }
+    ];
+    const total = 150;
+    let segments = [];
+    let hovered = null;
+
+    p.setup = () => {
+        let w = document.getElementById('p5-heat-container').offsetWidth || 1000;
+        let canvas = p.createCanvas(w, 52);
+        canvas.parent('p5-heat-container');
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        segments = [];
+        hovered = null;
+
+        let currentX = 0;
+
+        buckets.forEach(b => {
+            if (b.val <= 0) return;
+
+            let w = (b.val / total) * p.width;
+            if (w < 6) w = 6;
+
+            const seg = { ...b, x: currentX, w: w };
+            segments.push(seg);
+
+            const isHover =
+                p.mouseX >= currentX &&
+                p.mouseX <= currentX + w &&
+                p.mouseY >= 0 &&
+                p.mouseY <= p.height;
+
+            if (isHover) hovered = seg;
+
+            p.drawingContext.shadowColor = b.col;
+            p.drawingContext.shadowBlur = isHover ? 24 : 16;
+            p.fill(b.col);
+            p.noStroke();
+            p.rect(currentX, 4, w - 2, p.height - 8, 6);
+
+            p.drawingContext.shadowBlur = 0;
+
+            if (w > 28) {
+                p.fill('#050814');
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textStyle(p.BOLD);
+                p.textSize(12);
+                p.text(b.val, currentX + (w - 2) / 2, p.height / 2);
+            }
+
+            currentX += w;
+        });
+
+        let scanX = (p.frameCount * 5) % p.width;
+        p.drawingContext.shadowColor = '#ffffff';
+        p.drawingContext.shadowBlur = 18;
+        p.fill('rgba(255,255,255,0.92)');
+        p.noStroke();
+        p.rect(scanX, 2, 3, p.height - 4, 2);
+        p.drawingContext.shadowBlur = 0;
+
+        if (hovered) {
+            const boxW = 160;
+            const boxH = 60;
+            let tx = p.mouseX + 14;
+            let ty = p.mouseY - 48;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 14;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.col;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.col);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Files: ${hovered.val}`, tx + 12, ty + 30);
+            p.text(`Share: ${(hovered.val / total * 100).toFixed(1)}%`, tx + 12, ty + 44);
+        }
+    };
+};
+new p5(heatSketch);
+</script>
+</div>
+
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Parsed Types</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="search"
+           type="text"
+           onkeyup="searchTable()"
+           placeholder="Search type, namespace, file..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
+</div>
+<div class="table-shell">
+<table id="table" class="link-table parsing-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Type</th>
+            <th onclick="sortTable(1)">Namespace</th>
+            <th onclick="sortTable(2)">File</th>
+            <th onclick="sortTable(3)">References</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr>
+    <td>ArchitecturalClassificationAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\ArchitecturalClassificationAnalyzer.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>ArchitecturalHygieneAnalyzer</td>
+    <td>RefactorScope.Core.Analyzers</td>
+    <td>RefactorScope\Analyzers\ArchitecturalHygieneAnalyzer.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>CoreIsolationAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\CoreIsolationAnalyzer.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>CouplingAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\CouplingAnalyser.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>EntryPointHeuristicAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\EntryPointHeuristicAnalyzer.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>FitnessGateAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\FitnessGateAnalyzer.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>ImplicitCouplingAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\ImplicitCouplingAnalyzer.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ProjectStructureAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\ProjectStructureAnalyzer.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>StatisticsValidationAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\StatisticsValidationAnalyzer.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>StructuralCandidateAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\StructuralCandidateAnalyzer.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>StructuralCandidateRefinementAnalyzer</td>
+    <td>RefactorScope.Analyzers</td>
+    <td>RefactorScope\Analyzers\StructuralCandidateRefinementAnalyzer.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>ParserArenaCliRunner</td>
+    <td>RefactorScope.CLI</td>
+    <td>RefactorScope\CLI\ParserArenaCliRunner.cs</td>
+    <td>12</td>
+</tr>
+<tr>
+    <td>ProjectRootResolver</td>
+    <td>RefactorScope.CLI</td>
+    <td>RefactorScope\CLI\ProjectRootResolver.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>StartupExecutionPlan</td>
+    <td>RefactorScope.CLI</td>
+    <td>RefactorScope\CLI\StartupExecutionPlan.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>StartupExecutionPlanSelector</td>
+    <td>RefactorScope.CLI</td>
+    <td>RefactorScope\CLI\StartupExecutionPlanSelector.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>EffortEstimator</td>
+    <td>RefactorScope.Estimation</td>
+    <td>RefactorScope\Estimation\EffortEstimator.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ConfigLoader</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\ConfigLoader.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>ConfigValidator</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\ConfigValidator.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>CrashLogger</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\CrashLogger.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>LayerRuleEvaluator</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\LayerRuleEvaluator.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>TerminalRenderer</td>
+    <td>RefactorScope.Infrastructure</td>
+    <td>RefactorScope\Infrastructure\TerminalRenderer.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>SolidAnalyzer</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidAnalyzer.cs</td>
+    <td>12</td>
+</tr>
+<tr>
+    <td>SolidConfig</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidConfig.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>SolidResult</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidResult.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>SolidSuspicion</td>
+    <td>RefactorScope.Analyzers.Solid</td>
+    <td>RefactorScope\Analyzers\Solid\SolidSuspicion.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>IAnalysisResult</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IAnalysisResult.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>IAnalyzer</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IAnalyzer.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>IExporter</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IExporter.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>IParserCodigo</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IParserCodigo.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>IParserResult</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IParserResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>IPipelineStep</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IPipelineStep.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>IPreParser</td>
+    <td>RefactorScope.Core.Abstractions</td>
+    <td>RefactorScope\Core\Abstractions\IPreParser.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>DashboardOptions</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\DashboardOptions.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>DumpStrategyConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\DumpStrategyConfig.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>EstimatorConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\EstimatorConfig.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>FitnessGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>DeadCodeGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>CouplingGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>CoreIsolationGateConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfig.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>FitnessGateConfigResolver</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\FitnessGateConfigResolver.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>RefactorScopeConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\RefactorScopeConfig.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>StatisticsConfig</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\StatisticsConfig.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>StructuralCandidateDetectionOptions</td>
+    <td>RefactorScope.Core.Configuration</td>
+    <td>RefactorScope\Core\Configuration\StructuralCandidateDetectionOptions.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>AnalysisContext</td>
+    <td>RefactorScope.Core.Context</td>
+    <td>RefactorScope\Core\Context\AnalysisContext.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>AnalysisContextExtensions</td>
+    <td>RefactorScope.Core.Context</td>
+    <td>RefactorScope\Core\Context\AnalysisContextExtensions.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>LayerRuleConfig</td>
+    <td>RefactorScope.Core.Context</td>
+    <td>RefactorScope\Core\Context\LayerRuleConfig.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ArchitecturalHealthDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\ArchitecturalHealthDatasetBuilder.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>GlobalMetricsDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\GlobalMetricsDatasetBuilder.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>GlobalTypesDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\GlobalTypesDatasetBuilder.cs</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>IAnalyticalDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\IAnalyticalDatasetBuilder.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>ModuleContributionDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\ModuleContributionDatasetBuilder.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>StructuralOverviewDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\StructuralOverviewDatasetBuilder.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>StructuralScoreDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\StructuralScoreDatasetBuilder.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>StructuralTrendDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\StructuralTrendDatasetBuilder.cs</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>TypeContributionDatasetBuilder</td>
+    <td>RefactorScope.Core.Datasets</td>
+    <td>RefactorScope\Core\Datasets\TypeContributionDatasetBuilder.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>FitnessGateEvaluator</td>
+    <td>RefactorScope.Core.Governance</td>
+    <td>RefactorScope\Core\Governance\FitnessGateEvaluator.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>ArchitecturalMetricsBuilder</td>
+    <td>RefactorScope.Core.Metrics</td>
+    <td>RefactorScope\Core\Metrics\ArchitecturalMetricsBuilder.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ArchitecturalScoreCalculator</td>
+    <td>RefactorScope.Core.Metrics</td>
+    <td>RefactorScope\Core\Metrics\ArchitecturalScoreCalculator.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ArchitecturalClassificationItem</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ArchitecturalClassificationItem.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ArquivoInfo</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ArquivoInfo.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>CouplingSuspicion</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\CouplingSuspicion.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>HygieneReport</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\HygieneReport.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ModeloEstrutural</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ModeloEstrutural.cs</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>ReferenciaInfo</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\ReferenciaInfo.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>TipoInfo</td>
+    <td>RefactorScope.Core.Model</td>
+    <td>RefactorScope\Core\Model\TipoInfo.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>AnalysisOrchestrator</td>
+    <td>RefactorScope.Core.Orchestration</td>
+    <td>RefactorScope\Core\Orchestration\AnalysisOrchestrator.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>ParserSelector</td>
+    <td>RefactorScope.Core.Parsing</td>
+    <td>RefactorScope\Core\Parsing\ParserSelector.cs</td>
+    <td>9</td>
+</tr>
+<tr>
+    <td>PlausibilityEvaluator</td>
+    <td>RefactorScope.Core.Parsing</td>
+    <td>RefactorScope\Core\Parsing\PlausibilityEvaluator.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>SanitizedSourceProvider</td>
+    <td>RefactorScope.Core.Parsing</td>
+    <td>RefactorScope\Core\Parsing\SanitizedSourceProvider.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>DesignPatternSignatureLibrary</td>
+    <td>RefactorScope.Core.Patterns</td>
+    <td>RefactorScope\Core\Patterns\PatternSignatureLibrary.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>StructuralHeuristicLibrary</td>
+    <td>RefactorScope.Core.Patterns</td>
+    <td>RefactorScope\Core\Patterns\StructuralHeuristicLibrary.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ConsolidatedReportSnapshotExtensions</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ConsolidatedReportSnapshotExtensions.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ReportConsolidator</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportConsolidator.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ReportSnapshot</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshot.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ExecutiveParsingSnapshot</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshot.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ExecutiveStructuralSnapshot</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshot.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ExecutiveArchitecturalSnapshot</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshot.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ExecutiveQualitySnapshot</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshot.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ExecutiveEffortSnapshot</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshot.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ReportSnapshotBuilder</td>
+    <td>RefactorScope.Core.Reporting</td>
+    <td>RefactorScope\Core\Reporting\ReportSnapshotBuilder.cs</td>
+    <td>10</td>
+</tr>
+<tr>
+    <td>ArchitecturalClassificationResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ArchitecturalClassificationResult.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>ConsolidatedReport</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ConsolidatedReport.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ConsolidatedReportExtensions</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ConsolidatedReportExtensions.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>CoreIsolationResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\CoreIsolationResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>CouplingResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\CouplingResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>EffortEstimateResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\EffortEstimateResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>EntryPointHeuristicResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\EntryPointHeuristicResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>FitnessGateResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\FitnessGateResult.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>FitnessGateStatus</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\FitnessGateStatus.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ImplicitCouplingResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ImplicitCouplingResult.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>ProjectStructureResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\ProjectStructureResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>StatisticsResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StatisticsResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>StructuralBreakdownExtensions</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralBreakdownExtensions.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>StructuralCandidateAnalysisBreakdown</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateAnalysisBreakdown.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>StructuralCandidateProbabilityItem</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateProbabilityItem.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>StructuralCandidateProbabilityResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateProbabilityResult.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>StructuralCandidateResult</td>
+    <td>RefactorScope.Core.Results</td>
+    <td>RefactorScope\Core\Results\StructuralCandidateResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ScopeFilteredFileDiscovery</td>
+    <td>RefactorScope.Core.Scope</td>
+    <td>RefactorScope\Core\Scope\ScopeFilteredFileDiscovery.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ScopeRuleSet</td>
+    <td>RefactorScope.Core.Scope</td>
+    <td>RefactorScope\Core\Scope\ScopeRuleSet.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>StructuralAlignmentEvaluator</td>
+    <td>RefactorScope.Core.Structure</td>
+    <td>RefactorScope\Core\Structure\StructuralAlignmentEvaluator.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>RefactorClassifier</td>
+    <td>RefactorScope.Estimation.Classification</td>
+    <td>RefactorScope\Estimation\Classification\RefactorClassifier.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>CouplingPressureModel</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\CouplingPressureModel.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>RDICalculator</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\RDICalculator.cs</td>
+    <td>9</td>
+</tr>
+<tr>
+    <td>SizePressureModel</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\SizePressureModel.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>StructuralRiskModel</td>
+    <td>RefactorScope.Estimation.Scoring</td>
+    <td>RefactorScope\Estimation\Scoring\StructuralRiskModel.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>DumpStrategyResolver</td>
+    <td>RefactorScope.Execution.Dump</td>
+    <td>RefactorScope\Execution\Dump\DumpStrategyResolver.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>ArchitecturalDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\ArchitecturalDashboardExporterAdapter.cs</td>
+    <td>11</td>
+</tr>
+<tr>
+    <td>ParsingDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\ParsingDashboardExporterAdapter.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>QualityDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\QualityDashboardExporterAdapter.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>StructuralDashboardExporterAdapter</td>
+    <td>RefactorScope.Exporters.Adapters</td>
+    <td>RefactorScope\Exporters\Adapters\StructuralDashboardExporterAdapter.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>ArchitecturalDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\ArchitecturalDashboardExporter.cs</td>
+    <td>18</td>
+</tr>
+<tr>
+    <td>HtmlDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\HtmlDashboardExporter.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>HubDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\HubDashboardExporter.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>ParserArenaDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\ParserArenaDashboardExporter.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>StrategyAggregateMetric</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\ParserArenaDashboardExporter.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ParsingDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\ParsingDashboardExporter.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>QualityDashboardExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\QualityDashboardExporter.cs</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>StructuralInventoryExporter</td>
+    <td>RefactorScope.Exporters.Dashboards</td>
+    <td>RefactorScope\Exporters\Dashboards\StructuralInventoryExporter.cs</td>
+    <td>11</td>
+</tr>
+<tr>
+    <td>DatasetExporter</td>
+    <td>RefactorScope.Exporters.Datasets</td>
+    <td>RefactorScope\Exporters\Datasets\DatasetExporter.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>FitnessGateCsvExporter</td>
+    <td>RefactorScope.Exporters.Datasets</td>
+    <td>RefactorScope\Exporters\Datasets\FitnessGateCsvExporter.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>DumpAnaliseExporter</td>
+    <td>RefactorScope.Exporters.Dumps</td>
+    <td>RefactorScope\Exporters\Dumps\DumpAnaliseExporter.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>DumpIaExporter</td>
+    <td>RefactorScope.Exporters.Dumps</td>
+    <td>RefactorScope\Exporters\Dumps\DumpIaExporter.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>ExportFolderBootstrapper</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportFolderBootstrapper.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ExportOptions</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportOptions.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ReportExportOptions</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportOptions.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>DatasetExportOptions</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportOptions.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>DumpExportOptions</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportOptions.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>TrendExportOptions</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportOptions.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ExportOrchestrator</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportOrchestrator.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ExportPackage</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportPackage.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>ExportPathResolver</td>
+    <td>RefactorScope.Exporters.Infrastructure</td>
+    <td>RefactorScope\Exporters\Infrastructure\ExportPathResolver.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>DashboardMetricsCalculator</td>
+    <td>RefactorScope.Exporters.Projections</td>
+    <td>RefactorScope\Exporters\Projections\DashboardMetricsCalculator.cs</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>HubDashboardMetrics</td>
+    <td>RefactorScope.Exporters.Projections</td>
+    <td>RefactorScope\Exporters\Projections\DashboardMetricsCalculator.cs</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>ArchitecturalDashboardMetrics</td>
+    <td>RefactorScope.Exporters.Projections</td>
+    <td>RefactorScope\Exporters\Projections\DashboardMetricsCalculator.cs</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>QualityDashboardMetrics</td>
+    <td>RefactorScope.Exporters.Projections</td>
+    <td>RefactorScope\Exporters\Projections\DashboardMetricsCalculator.cs</td>
+    <td>16</td>
+</tr>
+<tr>
+    <td>ExecutiveMarkdownReportExporter</td>
+    <td>RefactorScope.Exporters.Reports</td>
+    <td>RefactorScope\Exporters\Reports\ExecutiveMarkdownReportExporter.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>MarkdownReportExporter</td>
+    <td>RefactorScope.Exporters.Reports</td>
+    <td>RefactorScope\Exporters\Reports\MarkdownReportExporter.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>ProjectStructureExporter</td>
+    <td>RefactorScope.Exporters.Reports</td>
+    <td>RefactorScope\Exporters\Reports\ProjectStructureExporter.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>DashboardAssetCopier</td>
+    <td>RefactorScope.Exporters.Styling</td>
+    <td>RefactorScope\Exporters\Styling\DashboardAssetCopier.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>DashboardHtmlShell</td>
+    <td>RefactorScope.Exporters.Styling</td>
+    <td>RefactorScope\Exporters\Styling\DashboardHtmlShell.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>DashboardThemeSelector</td>
+    <td>RefactorScope.Exporters.Styling</td>
+    <td>RefactorScope\Exporters\Styling\DashboardThemeSelector.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ClassComplexityClassifier</td>
+    <td>RefactorScope.Parsers.Analysis</td>
+    <td>RefactorScope\Parsers\Analysis\ClassComplexityClassifier.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>ClassComplexityScanResult</td>
+    <td>RefactorScope.Parsers.Analysis</td>
+    <td>RefactorScope\Parsers\Analysis\ClassComplexityScanResult.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>CSharpPreParser</td>
+    <td>RefactorScope.Parsers.Common</td>
+    <td>RefactorScope\Parsers\Common\CSharpPreParser.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>FileSelectionScope</td>
+    <td>RefactorScope.Parsers.Common</td>
+    <td>RefactorScope\Parsers\Common\FileSelectionScope.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>StructuralTokenGuard</td>
+    <td>RefactorScope.Parsers.Common</td>
+    <td>RefactorScope\Parsers\Common\StructuralTokenGuard.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>CSharpRegexParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\CSharpRegexParser.cs</td>
+    <td>11</td>
+</tr>
+<tr>
+    <td>HigienizadorLexico</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs</td>
+    <td>13</td>
+</tr>
+<tr>
+    <td>CSharpTextualParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\CsharpTextualParser.cs</td>
+    <td>13</td>
+</tr>
+<tr>
+    <td>RegexLocalRecovery</td>
+    <td>RefactorScope.Parsers.CsharpParsers</td>
+    <td>RefactorScope\Parsers\CsharpParsers\RegexLocalRecovery.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>ValidationEngine</td>
+    <td>RefactorScope.Statistics.Engines</td>
+    <td>RefactorScope\Statistics\Engines\ValidationEngine.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>CoreDependencyAbsolutionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\CoreDependencyAbsolutionRule.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>IAbsolutionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\IAbsolutionRule.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>IOmissionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\IOmissionRule.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>OrchestratorAbsolutionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\OrchestratorAbsolutionRule.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>PublicZeroUsageOmissionRule</td>
+    <td>RefactorScope.Analyzers.Solid.Rules</td>
+    <td>RefactorScope\Analyzers\Solid\Rules\PublicZeroUsageOmissionRule.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ParserArenaOrchestrator</td>
+    <td>RefactorScope.Core.Parsing.Arena</td>
+    <td>RefactorScope\Core\Parsing\Arena\ParserArenaOrchestrator.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ParserArenaProjectResult</td>
+    <td>RefactorScope.Core.Parsing.Arena</td>
+    <td>RefactorScope\Core\Parsing\Arena\ParserArenaProjectResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ParserArenaRunResult</td>
+    <td>RefactorScope.Core.Parsing.Arena</td>
+    <td>RefactorScope\Core\Parsing\Arena\ParserArenaRunResult.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ParserArenaScoreCalculator</td>
+    <td>RefactorScope.Core.Parsing.Arena</td>
+    <td>RefactorScope\Core\Parsing\Arena\ParserArenaScoreCalculator.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>ISegmentationResolver</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\ISegmentationResolver.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>LayerSegmentationResolver</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\LayerSegmentationResolver.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>SegmentScope</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\SegmentScope.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>TopFolderSegmentationResolver</td>
+    <td>RefactorScope.Execution.Dump.Segmentation</td>
+    <td>RefactorScope\Execution\Dump\Segmentation\TopFolderSegmentationResolver.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>GlobalDumpStrategy</td>
+    <td>RefactorScope.Execution.Dump.Strategies</td>
+    <td>RefactorScope\Execution\Dump\Strategies\GlobalDumpStrategy.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>IDumpStrategy</td>
+    <td>RefactorScope.Execution.Dump.Strategies</td>
+    <td>RefactorScope\Execution\Dump\Strategies\IDumpStrategy.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>SegmentedDumpStrategy</td>
+    <td>RefactorScope.Execution.Dump.Strategies</td>
+    <td>RefactorScope\Execution\Dump\Strategies\SegmentedDumpStrategy.cs</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>ArchitecturalStructureRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ArchitecturalStructureRendererP5.cs</td>
+    <td>7</td>
+</tr>
+<tr>
+    <td>ChartsRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ChartsRendererP5.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapRenderer</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ModuleRouteMapRenderer.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ParserArenaControlChartsRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ParserArenaControlChartsRendererP5.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>StrategyVisualMetric</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ParserArenaControlChartsRendererP5.cs</td>
+    <td>2</td>
+</tr>
+<tr>
+    <td>ParsingControlChartsRenderer</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ParsingControlChartsRenderer.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ParsingControlChartsRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\ParsingControlChartsRendererP5.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>QualityControlChartsRenderer</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\QualityControlChartsRenderer.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>QualityControlChartsRendererP5</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\QualityControlChartsRendererP5.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>SimpleStructureMapRenderer</td>
+    <td>RefactorScope.Exporters.Dashboards.Renderers</td>
+    <td>RefactorScope\Exporters\Dashboards\Renderers\SimpleStructureMapRenderer.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>ArchitectureVisualizationDecision</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\ArchitectureVisualizationDecision.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ArchitectureVisualizationResolver</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\ArchitectureVisualizationResolver.cs</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>ModuleRouteEdge</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\ModuleRouteEdge.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapBuilder</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\ModuleRouteMapBuilder.cs</td>
+    <td>9</td>
+</tr>
+<tr>
+    <td>ModuleRouteMapModel</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\ModuleRouteMapModel.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>ModuleRouteNode</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\ModuleRouteNode.cs</td>
+    <td>0</td>
+</tr>
+<tr>
+    <td>SimpleStructureMapBuilder</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\SimpleStructureMapBuilder.cs</td>
+    <td>3</td>
+</tr>
+<tr>
+    <td>SimpleStructureMapModel</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\SimpleStructureMapModel.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>SimpleStructureNode</td>
+    <td>RefactorScope.Exporters.Projections.Architecture</td>
+    <td>RefactorScope\Exporters\Projections\Architecture\SimpleStructureMapModel.cs</td>
+    <td>1</td>
+</tr>
+<tr>
+    <td>HybridAdaptiveParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridAdaptativeParser.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>HybridIncrementalParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridIncrementalParser.cs</td>
+    <td>4</td>
+</tr>
+<tr>
+    <td>HybridSelectiveParser</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\HybridSelectiveParser.cs</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>ModeloMerger</td>
+    <td>RefactorScope.Parsers.CsharpParsers.Hybrid</td>
+    <td>RefactorScope\Parsers\CsharpParsers\Hybrid\ModeloMerger.cs</td>
+    <td>2</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Interpretation</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard describes parser output quality, extraction density and route-distribution heuristics.</li>
+            <li>Confidence is heuristic and should be interpreted as structural usability, not absolute correctness.</li>
+            <li>Sankey, donut and route heat visuals are currently fed by experimental route estimation until per-route parsing telemetry becomes explicit.</li>
+            <li>Low reference density may suggest sparse extraction, but does not prove parser failure.</li>
+            <li>Anomaly flags indicate atypical parse characteristics that deserve review.</li>
+            <li>Performance ratios help compare parser strategies across projects and baselines.</li>
+            <li>Type Density means average extracted types per parsed file. Lower values may reflect lean structure or conservative extraction.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.parsing-kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.compact-panel,
+.wide-panel {
+    overflow: hidden;
+    min-width: 0;
+}
+
+.chart-container {
+    min-width: 0;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 1080px) {
+    .chart-container {
+        width: 100%;
+    }
+}
+
+.wide-panel {
+    width: 100%;
+}
+
+.chart-container {
+    min-width: 0;
+}
+
+.chart-interpretation {
+    color: #d7e4f1;
+    font-size: 12px;
+}
+
+.chart-interpretation ul li {
+    margin-bottom: 8px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.parsing-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 1080px) {
+    .parsing-half-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.parsing-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.parsing-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+</style>
+
+<script>
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('table');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      if (dir === 'asc' && x.innerText.toLowerCase() > y.innerText.toLowerCase()) shouldSwitch = true;
+      if (dir === 'desc' && x.innerText.toLowerCase() < y.innerText.toLowerCase()) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Parsing Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
+</div>
+</body>
+</html>
+

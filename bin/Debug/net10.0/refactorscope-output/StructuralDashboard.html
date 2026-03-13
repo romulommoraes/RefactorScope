@@ -1,0 +1,2361 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8' />
+<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+<title>Structural Dashboard</title>
+<script src='assets/vendor/p5.js'></script>
+<link rel='stylesheet' href='assets/vendor/Charts.css' />
+<link rel='stylesheet' href='assets/vendor/augmented-ui.css' />
+<link rel='stylesheet' href='assets/css/dashboard-base.css' />
+<link rel='stylesheet' href='assets/css/dashboard-components.css' />
+<link id='dashboard-theme-link' rel='stylesheet' href='assets/css/dashboard-theme.css' />
+<style>
+/* Optic Mode Controls */
+.optic-mode-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.optic-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #8fa8ff;
+    font-weight: 700;
+}
+
+.red-tactical-btn {
+    width: 50px;
+    height: 24px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 
+        0 4px 6px rgba(0,0,0,0.8), 
+        0 0 12px rgba(255, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+    outline: none;
+}
+
+.red-tactical-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px; left: 4px; right: 4px; height: 35%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+.red-tactical-btn::after {
+    content: '|||';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.4);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    pointer-events: none;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.2);
+}
+
+.red-tactical-btn:active {
+    transform: translateY(3px);
+    border-top: 1px solid #aa0000;
+    border-bottom: 1px solid #220000;
+    box-shadow: 
+        0 1px 2px rgba(0,0,0,0.9),
+        0 0 8px rgba(255, 0, 0, 0.8),
+        inset 0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* Tactical Navigation Bar */
+.tactical-nav-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.nav-divider {
+    width: 2px;
+    height: 18px;
+    background: rgba(255,255,255,0.1);
+    margin: 0 4px;
+}
+
+.nav-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(15, 22, 38, 0.6);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: rgba(0, 229, 255, 0.5);
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 229, 255, 0.1);
+    color: #00e5ff;
+    border-color: #00e5ff;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+/* O Módulo Atual fica aceso/ligado */
+.nav-btn.active {
+    background: rgba(0, 229, 255, 0.15);
+    color: #fff;
+    border-color: #00e5ff;
+    box-shadow: inset 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.4);
+    text-shadow: 0 0 4px rgba(255,255,255,0.5);
+    pointer-events: none; /* Desativa o clique na página atual */
+}
+
+/* O botão de voltar para o Hub tem cor diferente (Laranja/Alerta) */
+.nav-btn.btn-hub {
+    border-color: rgba(255, 154, 60, 0.4);
+    color: rgba(255, 154, 60, 0.8);
+}
+.nav-btn.btn-hub:hover {
+    background: rgba(255, 154, 60, 0.1);
+    color: #ff9a3c;
+    border-color: #ff9a3c;
+    box-shadow: 0 0 10px rgba(255, 154, 60, 0.3);
+}
+</style>
+</head>
+<body>
+<script>
+(function() {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const themeLink = document.getElementById('dashboard-theme-link');
+        if (saved && themeLink) {
+            if (saved === 'midnight-blue') themeLink.setAttribute('href', 'assets/css/dashboard-theme-midnight-blue.css');
+            else if (saved === 'ember-ops') themeLink.setAttribute('href', 'assets/css/dashboard-theme-ember-ops.css');
+            else if (saved === 'neon-grid') themeLink.setAttribute('href', 'assets/css/dashboard-theme-neon-grid.css');
+            document.documentElement.setAttribute('data-dashboard-theme', saved);
+        }
+    } catch {}
+})();
+</script>
+<div class='wrapper'>
+
+<div class="topbar" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <div class="brand">
+        <div class="brand-kicker">RefactorScope // Structural Module</div>
+        <h1>Structural Dashboard</h1>
+        <div class="subtitle">Target Project: <b>Scriptome</b></div>
+                   <div class="tactical-nav-wrapper">
+            <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
+                &#9664; NEXUS_HUB
+            </a>
+            </div>
+    </div>
+
+    <div class="run-meta">
+        <div class="optic-mode-wrapper">
+            <span class="optic-label">OPTIC_MODE</span>
+            <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
+        </div>
+        <div><b>Generated:</b> 12-03-2026 21:31 UTC</div>
+        <div><b>Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
+        <div><b>Total Types:</b> 161</div>
+        <div><b>Hygiene:</b> 🟢 Healthy</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Structural Signal Grid</h2>
+        <div class="line"></div>
+    </div>
+</div>
+<div class="grid-kpis structural-kpis">
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Total Classes</div>
+        <div class="value">161</div>
+        <div class="hint">Total number of structurally classified types</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Namespaces</div>
+        <div class="value">42</div>
+        <div class="hint">Distinct namespaces represented in the scope</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Dead Code Candidates</div>
+        <div class="value">29</div>
+        <div class="hint">Possible dead code types</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Pattern Similarity</div>
+        <div class="value">11</div>
+        <div class="hint">Candidates compatible with known architectural patterns</div>
+    </div>
+
+    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Unresolved</div>
+        <div class="value">18</div>
+        <div class="hint">Candidates who could not be refuted as dead code</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Namespace Drift</div>
+        <div class="value">35</div>
+        <div class="hint">Types whose namespace remains incompatible with folder structure</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Global Namespace</div>
+        <div class="value">6</div>
+        <div class="hint">Types declared without an explicit namespace boundary</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Isolated Core</div>
+        <div class="value">9</div>
+        <div class="hint">Number of core types structurally isolated from outer layers</div>
+    </div>
+
+    <div class="kpi good" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Code Smell Index</div>
+        <div class="value">13,0</div>
+        <div class="hint">Composite structural hygiene score. Lower is better</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">Implicit Coupling</div>
+        <div class="value">14</div>
+        <div class="hint">Types suggesting concentrated dependency flow toward specific modules</div>
+    </div>
+
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
+        <div class="label">SOLID Alerts</div>
+        <div class="value">2</div>
+        <div class="hint">Heuristic object-oriented design signals that deserve review</div>
+    </div>
+
+    <div class="kpi" augmented-ui="tr-clip bl-clip border">
+        <div class="label">A / I / D</div>
+        <div class="value" style="font-size:22px;">0,11 / 0,46 / 0,42</div>
+        <div class="hint">Average abstractness, instability and distance from main sequence</div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Executive Structural Reading</h2>
+        <div class="line"></div>
+    </div>
+    <div class="dual">
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Structural Interpretation</h3>
+    <ul class="clean">
+        <li>Core isolation detected. Architectural boundaries appear preserved.</li>
+        <li>High namespace drift detected. Folder structure may not reflect architectural boundaries.</li>
+        <li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
+        <li>Potential dead or orphaned code detected through structural analysis.</li>
+        <li>Minor SOLID design alerts detected.</li>
+        <li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
+    </ul>
+
+    <div style="margin-top:16px;">
+        <div class="badge red"><span class="badge-dot"></span> Unresolved: 18</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Namespace Drift: 35</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> SOLID Alerts: 2</div>
+        <div class="badge amber" style="margin-top:8px;"><span class="badge-dot"></span> Implicit Coupling: 14</div>
+    </div>
+</div>
+<div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+    <h3>Method Snapshot</h3>
+    <ul class="clean">
+        <li><b>Structural Candidates:</b> types with zero structural references in the parsed graph.</li>
+        <li><b>Pattern Similarity:</b> candidate classes compatible with known structural patterns.</li>
+        <li><b>Unresolved:</b> strongest dead-code or broken-link signal after refinement.</li>
+        <li><b>Implicit Coupling:</b> dependency concentration toward a dominant module.</li>
+        <li><b>A / I / D:</b> Robert Martin architectural balance indicators.</li>
+    </ul>
+</div>
+</div></div>
+<div class="section">
+    <div class="section-title">
+        <h2>Charts & Diagnostics</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style='display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start;'>
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Architectural Risk Radar</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Structural signal concentration.</div>
+<div id="p5-arch-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const archRadarSketch = (p) => {
+    const data = [18.012, 6.832, 11.18, 21.739, 3.727, 5.59, 8.696, 6.211];
+    const labels = ["Dead Code", "Pattern", "Unresolved", "Drift", "Global", "Core", "Coupling", "SOLID"];
+    const rawValues = [29, 11, 18, 35, 6, 9, 14, 2];
+    const maxRadius = 110;
+    let hovered = null;
+
+    p.setup = () => {
+        let canvas = p.createCanvas(460, 360);
+        canvas.parent('p5-arch-radar-container');
+        p.angleMode(p.DEGREES);
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        hovered = null;
+        p.translate(p.width / 2, p.height / 2);
+        let pulse = p.sin(p.frameCount * 3) * 5 + 10;
+        let numAxes = labels.length;
+
+        // Grid
+        p.stroke('#8fa8ff');
+        p.noFill();
+        p.strokeWeight(1);
+        p.drawingContext.shadowBlur = 0;
+
+        for (let i = 1; i <= 5; i++) {
+            let r = (maxRadius / 5) * i;
+            p.beginShape();
+            for (let a = 0; a < 360; a += (360 / numAxes))
+                p.vertex(p.cos(a - 90) * r, p.sin(a - 90) * r);
+            p.endShape(p.CLOSE);
+
+            if (i < 5) {
+                p.fill('#8fa8ff');
+                p.noStroke();
+                p.textSize(9);
+                p.text(`${i * 20}%`, 5, -r);
+                p.noFill();
+                p.stroke('#8fa8ff');
+            }
+        }
+
+        for (let a = 0; a < 360; a += (360 / numAxes))
+            p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
+
+        // Polígono Neon
+        p.drawingContext.shadowColor = '#ff9a3c';
+        p.drawingContext.shadowBlur = pulse;
+        p.stroke('#ff9a3c');
+        p.strokeWeight(2.5);
+        p.fill('rgba(255, 154, 60, 0.2)');
+        p.beginShape();
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            p.vertex(p.cos(angle) * r, p.sin(angle) * r);
+        }
+        p.endShape(p.CLOSE);
+
+        // Pontos com hover
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let r = p.map(data[i], 0, 100, 0, maxRadius);
+            let px = p.cos(angle) * r;
+            let py = p.sin(angle) * r;
+
+            const worldX = (p.width / 2) + px;
+            const worldY = (p.height / 2) + py;
+            const isHover = p.dist(p.mouseX, p.mouseY, worldX, worldY) <= 9;
+
+            if (isHover) {
+                hovered = {
+                    label: labels[i],
+                    normalized: data[i],
+                    raw: rawValues[i],
+                    x: worldX,
+                    y: worldY
+                };
+            }
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = isHover ? 18 : 10;
+            p.fill('#0b1020');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(isHover ? 2.8 : 2.0);
+            p.ellipse(px, py, isHover ? 10 : 8, isHover ? 10 : 8);
+            p.drawingContext.shadowBlur = 0;
+        }
+
+        // Scanner Line
+        p.drawingContext.shadowBlur = 0;
+        let scanAngle = p.frameCount * 2;
+        p.noStroke();
+        p.fill('rgba(255, 154, 60, 0.15)');
+        p.arc(0, 0, maxRadius * 2, maxRadius * 2, scanAngle - 45, scanAngle);
+        p.stroke('#ff9a3c');
+        p.strokeWeight(1.5);
+        p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
+
+        // Labels
+        p.fill('#eef4ff');
+        p.noStroke();
+        p.textSize(11);
+        for (let i = 0; i < numAxes; i++) {
+            let angle = (i * (360 / numAxes)) - 90;
+            let lx = p.cos(angle) * (maxRadius + 25);
+            let ly = p.sin(angle) * (maxRadius + 20);
+            p.textAlign(p.CENTER, p.CENTER);
+            if (p.cos(angle) > 0.35) p.textAlign(p.LEFT, p.CENTER);
+            else if (p.cos(angle) < -0.35) p.textAlign(p.RIGHT, p.CENTER);
+            p.text(labels[i], lx, ly);
+        }
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 170;
+            const boxH = 72;
+            let tx = hovered.x + 16;
+            let ty = hovered.y - 12;
+
+            if (tx + boxW > p.width - 8) tx = hovered.x - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Normalized: ${hovered.normalized.toFixed(1)}%`, tx + 12, ty + 30);
+            p.text(`Raw Signal: ${hovered.raw}`, tx + 12, ty + 46);
+        }
+    };
+};
+new p5(archRadarSketch);
+</script>
+</div>
+
+<div class="chart-container" style="display:flex;flex-direction:column;align-items:center;padding:24px;background:rgba(20,25,30,0.3);border-radius:16px;border:1px solid rgba(255,255,255,0.05);" augmented-ui="tl-clip tr-clip br-clip bl-clip border">
+<h3 style="margin:0 0 6px 0;text-align:center;">Architectural Galaxy (A/I)</h3>
+<div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Instability (X) vs Abstractness (Y).</div>
+<div id="p5-galaxy-container" style="display:flex;justify-content:center;width:100%;"></div>
+<script>
+const galaxySketch = (p) => {
+    const points = [{ name: 'Infrastructure', inst: 0.679, abs: 0.074, fan: 89, dist: 0.247, col: '#ff8a3d', hl: true },{ name: 'Fingerprint', inst: 0.282, abs: 0.26, fan: 50, dist: 0.458, col: '#ff8a3d', hl: true },{ name: 'Limbic', inst: 0.252, abs: 0.162, fan: 36, dist: 0.586, col: '#ff8a3d', hl: true },{ name: 'Nucleo', inst: 0.105, abs: 0.065, fan: 29, dist: 0.83, col: '#ff8a3d', hl: true },{ name: 'Program.cs', inst: 1, abs: 0, fan: 16, dist: 0, col: '#ffc15d', hl: false },];
+    let hovered = null;
+    
+    p.setup = () => {
+        let canvas = p.createCanvas(420, 420);
+        canvas.parent('p5-galaxy-container');
+        p.textFont("monospace");
+    };
+
+    p.draw = () => {
+        p.clear();
+        hovered = null;
+
+        let margin = 40;
+        let plotW = p.width - (margin * 2);
+        let plotH = p.height - (margin * 2);
+
+        // Zone Fills
+        p.noStroke();
+        p.fill('rgba(255,140,40,0.020)');
+        p.rect(margin, margin, plotW, plotH);
+        p.fill('rgba(255,180,90,0.030)');
+        p.triangle(margin, margin, p.width - margin, p.height - margin, margin, p.height - margin);
+        p.fill('rgba(255,120,40,0.020)');
+        p.triangle(margin, margin, p.width - margin, margin, p.width - margin, p.height - margin);
+
+        // Grid & Ticks
+        p.stroke('rgba(210,125,48,0.16)');
+        p.strokeWeight(1);
+        p.fill('rgba(235,214,194,0.52)');
+        p.noStroke();
+        p.textSize(9);
+
+        [0, 0.25, 0.5, 0.75, 1].forEach(tick => {
+            let x = margin + plotW * tick;
+            let y = margin + plotH * (1 - tick);
+            p.stroke('rgba(210,125,48,0.16)');
+            p.line(x, margin, x, p.height - margin);
+            p.line(margin, y, p.width - margin, y);
+            p.noStroke();
+            p.textAlign(p.CENTER, p.TOP);
+            p.text(tick, x, p.height - margin + 8);
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text(tick, margin - 6, y);
+        });
+
+        // Main Axes
+        p.stroke('rgba(235,150,70,0.38)');
+        p.strokeWeight(1.5);
+        p.line(margin, p.height - margin, p.width - margin, p.height - margin);
+        p.line(margin, p.height - margin, margin, margin);
+
+        // Main Sequence
+        p.stroke('rgba(255,190,100,0.40)');
+        p.drawingContext.setLineDash([5, 5]);
+        p.line(margin, margin, p.width - margin, p.height - margin);
+        p.drawingContext.setLineDash([]);
+        
+        p.noStroke();
+        p.fill('#f2e1d2');
+        p.textSize(11);
+        p.textAlign(p.RIGHT, p.TOP);
+        p.text("Instability", p.width - margin, p.height - margin + 25);
+        p.textAlign(p.LEFT, p.BOTTOM);
+        p.text("Abstractness", 0, margin - 15);
+
+        // Bubbles
+        points.forEach(pt => {
+            let x = margin + plotW * pt.inst;
+            let y = (p.height - margin) - (plotH * pt.abs);
+            let baseSize = 5 + Math.min(12, pt.fan / 2.8);
+            let size = baseSize + p.sin(p.frameCount * 0.05 + pt.fan) * 2;
+
+            const isHover = p.dist(p.mouseX, p.mouseY, x, y) <= size + 4;
+            if (isHover) hovered = { ...pt, x, y, size };
+
+            p.drawingContext.shadowColor = pt.col;
+            p.drawingContext.shadowBlur = isHover ? 20 : 12;
+            p.fill(pt.col);
+            p.stroke('#fff0d6');
+            p.strokeWeight(isHover ? 2.2 : 1.5);
+            p.ellipse(x, y, size * 2);
+
+            p.drawingContext.shadowBlur = 0;
+
+            if (pt.hl) {
+                p.fill('#f4e6d8');
+                p.noStroke();
+                p.textSize(10);
+                p.textAlign(p.LEFT, p.BOTTOM);
+                p.text(pt.name, x + size + 4, y - size - 2);
+            }
+        });
+
+        if (hovered) {
+            const boxW = 185;
+            const boxH = 88;
+            let tx = hovered.x + 16;
+            let ty = hovered.y - 12;
+
+            if (tx + boxW > p.width - 8) tx = hovered.x - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.col;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.col);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.name, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Abstractness: ${hovered.abs.toFixed(2)}`, tx + 12, ty + 30);
+            p.text(`Instability: ${hovered.inst.toFixed(2)}`, tx + 12, ty + 44);
+            p.text(`Distance: ${hovered.dist.toFixed(2)}`, tx + 12, ty + 58);
+            p.text(`Fan-Out: ${hovered.fan}`, tx + 12, ty + 72);
+        }
+    };
+};
+new p5(galaxySketch);
+</script>
+</div>
+
+<div style='flex:1; min-width:280px;'>
+<ul class='clean'>
+<li>Core isolation detected. Architectural boundaries appear preserved.</li>
+<li>High namespace drift detected. Folder structure may not reflect architectural boundaries.</li>
+<li>Global namespace usage detected. This may indicate legacy code or architectural leakage.</li>
+<li>Potential dead or orphaned code detected through structural analysis.</li>
+<li>Minor SOLID design alerts detected.</li>
+<li>Implicit coupling emerging between modules. Architectural boundaries may be weakening.</li>
+</ul>
+</div>
+</div>
+
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Structural Candidate Matrix</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+<div style="margin-bottom:16px;">
+    <input id="search"
+           type="text"
+           onkeyup="searchTable()"
+           placeholder="Search class, folder, status..."
+           style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.03); color:#fff;" />
+</div>
+<div class="table-shell">
+<table id="table" class="link-table structural-table">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">Class</th>
+            <th onclick="sortTable(1)">Folder</th>
+            <th onclick="sortTable(2)">Uses</th>
+            <th onclick="sortTable(3)">Status</th>
+            <th onclick="sortTable(4)">Removal</th>
+        </tr>
+    </thead>
+    <tbody>
+<tr class='row-alert'>
+    <td>AdaptadorDiagnostico.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>CalculadorModalidade.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>CalculadoraTensao.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>CarregadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ConfiguradorLimbic.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>DivergenceScore.cs</td>
+    <td>Scriptome\Fingerprint\Forense</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>EspecialistaDinamica.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>EspecialistaProducao.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>EstadoIdentidade.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ExecutorValidacaoJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>InfoPalavra.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>LeitorBaseline.cs</td>
+    <td>Scriptome\Infrastructure\Baseline</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>LematizadorCatalyst.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>LematizadorVerbal.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ModuloEtogramaV2.cs</td>
+    <td>Scriptome\Fingerprint\Modulos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ResultadoModuloLimbic.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Resultados</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>RnaCartesiano.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-alert'>
+    <td>ScriptomeVisualizer.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>AbaEstrutura.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>AppConfig.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorHibrido.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorLacaniano.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorLacanianoV2Legado.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ClassificadorMBTI.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>DivergenceLogger.cs</td>
+    <td>Scriptome\Fingerprint\Forense</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ExportadorBaselineJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>MotorEtogramaHeuristico.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>MotorIntencionalV1.cs</td>
+    <td>Scriptome\Fingerprint\MotoresInterpretativos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-warning'>
+    <td>ScriptomeDashboardPipeline.cs</td>
+    <td>Scriptome\Nucleo\Modelos</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>10</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorBasico.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorBeats.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorDinamica.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorDuracao.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorInteracao.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>AdaptadorLimbic.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>BaseImutavel.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Cena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ConversorFenotipo.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>14</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EntradaLimbic.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaBeats.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaDuracao.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaInteracao.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EspecialistaVocabulario.cs</td>
+    <td>Scriptome\Nucleo\Especialistas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EstatisticasCena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>7</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>EstatisticasRoteiro.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>28</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Etograma.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>25</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ExtratorEtogramaAdapter.cs</td>
+    <td>Scriptome\Nucleo\Adaptadores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>GeneDiscursivo.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>IModuloAnalise.cs</td>
+    <td>Scriptome\Nucleo\Interfaces</td>
+    <td>11</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorDeTranscricao.cs</td>
+    <td>Scriptome\Nucleo\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr class='row-core'>
+    <td>IMotorSplicing.cs</td>
+    <td>Scriptome\Nucleo\Interfaces</td>
+    <td>7</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>LeitorFountain.cs</td>
+    <td>Scriptome\Nucleo\Leitores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorDeTranscricao.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorFenotipoV2.cs</td>
+    <td>Scriptome\Nucleo\Motores</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorSplicing.cs</td>
+    <td>Scriptome\Nucleo\Motores</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>MotorVetorial_V2.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>OrquestradorNucleo.cs</td>
+    <td>Scriptome\Nucleo</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>PerfilPersonagem.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>40</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoAnalise.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoDeriva.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoDinamica.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoInteracao.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoJung.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoLimbic.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoSplice.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>RnaBruto.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>25</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>RnaLimbic.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Genoma</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Roteiro.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>16</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>ResultadoAnalise.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>TermoLexical.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>TokenPontuado.cs</td>
+    <td>Scriptome\Limbic\Modelos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>Elementos.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr class='row-core'>
+    <td>VetorEtograma3D.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaAnaliseDeCenas.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaBeatSheet.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaDashboard.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaElenco.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaMatrizSocial.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AbaTaxonomia.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ContextoLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AnalisadorContextual.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AnalisadorLexico.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BancoDeDadosLexico.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BibliotecaArquetipos.cs</td>
+    <td>Scriptome\Fingerprint\Dados</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BibliotecaCentroidesEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ZumbiScanner.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorEnergia_V2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Energia</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorEtogramaCartesiano.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Cartesianos</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorIntensidade.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Energia</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorJung.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Arquetipos</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorJungV2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Arquetipos</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorLacanianoV2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorMBTIV2.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorNarrativaUnificado.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorPsicodinamico.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorPsicodinamico.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Psique</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorScriptome.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Narrativa</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ClassificadorTermico.cs</td>
+    <td>Scriptome\Fingerprint\Classificadores\Energia</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorTaxonomia.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ComparacaoJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>6</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ComparadorJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ConstrutorDeCena.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ContextoLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>7</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>EstatisticaForense.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExportadorBaselineElencoLegacyJson.cs</td>
+    <td>Scriptome\Infrastructure\Baseline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExportadorBaselineEtograma.cs</td>
+    <td>Scriptome\Infrastructure\Baseline</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExportadorExcelModular.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ExtratorEtogramaDeriva6.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>HeuristicaContextual.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IAbaExcel.cs</td>
+    <td>Scriptome\Infrastructure\Interfaces</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorBiometrico.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorColetivo.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr >
+    <td>IClassificadorEtogramaV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorIndividual.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>13</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorJungV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorLacanianoV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorMBTIV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IClassificadorNarrativaV2.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IExportadorScriptome.cs</td>
+    <td>Scriptome\Infrastructure\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IExtratorEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>AnalisadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr >
+    <td>IMotorDeriva.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorEtogramaCartesiano.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorIdentidadeRNA.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorIntencional.cs</td>
+    <td>Scriptome\Fingerprint\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IMotorLexico.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>Review Required</td>
+</tr>
+<tr >
+    <td>IMotorLimbic.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ContextoLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>BibliotecaArquetipos.cs</td>
+    <td>Scriptome\Fingerprint\Dados</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>IServicoVocabulario.cs</td>
+    <td>Scriptome\Limbic\Interfaces</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>LematizadorHibrido.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MetricasDivergencia.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeFusao.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeIdentidade.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeriva6.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>4</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorEtogramaCartesiano3D.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorEtogramaV2.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorDeIdentidadeRNA.cs</td>
+    <td>Scriptome\Fingerprint\Motores</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorLimbic.cs</td>
+    <td>Scriptome\Limbic\Motor</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>MotorTaxonomia.cs</td>
+    <td>Scriptome\Fingerprint</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ParametrosVader.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>9</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>PerfilPersonagemConsolidado.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Fenotipo</td>
+    <td>8</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>PipelineLimbic.cs</td>
+    <td>Scriptome\Limbic\Pipeline</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ProcessadorLinguistico.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>5</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>Program.cs</td>
+    <td>Scriptome</td>
+    <td>0</td>
+    <td>Unreferenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>RaizComposicao.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>RepositorioLexicoUnificado.cs</td>
+    <td>Scriptome\Limbic\Dados</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ScriptomeJsonExporter.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>14</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ValidadorJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>VerificadorLimbicCompleto.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>VerificadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>2</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>VisualizadorEtograma.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao</td>
+    <td>1</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+<tr >
+    <td>ZumbiScanner.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>3</td>
+    <td>Referenced</td>
+    <td>N/A</td>
+</tr>
+    </tbody>
+</table>
+</div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Namespace Drift Review</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Folder</th>
+                    <th>Namespace</th>
+                    <th>Expected Namespace</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr class="row-warning">
+    <td>BibliotecaCentroidesEtograma.cs</td>
+    <td>Scriptome\Fingerprint\Modelos</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+    <td>Scriptome.Fingerprint.Modelos</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorVetorial_V2.cs</td>
+    <td>Scriptome\Fingerprint\MotoresEtograma</td>
+    <td>Scriptome.Nucleo.Motores</td>
+    <td>Scriptome.Fingerprint.MotoresEtograma</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorIntencionalV1.cs</td>
+    <td>Scriptome\Fingerprint\MotoresInterpretativos</td>
+    <td>Global</td>
+    <td>Scriptome.Fingerprint.MotoresInterpretativos</td>
+</tr>
+<tr class="row-warning">
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure</td>
+</tr>
+<tr class="row-warning">
+    <td>ConfigService.cs</td>
+    <td>Scriptome\Infrastructure</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure</td>
+</tr>
+<tr class="row-warning">
+    <td>ExportadorExcelModular.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao</td>
+    <td>Scriptome.Exportacao</td>
+    <td>Scriptome.Infrastructure.Exportacao</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaAnaliseDeCenas.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaBeatSheet.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaDashboard.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaElenco.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaEstrutura.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaMatrizSocial.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>AbaTaxonomia.cs</td>
+    <td>Scriptome\Infrastructure\Exportacao\Excel\Abas</td>
+    <td>Scriptome.Exportacao.Excel.Abas</td>
+    <td>Scriptome.Infrastructure.Exportacao.Excel.Abas</td>
+</tr>
+<tr class="row-warning">
+    <td>ComparadorJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+</tr>
+<tr class="row-warning">
+    <td>ExportadorBaselineJung.cs</td>
+    <td>Scriptome\Infrastructure\Validador</td>
+    <td>Global</td>
+    <td>Scriptome.Infrastructure.Validador</td>
+</tr>
+<tr class="row-warning">
+    <td>CalculadorModalidade.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>CalculadoraTensao.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>HeuristicaContextual.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>LematizadorCatalyst.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>LematizadorVerbal.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorDeriva6.cs</td>
+    <td>Scriptome\Limbic\Algoritimos</td>
+    <td>Scriptome.Limbic.Algoritmos</td>
+    <td>Scriptome.Limbic.Algoritimos</td>
+</tr>
+<tr class="row-warning">
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>LematizadorHibrido.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>ProcessadorLinguistico.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>DefinicoesLingusticas.cs</td>
+    <td>Scriptome\Limbic\Linguistica</td>
+    <td>Scriptome.Linguistica</td>
+    <td>Scriptome.Limbic.Linguistica</td>
+</tr>
+<tr class="row-warning">
+    <td>VerificadorLimbicCompleto.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>Scriptome.Testes</td>
+    <td>Scriptome.Limbic.Testes</td>
+</tr>
+<tr class="row-warning">
+    <td>VerificadorLimbic.cs</td>
+    <td>Scriptome\Limbic\Testes</td>
+    <td>Scriptome.Testes</td>
+    <td>Scriptome.Limbic.Testes</td>
+</tr>
+<tr class="row-warning">
+    <td>ScriptomeDashboardPipeline.cs</td>
+    <td>Scriptome\Nucleo\Modelos</td>
+    <td>Scriptome.Infrastructure</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+</tr>
+<tr class="row-warning">
+    <td>EstatisticasCena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+</tr>
+<tr class="row-warning">
+    <td>EstatisticasRoteiro.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+</tr>
+<tr class="row-warning">
+    <td>ResultadoInteracao.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Analise</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Analise</td>
+</tr>
+<tr class="row-warning">
+    <td>PerfilPersonagemConsolidado.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Fenotipo</td>
+    <td>Global</td>
+    <td>Scriptome.Nucleo.Modelos.Fenotipo</td>
+</tr>
+<tr class="row-warning">
+    <td>Cena.cs</td>
+    <td>Scriptome\Nucleo\Modelos\Script</td>
+    <td>Scriptome.Nucleo.Modelos</td>
+    <td>Scriptome.Nucleo.Modelos.Script</td>
+</tr>
+<tr class="row-warning">
+    <td>MotorFenotipoV2.cs</td>
+    <td>Scriptome\Nucleo\Motores</td>
+    <td>Scriptome.Nucleo.Fenotipo</td>
+    <td>Scriptome.Nucleo.Motores</td>
+</tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Implicit Coupling Candidates</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Module</th>
+                    <th>Target Module</th>
+                    <th>Fan-Out</th>
+                    <th>Fan-In</th>
+                    <th>Dominance</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr>
+    <td>Program</td>
+    <td>Program.cs</td>
+    <td>Infrastructure</td>
+    <td>17</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>17</td>
+</tr>
+<tr>
+    <td>MotorDeIdentidade</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>8</td>
+    <td>2</td>
+    <td>0,80</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>OrquestradorNucleo</td>
+    <td>Nucleo</td>
+    <td>Fingerprint</td>
+    <td>6</td>
+    <td>2</td>
+    <td>0,75</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>ModuloEtogramaV2</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>5</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>MotorIdentidadeRNA</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>6</td>
+    <td>2</td>
+    <td>0,75</td>
+    <td>6</td>
+</tr>
+<tr>
+    <td>MotorEtogramaV2</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>5</td>
+    <td>1</td>
+    <td>0,83</td>
+    <td>5</td>
+</tr>
+<tr>
+    <td>AnalisadorContextual</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>10</td>
+    <td>2</td>
+    <td>0,83</td>
+    <td>10</td>
+</tr>
+<tr>
+    <td>AnalisadorLexico</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>8</td>
+    <td>2</td>
+    <td>0,80</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>PipelineLimbic</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>14</td>
+    <td>1</td>
+    <td>0,93</td>
+    <td>14</td>
+</tr>
+<tr>
+    <td>VerificadorLimbic</td>
+    <td>Limbic</td>
+    <td>Nucleo</td>
+    <td>23</td>
+    <td>2</td>
+    <td>0,92</td>
+    <td>23</td>
+</tr>
+<tr>
+    <td>AdaptadorLimbic</td>
+    <td>Nucleo</td>
+    <td>Limbic</td>
+    <td>15</td>
+    <td>2</td>
+    <td>0,88</td>
+    <td>15</td>
+</tr>
+<tr>
+    <td>EspecialistaDinamica</td>
+    <td>Nucleo</td>
+    <td>Unknown</td>
+    <td>8</td>
+    <td>0</td>
+    <td>1,00</td>
+    <td>8</td>
+</tr>
+<tr>
+    <td>MotorFenotipoV2</td>
+    <td>Nucleo</td>
+    <td>Fingerprint</td>
+    <td>17</td>
+    <td>1</td>
+    <td>0,94</td>
+    <td>17</td>
+</tr>
+<tr>
+    <td>ClassificadorPsicodinamicoAvancado</td>
+    <td>Fingerprint</td>
+    <td>Nucleo</td>
+    <td>4</td>
+    <td>1</td>
+    <td>0,80</td>
+    <td>4</td>
+</tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:12px;" class="muted">
+            <b>Fan-Out</b> = outgoing dependencies |
+            <b>Fan-In</b> = incoming dependencies |
+            <b>Dominance</b> = relative structural concentration |
+            <b>Volume</b> = dependency interaction load
+        </div>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>SOLID Alerts</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <table class="link-table">
+            <thead>
+                <tr>
+                    <th>Principle</th>
+                    <th>Class</th>
+                    <th>Namespace</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr>
+    <td>SRP</td>
+    <td>Program</td>
+    <td>Program.cs</td>
+    <td>FanOut &gt; 15</td>
+</tr>
+<tr>
+    <td>SRP</td>
+    <td>RaizComposicao</td>
+    <td>Infrastructure</td>
+    <td>FanOut &gt; 15</td>
+</tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="section">
+    <div class="section-title">
+        <h2>Methodology & Limitations</h2>
+        <div class="line"></div>
+    </div>
+    <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+        <ul class="clean">
+            <li>This dashboard is based on heuristic static structural analysis.</li>
+            <li>Structural Candidates are not automatically dead code.</li>
+            <li>Pattern Similarity often indicates intentional architecture, not removal targets.</li>
+            <li>Unresolved candidates are the strongest manual-review bucket.</li>
+            <li>Reflection, DI wiring and framework conventions may generate false positives.</li>
+            <li>Final decisions should always include human review.</li>
+        </ul>
+    </div>
+</div>
+<style>
+.grid-kpis.structural-kpis {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1400px) {
+    .grid-kpis.structural-kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .grid-kpis.structural-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.table-shell {
+    max-height: 720px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+}
+
+.structural-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(8, 18, 40, 0.96);
+    backdrop-filter: blur(4px);
+}
+
+.row-alert td {
+    background: rgba(255, 90, 90, 0.14);
+}
+
+.row-warning td {
+    background: rgba(255, 196, 0, 0.11);
+}
+
+.row-core td {
+    background: rgba(64, 160, 255, 0.12);
+}
+
+.dashboard-nav-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding-bottom: 2px;
+}
+
+.dashboard-nav-row .badge {
+    flex: 0 0 auto;
+}
+
+.dashboard-nav-row::-webkit-scrollbar {
+    height: 8px;
+}
+
+.dashboard-nav-row::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+}
+</style>
+
+<script>
+function searchTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.toLowerCase();
+  var table = document.getElementById('table');
+  var rows = table.getElementsByTagName('tr');
+
+  for (var i = 1; i < rows.length; i++) {
+    rows[i].style.display = rows[i].innerText.toLowerCase().includes(filter) ? '' : 'none';
+  }
+}
+
+function sortTable(n) {
+  var table = document.getElementById('table');
+  var switching = true;
+  var dir = 'asc';
+
+  while (switching) {
+    switching = false;
+    var rows = table.rows;
+
+    for (var i = 1; i < rows.length - 1; i++) {
+      var x = rows[i].getElementsByTagName('TD')[n];
+      var y = rows[i + 1].getElementsByTagName('TD')[n];
+      var shouldSwitch = false;
+
+      if (!x || !y) continue;
+
+      if (dir === 'asc' && x.innerText.toLowerCase() > y.innerText.toLowerCase()) shouldSwitch = true;
+      if (dir === 'desc' && x.innerText.toLowerCase() < y.innerText.toLowerCase()) shouldSwitch = true;
+
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+      }
+    }
+
+    if (!switching && dir === 'asc') {
+      dir = 'desc';
+      switching = true;
+    }
+  }
+}
+</script>
+<div class='footer'>Generated by RefactorScope Structural Dashboard // Shared Hub Layout</div>
+<script>
+(function () {
+    const STORAGE_KEY = 'refactorscope-dashboard-theme';
+    const themeLink = document.getElementById('dashboard-theme-link');
+    const cyclerBtn = document.getElementById('themeCyclerBtn');
+
+    const themeSequence = [
+        { id: 'midnight-blue', css: 'assets/css/dashboard-theme-midnight-blue.css' },
+        { id: 'ember-ops', css: 'assets/css/dashboard-theme-ember-ops.css' },
+        { id: 'neon-grid', css: 'assets/css/dashboard-theme-neon-grid.css' }
+    ];
+
+    let currentIndex = 0;
+
+    // Detecta qual o índice atual com base no que o script do <head> restaurou
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const idx = themeSequence.findIndex(t => t.id === saved);
+            if (idx !== -1) currentIndex = idx;
+        }
+    } catch { }
+
+    function applyTheme(index) {
+        const t = themeSequence[index];
+        if (themeLink) {
+            themeLink.setAttribute('href', t.css);
+        }
+        document.documentElement.setAttribute('data-dashboard-theme', t.id);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, t.id);
+        } catch { }
+
+        // Glitch óptico de calibração do monitor
+        document.body.style.display = 'none';
+        void document.body.offsetHeight; 
+        document.body.style.display = '';
+    }
+
+    // Se o painel atual exportou o botão, injeta o comportamento de ciclo
+    if (cyclerBtn) {
+        cyclerBtn.addEventListener('click', function () {
+            currentIndex = (currentIndex + 1) % themeSequence.length;
+            applyTheme(currentIndex);
+        });
+    }
+})();
+</script>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-dashboard-theme="midnight-blue">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RefactorScope // Documentation Nexus</title>
+
+    <link rel="stylesheet" href="assets/vendor/augmented-ui.css" />
+    <link rel="stylesheet" href="assets/css/dashboard-base.css" />
+    <link rel="stylesheet" href="assets/css/dashboard-components.css" />
+    <link id="dashboard-theme-link" rel="stylesheet" href="assets/css/dashboard-theme.css" />
+
+    <link rel="stylesheet" href="assets/css/docs-shell.css" />
+    <link rel="stylesheet" href="assets/css/markdown-hud.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+<body>
+    <script>
+    (function() {
+        const STORAGE_KEY = 'refactorscope-dashboard-theme';
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            const themeLink = document.getElementById('dashboard-theme-link');
+            if (saved && themeLink) {
+                themeLink.setAttribute('href', `assets/css/dashboard-theme-${saved}.css`);
+                document.documentElement.setAttribute('data-dashboard-theme', saved);
+            }
+        } catch {}
+    })();
+    </script>
+
+    <div class="docs-layout">
+        
+        <nav class="docs-sidebar panel" augmented-ui="tr-clip br-clip border">
+            <div class="brand-logo-container">
+                <img src="assets/img/logo.jpg" alt="RefactorScope Logo" class="cyber-logo" />
+            </div>
+
+            <div class="brand" style="padding: 16px 20px; border-bottom: 1px solid var(--docs-border);">
+                <h2 style="margin: 0; font-size: 18px; color: var(--docs-accent); text-transform: uppercase;">Doc Nexus</h2>
+            </div>
+            
+            <div class="nav-links" id="sidebar-menu" style="padding: 16px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto;">
+                <div style="color: var(--docs-muted); font-family: monospace; font-size: 11px;">INITIALIZING MATRICES...</div>
+            </div>
+        </nav>
+
+        <main class="docs-canvas">
+            
+            <div class="topbar hub-topbar panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+                <div class="brand">
+                    <div class="brand-kicker" id="doc-kicker">System Core</div>
+                    <h1 id="doc-title">Loading...</h1>
+                    <div class="subtitle">Component: <b>Documentation Module</b></div>
+                </div>
+                
+                <div class="cyber-control-panel">
+                    <div class="panel-status">
+                        Status: <span id="doc-status" class="status-indicator online">ONLINE</span>
+                    </div>
+                    
+                    <div class="panel-switches-layout">
+                        <div class="switch-column">
+                            <div class="switch-row">
+                                <span class="switch-lbl">LANG_MOD</span>
+                                <button id="langToggleBtn" class="red-tactical-btn" aria-label="Toggle Language"></button>
+                            </div>
+                            <div class="switch-row">
+                                <span class="switch-lbl">OPTIC_MOD</span>
+                                <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme"></button>
+                            </div>
+                        </div>
+
+                        <div class="switch-divider"></div>
+
+                        <div class="switch-column">
+                            <div class="switch-row">
+                                <span class="switch-lbl">PARSER</span>
+                                <a href="https://marked.js.org/" target="_blank" class="engine-cyber-btn">
+                                    <span class="eng-light"></span> MRKD
+                                </a>
+                            </div>
+                            <div class="switch-row">
+                                <span class="switch-lbl">CANVAS</span>
+                                <a href="https://p5js.org/" target="_blank" class="engine-cyber-btn">
+                                    <span class="eng-light"></span> P5JS
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-shell panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
+                <div class="content-wrapper">
+                    <article id="markdown-container" class="markdown-body">
+                        <div style="padding: 60px; text-align: center; color: var(--docs-muted); font-family: monospace;">
+                            Establishing connection to matrix...
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/js/docs-map.js"></script>
+    <script src="assets/js/cli-terminal.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/architectural-charts.js"></script>
+    <script src="assets/js/test-scenarios-charts.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,338 @@
+/* =========================================================
+   REFACTORSCOPE DOCS - BLADE RUNNER HUD SHELL
+   ========================================================= */
+
+/* Override Estrito de Temas: Garante que a documentação sempre mude de cor */
+:root[data-dashboard-theme="midnight-blue"] {
+    --docs-accent: #00e5ff;
+    --docs-bg: #050814;
+    --docs-panel: rgba(12, 18, 30, 0.8);
+    --docs-border: rgba(0, 229, 255, 0.2);
+    --docs-text: #eef4ff;
+    --docs-muted: #8fa8ff;
+    --docs-good: #00ff88;
+    --docs-alert: #ff3333;
+    --docs-warn: #ff9a3c;
+    /* Efeitos Dinâmicos da Logo */
+    --logo-hue: 0deg;
+    --logo-glow: rgba(0, 229, 255, 0.15);
+}
+:root[data-dashboard-theme="ember-ops"] {
+    /* Laranja Fogo Puro (Lava/Chama) - Sai o #ff9a3c apagado */
+    --docs-accent: #ff3d00; 
+    
+    /* Fundo Preto Carbonizado (com um traço imperceptível de vermelho) - Sai o marrom escuro */
+    --docs-bg: #0a0200; 
+    
+    /* Painel cor de "Cinza Quente" (Ash) - Sai o marrom translúcido */
+    --docs-panel: rgba(20, 5, 0, 0.85); 
+    
+    /* Bordas em Laranja Brasa */
+    --docs-border: rgba(255, 61, 0, 0.35); 
+    
+    /* Texto principal (Branco Quente) */
+    --docs-text: #fff4eb; 
+    
+    /* Texto secundário (Laranja Queimado em vez de bege/marrom) */
+    --docs-muted: #cc5214; 
+    
+    /* Status Inalterados (Ajustados para brilhar no fundo escuro) */
+    --docs-good: #00ff66; 
+    --docs-alert: #ff0033; 
+    --docs-warn: #ffb800; 
+    
+    /* O filtro 165deg costuma cravar o vermelho/laranja na sua logo */
+    --logo-hue: 165deg; 
+    --logo-glow: rgba(255, 61, 0, 0.25);
+}
+:root[data-dashboard-theme="neon-grid"] {
+    --docs-accent: #39ff14;
+    --docs-bg: #051405;
+    --docs-panel: rgba(10, 25, 10, 0.8);
+    --docs-border: rgba(57, 255, 20, 0.2);
+    --docs-text: #f0fff0;
+    --docs-muted: #7ac97a;
+    --docs-good: #39ff14;
+    --docs-alert: #ff0055;
+    --docs-warn: #ffea00;
+    /* Gira a cor da imagem para Verde Matrix */
+    --logo-hue: -70deg;
+    --logo-glow: rgba(57, 255, 20, 0.15);
+}
+
+:root[data-dashboard-theme="yellow-kiddo"] { 
+    --docs-accent: #ffdb00;
+    --docs-bg: #050505;
+    --docs-panel: rgba(15, 13, 8, 0.8);
+    --docs-border: rgba(255, 219, 0, 0.25);
+    --docs-text: #fffce6;
+    --docs-muted: #a69a68;
+    --docs-good: #ffdb00; 
+    --docs-alert: #e60000;
+    --docs-warn: #ff8c00;
+    /* Efeitos Dinâmicos da Logo */
+    --logo-hue: -140deg; /* Gira o Ciano original para Amarelo */
+    --logo-glow: rgba(255, 219, 0, 0.15);
+}
+:root {
+    /* Fallback Seguro */
+    --docs-accent: #00e5ff; --docs-bg: #050814; --docs-panel: rgba(12, 18, 30, 0.8);
+    --docs-border: rgba(0, 229, 255, 0.2); --docs-text: #eef4ff; --docs-muted: #8fa8ff;
+    --docs-good: #00ff88; --docs-alert: #ff3333; --docs-warn: #ff9a3c;
+    --logo-hue: 0deg; --logo-glow: rgba(0, 229, 255, 0.15);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--docs-bg);
+    color: var(--docs-text);
+    font-family: system-ui, -apple-system, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Efeito CRT / Scanlines */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* --- ESTRUTURA PRINCIPAL --- */
+.docs-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: 100vh;
+    gap: 16px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* --- SIDEBAR & LOGO --- */
+.docs-sidebar {
+    background: var(--docs-panel);
+    border: 1px solid var(--docs-border) !important;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    z-index: 10;
+}
+
+.brand-logo-container {
+    background: #000;
+    border-bottom: 1px solid var(--docs-border);
+    text-align: center;
+    padding: 0;
+    /* Glow de Fundo Animado que reflete a cor do tema atual */
+    box-shadow: inset 0 0 40px var(--logo-glow);
+    transition: box-shadow 0.5s ease;
+}
+
+.cyber-logo {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: screen; 
+    /* A Mágica do Hue Rotate Animado */
+    filter: contrast(1.2) brightness(0.9) hue-rotate(var(--logo-hue));
+    transition: filter 0.5s ease;
+}
+
+.nav-btn {
+    display: block;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--docs-muted);
+    font-family: monospace;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.nav-btn:hover {
+    color: var(--docs-text);
+    background: rgba(255,255,255,0.05);
+}
+
+.nav-btn.active {
+    color: var(--docs-accent);
+    border-left: 3px solid var(--docs-accent);
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--docs-accent);
+}
+
+/* --- MAIN CANVAS & AJUSTES DE CORTE --- */
+.docs-canvas {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.topbar.panel {
+    background: var(--docs-panel);
+    border: 1px solid var(--docs-border) !important;
+    margin: 2px 4px 6px 4px; /* Afasta da borda para não ser cortado */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.content-shell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 0 4px 4px 4px; /* Afasta da borda para não ser cortado */
+    z-index: 1;
+    overflow: hidden; 
+    background: var(--docs-panel);
+    border: 1px solid var(--docs-border) !important;
+}
+
+.content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    padding: 24px 32px; 
+    box-sizing: border-box;
+}
+
+.content-wrapper::-webkit-scrollbar { width: 6px; }
+.content-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-left: 1px solid var(--docs-border); }
+.content-wrapper::-webkit-scrollbar-thumb { background: var(--docs-border); }
+.content-wrapper::-webkit-scrollbar-thumb:hover { background: var(--docs-accent); }
+
+/* =========================================================
+   PAINEL DE CONTROLE (HUD) E SWITCHES
+   ========================================================= */
+
+.cyber-control-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--docs-border);
+    padding: 8px 12px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+
+.panel-status {
+    font-size: 11px;
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--docs-text);
+    margin-bottom: 4px;
+}
+
+.status-indicator.online { color: var(--docs-good); text-shadow: 0 0 5px var(--docs-good); }
+.status-indicator.fetching { color: var(--docs-warn); text-shadow: 0 0 5px var(--docs-warn); }
+.status-indicator.offline { color: var(--docs-alert); text-shadow: 0 0 5px var(--docs-alert); }
+
+.panel-switches-layout {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.switch-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.switch-lbl {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--docs-muted);
+    font-weight: bold;
+}
+
+.switch-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--docs-border);
+}
+
+/* Botões Vermelhos Originais (Empilhados) */
+.red-tactical-btn {
+    width: 46px;
+    height: 20px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #ff3333 0%, #aa0000 100%);
+    border: 1px solid #440000;
+    border-top: 1px solid #ff8888;
+    border-bottom: 2px solid #550000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.8), inset 0 2px 4px rgba(255,255,255,0.3);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.1s;
+}
+.red-tactical-btn:active { transform: translateY(2px); box-shadow: inset 0 4px 8px rgba(0,0,0,0.5); }
+
+#themeCyclerBtn::after {
+    content: '|||';
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.6); font-size: 9px; font-weight: 900; letter-spacing: 2px;
+}
+#langToggleBtn[data-lang="pt"]::after {
+    content: 'PT';
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.8); font-size: 10px; font-weight: 900; font-family: monospace;
+}
+#langToggleBtn[data-lang="en"]::after {
+    content: 'EN';
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: rgba(0,0,0,0.8); font-size: 10px; font-weight: 900; font-family: monospace;
+}
+
+/* Engine Switches (Futuristas e responsivos ao Tema) */
+.engine-cyber-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--docs-border);
+    color: var(--docs-accent);
+    font-family: monospace;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    letter-spacing: 1px;
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    transition: all 0.2s ease;
+}
+.engine-cyber-btn:hover {
+    background: var(--docs-accent);
+    color: #000;
+    box-shadow: 0 0 10px var(--docs-accent);
+}
+.engine-cyber-btn .eng-light {
+    width: 6px;
+    height: 6px;
+    background: var(--docs-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 5px var(--docs-accent);
+}
+.engine-cyber-btn:hover .eng-light {
+    background: #000;
+    box-shadow: none;
+}
