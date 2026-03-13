@@ -369,7 +369,7 @@ body::after {
 @media screen and (max-width: 850px) {
     
     /* =======================================================
-       A CHAVE MESTRA DO SCROLL (Agora no lugar certo!) 
+       A CHAVE MESTRA DO SCROLL 
        ======================================================= */
     html, body {
         overflow-y: auto !important; 
@@ -393,16 +393,52 @@ body::after {
         padding: 8px; /* Dá mais espaço pra tela */
     }
 
-    /* A barra lateral vai para o topo */
+    /* =======================================================
+       DOMANDO A LOGO E O MENU NO CELULAR
+       ======================================================= */
+    
+    /* Transforma o contêiner da logo num banner de 80px */
+    .brand-logo-container {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; 
+    }
+
+    /* Faz a imagem respeitar a nova altura sem distorcer */
+    .cyber-logo {
+        height: 100% !important; 
+        width: auto !important; 
+        max-width: 100%;
+        object-fit: cover; 
+    }
+
+
+/* A barra lateral vai para o topo com altura garantida */
     .docs-sidebar {
+        flex: none; /* Impede que o layout "esmague" a caixa para caber o texto */
         width: 100%;
         max-width: 100%;
         height: auto;
-        max-height: 250px; /* Se o menu for gigante, ele cria rolagem só nele */
+        /* Dá um espaço fixo generoso. 320px é o suficiente para a logo, 
+           o título DOC NEXUS e uns 4 a 5 links folgados */
+        max-height: 320px; 
+        overflow-y: auto !important; 
         position: relative;
         border-right: none !important;
         border-bottom: 1px solid var(--docs-border) !important;
     }
+
+    /* Garante que a lista de links saiba que precisa rolar e usa o espaço restante */
+    .nav-links {
+        overflow-y: auto !important;
+        max-height: none !important; 
+    }
+
+    /* =======================================================
+       HUD E BOTÕES
+       ======================================================= */
 
     /* Empilha o Título do componente e o Painel de Controle (Botões) */
     .hub-topbar {
@@ -448,7 +484,6 @@ body::after {
         align-items: flex-start;
     }
 }
-
 /* ==========================================================================
    CONTENÇÃO PARA MONITORES AMPLOS (Ultrawide / Zoom Out)
    ========================================================================== */
