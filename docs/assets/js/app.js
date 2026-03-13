@@ -174,7 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // INJEÇÃO P5 (Rastreada pela memória)
             if (document.getElementById('p5-radial-tree-container') && typeof radialTreeSketch !== 'undefined') activeSketches.push(new p5(radialTreeSketch));
-            if (document.getElementById('p5-radial-tree-container') && typeof radialTreeSketch !== 'undefined') activeSketches.push(new p5(radialTreeSketch));
             if (document.getElementById('p5-pipeline-container') && typeof pipelineSketch !== 'undefined') activeSketches.push(new p5(pipelineSketch));
 
             if (document.getElementById('p5-global-coverage') && typeof globalCoverageSketch !== 'undefined') activeSketches.push(new p5(globalCoverageSketch));
