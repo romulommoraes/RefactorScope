@@ -5,9 +5,11 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<ApplicationIcon>docs\assets\img\RefactorScope.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Content Include="docs\assets\img\RefactorScope.ico" />
 		<Content Include="refactorscope.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>

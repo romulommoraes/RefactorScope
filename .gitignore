@@ -1,0 +1,36 @@
+# =========================================================
+# REFACTORSCOPE - MASTER GITIGNORE
+# =========================================================
+
+# --- .NET Build & Binaries ---
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# --- RefactorScope Specific Outputs ---
+# (Pastas que sua ferramenta gera durante a execução)
+refactorscope-output/
+refactorscope-self-analysis/
+Batch/
+Exporters/
+Output/
+*.log
+
+# --- OS Generated Files ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# --- Backup Files ---
+*.bak
+*.tmp
+*.zip
+*.old
