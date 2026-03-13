@@ -4,7 +4,7 @@
 
 Este documento descreve o estado atual da suíte de testes automatizados do RefactorScope, consolidando a cobertura funcional do MVP e a evolução recente da proteção dos módulos mais sensíveis do sistema.
 
-O objetivo da suíte é:
+## O objetivo da suíte é:
 
 - validar o comportamento funcional esperado dos componentes centrais
 - reduzir regressões durante refatorações

@@ -336,3 +336,107 @@ body::after {
     background: #000;
     box-shadow: none;
 }
+
+/* ==========================================================================
+   BLINDAGEM RESPONSIVA (MOBILE & TABLETS)
+   ========================================================================== */
+
+/* 1. PROTEÇÃO GERAL DO MARKDOWN (Aplica-se a PC e Celular) */
+.markdown-body {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Garante que imagens nunca ultrapassem a tela */
+.markdown-body img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Cria rolagem horizontal (touch) isolada para blocos de código e tabelas */
+.markdown-body pre,
+.markdown-body table {
+    max-width: 100%;
+    overflow-x: auto;
+    display: block; /* O 'block' é vital para a tabela rolar no mobile */
+    -webkit-overflow-scrolling: touch; /* Deixa o "arrastar o dedo" suave no iOS */
+    padding-bottom: 10px; /* Espaço para a barra de rolagem não cobrir o texto */
+}
+
+
+/* 2. REESTRUTURAÇÃO DE LAYOUT PARA TELAS MENORES (< 850px) */
+@media screen and (max-width: 850px) {
+    
+    /* Quebra o layout de "Lado a Lado" para "Empilhado" */
+    .docs-layout {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    /* A barra lateral vai para o topo e ocupa 100% da tela */
+    .docs-sidebar {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        /* Limita a altura do menu para não engolir a tela inteira. 
+           Se tiver muitos itens, ele cria uma rolagem interna. */
+        max-height: 250px; 
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--docs-border, #444);
+    }
+
+    /* O painel principal perde o limite de largura e abraça as bordas */
+    .docs-canvas {
+        width: 100%;
+        padding: 10px; /* Reduz o espaçamento externo no celular */
+    }
+
+    /* Empilha o Título do componente e o Painel de Controle (Botões) */
+    .hub-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .cyber-control-panel {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    /* Arruma as colunas de botões (LANG_MOD, OPTIC_MOD) para não ficarem esmagadas */
+    .panel-switches-layout {
+        flex-direction: column; /* Coloca uma chave embaixo da outra */
+        width: 100%;
+        gap: 10px;
+    }
+
+    .switch-divider {
+        display: none; /* Esconde aquela linha vertical que separa os botões */
+    }
+
+    .switch-column {
+        width: 100%;
+        flex-direction: row; /* Mantém os botões lado a lado dentro da própria coluna */
+        justify-content: space-between;
+    }
+
+    /* Reduz aquele padding de 60px que você colocou inline no Markdown,
+       pois 60px no celular empurra o texto todo para o centro da tela */
+    #markdown-container > div {
+        padding: 20px !important;
+    }
+}
+
+/* Ajuste extremo para celulares muito pequenos (ex: iPhone SE) */
+@media screen and (max-width: 400px) {
+    .switch-column {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
