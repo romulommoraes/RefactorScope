@@ -15,12 +15,11 @@
 *.sln.docstates
 
 # --- RefactorScope Specific Outputs ---
-# (Pastas que sua ferramenta gera durante a execução)
+# Pastas geradas durante execução
 refactorscope-output/
 refactorscope-self-analysis/
-Batch/
-Exporters/
 Output/
+Batch/
 *.log
 
 # --- OS Generated Files ---

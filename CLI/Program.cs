@@ -33,57 +33,86 @@ IParserResult? parsingResult = null;
 // PIPELINE PRINCIPAL
 // =====================================================
 
-if (!RunConfiguration(out var config, out var executionPlan))
-    return;
-
-switch (executionPlan.Mode)
+if (RunConfiguration(out var config, out var executionPlan))
 {
-    case ExecutionMode.BatchArena:
-        if (!ParserArenaCliRunner.RunBatch(config, executionPlan.Scope))
-            return;
-        return;
+    switch (executionPlan.Mode)
+    {
+        case ExecutionMode.BatchArena:
+            ParserArenaCliRunner.RunBatch(config, executionPlan.Scope);
+            break;
 
-    case ExecutionMode.Comparative:
-        if (!ParserArenaCliRunner.RunSingleProject(config, executionPlan.Scope))
-            return;
-        return;
+        case ExecutionMode.Comparative:
+            ParserArenaCliRunner.RunSingleProject(config, executionPlan.Scope);
+            break;
 
-    case ExecutionMode.SingleParser:
-    default:
-        if (executionPlan.SelectedParser == null)
-        {
-            TerminalRenderer.Warn("Nenhum parser concreto foi selecionado para Single Parser.");
-            return;
-        }
+        case ExecutionMode.SingleParser:
+        default:
+            if (executionPlan.SelectedParser == null)
+            {
+                TerminalRenderer.Warn("Nenhum parser concreto foi selecionado para Single Parser.");
+                break;
+            }
 
-        config.Parser = executionPlan.SelectedParser.Value.ToString();
+            config.Parser = executionPlan.SelectedParser.Value.ToString();
 
-        if (!RunParsing(
-                config,
-                executionPlan.SelectedParser.Value,
-                out var context,
-                out parsingResult))
-        {
-            return;
-        }
+            if (RunParsing(
+                    config,
+                    executionPlan.SelectedParser.Value,
+                    out var context,
+                    out parsingResult))
+            {
+                RunTopLevelRecovery(context);
 
-        RunTopLevelRecovery(context);
+                if (RunAnalysis(context, out var report))
+                {
+                    RunArchitecturalHygiene(report);
+                    PrintStructuralBreakdown(report);
 
-        if (!RunAnalysis(context, out var report))
-            return;
+                    if (RunExport(config, context, report, parsingResult))
+                    {
+                        RunVisualization(report);
+                        ApplyCiExitCode(report);
+                    }
+                }
+            }
 
-        RunArchitecturalHygiene(report);
-
-        PrintStructuralBreakdown(report);
-
-        if (!RunExport(config, context, report, parsingResult))
-            return;
-
-        RunVisualization(report);
-
-        ApplyCiExitCode(report);
-        return;
+            break;
+    }
 }
+
+/*
+ =====================================================
+ PAUSA FINAL DO CONSOLE NO MVP
+ =====================================================
+
+ Motivo:
+ - O executável está sendo usado manualmente, com abertura direta
+   da janela do console.
+ - Sem essa pausa, a janela pode fechar imediatamente ao término
+   da execução, impedindo a leitura do resumo final, alertas e erros.
+
+ Decisão atual:
+ - Manter um Console.ReadKey() ao final do fluxo principal.
+ - Esta é uma solução simples e intencional para o estágio de MVP.
+
+ Escopo:
+ - Válido apenas para uso manual/local.
+ - Neste momento, o projeto não está priorizando CI/CD,
+   automação headless ou execução não interativa.
+
+ Ajuste futuro planejado:
+ - Quando houver suporte formal a automação, substituir esta pausa
+   fixa por uma estratégia configurável, como:
+   - flag de linha de comando (--pause-on-exit)
+   - opção no arquivo de configuração
+   - detecção explícita de modo interativo
+*/
+
+Console.WriteLine();
+Console.WriteLine(new string('=', 30));
+Console.WriteLine("Processo finalizado.");
+Console.WriteLine("Pressione qualquer tecla para fechar esta janela...");
+Console.ReadKey();
 
 /* =====================================================
    CONFIGURAÇÃO
