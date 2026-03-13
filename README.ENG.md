@@ -113,3 +113,13 @@ dotnet run --project RefactorScope.CLI
 RefactorScope analyze
 
 Human review is always required. RefactorScope points out the probabilistic evidence; the architect makes the refactoring decisions.
+
+**NOTE ABOUT THE BATCH MODE**
+
+In Batch mode, the current MVP version of RefactorScope uses a fixed directory convention to locate the projects that will be processed in bulk.
+The executable expects to find a folder named Batch located one level above the folder where the executable itself is placed. 
+Inside this Batch folder, the projects, repositories, or solutions to be analyzed must be stored. 
+This decision was adopted as a temporary simplification for the MVP, prioritizing implementation speed and execution flow predictability. 
+While this approach is not yet ideal in terms of flexibility, 
+it is sufficient for the current stage as long as the expected folder structure is respected. 
+In a future iteration, Batch mode should gain its own configuration model, allowing the source directory to be defined explicitly instead of depending on this folder convention.

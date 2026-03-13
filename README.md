@@ -134,3 +134,10 @@ dotnet run --project RefactorScope.CLI
 RefactorScope analyze
 
 A revisão humana é sempre necessária. O RefactorScope aponta as evidências probabilísticas; o arquiteto toma as decisões de refatoração.
+
+**Nota sobre o escopo Batch**
+
+O escopo Batch define de onde vêm os projetos analisados em lote.
+Nesta versão MVP, ele depende de uma convenção fixa: deve existir uma pasta chamada Batch localizada um nível acima da pasta onde está o executável.
+Dentro dessa pasta devem estar os projetos ou repositórios que serão processados. Essa abordagem foi adotada como simplificação provisória para o MVP. 
+Futuramente, o modo Batch deverá receber uma configuração própria, permitindo apontar explicitamente qualquer diretório de origem.

@@ -4,7 +4,7 @@
 
 O parser do RefactorScope é o motor responsável por converter o código-fonte C# em um modelo estrutural agnóstico (`ModeloEstrutural`). 
 
-Ele foi desenhado para ser **extremamente rápido, tolerante a falhas sintáticas e independente de APIs de compilador (como Roslyn)**. Em vez de construir uma AST pesada, o sistema foca na extração de sinais arquiteturais vitais: namespaces, tipos declarados e referências de dependência.
+Ele foi desenhado para ser **extremamente rápido, tolerante a falhas sintáticas e independente de APIs de compilador (como **Roslyn**). Em vez de construir uma AST pesada, o sistema foca na extração de sinais arquiteturais vitais: namespaces, tipos declarados e referências de dependência.
 
 ---
 
@@ -34,7 +34,21 @@ Focado em economia de custo computacional em bases gigantes.
 * Se o modelo primário (Regex) atingir as metas de densidade relacional e plausibilidade, o parser secundário é totalmente ignorado.
 
 ### 5. Comparative (Parser Arena)
-Não é um parser isolado, mas um orquestrador de lote (Batch). Ele executa todas as estratégias acima em múltiplos projetos, gera scores comparativos de performance/cobertura e emite um dashboard HTML para avaliar qual motor se saiu melhor no repositório.
+
+Não é um parser isolado, mas sim um modo de execução comparativa.
+Executa múltiplas estratégias de parsing sobre o escopo selecionado.
+Gera métricas comparativas de performance, cobertura, confiança e volume estrutural extraído.
+Emite um dashboard HTML para apoiar a avaliação empírica de qual motor apresentou o melhor desempenho no repositório analisado.
+O modo Comparative pode ser utilizado nos escopos Self, Normal e Batch:
+Self: executa a comparação no próprio projeto RefactorScope.
+Normal: executa a comparação no projeto definido pela configuração principal.
+Batch: executa a comparação em múltiplos projetos processados em lote.
+
+**Nota sobre o escopo Batch**
+
+O escopo Batch define de onde vêm os projetos analisados em lote.
+Nesta versão MVP, ele depende de uma convenção fixa: deve existir uma pasta chamada Batch localizada um nível acima da pasta onde está o executável.
+Dentro dessa pasta devem estar os projetos ou repositórios que serão processados. Essa abordagem foi adotada como simplificação provisória para o MVP. Futuramente, o modo Batch deverá receber uma configuração própria, permitindo apontar explicitamente qualquer diretório de origem.
 
 ---
 
