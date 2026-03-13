@@ -177,8 +177,8 @@
             <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
         </div>
 
-        <div><b>Generated:</b> 2026-03-11 22:38 UTC</div>
-        <div><b>Parser:</b> CSharpRegex</div>
+        <div><b>Generated:</b> 2026-03-12 21:31 UTC</div>
+        <div><b>Parser:</b> HybridSelectiveParser</div>
         <div><b>Readiness:</b> Ready</div>
         <div><b>Target Scope:</b> C:\Users\romul\source\repos\Scriptome</div>
     </div>
@@ -192,13 +192,13 @@
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Parser Confidence</div>
-        <div class="value">93%</div>
+        <div class="value">95%</div>
         <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
     </div>
 
-    <div class="kpi alert" augmented-ui="tr-clip bl-clip border">
+    <div class="kpi warning" augmented-ui="tr-clip bl-clip border">
         <div class="label">Effort Confidence</div>
-        <div class="value">0,54</div>
+        <div class="value">0,61</div>
         <div class="hint">Confidence level attached to the current refactor effort estimate</div>
     </div>
 
@@ -234,7 +234,7 @@
     <div class="dual">
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Executive Interpretation</h3>
-    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is low, gate readiness is high, statistics coverage is high, and the overall quality snapshot is high.</p>
+    <p style="margin-top:0;">The current execution is marked as ready overall. Parsing confidence is high, effort support is moderate, gate readiness is high, statistics coverage is high, and the overall quality snapshot is high.</p>
 
     <ul class="clean" style="margin-top:16px;">
         <li>Fitness gates summarize whether the execution appears ready for interpretation.</li>
@@ -248,19 +248,19 @@
 
     <div class="status-row" style="margin-bottom:14px;">
         <div class="badge green"><span class="badge-dot"></span> Parser: High</div>
-        <div class="badge red"><span class="badge-dot"></span> Effort: Low</div>
+        <div class="badge amber"><span class="badge-dot"></span> Effort: Moderate</div>
         <div class="badge green"><span class="badge-dot"></span> Gates: High</div>
         <div class="badge green"><span class="badge-dot"></span> Statistics: High</div>
         <div class="badge green"><span class="badge-dot"></span> Overall: High</div>
     </div>
 
     <ul class="clean">
-        <li><b>Execution Time:</b> 288 ms</li>
+        <li><b>Execution Time:</b> 3375 ms</li>
         <li><b>Files:</b> 174</li>
         <li><b>Types:</b> 161</li>
-        <li><b>References:</b> 416</li>
-        <li><b>Estimated Hours:</b> 13,2</li>
-        <li><b>RDI:</b> 33</li>
+        <li><b>References:</b> 532</li>
+        <li><b>Estimated Hours:</b> 18,0</li>
+        <li><b>RDI:</b> 45</li>
         <li><b>Gate Readiness:</b> 1,00</li>
         <li><b>Statistics Support Score:</b> 1,00</li>
     </ul>
@@ -279,7 +279,7 @@
 <div id="p5-quality-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const qualityRadarSketch = (p) => {
-    const data = [92.529, 53.597, 100, 100, 55.28, 88.104];
+    const data = [95, 60.802, 100, 100, 55.28, 90.41];
     const labels = ["Parser", "Effort", "Statistics", "Gates", "Unresolved", "Overall"];
     const maxRadius = 100;
 
@@ -352,19 +352,19 @@ new p5(qualityRadarSketch);
 <script>
 const trustSankeySketch = (p) => {
     const nodes = [
-        { id: 0, name: "Parser",      x: 20,  y: 52,  val: 93, col: '#6ea8ff' },
-        { id: 1, name: "Effort",      x: 20,  y: 156, val: 54, col: '#ffc15d' },
+        { id: 0, name: "Parser",      x: 20,  y: 52,  val: 95, col: '#6ea8ff' },
+        { id: 1, name: "Effort",      x: 20,  y: 156, val: 61, col: '#ffc15d' },
         { id: 2, name: "Statistics",  x: 20,  y: 260, val: 100, col: '#ff9a3c' },
         { id: 3, name: "Fitness Gates",x: 360, y: 156, val: 100, col: '#7fd36b' },
-        { id: 4, name: "Overall Readiness", x: 700, y: 156, val: 88, col: '#ff8a3d' }
+        { id: 4, name: "Overall Readiness", x: 700, y: 156, val: 90, col: '#ff8a3d' }
     ];
 
     const links = [
-        { src: 0, tgt: 3, val: 93, col: '#6ea8ff', offset: 0.1 },
-        { src: 1, tgt: 3, val: 54, col: '#ffc15d', offset: 0.4 },
+        { src: 0, tgt: 3, val: 95, col: '#6ea8ff', offset: 0.1 },
+        { src: 1, tgt: 3, val: 61, col: '#ffc15d', offset: 0.4 },
         { src: 2, tgt: 3, val: 100, col: '#ff9a3c', offset: 0.7 },
         { src: 3, tgt: 4, val: 100, col: '#7fd36b', offset: 0.3 },
-        { src: 1, tgt: 4, val: 27, col: '#ffb14d', offset: 0.6 },
+        { src: 1, tgt: 4, val: 30, col: '#ffb14d', offset: 0.6 },
         { src: 2, tgt: 4, val: 50, col: '#ff9a3c', offset: 0.9 }
     ];
 
@@ -481,10 +481,10 @@ new p5(trustSankeySketch);
 <div class="panel" augmented-ui="tl-clip tr-clip bl-clip br-clip border">
     <h3>Effort Estimation</h3>
     <ul class="clean">
-        <li><b>Difficulty:</b> Low</li>
-        <li><b>Estimated Hours:</b> 13,2</li>
-        <li><b>Confidence:</b> 0,54</li>
-        <li><b>RDI:</b> 33</li>
+        <li><b>Difficulty:</b> Moderate</li>
+        <li><b>Estimated Hours:</b> 18,0</li>
+        <li><b>Confidence:</b> 0,61</li>
+        <li><b>RDI:</b> 45</li>
     </ul>
 
     <div class="chart-wrap" style="margin-top:16px;">
@@ -493,14 +493,14 @@ new p5(trustSankeySketch);
             <tbody>
                 <tr>
                     <th scope="row">Hours</th>
-                    <td style="--size: 0.165;">
-                        <span class="data">13,2h</span>
+                    <td style="--size: 0.225;">
+                        <span class="data">18,0h</span>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Confidence</th>
-                    <td style="--size: 0.536;">
-                        <span class="data">0,54</span>
+                    <td style="--size: 0.608;">
+                        <span class="data">0,61</span>
                     </td>
                 </tr>
             </tbody>
@@ -523,11 +523,11 @@ new p5(trustSankeySketch);
 </tr>
 <tr>
     <td>References Per Class</td>
-    <td>2.584</td>
+    <td>3.304</td>
 </tr>
 <tr>
     <td>Mean Coupling</td>
-    <td>2.584</td>
+    <td>3.304</td>
 </tr>
 <tr>
     <td>Unresolved Candidate Ratio</td>

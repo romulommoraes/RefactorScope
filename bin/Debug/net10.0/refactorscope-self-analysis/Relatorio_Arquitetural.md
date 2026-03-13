@@ -1,6 +1,6 @@
 # 🧬 RefactorScope – Architectural Report
 
-📅 **Execution Time:** 2026-03-12 02:08 UTC  
+📅 **Execution Time:** 2026-03-12 17:59 UTC  
 📂 **Target Scope:** `C:\Users\romul\source\repos\RefactorScope`  
 
 ---
@@ -9,6 +9,7 @@
 
 ```
 └── RefactorScope
+├── .Properties
 ├── Analyzers
 │   └── Solid
 │       └── Rules
@@ -60,7 +61,6 @@
 │   ├── CsharpParsers
 │   │   └── Hybrid
 │   └── Results
-├── Properties
 └── Statistics
     ├── Engines
     └── Models

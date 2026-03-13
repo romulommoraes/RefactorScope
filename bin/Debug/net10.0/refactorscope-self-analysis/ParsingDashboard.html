@@ -176,7 +176,7 @@
             <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
         </div>
 
-        <div><b>Generated:</b> 12-03-2026 02:08 UTC</div>
+        <div><b>Generated:</b> 12-03-2026 17:59 UTC</div>
         <div><b>Target:</b> RefactorScope</div>
         <div><b>Confidence:</b> 100%</div>
         <div><b>Confidence Band:</b> High</div>
@@ -227,7 +227,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Execution</div>
-        <div class="value">5706 ms</div>
+        <div class="value">860 ms</div>
         <div class="hint">Total parsing execution time for the analyzed scope</div>
     </div>
 
@@ -245,13 +245,13 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / File</div>
-        <div class="value">30,19</div>
+        <div class="value">4,55</div>
         <div class="hint">Average parsing cost per file</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / Type</div>
-        <div class="value">30,03</div>
+        <div class="value">4,53</div>
         <div class="hint">Average parsing cost per extracted type</div>
     </div>
 
@@ -273,14 +273,14 @@
         <li><b>Files:</b> 189</li>
         <li><b>Types:</b> 190</li>
         <li><b>References:</b> 696</li>
-        <li><b>Execution Time:</b> 5706,10 ms</li>
+        <li><b>Execution Time:</b> 859,93 ms</li>
         <li><b>Type Density:</b> 1,01</li>
         <li><b>References per Type:</b> 3,66</li>
-        <li><b>Milliseconds per File:</b> 30,19</li>
-        <li><b>Milliseconds per Type:</b> 30,03</li>
+        <li><b>Milliseconds per File:</b> 4,55</li>
+        <li><b>Milliseconds per Type:</b> 4,53</li>
         <li><b>Memory per File:</b> 0,00 KB</li>
         <li><b>Memory per Type:</b> 0,00 KB</li>
-        <li><b>Extraction Index:</b> 82,76</li>
+        <li><b>Extraction Index:</b> 87,86</li>
         <li><b>Anomaly Detected:</b> No</li>
     </ul>
 </div>
@@ -289,7 +289,7 @@
     <ul class="clean">
         <li>Parser confidence is high. The extracted structural model appears reliable for downstream analysis.</li>
         <li>Structural density appears healthy. Parsed types and references show consistent extraction volume.</li>
-        <li>Parsing cost is elevated for this scope. Compare against other parser strategies if performance becomes relevant.</li>
+        <li>Parsing cost remains in an acceptable range for the extracted structural volume.</li>
         <li>No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.</li>
         <li>No anomaly flag was raised during parsing telemetry.</li>
     </ul>
@@ -314,13 +314,13 @@
 <div id="p5-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const radarSketch = (p) => {
-    const data = [25.132, 100, 100, 39.936];
+    const data = [25.132, 100, 100, 90.948];
     const labels = ["Type Density", "Graph Rich", "Confidence", "Efficiency"];
     const rawValues = [
         "1.005 types/file",
         "3.663 refs/type",
         "100% confidence",
-        "30.032 ms/type"
+        "4.526 ms/type"
     ];
     const maxRadius = 100;
     let hovered = null;
@@ -474,10 +474,10 @@ new p5(radarSketch);
 <script>
 const donutSketch = (p) => {
     const donutData = [
-        { label: "Safe", value: 110, color: "#7fd36b" },
-        { label: "Complex", value: 38, color: "#6ea8ff" },
+        { label: "Safe", value: 117, color: "#7fd36b" },
+        { label: "Complex", value: 34, color: "#6ea8ff" },
         { label: "AST/Pattern", value: 23, color: "#ffc15d" },
-        { label: "Recovery", value: 18, color: "#ff9a52" },
+        { label: "Recovery", value: 15, color: "#ff9a52" },
         { label: "Risk", value: 0, color: "#ff6a3d" }
     ];
     const total = 189;
@@ -624,7 +624,7 @@ new p5(donutSketch);
 <li><b>AST / Pattern:</b> Files dependent on structural pattern handling.</li>
 <li><b>Recovery:</b> Files requiring fallback or recovery behavior.</li>
 <li><b>Risk:</b> Concentration in highest reliability-pressure bucket.</li>
-<li style='margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); color:#ff9a3c;'>Route distribution is mixed. The execution appears usable, but some files required more complex handling paths.</li>
+<li style='margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); color:#ff9a3c;'>Route distribution looks operationally healthy. Most files remained in stable parsing paths.</li>
 </ul>
 </div>
 </div>
@@ -645,22 +645,22 @@ const sankeySketch = (p) => {
 
     const nodes = [
         { id: 0, name: "Input Files",      x: 40,   y: 180, val: 189,          col: '#ff9a3c' },
-        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 110,           col: '#7fd36b' },
-        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 38,        col: '#6ea8ff' },
+        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 117,           col: '#7fd36b' },
+        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 34,        col: '#6ea8ff' },
         { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 23,     col: '#ffc15d' },
-        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 18,       col: '#ff9a52' },
+        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 15,       col: '#ff9a52' },
         { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 190,      col: '#7fd36b' },
         { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 696, col: '#6ea8ff' },
         { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,           col: '#ff6a3d' }
     ];
 
     const links = [
-        { src: 0, tgt: 1, val: 110,                                                   col: '#7fd36b',     offset: 0.1, label: "Input → Safe Route" },
-        { src: 0, tgt: 2, val: 38,                                                col: '#6ea8ff',  offset: 0.3, label: "Input → Complex Route" },
+        { src: 0, tgt: 1, val: 117,                                                   col: '#7fd36b',     offset: 0.1, label: "Input → Safe Route" },
+        { src: 0, tgt: 2, val: 34,                                                col: '#6ea8ff',  offset: 0.3, label: "Input → Complex Route" },
         { src: 0, tgt: 3, val: 23,                                             col: '#ffc15d',  offset: 0.5, label: "Input → AST / Pattern" },
-        { src: 0, tgt: 4, val: 18,                                               col: '#ff9a52', offset: 0.7, label: "Input → Recovery" },
-        { src: 1, tgt: 5, val: 133,      col: '#7fd36b',     offset: 0.2, label: "Safe Route → Extracted Types" },
-        { src: 2, tgt: 6, val: 56, col: '#6ea8ff',  offset: 0.4, label: "Complex Route → Extracted Refs" },
+        { src: 0, tgt: 4, val: 15,                                               col: '#ff9a52', offset: 0.7, label: "Input → Recovery" },
+        { src: 1, tgt: 5, val: 140,      col: '#7fd36b',     offset: 0.2, label: "Safe Route → Extracted Types" },
+        { src: 2, tgt: 6, val: 49, col: '#6ea8ff',  offset: 0.4, label: "Complex Route → Extracted Refs" },
         { src: 3, tgt: 5, val: 23,                   col: '#ffc15d',  offset: 0.6, label: "AST / Pattern → Extracted Types" },
         { src: 4, tgt: 7, val: 1,                                      col: '#ff9a52', offset: 0.8, label: "Recovery → Risk Bucket" },
         { src: 5, tgt: 7, val: 1,       col: '#ff8a3d',        offset: 0.9, label: "Extracted Types → Risk Bucket" },
@@ -809,22 +809,22 @@ new p5(sankeySketch);
 <div class="chart-note" style="margin:0 0 24px 0;font-size:12px;color:#9fb3c8;text-align:center;">Operational buckets showing reliability pressure.</div>
 <div id="p5-heat-container" style="width:100%; display:flex; justify-content:center;"></div>
 <div style='display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:20px;'>
-<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#7fd36b;box-shadow:0 0 10px #7fd36b;"></div><div style="color:#8fa8ff;font-size:12px;">Safe</div></div><div style="color:#f4e6d8;font-weight:700;">110</div></div>
-<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#6ea8ff;box-shadow:0 0 10px #6ea8ff;"></div><div style="color:#8fa8ff;font-size:12px;">Moderate</div></div><div style="color:#f4e6d8;font-weight:700;">19</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#7fd36b;box-shadow:0 0 10px #7fd36b;"></div><div style="color:#8fa8ff;font-size:12px;">Safe</div></div><div style="color:#f4e6d8;font-weight:700;">117</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#6ea8ff;box-shadow:0 0 10px #6ea8ff;"></div><div style="color:#8fa8ff;font-size:12px;">Moderate</div></div><div style="color:#f4e6d8;font-weight:700;">17</div></div>
 <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ffc15d;box-shadow:0 0 10px #ffc15d;"></div><div style="color:#8fa8ff;font-size:12px;">Sparse</div></div><div style="color:#f4e6d8;font-weight:700;">9</div></div>
 <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff9a52;box-shadow:0 0 10px #ff9a52;"></div><div style="color:#8fa8ff;font-size:12px;">Anomaly</div></div><div style="color:#f4e6d8;font-weight:700;">0</div></div>
-<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff6a3d;box-shadow:0 0 10px #ff6a3d;"></div><div style="color:#8fa8ff;font-size:12px;">Recovery Dep.</div></div><div style="color:#f4e6d8;font-weight:700;">9</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);min-width:140px;justify-content:space-between;" augmented-ui="tl-clip br-clip border"><div style="display:flex;align-items:center;gap:10px;"><div style="width:10px;height:10px;background:#ff6a3d;box-shadow:0 0 10px #ff6a3d;"></div><div style="color:#8fa8ff;font-size:12px;">Recovery Dep.</div></div><div style="color:#f4e6d8;font-weight:700;">7</div></div>
 </div>
 <script>
 const heatSketch = (p) => {
     const buckets = [
-        { label: "Safe", val: 110, col: '#7fd36b' },
-        { label: "Moderate", val: 19, col: '#6ea8ff' },
+        { label: "Safe", val: 117, col: '#7fd36b' },
+        { label: "Moderate", val: 17, col: '#6ea8ff' },
         { label: "Sparse", val: 9, col: '#ffc15d' },
         { label: "Anomaly", val: 0, col: '#ff9a52' },
-        { label: "Recovery Dep.", val: 9, col: '#ff6a3d' }
+        { label: "Recovery Dep.", val: 7, col: '#ff6a3d' }
     ];
-    const total = 147;
+    const total = 150;
     let segments = [];
     let hovered = null;
 

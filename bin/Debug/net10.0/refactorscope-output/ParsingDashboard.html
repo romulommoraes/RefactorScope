@@ -162,7 +162,7 @@
     <div class="brand">
         <div class="brand-kicker">RefactorScope // Parsing Module</div>
         <h1>Parsing Dashboard</h1>
-        <div class="subtitle">Parser: <b>CSharpRegex</b></div>
+        <div class="subtitle">Parser: <b>HybridSelectiveParser</b></div>
                    <div class="tactical-nav-wrapper">
             <a href="index.html" class="nav-btn btn-hub" augmented-ui="tl-clip br-clip border" title="Return to Command Nexus">
                 &#9664; NEXUS_HUB
@@ -176,9 +176,9 @@
             <button id="themeCyclerBtn" class="red-tactical-btn" aria-label="Cycle Theme" title="Engage Optic Cycle"></button>
         </div>
 
-        <div><b>Generated:</b> 11-03-2026 22:38 UTC</div>
+        <div><b>Generated:</b> 12-03-2026 21:31 UTC</div>
         <div><b>Target:</b> AvaliaRoteiro</div>
-        <div><b>Confidence:</b> 93%</div>
+        <div><b>Confidence:</b> 95%</div>
         <div><b>Confidence Band:</b> High</div>
     </div>
 </div>
@@ -191,7 +191,7 @@
 <div class="grid-kpis parsing-kpis">
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Parser</div>
-        <div class="value" style="font-size:22px;">CSharpRegex</div>
+        <div class="value" style="font-size:22px;">HybridSelectiveParser</div>
         <div class="hint">Parsing strategy used to extract structural data from the codebase</div>
     </div>
 
@@ -209,13 +209,13 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">References</div>
-        <div class="value">416</div>
+        <div class="value">532</div>
         <div class="hint">Structural references extracted between parsed types</div>
     </div>
 
     <div class="kpi good" augmented-ui="tr-clip bl-clip border">
         <div class="label">Confidence</div>
-        <div class="value">93%</div>
+        <div class="value">95%</div>
         <div class="hint">Heuristic confidence that the parsed model is structurally usable</div>
     </div>
 
@@ -227,7 +227,7 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Execution</div>
-        <div class="value">288 ms</div>
+        <div class="value">3375 ms</div>
         <div class="hint">Total parsing execution time for the analyzed scope</div>
     </div>
 
@@ -239,19 +239,19 @@
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">Refs / Type</div>
-        <div class="value">2,58</div>
+        <div class="value">3,30</div>
         <div class="hint">Average extracted reference density per parsed type</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / File</div>
-        <div class="value">1,65</div>
+        <div class="value">19,39</div>
         <div class="hint">Average parsing cost per file</div>
     </div>
 
     <div class="kpi" augmented-ui="tr-clip bl-clip border">
         <div class="label">ms / Type</div>
-        <div class="value">1,79</div>
+        <div class="value">20,96</div>
         <div class="hint">Average parsing cost per extracted type</div>
     </div>
 
@@ -272,15 +272,15 @@
     <ul class="clean">
         <li><b>Files:</b> 174</li>
         <li><b>Types:</b> 161</li>
-        <li><b>References:</b> 416</li>
-        <li><b>Execution Time:</b> 287,84 ms</li>
+        <li><b>References:</b> 532</li>
+        <li><b>Execution Time:</b> 3374,61 ms</li>
         <li><b>Type Density:</b> 0,93</li>
-        <li><b>References per Type:</b> 2,58</li>
-        <li><b>Milliseconds per File:</b> 1,65</li>
-        <li><b>Milliseconds per Type:</b> 1,79</li>
+        <li><b>References per Type:</b> 3,30</li>
+        <li><b>Milliseconds per File:</b> 19,39</li>
+        <li><b>Milliseconds per Type:</b> 20,96</li>
         <li><b>Memory per File:</b> 0,00 KB</li>
         <li><b>Memory per Type:</b> 0,00 KB</li>
-        <li><b>Extraction Index:</b> 80,91</li>
+        <li><b>Extraction Index:</b> 81,78</li>
         <li><b>Anomaly Detected:</b> No</li>
     </ul>
 </div>
@@ -295,7 +295,7 @@
     </ul>
 
     <div style="margin-top:16px;">
-        <div class="badge green"><span class="badge-dot"></span> Confidence: 93%</div>
+        <div class="badge green"><span class="badge-dot"></span> Confidence: 95%</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Sparse Extraction: No</div>
         <div class="badge green" style="margin-top:8px;"><span class="badge-dot"></span> Anomaly Detected: No</div>
     </div>
@@ -314,14 +314,18 @@
 <div id="p5-radar-container" style="display:flex;justify-content:center;width:100%;"></div>
 <script>
 const radarSketch = (p) => {
-    const data = [23.132, 86.128, 92.529, 96.424];
+    const data = [23.132, 100, 95, 58.079];
     const labels = ["Type Density", "Graph Rich", "Confidence", "Efficiency"];
-    
-    // Raio levemente menor para garantir que não encoste nas bordas
+    const rawValues = [
+        "0.925 types/file",
+        "3.304 refs/type",
+        "95% confidence",
+        "20.96 ms/type"
+    ];
     const maxRadius = 100;
+    let hovered = null;
 
     p.setup = () => {
-        // AQUI ESTÁ O SEGREDO: Canvas mais largo (440) para dar espaço lateral pros textos
         let canvas = p.createCanvas(440, 360);
         canvas.parent('p5-radar-container');
         p.angleMode(p.DEGREES);
@@ -330,11 +334,11 @@ const radarSketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hovered = null;
         p.translate(p.width / 2, p.height / 2);
 
         let pulse = p.sin(p.frameCount * 3) * 5 + 10;
 
-        // Grid
         p.stroke('#8fa8ff');
         p.noFill();
         p.strokeWeight(1);
@@ -362,7 +366,6 @@ const radarSketch = (p) => {
             p.line(0, 0, p.cos(a - 90) * maxRadius, p.sin(a - 90) * maxRadius);
         }
 
-        // Dados
         p.drawingContext.shadowColor = '#ff9a3c';
         p.drawingContext.shadowBlur = pulse;
         p.stroke('#ff9a3c');
@@ -380,12 +383,32 @@ const radarSketch = (p) => {
         for (let i = 0; i < 4; i++) {
             let angle = (i * 90) - 90;
             let r = p.map(data[i], 0, 100, 0, maxRadius);
+            let px = p.cos(angle) * r;
+            let py = p.sin(angle) * r;
+
+            const mouseDx = p.mouseX - (p.width / 2 + px);
+            const mouseDy = p.mouseY - (p.height / 2 + py);
+            const isHover = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy) <= 9;
+
+            if (isHover) {
+                hovered = {
+                    label: labels[i],
+                    normalized: data[i],
+                    raw: rawValues[i],
+                    x: px,
+                    y: py
+                };
+            }
+
             p.fill('#0b1020');
-            p.strokeWeight(2);
-            p.ellipse(p.cos(angle) * r, p.sin(angle) * r, 8, 8);
+            p.stroke('#ff9a3c');
+            p.strokeWeight(isHover ? 2.8 : 2);
+            p.drawingContext.shadowBlur = isHover ? 18 : 10;
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.ellipse(px, py, isHover ? 10 : 8, isHover ? 10 : 8);
+            p.drawingContext.shadowBlur = 0;
         }
 
-        // Scanner
         p.drawingContext.shadowBlur = 0;
         let scanAngle = p.frameCount * 2;
         p.noStroke();
@@ -395,21 +418,49 @@ const radarSketch = (p) => {
         p.strokeWeight(1.5);
         p.line(0, 0, p.cos(scanAngle) * maxRadius, p.sin(scanAngle) * maxRadius);
 
-        // Labels
         p.fill('#eef4ff');
         p.noStroke();
         p.textSize(12);
-        
+
         p.textAlign(p.CENTER, p.CENTER);
-        p.text(labels[0], 0, -maxRadius - 20); // Topo
-        p.text(labels[2], 0, maxRadius + 20);  // Base
-        
-        // Offset ajustado de 15 para 12 para ficar visualmente coeso
+        p.text(labels[0], 0, -maxRadius - 20);
+        p.text(labels[2], 0, maxRadius + 20);
+
         p.textAlign(p.LEFT, p.CENTER);
-        p.text(labels[1], maxRadius + 12, 0);  // Direita
-        
+        p.text(labels[1], maxRadius + 12, 0);
+
         p.textAlign(p.RIGHT, p.CENTER);
-        p.text(labels[3], -maxRadius - 12, 0); // Esquerda
+        p.text(labels[3], -maxRadius - 12, 0);
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 170;
+            const boxH = 72;
+            let tx = p.mouseX + 16;
+            let ty = p.mouseY - 12;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = '#ff9a3c';
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke('#ff9a3c');
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Normalized: ${hovered.normalized.toFixed(1)}%`, tx + 12, ty + 30);
+            p.text(`Raw: ${hovered.raw}`, tx + 12, ty + 46);
+        }
     };
 };
 new p5(radarSketch);
@@ -430,6 +481,7 @@ const donutSketch = (p) => {
         { label: "Risk", value: 0, color: "#ff6a3d" }
     ];
     const total = 174;
+    let hovered = null;
 
     p.setup = () => {
         let canvas = p.createCanvas(360, 360);
@@ -440,6 +492,7 @@ const donutSketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hovered = null;
         p.translate(p.width / 2, p.height / 2 - 20);
 
         const outerRadius = 100;
@@ -470,10 +523,25 @@ const donutSketch = (p) => {
             let angleSpan = (item.value / total) * 360;
             let gap = item.value > 0 ? 3 : 0;
 
+            const midAngle = currentAngle + angleSpan / 2;
+            const mouseAngle = p.degrees(Math.atan2(p.mouseY - (p.height / 2 - 20), p.mouseX - p.width / 2));
+            let normalizedMouseAngle = mouseAngle;
+            if (normalizedMouseAngle < -90) normalizedMouseAngle += 360;
+
+            const distToCenter = p.dist(p.mouseX, p.mouseY, p.width / 2, p.height / 2 - 20);
+            const isHover =
+                item.value > 0 &&
+                distToCenter >= innerRadius - 10 &&
+                distToCenter <= outerRadius + 18 &&
+                normalizedMouseAngle >= currentAngle &&
+                normalizedMouseAngle <= currentAngle + angleSpan;
+
+            if (isHover) hovered = { ...item };
+
             p.drawingContext.shadowColor = item.color;
-            p.drawingContext.shadowBlur = 12;
+            p.drawingContext.shadowBlur = isHover ? 20 : 12;
             p.stroke(item.color);
-            p.strokeWeight(25);
+            p.strokeWeight(isHover ? 28 : 25);
 
             if (angleSpan > gap) {
                 p.arc(0, 0, outerRadius + innerRadius, outerRadius + innerRadius, currentAngle + gap / 2, currentAngle + angleSpan - gap / 2);
@@ -513,6 +581,36 @@ const donutSketch = (p) => {
             p.textSize(10);
             p.text(item.label, xOffset + 14, yOffset);
         });
+
+        p.resetMatrix();
+
+        if (hovered) {
+            const boxW = 150;
+            const boxH = 60;
+            let tx = p.mouseX + 16;
+            let ty = p.mouseY - 12;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 16;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Files: ${hovered.value}`, tx + 12, ty + 30);
+            p.text(`Share: ${(hovered.value / total * 100).toFixed(1)}%`, tx + 12, ty + 44);
+        }
     };
 };
 new p5(donutSketch);
@@ -543,31 +641,34 @@ new p5(donutSketch);
 <div id="p5-sankey-container"></div>
 <script>
 const sankeySketch = (p) => {
-    const maxFlow = 416;
+    const maxFlow = 532;
 
     const nodes = [
-        { id: 0, name: "Input Files",      x: 40,   y: 180, val: 174,         col: '#ff9a3c' },
-        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 108,          col: '#7fd36b' },
-        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 31,       col: '#6ea8ff' },
-        { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 21,    col: '#ffc15d' },
-        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 14,      col: '#ff9a52' },
-        { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 161,     col: '#7fd36b' },
-        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 416,col: '#6ea8ff' },
-        { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,          col: '#ff6a3d' }
+        { id: 0, name: "Input Files",      x: 40,   y: 180, val: 174,          col: '#ff9a3c' },
+        { id: 1, name: "Safe Route",       x: 290,  y: 90,  val: 108,           col: '#7fd36b' },
+        { id: 2, name: "Complex Route",    x: 290,  y: 180, val: 31,        col: '#6ea8ff' },
+        { id: 3, name: "AST / Pattern",    x: 290,  y: 270, val: 21,     col: '#ffc15d' },
+        { id: 4, name: "Recovery",         x: 290,  y: 360, val: 14,       col: '#ff9a52' },
+        { id: 5, name: "Extracted Types",  x: 670,  y: 140, val: 161,      col: '#7fd36b' },
+        { id: 6, name: "Extracted Refs",   x: 670,  y: 290, val: 532, col: '#6ea8ff' },
+        { id: 7, name: "Risk Bucket",      x: 1000, y: 215, val: 0,           col: '#ff6a3d' }
     ];
 
     const links = [
-        { src: 0, tgt: 1, val: 108,                                                   col: '#7fd36b',     offset: 0.1 },
-        { src: 0, tgt: 2, val: 31,                                                col: '#6ea8ff',  offset: 0.3 },
-        { src: 0, tgt: 3, val: 21,                                             col: '#ffc15d',  offset: 0.5 },
-        { src: 0, tgt: 4, val: 14,                                               col: '#ff9a52', offset: 0.7 },
-        { src: 1, tgt: 5, val: 129,      col: '#7fd36b',     offset: 0.2 },
-        { src: 2, tgt: 6, val: 45, col: '#6ea8ff',  offset: 0.4 },
-        { src: 3, tgt: 5, val: 21,                   col: '#ffc15d',  offset: 0.6 },
-        { src: 4, tgt: 7, val: 1,                                      col: '#ff9a52', offset: 0.8 },
-        { src: 5, tgt: 7, val: 1,       col: '#ff8a3d',        offset: 0.9 },
-        { src: 6, tgt: 7, val: 1, col: '#ff6a3d',     offset: 0.55 }
+        { src: 0, tgt: 1, val: 108,                                                   col: '#7fd36b',     offset: 0.1, label: "Input → Safe Route" },
+        { src: 0, tgt: 2, val: 31,                                                col: '#6ea8ff',  offset: 0.3, label: "Input → Complex Route" },
+        { src: 0, tgt: 3, val: 21,                                             col: '#ffc15d',  offset: 0.5, label: "Input → AST / Pattern" },
+        { src: 0, tgt: 4, val: 14,                                               col: '#ff9a52', offset: 0.7, label: "Input → Recovery" },
+        { src: 1, tgt: 5, val: 129,      col: '#7fd36b',     offset: 0.2, label: "Safe Route → Extracted Types" },
+        { src: 2, tgt: 6, val: 45, col: '#6ea8ff',  offset: 0.4, label: "Complex Route → Extracted Refs" },
+        { src: 3, tgt: 5, val: 21,                   col: '#ffc15d',  offset: 0.6, label: "AST / Pattern → Extracted Types" },
+        { src: 4, tgt: 7, val: 1,                                      col: '#ff9a52', offset: 0.8, label: "Recovery → Risk Bucket" },
+        { src: 5, tgt: 7, val: 1,       col: '#ff8a3d',        offset: 0.9, label: "Extracted Types → Risk Bucket" },
+        { src: 6, tgt: 7, val: 1, col: '#ff6a3d',     offset: 0.55, label: "Extracted Refs → Risk Bucket" }
     ];
+
+    let hoveredNode = null;
+    let hoveredLink = null;
 
     p.setup = () => {
         let canvas = p.createCanvas(1180, 440);
@@ -577,8 +678,11 @@ const sankeySketch = (p) => {
 
     p.draw = () => {
         p.clear();
+        hoveredNode = null;
+        hoveredLink = null;
 
         p.noFill();
+
         links.forEach(link => {
             let source = nodes[link.src];
             let target = nodes[link.tgt];
@@ -591,8 +695,15 @@ const sankeySketch = (p) => {
             let c1x = x1 + (x2 - x1) * 0.42;
             let c2x = x1 + (x2 - x1) * 0.68;
 
-            p.strokeWeight(thickness);
-            p.drawingContext.shadowBlur = 15;
+            let tMid = 0.5;
+            let mx = p.bezierPoint(x1, c1x, c2x, x2, tMid);
+            let my = p.bezierPoint(y1, y1, y2, y2, tMid);
+            let isHover = p.dist(p.mouseX, p.mouseY, mx, my) <= Math.max(12, thickness * 0.6);
+
+            if (isHover) hoveredLink = { ...link, mx, my };
+
+            p.strokeWeight(isHover ? thickness + 2 : thickness);
+            p.drawingContext.shadowBlur = isHover ? 22 : 15;
             p.drawingContext.shadowColor = link.col;
 
             let alpha = p.map(p.sin(p.frameCount * 2 + link.src * 20), -1, 1, 60, 160);
@@ -614,11 +725,19 @@ const sankeySketch = (p) => {
         });
 
         nodes.forEach(node => {
-            p.drawingContext.shadowBlur = 15;
+            const isHover =
+                p.mouseX >= node.x &&
+                p.mouseX <= node.x + 140 &&
+                p.mouseY >= node.y &&
+                p.mouseY <= node.y + 44;
+
+            if (isHover) hoveredNode = node;
+
+            p.drawingContext.shadowBlur = isHover ? 22 : 15;
             p.drawingContext.shadowColor = node.col;
             p.fill('rgba(6,12,24,0.92)');
             p.stroke(node.col);
-            p.strokeWeight(1.5);
+            p.strokeWeight(isHover ? 2.2 : 1.5);
             p.rect(node.x, node.y, 140, 44, 8);
 
             p.drawingContext.shadowBlur = 0;
@@ -633,6 +752,45 @@ const sankeySketch = (p) => {
             p.textStyle(p.NORMAL);
             p.text(node.val, node.x + 12, node.y + 25);
         });
+
+        const hovered = hoveredNode || hoveredLink;
+
+        if (hovered) {
+            const boxW = 190;
+            const boxH = 74;
+            let tx = p.mouseX + 18;
+            let ty = p.mouseY - 14;
+            const color = hovered.col;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 18;
+            if (ty + boxH > p.height - 8) ty = p.height - boxH - 8;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = color;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(color);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+
+            if (hoveredNode) {
+                p.text(hoveredNode.name, tx + 12, ty + 10);
+                p.fill('#9fb3c8');
+                p.text(`Value: ${hoveredNode.val}`, tx + 12, ty + 30);
+                p.text(`Stage Node`, tx + 12, ty + 46);
+            } else {
+                p.text(hoveredLink.label, tx + 12, ty + 10);
+                p.fill('#9fb3c8');
+                p.text(`Flow: ${hoveredLink.val}`, tx + 12, ty + 30);
+                p.text(`Structural route`, tx + 12, ty + 46);
+            }
+        }
     };
 };
 new p5(sankeySketch);
@@ -660,23 +818,28 @@ new p5(sankeySketch);
 <script>
 const heatSketch = (p) => {
     const buckets = [
-        { val: 108, col: '#7fd36b' },
-        { val: 15, col: '#6ea8ff' },
-        { val: 8, col: '#ffc15d' },
-        { val: 0, col: '#ff9a52' },
-        { val: 7, col: '#ff6a3d' }
+        { label: "Safe", val: 108, col: '#7fd36b' },
+        { label: "Moderate", val: 15, col: '#6ea8ff' },
+        { label: "Sparse", val: 8, col: '#ffc15d' },
+        { label: "Anomaly", val: 0, col: '#ff9a52' },
+        { label: "Recovery Dep.", val: 7, col: '#ff6a3d' }
     ];
     const total = 138;
+    let segments = [];
+    let hovered = null;
 
     p.setup = () => {
         let w = document.getElementById('p5-heat-container').offsetWidth || 1000;
-        let canvas = p.createCanvas(w, 36);
+        let canvas = p.createCanvas(w, 52);
         canvas.parent('p5-heat-container');
         p.textFont("monospace");
     };
 
     p.draw = () => {
         p.clear();
+        segments = [];
+        hovered = null;
+
         let currentX = 0;
 
         buckets.forEach(b => {
@@ -685,14 +848,26 @@ const heatSketch = (p) => {
             let w = (b.val / total) * p.width;
             if (w < 6) w = 6;
 
+            const seg = { ...b, x: currentX, w: w };
+            segments.push(seg);
+
+            const isHover =
+                p.mouseX >= currentX &&
+                p.mouseX <= currentX + w &&
+                p.mouseY >= 0 &&
+                p.mouseY <= p.height;
+
+            if (isHover) hovered = seg;
+
             p.drawingContext.shadowColor = b.col;
-            p.drawingContext.shadowBlur = 10;
+            p.drawingContext.shadowBlur = isHover ? 24 : 16;
             p.fill(b.col);
             p.noStroke();
-            p.rect(currentX, 0, w - 2, p.height, 4);
+            p.rect(currentX, 4, w - 2, p.height - 8, 6);
 
             p.drawingContext.shadowBlur = 0;
-            if (w > 25) {
+
+            if (w > 28) {
                 p.fill('#050814');
                 p.textAlign(p.CENTER, p.CENTER);
                 p.textStyle(p.BOLD);
@@ -704,11 +879,39 @@ const heatSketch = (p) => {
         });
 
         let scanX = (p.frameCount * 5) % p.width;
-        p.drawingContext.shadowColor = '#fff';
-        p.drawingContext.shadowBlur = 15;
-        p.fill('rgba(255,255,255,0.9)');
+        p.drawingContext.shadowColor = '#ffffff';
+        p.drawingContext.shadowBlur = 18;
+        p.fill('rgba(255,255,255,0.92)');
         p.noStroke();
-        p.rect(scanX, 0, 3, p.height, 2);
+        p.rect(scanX, 2, 3, p.height - 4, 2);
+        p.drawingContext.shadowBlur = 0;
+
+        if (hovered) {
+            const boxW = 160;
+            const boxH = 60;
+            let tx = p.mouseX + 14;
+            let ty = p.mouseY - 48;
+
+            if (tx + boxW > p.width - 8) tx = p.mouseX - boxW - 14;
+            if (ty < 8) ty = 8;
+
+            p.drawingContext.shadowColor = hovered.col;
+            p.drawingContext.shadowBlur = 18;
+            p.fill('rgba(8,14,28,0.96)');
+            p.stroke(hovered.col);
+            p.strokeWeight(1.2);
+            p.rect(tx, ty, boxW, boxH, 10);
+
+            p.drawingContext.shadowBlur = 0;
+            p.noStroke();
+            p.fill('#f2f6ff');
+            p.textAlign(p.LEFT, p.TOP);
+            p.textSize(11);
+            p.text(hovered.label, tx + 12, ty + 10);
+            p.fill('#9fb3c8');
+            p.text(`Files: ${hovered.val}`, tx + 12, ty + 30);
+            p.text(`Share: ${(hovered.val / total * 100).toFixed(1)}%`, tx + 12, ty + 44);
+        }
     };
 };
 new p5(heatSketch);
@@ -744,7 +947,7 @@ new p5(heatSketch);
     <td>Program</td>
     <td>Scriptome</td>
     <td>AvaliaRoteiro\Program.cs</td>
-    <td>7</td>
+    <td>17</td>
 </tr>
 <tr>
     <td>EstatisticaForense</td>
@@ -756,7 +959,7 @@ new p5(heatSketch);
     <td>MotorDeIdentidade</td>
     <td>Scriptome.Fingerprint</td>
     <td>AvaliaRoteiro\Fingerprint\MotorDeIdentidade.cs</td>
-    <td>4</td>
+    <td>8</td>
 </tr>
 <tr>
     <td>MotorTaxonomia</td>
@@ -786,7 +989,7 @@ new p5(heatSketch);
     <td>RaizComposicao</td>
     <td>Scriptome.Infrastructure</td>
     <td>AvaliaRoteiro\Infrastructure\RaizComposicao.cs</td>
-    <td>33</td>
+    <td>63</td>
 </tr>
 <tr>
     <td>ScriptomeJsonExporter</td>
@@ -834,13 +1037,13 @@ new p5(heatSketch);
     <td>DivergenceLogger</td>
     <td>Scriptome.Fingerprint.Forense</td>
     <td>AvaliaRoteiro\Fingerprint\Forense\DivergenceLogger.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>DivergenceScore</td>
     <td>Scriptome.Fingerprint.Forense</td>
     <td>AvaliaRoteiro\Fingerprint\Forense\DivergenceScore.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IClassificadorBiometrico</td>
@@ -852,7 +1055,7 @@ new p5(heatSketch);
     <td>IClassificadorColetivo</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorColetivo.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>IClassificadorEtogramaV2</td>
@@ -870,19 +1073,19 @@ new p5(heatSketch);
     <td>IClassificadorJungV2</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorJungV2.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>IClassificadorLacanianoV2</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorLacanianoV2.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IClassificadorMBTIV2</td>
     <td>Scriptome.Fingerprint.Interfaces</td>
     <td>AvaliaRoteiro\Fingerprint\Interfaces\IClassificadorMBTIV2.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IClassificadorNarrativaV2</td>
@@ -984,7 +1187,7 @@ new p5(heatSketch);
     <td>MotorEtogramaV2</td>
     <td>Scriptome.Fingerprint.MotoresEtograma</td>
     <td>AvaliaRoteiro\Fingerprint\MotoresEtograma\MotorEtogramaV2.cs</td>
-    <td>3</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>MotorVetorialV2</td>
@@ -1050,13 +1253,13 @@ new p5(heatSketch);
     <td>ComparadorJung</td>
     <td>Global</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ComparadorJung.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>ExecutorValidacaoJung</td>
     <td>Scriptome.Infrastructure.Validador</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ExecutorValidacaoJung.cs</td>
-    <td>5</td>
+    <td>8</td>
 </tr>
 <tr>
     <td>ExportadorBaselineJung</td>
@@ -1074,7 +1277,7 @@ new p5(heatSketch);
     <td>ValidadorJung</td>
     <td>Scriptome.Infrastructure.Validador</td>
     <td>AvaliaRoteiro\Infrastructure\Validador\ValidadorJung.cs</td>
-    <td>7</td>
+    <td>9</td>
 </tr>
 <tr>
     <td>CalculadoraTensao</td>
@@ -1092,7 +1295,7 @@ new p5(heatSketch);
     <td>HeuristicaContextual</td>
     <td>Scriptome.Limbic.Algoritmos</td>
     <td>AvaliaRoteiro\Limbic\Algoritimos\HeuristicaContextual.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>LematizadorCatalyst</td>
@@ -1104,7 +1307,7 @@ new p5(heatSketch);
     <td>LematizadorVerbal</td>
     <td>Scriptome.Limbic.Algoritmos</td>
     <td>AvaliaRoteiro\Limbic\Algoritimos\LematizadorVerbal.cs</td>
-    <td>0</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>MotorDeriva6</td>
@@ -1128,7 +1331,7 @@ new p5(heatSketch);
     <td>ConfiguradorLimbic</td>
     <td>Scriptome.Limbic.Dados</td>
     <td>AvaliaRoteiro\Limbic\Dados\ConfiguradorLimbic.cs</td>
-    <td>1</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>ParametrosVader</td>
@@ -1152,13 +1355,13 @@ new p5(heatSketch);
     <td>IMotorDeriva</td>
     <td>Scriptome.Limbic.Interfaces</td>
     <td>AvaliaRoteiro\Limbic\Interfaces\IMotorDeriva.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>IMotorLexico</td>
     <td>Scriptome.Limbic.Interfaces</td>
     <td>AvaliaRoteiro\Limbic\Interfaces\IMotorLexico.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>IMotorLimbic</td>
@@ -1182,7 +1385,7 @@ new p5(heatSketch);
     <td>IPipelineLinguistico</td>
     <td>Scriptome.Linguistica</td>
     <td>AvaliaRoteiro\Limbic\Linguistica\DefinicoesLingusticas.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>LematizadorHibrido</td>
@@ -1194,7 +1397,7 @@ new p5(heatSketch);
     <td>ProcessadorLinguistico</td>
     <td>Scriptome.Linguistica</td>
     <td>AvaliaRoteiro\Limbic\Linguistica\ProcessadorLinguistico.cs</td>
-    <td>3</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>EntradaLimbic</td>
@@ -1242,13 +1445,13 @@ new p5(heatSketch);
     <td>AnalisadorContextual</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorContextual.cs</td>
-    <td>7</td>
+    <td>10</td>
 </tr>
 <tr>
     <td>AnalisadorLexico</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\AnalisadorLexico.cs</td>
-    <td>6</td>
+    <td>8</td>
 </tr>
 <tr>
     <td>ConstrutorDeCena</td>
@@ -1272,7 +1475,7 @@ new p5(heatSketch);
     <td>ContextoLimbic</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\ContextoLimbic.cs</td>
-    <td>4</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>MotorDeFusao</td>
@@ -1284,19 +1487,19 @@ new p5(heatSketch);
     <td>PipelineLimbic</td>
     <td>Scriptome.Limbic.Pipeline</td>
     <td>AvaliaRoteiro\Limbic\Pipeline\PipelineLimbic.cs</td>
-    <td>10</td>
+    <td>14</td>
 </tr>
 <tr>
     <td>VerificadorLimbic</td>
     <td>Scriptome.Testes</td>
     <td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbic.cs</td>
-    <td>14</td>
+    <td>23</td>
 </tr>
 <tr>
     <td>VerificadorDerivaCompleto</td>
     <td>Scriptome.Testes</td>
     <td>AvaliaRoteiro\Limbic\Testes\VerificadorLimbicCompleto.cs</td>
-    <td>3</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>AdaptadorBasico</td>
@@ -1344,13 +1547,13 @@ new p5(heatSketch);
     <td>ConversorFenotipo</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\ConversorFenotipo.cs</td>
-    <td>3</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ExtratorEtogramaAdapter</td>
     <td>Scriptome.Nucleo.Adaptadores</td>
     <td>AvaliaRoteiro\Nucleo\Adaptadores\ExtratorEtogramaAdapter.cs</td>
-    <td>3</td>
+    <td>5</td>
 </tr>
 <tr>
     <td>EspecialistaBeats</td>
@@ -1362,7 +1565,7 @@ new p5(heatSketch);
     <td>EspecialistaDinamica</td>
     <td>Scriptome.Nucleo.Especialistas</td>
     <td>AvaliaRoteiro\Nucleo\Especialistas\EspecialistaDinamica.cs</td>
-    <td>4</td>
+    <td>8</td>
 </tr>
 <tr>
     <td>EspecialistaDuracao</td>
@@ -1416,19 +1619,19 @@ new p5(heatSketch);
     <td>ScriptomeDashboardPipeline</td>
     <td>Scriptome.Infrastructure</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\ScriptomeDashboardPipeline.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>MotorFenotipoV2</td>
     <td>Scriptome.Nucleo.Fenotipo</td>
     <td>AvaliaRoteiro\Nucleo\Motores\MotorFenotipoV2.cs</td>
-    <td>10</td>
+    <td>17</td>
 </tr>
 <tr>
     <td>MotorSplicing</td>
     <td>Scriptome.Nucleo.Motores</td>
     <td>AvaliaRoteiro\Nucleo\Motores\MotorSplicing.cs</td>
-    <td>3</td>
+    <td>4</td>
 </tr>
 <tr>
     <td>ClassificadorJung</td>
@@ -1542,13 +1745,13 @@ new p5(heatSketch);
     <td>EstatisticasRoteiro</td>
     <td>Scriptome.Nucleo.Modelos</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Analise\EstatisticasRoteiro.cs</td>
-    <td>4</td>
+    <td>8</td>
 </tr>
 <tr>
     <td>PerfilPersonagem</td>
     <td>Scriptome.Nucleo.Modelos.Analise</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Analise\PerfilPersonagem.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>ResultadoAnalise</td>
@@ -1584,7 +1787,7 @@ new p5(heatSketch);
     <td>BaseImutavel</td>
     <td>Scriptome.Nucleo.Modelos.Genoma</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\BaseImutavel.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>GeneDiscursivo</td>
@@ -1596,7 +1799,7 @@ new p5(heatSketch);
     <td>MotorDeTranscricao</td>
     <td>Scriptome.Nucleo.Modelos.Genoma</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\MotorDeTranscricao.cs</td>
-    <td>4</td>
+    <td>6</td>
 </tr>
 <tr>
     <td>ResultadoSplice</td>
@@ -1620,19 +1823,19 @@ new p5(heatSketch);
     <td>RnaLimbic</td>
     <td>Scriptome.Nucleo.Modelos.Genoma</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Genoma\RnaLimbic.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>ResultadoModuloLimbic</td>
     <td>Scriptome.Nucleo.Modelos.Resultados</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Resultados\ResultadoModuloLimbic.cs</td>
-    <td>2</td>
+    <td>3</td>
 </tr>
 <tr>
     <td>Cena</td>
     <td>Scriptome.Nucleo.Modelos</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Script\Cena.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>ElementoCena</td>
@@ -1662,7 +1865,7 @@ new p5(heatSketch);
     <td>Roteiro</td>
     <td>Scriptome.Nucleo.Modelos.Script</td>
     <td>AvaliaRoteiro\Nucleo\Modelos\Script\Roteiro.cs</td>
-    <td>1</td>
+    <td>2</td>
 </tr>
 <tr>
     <td>AbaAnaliseDeCenas</td>

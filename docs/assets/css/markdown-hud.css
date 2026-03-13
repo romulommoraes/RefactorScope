@@ -1,0 +1,267 @@
+/* =========================================================
+   REFACTORSCOPE DOCS - TOTAL UNIFIED HUD STYLING
+   ========================================================= */
+
+.markdown-body {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--docs-text);
+    width: 100%;
+    max-width: 960px; 
+    margin: 0 auto;   
+    padding-bottom: 60px;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+}
+
+/* --- TÍTULOS E HIERARQUIA --- */
+.markdown-body h1, 
+.markdown-body h2, 
+.markdown-body h3 {
+    font-family: monospace;
+    color: var(--docs-accent);
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: normal;
+}
+
+.markdown-body h1 {
+    font-size: 2.2em;
+    border-bottom: 1px solid var(--docs-border);
+    padding-bottom: 8px;
+    color: var(--docs-text);
+}
+
+.markdown-body h2 {
+    font-size: 1.5em;
+    border-left: 4px solid var(--docs-accent);
+    padding-left: 12px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+}
+
+.markdown-body h3 { font-size: 1.2em; color: var(--docs-muted); }
+
+/* --- TEXTOS E LISTAS --- */
+.markdown-body p { margin-bottom: 1.2em; }
+.markdown-body ul, .markdown-body ol { margin-bottom: 1.2em; padding-left: 24px; }
+.markdown-body li { margin-bottom: 6px; }
+
+.markdown-body a {
+    color: var(--docs-accent);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--docs-border);
+}
+.markdown-body a:hover {
+    color: var(--docs-text);
+    border-bottom-color: var(--docs-text);
+}
+
+.markdown-body blockquote {
+    margin: 20px 0;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--docs-border);
+    border-left: 4px solid var(--docs-accent);
+    color: var(--docs-text);
+    border-radius: 4px;
+}
+
+/* --- TABELAS MARKDOWN --- */
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--docs-border);
+}
+.markdown-body th {
+    background: rgba(0,0,0,0.4);
+    color: var(--docs-accent);
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--docs-border);
+    font-family: monospace;
+}
+.markdown-body td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* --- BLOCOS DE CÓDIGO --- */
+.markdown-body pre {
+    background: #020408 !important; 
+    border: 1px solid var(--docs-border);
+    border-left: 3px solid var(--docs-accent);
+    padding: 16px;
+    overflow-x: auto;
+    margin: 24px 0;
+    border-radius: 4px;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+}
+.markdown-body code { font-family: Consolas, monospace; font-size: 13.5px; }
+.markdown-body p code, .markdown-body li code {
+    background: rgba(0,0,0,0.3);
+    padding: 2px 6px;
+    border: 1px solid var(--docs-border);
+    color: var(--docs-accent);
+    border-radius: 3px;
+}
+
+/* =========================================================
+   SPACESHIP DISPLAYS (GRIDS E MONITORES P5)
+   ========================================================= */
+.cyber-grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0 40px 0;
+    width: 100%;
+}
+
+@media (max-width: 900px) {
+    .cyber-grid-2x2 { grid-template-columns: 1fr; }
+}
+
+.chart-embedded {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--docs-border);
+    padding: 12px 0 0 0;
+    margin: 0;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 4px 12px rgba(0,0,0,0.2);
+    overflow: hidden;
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+    transition: border-color 0.3s ease;
+}
+
+.chart-embedded h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--docs-text);
+    font-family: monospace;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 8px var(--docs-accent);
+}
+
+.chart-embedded canvas { max-width: 100%; height: auto !important; display: block; }
+
+/* =========================================================
+   REFACTORSCOPE CLI - TACTICAL COMPACT TERMINAL
+   ========================================================= */
+
+.cyber-terminal {
+    background: #09090c !important;
+    border: 1px solid var(--docs-border);
+    border-radius: 6px;
+    margin: 24px 0 40px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.9);
+    font-family: 'Consolas', 'Monaco', 'Lucida Console', monospace !important;
+    display: flex;
+    flex-direction: column;
+    height: 480px;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.terminal-header {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+
+.terminal-header .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.terminal-header .dot.red { background: #ff5f56; }
+.terminal-header .dot.yellow { background: #ffbd2e; }
+.terminal-header .dot.green { background: #27c93f; }
+.terminal-header .title { margin-left: auto; margin-right: auto; font-size: 11px; color: #888; }
+
+.terminal-body { 
+    padding: 12px 16px; 
+    white-space: pre; 
+    overflow-y: auto;
+    overflow-x: auto;
+    flex-grow: 1;
+    background: #09090c !important;
+    color: #cccccc !important;
+    /* Espaçamento Compacto RS */
+    line-height: 1.15 !important; 
+    font-size: 12.5px !important;
+}
+
+/* Scrollbar do Terminal */
+.terminal-body::-webkit-scrollbar { width: 8px; height: 8px; }
+.terminal-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.terminal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.terminal-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+/* Linhas que surgem progressivamente */
+.term-line {
+    height: 0;
+    opacity: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.cyber-terminal.is-playing .term-line {
+    animation: revealLine 0.05s ease forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes revealLine {
+    to { 
+        height: auto; 
+        opacity: 1; 
+        visibility: visible;
+        margin-bottom: 1px !important;
+    }
+}
+
+/* --- CORES NATIVAS DO CONSOLE (OVERRIDES OBRIGATÓRIOS) --- */
+.cli-green { color: #55ff55 !important; }
+.cli-pink { color: #ff55ff !important; }
+.cli-yellow { color: #ffff55 !important; }
+.cli-cyan { color: #55ffff !important; }
+.cli-blue { color: #55aaff !important; }
+.cli-red { color: #ff5555 !important; }
+.cli-white { color: #ffffff !important; }
+.cli-bold { font-weight: bold !important; color: #ffffff !important; }
+.cli-dim { color: #666666 !important; }
+
+/* Box e Divisor Tático */
+.cli-box { border: 1px solid #55ffff; padding: 2px 8px; margin: 8px 0; display: block; width: fit-content; }
+.cli-divider { color: #55ffff; margin: 12px 0 4px 0; font-weight: bold; border-bottom: 1px solid #333; display: block; }
+
+.blink-cursor { animation: blink 1s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* =========================================================
+   COMPONENTES EXTRAS (CARDS E SHOWCASE)
+   ========================================================= */
+.selector-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--docs-border);
+    padding: 20px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+    transition: all 0.3s ease;
+}
+.selector-card:hover { border-color: var(--docs-accent); background: rgba(255,255,255,0.03); }
+.selector-card .card-kicker { font-family: monospace; color: var(--docs-accent); font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+.selector-card h3 { margin: 0 0 12px 0 !important; font-size: 16px !important; color: var(--docs-text) !important; text-shadow: none !important; }
+.selector-card p { margin: 0; font-size: 13px; color: var(--docs-muted); }
+
+.image-showcase { background: #000; padding: 4px; margin-top: 24px; border: 1px solid var(--docs-border); }
+.image-showcase img { margin: 0 !important; filter: contrast(1.1); max-width: 100%; display: block; }

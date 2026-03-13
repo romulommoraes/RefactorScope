@@ -1,0 +1,216 @@
+{
+  "meta": {
+    "project": "RefactorScope",
+    "generatedAtUtc": "2026-03-12T00:00:00Z",
+    "overallLineCoverage": 46.53,
+    "coveredLines": 14812,
+    "totalLines": 31832,
+    "suiteStatus": "healthy-mvp-core"
+  },
+  "kpis": [
+    {
+      "label": "Global Coverage",
+      "value": 46.53,
+      "unit": "%"
+    },
+    {
+      "label": "Covered Lines",
+      "value": 14812,
+      "unit": "lines"
+    },
+    {
+      "label": "Total Lines",
+      "value": 31832,
+      "unit": "lines"
+    },
+    {
+      "label": "Distance to 50%",
+      "value": 3.47,
+      "unit": "%"
+    }
+  ],
+  "charts": {
+    "rootDomainCoverageBar": {
+      "title": "Coverage by Root Domain",
+      "type": "bar-horizontal",
+      "targetLine": 50,
+      "items": [
+        {
+          "name": "RefactorScope.Estimation",
+          "totalLines": 206,
+          "coveredLines": 188,
+          "coverage": 91.26,
+          "status": "good"
+        },
+        {
+          "name": "RefactorScope.Statistics",
+          "totalLines": 84,
+          "coveredLines": 66,
+          "coverage": 78.57,
+          "status": "attention"
+        },
+        {
+          "name": "RefactorScope.Execution",
+          "totalLines": 148,
+          "coveredLines": 98,
+          "coverage": 66.22,
+          "status": "attention"
+        },
+        {
+          "name": "RefactorScope.Parsers",
+          "totalLines": 2396,
+          "coveredLines": 1507,
+          "coverage": 62.90,
+          "status": "attention"
+        },
+        {
+          "name": "RefactorScope.Core",
+          "totalLines": 3514,
+          "coveredLines": 1718,
+          "coverage": 48.89,
+          "status": "critical"
+        },
+        {
+          "name": "RefactorScope.Exporters",
+          "totalLines": 22025,
+          "coveredLines": 10253,
+          "coverage": 46.55,
+          "status": "critical"
+        },
+        {
+          "name": "RefactorScope.Analyzers",
+          "totalLines": 1763,
+          "coveredLines": 588,
+          "coverage": 33.35,
+          "status": "critical"
+        },
+        {
+          "name": "RefactorScope.CLI",
+          "totalLines": 1004,
+          "coveredLines": 284,
+          "coverage": 28.29,
+          "status": "critical"
+        },
+        {
+          "name": "RefactorScope.Infrastructure",
+          "totalLines": 692,
+          "coveredLines": 110,
+          "coverage": 15.90,
+          "status": "critical"
+        }
+      ]
+    },
+    "criticalClassesBar": {
+      "title": "Largest Low-Coverage Classes",
+      "type": "bar-horizontal",
+      "items": [
+        {
+          "name": "ModuleRouteMapRenderer",
+          "namespace": "RefactorScope.Exporters.Dashboards.Renderers",
+          "totalLines": 1680,
+          "coverage": 0.00
+        },
+        {
+          "name": "SimpleStructureMapRenderer",
+          "namespace": "RefactorScope.Exporters.Dashboards.Renderers",
+          "totalLines": 1638,
+          "coverage": 0.00
+        },
+        {
+          "name": "StructuralInventoryExporter",
+          "namespace": "RefactorScope.Exporters.Dashboards",
+          "totalLines": 1418,
+          "coverage": 3.95
+        },
+        {
+          "name": "DashboardMetricsCalculator",
+          "namespace": "RefactorScope.Exporters.Projections",
+          "totalLines": 958,
+          "coverage": 35.49
+        },
+        {
+          "name": "QualityDashboardExporter",
+          "namespace": "RefactorScope.Exporters.Dashboards",
+          "totalLines": 888,
+          "coverage": 0.00
+        }
+      ]
+    }
+  },
+  "topNamespaces": [
+    {
+      "name": "RefactorScope.Execution.Dump.Strategies",
+      "coverage": 100.0
+    },
+    {
+      "name": "RefactorScope.Execution.Dump",
+      "coverage": 100.0
+    },
+    {
+      "name": "RefactorScope.Estimation.Scoring",
+      "coverage": 100.0
+    },
+    {
+      "name": "RefactorScope.Estimation.Classification",
+      "coverage": 100.0
+    },
+    {
+      "name": "RefactorScope.Exporters.Dumps",
+      "coverage": 96.67
+    }
+  ],
+  "bottomNamespaces": [
+    {
+      "name": "RefactorScope.Core.Structure",
+      "coverage": 0.0
+    },
+    {
+      "name": "RefactorScope.Exporters.Datasets",
+      "coverage": 0.0
+    },
+    {
+      "name": "RefactorScope.Exporters.Dashboards.Renderers",
+      "coverage": 0.0
+    },
+    {
+      "name": "RefactorScope.Core.Reporting.Export",
+      "coverage": 0.0
+    },
+    {
+      "name": "RefactorScope.Analyzers.Solid.Rules",
+      "coverage": 0.0
+    }
+  ],
+  "hotspots": [
+    {
+      "className": "ParserArenaDashboardExporter",
+      "method": "GenerateHtml(...)",
+      "complexity": 108,
+      "risk": "extreme"
+    },
+    {
+      "className": "TableRenderer",
+      "method": "Render(...)",
+      "complexity": 108,
+      "risk": "extreme"
+    },
+    {
+      "className": "FileSize",
+      "method": "GetSuffix()",
+      "complexity": 79,
+      "risk": "extreme"
+    },
+    {
+      "className": "CSharpRegexParser",
+      "method": "PrepareStructuralScanSource(...)",
+      "complexity": 72,
+      "risk": "extreme"
+    },
+    {
+      "className": "TerminalRenderer",
+      "method": "ResolveModuleColor(...)",
+      "complexity": 66,
+      "risk": "extreme"
+    }
+  ]
+}

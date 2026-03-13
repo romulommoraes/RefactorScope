@@ -3,7 +3,7 @@
 > Executive textual companion for the current analysis snapshot.
 > This report consolidates parser telemetry, structural signals, architectural indicators and readiness interpretation.
 
-- **Generated at:** 2026-03-12 02:08 UTC
+- **Generated at:** 2026-03-12 17:59 UTC
 - **Target scope:** `C:\Users\romul\source\repos\RefactorScope`
 - **Parser:** `HybridSelectiveParser`
 - **Confidence band:** `High`
@@ -43,21 +43,21 @@ This section describes how the parser behaved during the run and how much struct
 | Files | `189` |
 | Types | `190` |
 | References | `696` |
-| Execution Time | `5706 ms` |
+| Execution Time | `860 ms` |
 | Types / File | `1,01` |
 | References / Type | `3,66` |
-| ms / File | `30,19` |
-| ms / Type | `30,03` |
-| Estimated Memory | `12.017.952 bytes` |
+| ms / File | `4,55` |
+| ms / Type | `4,53` |
+| Estimated Memory | `5.092.120 bytes` |
 | Sparse Extraction | `No` |
 | Anomaly Detected | `No` |
-| Extraction Index | `83,03` |
+| Extraction Index | `88,13` |
 
 ### Context
 
 - Parser confidence is high. The extracted structural model appears reliable for downstream analysis.
 - Structural density appears healthy. Parsed types and references show consistent extraction volume.
-- Parsing cost is elevated for this scope. Compare against other parser strategies if performance becomes relevant.
+- Parsing cost remains in an acceptable range for the extracted structural volume.
 - No sparse extraction signal was detected. Structural density appears compatible with a healthy parse.
 - No anomaly flag was raised during parsing telemetry.
 

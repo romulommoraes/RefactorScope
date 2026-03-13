@@ -679,6 +679,156 @@
       "FromType": "VerificadorDerivaCompleto",
       "ToType": "ResultadoDeriva",
       "Kind": 0
+    },
+    {
+      "FromType": "HeuristicaContextual",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "LematizadorVerbal",
+      "ToType": "token",
+      "Kind": 0
+    },
+    {
+      "FromType": "LematizadorVerbal",
+      "ToType": "token",
+      "Kind": 2
+    },
+    {
+      "FromType": "ConfiguradorLimbic",
+      "ToType": "ParametrosVader",
+      "Kind": 1
+    },
+    {
+      "FromType": "ConfiguradorLimbic",
+      "ToType": "ParametrosVader",
+      "Kind": 3
+    },
+    {
+      "FromType": "IMotorDeriva",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "IMotorLexico",
+      "ToType": "TokenPontuado",
+      "Kind": 3
+    },
+    {
+      "FromType": "IPipelineLinguistico",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "LematizadorHibrido",
+      "Kind": 1
+    },
+    {
+      "FromType": "ProcessadorLinguistico",
+      "ToType": "Token",
+      "Kind": 3
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "GeneDiscursivo",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "BaseImutavel",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorContextual",
+      "ToType": "ImpactoVetorial",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorLexico",
+      "ToType": "GeneDiscursivo",
+      "Kind": 1
+    },
+    {
+      "FromType": "AnalisadorLexico",
+      "ToType": "BaseImutavel",
+      "Kind": 1
+    },
+    {
+      "FromType": "ContextoLimbic",
+      "ToType": "AcumuladorForense",
+      "Kind": 1
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "ConstrutorDeCena",
+      "Kind": 1
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "AnalisadorLexico",
+      "Kind": 1
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "AnalisadorContextual",
+      "Kind": 1
+    },
+    {
+      "FromType": "PipelineLimbic",
+      "ToType": "cena",
+      "Kind": 2
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "BancoDeDadosLexico",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "ParametrosVader",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "MotorDeriva6",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "MotorLimbic",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "VerificadorDerivaCompleto",
+      "Kind": 2
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "MotorDeTranscricao",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "GeneDiscursivo",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorLimbic",
+      "ToType": "BaseImutavel",
+      "Kind": 1
+    },
+    {
+      "FromType": "VerificadorDerivaCompleto",
+      "ToType": "ProcessadorLinguistico",
+      "Kind": 1
     }
   ]
 }

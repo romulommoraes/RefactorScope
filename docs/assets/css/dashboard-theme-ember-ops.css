@@ -1,0 +1,240 @@
+:root {
+    /* Fundos: Preto Carbonizado (Carvão) - Adeus Marrom */
+    --bg: #0a0200;
+    --bg-elev: #140500;
+    --bg-soft: #1f0a00;
+    --panel: rgba(20, 5, 0, 0.94);
+    --panel-2: rgba(15, 3, 0, 0.96);
+    
+    /* Textos: Branco Quente e Laranja Queimado (Brasa esfriando) */
+    --text: #fff4eb;
+    --text-soft: #ffc299;
+    --text-dim: #cc5214;
+    
+    /* Linhas: Brasa Escura e Fogo */
+    --line: #4d1200;
+    --line-strong: #801e00;
+    --line-hot: #ff3d00;
+    
+    /* Destaques: Magma, Laranja Vivo e Amarelo Fogo */
+    --accent: #ff3d00;
+    --accent-2: #ff6600;
+    --accent-3: #ff8c00;
+    
+    /* Cores de Status (Adaptadas para brilhar no escuro) */
+    --good: #00ff66;
+    --warn: #ffb800;
+    --bad: #ff0033;
+    
+    /* Sombras Emitindo Calor (Glow Laranja/Vermelho) */
+    --shadow-soft: 0 0 0 1px rgba(255, 61, 0, 0.15), 0 0 18px rgba(255, 61, 0, 0.10);
+    --shadow-strong: 0 0 0 1px rgba(255, 61, 0, 0.35), 0 0 24px rgba(255, 61, 0, 0.25), 0 0 48px rgba(255, 61, 0, 0.15);
+}
+
+html, body {
+    /* Gradientes imitando calor vindo das quinas */
+    background: radial-gradient(circle at top right, rgba(255, 61, 0, 0.15), transparent 28%), 
+                radial-gradient(circle at center left, rgba(255, 0, 51, 0.08), transparent 24%), 
+                linear-gradient(180deg, #0a0200 0%, #050100 100%);
+    color: var(--text);
+}
+
+body {
+    font-family: Inter, Segoe UI, Arial, sans-serif;
+    letter-spacing: 0.1px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    /* Grid tático alaranjado */
+    background-image: linear-gradient(rgba(255, 61, 0, 0.1) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255, 61, 0, 0.1) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mix-blend-mode: screen;
+}
+
+a {
+    color: var(--accent-2);
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(255, 61, 0, 0.6);
+}
+
+.topbar,
+.page-header,
+.panel,
+.kpi,
+.nav-card,
+.note,
+.table-wrap,
+pre.tree-view {
+    background: linear-gradient( 180deg, rgba(20, 5, 0, 0.96) 0%, rgba(10, 2, 0, 0.96) 100% );
+    color: var(--text);
+    border-color: var(--line-strong) !important;
+    box-shadow: var(--shadow-soft);
+}
+
+.panel:hover,
+.kpi:hover,
+.nav-card:hover {
+    border-color: var(--line-hot) !important;
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-1px);
+    transition: all 0.18s ease;
+}
+
+.brand-kicker,
+.label,
+.subtitle,
+.hint,
+.run-meta,
+.section-title h2,
+.section-title .line,
+.note,
+.clean li,
+caption,
+th,
+td {
+    color: var(--text-soft);
+}
+
+h1, h2, h3, h4, .value {
+    color: var(--text);
+}
+
+.section-title .line {
+    /* Feixe de luz ardente separando as sessões */
+    background: linear-gradient( 90deg, rgba(255, 61, 0, 0.95), rgba(255, 102, 0, 0.45), transparent );
+    height: 2px;
+    box-shadow: 0 0 14px rgba(255, 61, 0, 0.5);
+}
+
+.kpi .label {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kpi .value {
+    color: var(--accent-2);
+    text-shadow: 0 0 12px rgba(255, 61, 0, 0.4);
+}
+
+/* Status refletindo Fogo, Alerta e Sucesso Neon */
+.kpi.good { border-color: rgba(0, 255, 102, 0.65) !important; }
+.kpi.warning { border-color: rgba(255, 184, 0, 0.75) !important; }
+.kpi.alert { border-color: rgba(255, 0, 51, 0.8) !important; }
+
+.badge {
+    border: 1px solid var(--line-strong);
+    background: rgba(255, 61, 0, 0.12);
+    color: var(--text);
+    box-shadow: inset 0 0 10px rgba(255, 61, 0, 0.10);
+}
+
+.badge.green { border-color: rgba(0, 255, 102, 0.7); color: #99ffc2; }
+.badge.amber { border-color: rgba(255, 184, 0, 0.78); color: #ffe066; }
+.badge.red { border-color: rgba(255, 0, 51, 0.82); color: #ff99ad; }
+
+.badge-dot {
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th {
+    background: rgba(255, 61, 0, 0.12);
+    color: #ffc299;
+    border-bottom: 1px solid var(--line-strong);
+}
+
+td {
+    border-bottom: 1px solid rgba(255, 61, 0, 0.25);
+    color: var(--text);
+}
+
+tr:hover td {
+    background: rgba(255, 61, 0, 0.08);
+}
+
+.metric-good {
+    color: #00ff66;
+    text-shadow: 0 0 10px rgba(0, 255, 102, 0.25);
+}
+
+.metric-warn {
+    color: #ffb800;
+    text-shadow: 0 0 10px rgba(255, 184, 0, 0.25);
+}
+
+.metric-bad {
+    color: #ff0033;
+    text-shadow: 0 0 10px rgba(255, 0, 51, 0.25);
+}
+
+.nav-card .title,
+.nav-card h3 {
+    color: var(--accent-2);
+    text-shadow: 0 0 10px rgba(255, 61, 0, 0.35);
+}
+
+.nav-card .module,
+.nav-card .description {
+    color: var(--text-soft);
+}
+
+.link-table a {
+    color: var(--accent-2);
+    font-weight: 600;
+}
+
+.link-table a:hover {
+    color: #ffffff;
+}
+
+.note {
+    border-left: 3px solid var(--accent);
+    color: var(--text-soft);
+    background: rgba(255, 61, 0, 0.05); /* Fundo sutil quente */
+}
+
+pre.tree-view {
+    color: #ffc299;
+    border: 1px solid rgba(255, 61, 0, 0.25);
+}
+
+/* Gráficos intensificados */
+.chart-container .charts-css td {
+    background: linear-gradient( 90deg, rgba(255, 61, 0, 0.95), rgba(255, 102, 0, 0.80) ) !important;
+    box-shadow: 0 0 12px rgba(255, 61, 0, 0.30);
+}
+
+.chart-container .charts-css th {
+    color: var(--text-soft);
+    background: transparent;
+}
+
+.chart-container svg,
+.chart-container .dashboard-svg-theme {
+    background: radial-gradient(circle at center, #1a0600 0%, #0a0200 100%) !important;
+    border: 1px solid rgba(255, 61, 0, 0.25);
+    box-shadow: var(--shadow-soft);
+    border-radius: 14px;
+}
+
+.chart-container .dashboard-radar-svg text,
+.chart-container .dashboard-sankey-svg text,
+.chart-container .dashboard-donut-svg text,
+.chart-container .dashboard-constellation-svg text {
+    fill: var(--text-soft);
+}

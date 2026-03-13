@@ -1,0 +1,253 @@
+:root {
+    /* Fundos baseados em Preto e Cinza muito escuro */
+    --bg: #050505;
+    --bg-elev: #0a0a08;
+    --bg-soft: #12100a;
+    --panel: rgba(15, 13, 8, 0.94);
+    --panel-2: rgba(10, 8, 5, 0.96);
+    
+    /* Textos (Branco amarelado para manter o contraste sem cansar a vista) */
+    --text: #fffce6;
+    --text-soft: #e6dca8;
+    --text-dim: #a69a68;
+    
+    /* Linhas e Bordas (Tons de Mostarda e Dourado Escuro) */
+    --line: #403600;
+    --line-strong: #8c7700;
+    --line-hot: #ffdb00;
+    
+    /* Cores de Destaque (Amarelo Kill Bill e Vermelho Sangue) */
+    --accent: #ffdb00;
+    --accent-2: #ffe94d;
+    --accent-3: #e60000; /* Vermelho Sangue Tarantino */
+    
+    /* Semântica (Bom = Amarelo, Aviso = Laranja, Ruim = Vermelho) */
+    --good: #ffdb00;
+    --warn: #ff8c00;
+    --bad: #e60000;
+    
+    /* Sombras baseadas no Amarelo e Vermelho */
+    --shadow-soft: 0 0 0 1px rgba(255, 219, 0, 0.15), 0 0 18px rgba(255, 219, 0, 0.08);
+    --shadow-strong: 0 0 0 1px rgba(255, 219, 0, 0.35), 0 0 22px rgba(255, 219, 0, 0.25), 0 0 44px rgba(230, 0, 0, 0.15);
+}
+
+html, body {
+    background: radial-gradient(circle at top center, rgba(255, 219, 0, 0.12), transparent 28%), 
+                radial-gradient(circle at center right, rgba(230, 0, 0, 0.05), transparent 20%), 
+                linear-gradient(180deg, #050505 0%, #000000 100%);
+    color: var(--text);
+}
+
+body {
+    font-family: Inter, Segoe UI, Arial, sans-serif;
+    letter-spacing: 0.15px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.12;
+    /* Grid Amarelo Tático */
+    background-image: linear-gradient(rgba(255, 219, 0, 0.08) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255, 219, 0, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mix-blend-mode: screen;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    /* Scanlines vermelhas sutis (estilo cinema) */
+    background: repeating-linear-gradient( 180deg, rgba(230, 0, 0, 0.05) 0px, rgba(230, 0, 0, 0.05) 1px, transparent 2px, transparent 4px );
+}
+
+a {
+    color: var(--accent-3); /* Links em Vermelho Sangue */
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(230, 0, 0, 0.65);
+}
+
+.topbar,
+.page-header,
+.panel,
+.kpi,
+.nav-card,
+.note,
+.table-wrap,
+pre.tree-view {
+    background: linear-gradient( 180deg, rgba(15, 13, 8, 0.96) 0%, rgba(8, 6, 4, 0.96) 100% );
+    color: var(--text);
+    border-color: var(--line-strong) !important;
+    box-shadow: var(--shadow-soft);
+}
+
+.panel:hover,
+.kpi:hover,
+.nav-card:hover {
+    border-color: var(--line-hot) !important;
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-1px);
+    transition: all 0.18s ease;
+}
+
+.brand-kicker,
+.label,
+.subtitle,
+.hint,
+.run-meta,
+.section-title h2,
+.section-title .line,
+.note,
+.clean li,
+caption,
+th,
+td {
+    color: var(--text-soft);
+}
+
+h1, h2, h3, h4, .value {
+    color: var(--text);
+    text-shadow: 0 0 8px rgba(255, 219, 0, 0.15);
+}
+
+.section-title .line {
+    /* Linha divisória de Amarelo para Vermelho */
+    background: linear-gradient( 90deg, rgba(255, 219, 0, 0.95), rgba(230, 0, 0, 0.65), transparent );
+    height: 2px;
+    box-shadow: 0 0 12px rgba(255, 219, 0, 0.35);
+}
+
+.kpi .label {
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kpi .value {
+    color: var(--accent-2);
+    text-shadow: 0 0 14px rgba(255, 219, 0, 0.35);
+}
+
+.kpi.good { border-color: rgba(255, 219, 0, 0.75) !important; }
+.kpi.warning { border-color: rgba(255, 140, 0, 0.78) !important; }
+.kpi.alert { border-color: rgba(230, 0, 0, 0.82) !important; }
+
+.badge {
+    border: 1px solid var(--line-strong);
+    background: rgba(255, 219, 0, 0.10);
+    color: var(--text);
+    box-shadow: inset 0 0 10px rgba(255, 219, 0, 0.10);
+}
+
+.badge.green {
+    /* O antigo verde agora é o Amarelo "Tudo Certo" */
+    border-color: rgba(255, 219, 0, 0.72);
+    color: #fffce6;
+}
+
+.badge.amber {
+    /* O antigo amber agora é um laranja vibrante */
+    border-color: rgba(255, 140, 0, 0.78);
+    color: #ffd699;
+}
+
+.badge.red {
+    /* O vermelho da espada */
+    border-color: rgba(230, 0, 0, 0.82);
+    color: #ff9999;
+}
+
+.badge-dot {
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+}
+
+table { border-collapse: collapse; }
+
+th {
+    background: rgba(255, 219, 0, 0.08);
+    color: #ffe94d;
+    border-bottom: 1px solid var(--line-strong);
+}
+
+td {
+    border-bottom: 1px solid rgba(140, 119, 0, 0.35);
+    color: var(--text);
+}
+
+tr:hover td {
+    background: rgba(255, 219, 0, 0.06);
+}
+
+.metric-good {
+    color: #ffe94d;
+    text-shadow: 0 0 10px rgba(255, 219, 0, 0.30);
+}
+
+.metric-warn {
+    color: #ffb84d;
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.25);
+}
+
+.metric-bad {
+    color: #ff3333;
+    text-shadow: 0 0 10px rgba(230, 0, 0, 0.35);
+}
+
+.nav-card .title,
+.nav-card h3 {
+    color: var(--accent-2);
+    text-shadow: 0 0 10px rgba(255, 219, 0, 0.30);
+}
+
+.nav-card .module,
+.nav-card .description {
+    color: var(--text-soft);
+}
+
+.link-table a {
+    color: var(--accent-3);
+    font-weight: 600;
+}
+
+.link-table a:hover { color: #ffffff; }
+
+.note {
+    border-left: 3px solid var(--accent);
+    color: var(--text-soft);
+    background: rgba(255, 219, 0, 0.04);
+}
+
+pre.tree-view {
+    color: #e6dca8;
+    border: 1px solid rgba(255, 219, 0, 0.25);
+}
+
+/* Gráficos / SVG */
+.chart-container .charts-css td {
+    background: linear-gradient( 90deg, rgba(255, 219, 0, 0.95), rgba(230, 0, 0, 0.80) ) !important;
+    box-shadow: 0 0 12px rgba(255, 219, 0, 0.25);
+}
+
+.chart-container .charts-css th {
+    color: var(--text-soft);
+    background: transparent;
+}
+
+.chart-container svg,
+.chart-container .dashboard-svg-theme {
+    background: radial-gradient(circle at center, #14120a 0%, #050402 100%) !important;
+    border: 1px solid rgba(255, 219, 0, 0.25);
+    box-shadow: var(--shadow-soft);
+    border-radius: 14px;
+}
