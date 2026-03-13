@@ -6,6 +6,14 @@ O **RefactorScope** é uma ferramenta de **análise estrutural estática** proje
 
 Em vez de focar apenas em erros de sintaxe ou formatação de código (como os linters tradicionais), o RefactorScope atua como um **scanner de higiene estrutural forense**. Ele mapeia dependências, avalia a aderência aos princípios arquiteturais e emite painéis visuais ricos para guiar refatorações complexas.
 
+## 🌐 Site Oficial
+
+O projeto também possui uma versão navegável da documentação publicada em:
+
+**https://romulommoraes.github.io/RefactorScope**
+
+O site funciona como uma **knowledge base visual** do projeto, reunindo a documentação técnica, páginas de apoio, sumários de testes e artefatos explicativos em uma interface mais amigável para consulta, portfólio e apresentação.
+
 ---
 
 ## 💡 A Origem (Projeto Scriptome)
@@ -28,17 +36,21 @@ O RefactorScope foi então extraído como uma **ferramenta independente e agnós
 
 ## 📚 Documentação (Knowledge Base)
 
-Para manter este repositório limpo, a documentação detalhada foi dividida por domínios. Consulte os guias na pasta [`docs/`](./docs/) para entender o funcionamento interno do RefactorScope:
+Para manter este repositório limpo, a documentação detalhada foi dividida por domínios. Abaixo está o **mapeamento atual dos arquivos Markdown em português**, conforme a estrutura do site e da base documental.
 
-| Módulo | Documento | Descrição |
-| :--- | :--- | :--- |
-| **Visão Geral** | [Arquitetura e Fluxo](./docs/Architecture.md) | O pipeline de execução, motores e a árvore de domínios. |
-| **Motor de Extração** | [Parser Design](./docs/Parser-design.md) | Como funcionam as estratégias de extração (Regex, Textual, Híbrido). |
-| **Regras e Negócio** | [Metodologia e Métricas](./docs/Methodology.md) | O detalhamento do Refinamento Probabilístico, RDI (Esforço) e *Smell Index*. |
-| **Visualização** | [Artefatos de Exportação](./docs/Outputs.md) | A anatomia dos Dashboards HTML e o uso da CLI. |
-| **Testes** | [Suíte de Testes](./docs/Tests.md) | A cobertura forense do MVP e cenários validados. |
-| **Governança** | [Registros de Decisão (ADRs)](./docs/ADRs.md) | O histórico de decisões arquiteturais do projeto. |
-| **Referência Rápida**| [Apêndice Técnico](./docs/Appendix.md) | Resumo consolidado das fórmulas e limites do sistema. |
+| Rota | Arquivo | Título | Kicker | Descrição |
+| :--- | :--- | :--- | :--- | :--- |
+| `index` | `content/index.md` | Introdução | Overview | Porta de entrada do projeto, proposta, posicionamento e visão geral do RefactorScope. |
+| `architecture` | `content/architecture.md` | Arquitetura | System Core | Pipeline de execução, motores internos, fluxo analítico e organização estrutural. |
+| `parser-design` | `content/parser-design.md` | Design do Parser | Engines | Estratégias de parsing, trade-offs entre abordagens e funcionamento dos motores de extração. |
+| `methodology` | `content/methodology.md` | Metodologia | Analysis | Regras heurísticas, métricas, thresholds, refinamento probabilístico e critérios de análise. |
+| `outputs` | `content/outputs.md` | Outputs | Results | Anatomia dos relatórios, dashboards HTML, dumps e demais artefatos exportados. |
+| `adrs` | `content/adrs.md` | Decisões (ADRs) | Governance | Registro das decisões arquiteturais que moldaram o projeto. |
+| `tests` | `content/tests.md` | Testes | Quality | Estrutura da suíte de testes, escopo coberto e garantias do MVP. |
+| `tests-dashboard` | `content/tests-dashboard.md` | Dashboard de Testes | Visual Telemetry | Documentação da camada visual voltada à leitura dos resultados de teste. |
+| `test-summary` | `content/testesummary.md` | Sumário de Testes | Quality | Leitura executiva do panorama de cobertura, proteção analítica e lacunas restantes. |
+| `statistics` | `content/statistics.md` | Estatísticas | Metrics | Métricas quantitativas, telemetria estrutural e leitura estatística do código analisado. |
+| `appendix` | `content/appendix.md` | Apêndice | Extra | Referência rápida consolidada com fórmulas, limites e observações técnicas. |
 
 ---
 

@@ -1,5 +1,7 @@
 🧬 RefactorScope (English)
 
+**https://romulommoraes.github.io/RefactorScope**
+
 RefactorScope is a static structural analysis tool designed to audit, visualize, and ensure the architectural health of C# codebases.
 
 Instead of focusing only on syntax errors or code formatting (like traditional linters), RefactorScope acts as a forensic structural hygiene scanner. It maps dependencies, evaluates adherence to architectural principles, and outputs rich visual dashboards to guide complex refactoring efforts.
@@ -31,6 +33,8 @@ Visualization	Export Artifacts	The anatomy of HTML Dashboards and the CLI interf
 Testing	Test Suite	Forensic coverage of the MVP and validated scenarios.
 Governance	Decision Records (ADRs)	The project's architectural decision history.
 Quick Reference	Technical Appendix	A consolidated summary of system formulas and thresholds.
+
+
 ⚙️ Configuration (refactorscope.json)
 
 RefactorScope's entire behavior is governed by the refactorscope.json file, which must be placed in your execution root.
