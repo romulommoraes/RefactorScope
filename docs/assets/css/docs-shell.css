@@ -439,4 +439,24 @@ body::after {
         flex-direction: column;
         align-items: flex-start;
     }
+    /* (max-width: 850px) */
+    
+    html, body {
+        overflow-y: auto !important; /* Força o navegador a permitir rolagem */
+    }
+
+    .docs-layout, .docs-canvas, .content-shell {
+        overflow-y: visible !important; /* Quebra a trava de altura fixa do painel */
+        height: auto !important;
+    }
 }
+
+/* ==========================================================================
+   CONTENÇÃO PARA MONITORES AMPLOS
+   ========================================================================== */
+.content-wrapper {
+    max-width: 1000px; /* Largura máxima ideal para leitura (estilo GitHub/Medium) */
+    margin: 0 auto; /* O 'auto' nas laterais empurra a caixa para o centro exato */
+    width: 100%;
+}
+
