@@ -368,31 +368,40 @@ body::after {
 /* 2. REESTRUTURAÇÃO DE LAYOUT PARA TELAS MENORES (< 850px) */
 @media screen and (max-width: 850px) {
     
+    /* =======================================================
+       A CHAVE MESTRA DO SCROLL (Agora no lugar certo!) 
+       ======================================================= */
+    html, body {
+        overflow-y: auto !important; 
+        height: auto !important;
+    }
+
+    .docs-layout, .docs-canvas, .content-shell {
+        overflow-y: visible !important; 
+        height: auto !important;
+    }
+
+    .content-wrapper {
+        overflow-y: visible !important; /* Desliga o scroll interno, a página inteira rola agora */
+        padding: 15px !important; /* Reduz a margem inútil no celular */
+    }
+
     /* Quebra o layout de "Lado a Lado" para "Empilhado" */
     .docs-layout {
         display: flex;
         flex-direction: column;
-        height: auto;
-        min-height: 100vh;
+        padding: 8px; /* Dá mais espaço pra tela */
     }
 
-    /* A barra lateral vai para o topo e ocupa 100% da tela */
+    /* A barra lateral vai para o topo */
     .docs-sidebar {
         width: 100%;
         max-width: 100%;
         height: auto;
-        /* Limita a altura do menu para não engolir a tela inteira. 
-           Se tiver muitos itens, ele cria uma rolagem interna. */
-        max-height: 250px; 
+        max-height: 250px; /* Se o menu for gigante, ele cria rolagem só nele */
         position: relative;
-        border-right: none;
-        border-bottom: 1px solid var(--docs-border, #444);
-    }
-
-    /* O painel principal perde o limite de largura e abraça as bordas */
-    .docs-canvas {
-        width: 100%;
-        padding: 10px; /* Reduz o espaçamento externo no celular */
+        border-right: none !important;
+        border-bottom: 1px solid var(--docs-border) !important;
     }
 
     /* Empilha o Título do componente e o Painel de Controle (Botões) */
@@ -407,56 +416,47 @@ body::after {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
+        /* Conserta o corte diagonal para ficar bonito de ponta a ponta */
+        clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%);
     }
 
-    /* Arruma as colunas de botões (LANG_MOD, OPTIC_MOD) para não ficarem esmagadas */
     .panel-switches-layout {
-        flex-direction: column; /* Coloca uma chave embaixo da outra */
+        flex-direction: column; 
         width: 100%;
         gap: 10px;
     }
 
     .switch-divider {
-        display: none; /* Esconde aquela linha vertical que separa os botões */
+        display: none; 
     }
 
     .switch-column {
         width: 100%;
-        flex-direction: row; /* Mantém os botões lado a lado dentro da própria coluna */
+        flex-direction: row; 
         justify-content: space-between;
     }
 
-    /* Reduz aquele padding de 60px que você colocou inline no Markdown,
-       pois 60px no celular empurra o texto todo para o centro da tela */
     #markdown-container > div {
-        padding: 20px !important;
+        padding: 10px !important;
     }
 }
 
-/* Ajuste extremo para celulares muito pequenos (ex: iPhone SE) */
+/* Ajuste extremo para celulares muito pequenos (ex: iPhone SE antigo) */
 @media screen and (max-width: 400px) {
     .switch-column {
         flex-direction: column;
         align-items: flex-start;
     }
-    /* (max-width: 850px) */
-    
-    html, body {
-        overflow-y: auto !important; /* Força o navegador a permitir rolagem */
-    }
-
-    .docs-layout, .docs-canvas, .content-shell {
-        overflow-y: visible !important; /* Quebra a trava de altura fixa do painel */
-        height: auto !important;
-    }
 }
 
 /* ==========================================================================
-   CONTENÇÃO PARA MONITORES AMPLOS
+   CONTENÇÃO PARA MONITORES AMPLOS (Ultrawide / Zoom Out)
    ========================================================================== */
 .content-wrapper {
-    max-width: 1000px; /* Largura máxima ideal para leitura (estilo GitHub/Medium) */
-    margin: 0 auto; /* O 'auto' nas laterais empurra a caixa para o centro exato */
+    max-width: 1100px; /* Largura perfeita para leitura técnica */
+    margin: 0 auto; 
     width: 100%;
 }
+
+
 
